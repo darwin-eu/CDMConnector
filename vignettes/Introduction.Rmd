@@ -1,8 +1,6 @@
 ---
 title: "Introduction to CDMConnector"
-output: 
-  html_document: rmarkdown::html_vignette
-  md_document: default
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction}
   %\VignetteEngine{knitr::rmarkdown}
