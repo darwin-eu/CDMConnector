@@ -1,0 +1,25 @@
+Package: CDMConnector
+Title: Connect to an OMOP Common Data Model
+Version: 0.0.0.9000
+Authors@R: 
+    person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5576-8701"))
+Description: Provides tools for working OMOP CDM tables in a pipe friendly syntax.
+  CDM table references are stored in a sigle compound object along with metadata.
+License: Apache License (>= 2)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
+Depends: 
+    R (>= 2.10)
+Imports: 
+    dplyr,
+     DBI (>= 0.3.0),
+    checkmate,
+    magrittr
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr

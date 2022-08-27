@@ -1,0 +1,94 @@
+---
+title: "Introduction to CDMConnector"
+output: 
+  html_document: rmarkdown::html_vignette
+  md_document: default
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The CDMConnector package provides tools for working OMOP Common Data Model (CDM) tables in a pipe friendly syntax. CDM table references are stored in a single compound object along with CDM specific metadata.
+
+The main function provided by the package is `cdm_from_con` which creates a CDM connection object that can be used with dplyr verbs. In the examples that we will use a duckdb database which is embedded in the CDMConnector package.
+
+```{r}
+library(CDMConnector)
+
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+cdm <- cdm_from_con(con)
+cdm
+```
+
+Individual CDM table references can be accessed using `$` and piped to dplyr verbs.
+
+```{r}
+library(dplyr, warn.conflicts = FALSE)
+cdm$person %>% 
+  count()
+
+cdm$drug_exposure %>% 
+  left_join(cdm$concept, by = c("drug_concept_id" = "concept_id")) %>% 
+  count(drug = concept_name, sort = TRUE)
+```
+
+To send SQL to the CDM use the connection object. The cdm reference also contains the connection as an attribute.
+
+```{r}
+DBI::dbGetQuery(con, "select count(*) as person_count from main.person")
+DBI::dbGetQuery(attr(cdm, "con"), "select count(*) as person_count from main.person")
+```
+
+# Subsetting the CDM
+
+If you do not need references to all tables you can easily select only a subset of tables to include in the cdm reference. The `select` argument of `cdm_from_con` supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
+
+```{r}
+cdm_from_con(con, select = starts_with("concept"))
+cdm_from_con(con, select = contains("era"))
+cdm_from_con(con, select = tbl_group("vocab"))
+```
+
+`tbl_group` supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
+
+The default set of CDM tables included in a CDM object is:
+
+```{r}
+tbl_group("default")
+```
+
+# Closing connections
+
+Close the database connection with `dbDisconnect`. After the connection is closed the cdm object can no longer be used.
+
+```{r, error=TRUE}
+DBI::dbDisconnect(con)
+cdm$person
+```
+
+# Delaying connections
+
+Sometimes you may need to delay the creation of a cdm connection or create and close many connections during execution. CDMConnector provides the ability to store connection information that can be passed to `dbConnect` to create a connection. The typical use case is to create a new connection inside a function and then close the connection before the function exits.
+
+```{r}
+connection_details <- dbConnectDetails(duckdb::duckdb(), dbdir = eunomia_dir())
+
+self_contained_query <- function(connection_details) {
+  # create a new connection
+  con <- DBI::dbConnect(connection_details)
+  # close the connection before exiting 
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  # use the connection
+  DBI::dbGetQuery(con, "select count(*) as n from main.person")
+}
+
+self_contained_query(connection_details)
+```
