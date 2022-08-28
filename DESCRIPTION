@@ -6,7 +6,7 @@ Authors@R:
            comment = c(ORCID = "0000-0001-5576-8701"))
 Description: Provides tools for working OMOP CDM tables in a pipe friendly syntax.
   CDM table references are stored in a sigle compound object along with metadata.
-License: Apache License (>= 2)
+License: file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
@@ -14,14 +14,23 @@ Depends:
     R (>= 2.10)
 Imports: 
     dplyr,
-     DBI (>= 0.3.0),
+    DBI (>= 0.3.0),
     checkmate,
-    magrittr
+    magrittr,
+    dbplyr,
+    pillar,
+    cli,
+    purrr,
+    rlang,
+    tidyselect,
+    methods
 Suggests: 
     covr,
     knitr,
     rmarkdown,
     duckdb,
+    RPostgres,
+    odbc,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr

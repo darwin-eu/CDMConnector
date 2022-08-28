@@ -2,13 +2,14 @@
 #' Create a CDM reference reference to a database connection
 #'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 instance is located.
-#' @param schema The schema where the vocab tables are located. Defaults to NULL.
+#' @param cdm_schema The schema where the OMOP CDM tables are located. Defaults to NULL.
+#' @param write_schema An optional schema in the CDM database that the user has write access to.
 #' @param select Which tables should be included?
-#' "all" for all CDM tables
-#' "vocab" for just the vocabulary tables
-#' "clinical" for just the clinical tables
-#'.
-#'
+#' \itemize{
+#'   \item{"all"}{all CDM tables}
+#'   \item{"vocab"}{the CDM vocabulary tables}
+#'   \item{"clinical"}{the clinical CDM tables}
+#' }
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
 cdm_from_con <- function(con, cdm_schema = NULL, select = tbl_group("default"), write_schema = NULL) {
@@ -126,7 +127,7 @@ tbl_group <- function(group) {
 #'
 #' @return The full path to the new Eunomia CDM that can be passed to `dbConnect()`
 #' @export
-#'
+#' @importFrom utils untar
 #' @examples
 #' \dontrun{
 #' library(DBI)
@@ -140,6 +141,6 @@ eunomia_dir <- function(exdir = tempdir()) {
   untar(file, exdir = exdir)
   close(file)
   path <- file.path(exdir, "cdm.duckdb")
-  if(!file.exists(path)) abort("Error creating Eunomia CDM")
+  if(!file.exists(path)) rlang::abort("Error creating Eunomia CDM")
   path
 }

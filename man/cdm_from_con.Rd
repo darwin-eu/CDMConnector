@@ -14,13 +14,16 @@ cdm_from_con(
 \arguments{
 \item{con}{A DBI database connection to a database where an OMOP CDM v5.4 instance is located.}
 
-\item{select}{Which tables should be included?
-"all" for all CDM tables
-"vocab" for just the vocabulary tables
-"clinical" for just the clinical tables
-.}
+\item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults to NULL.}
 
-\item{schema}{The schema where the vocab tables are located. Defaults to NULL.}
+\item{select}{Which tables should be included?
+\itemize{
+\item{"all"}{all CDM tables}
+\item{"vocab"}{the CDM vocabulary tables}
+\item{"clinical"}{the clinical CDM tables}
+}}
+
+\item{write_schema}{An optional schema in the CDM database that the user has write access to.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

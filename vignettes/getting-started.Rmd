@@ -1,8 +1,8 @@
 ---
-title: "Introduction to CDMConnector"
+title: "Getting Started"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to CDMConnector}
+  %\VignetteIndexEntry{Getting Started}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 The CDMConnector package provides tools for working OMOP Common Data Model (CDM) tables in a pipe friendly syntax. CDM table references are stored in a single compound object along with CDM specific metadata.
 
-The main function provided by the package is `cdm_from_con` which creates a CDM connection object that can be used with dplyr verbs. In the examples that we will use a duckdb database which is embedded in the CDMConnector package.
+The main function provided by the package is `cdm_from_con` which creates a CDM connection object that can be used with dplyr verbs. In the examples that we will use a [duckdb](https://duckdb.org/) database which is embedded in the CDMConnector package.
 
 ```{r}
 library(CDMConnector)
