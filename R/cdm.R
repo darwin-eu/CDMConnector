@@ -15,16 +15,18 @@ cdm_from_con <- function(con, cdm_schema = NULL, select = tbl_group("default"), 
 
   checkmate::assert_class(con, "DBIConnection")
   checkmate::assert_true(DBI::dbIsValid(con))
-  checkmate::assert_character(cdm_schema, null.ok = TRUE)
+  checkmate::assert_character(cdm_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   checkmate::assert_character(write_schema, null.ok = TRUE)
 
   cdm_tables <- select_cdm_tables(select)
 
   # TODO should this throw an error if the table does not exist?
-  if (!is.null(cdm_schema)) {
-    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)))
-  } else {
+  if (is.null(cdm_schema)) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, .))
+  } else if (length(cdm_schema) == 1) {
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)))
+  } else if (length(cdm_schema) == 2) {
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)))
   }
 
   cdm <- cdm %>%
