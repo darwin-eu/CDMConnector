@@ -5,7 +5,7 @@ output: md_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# [CDMConnector](https://OdyOSG.github.io/dm/)
+# [CDMConnector](https://odyosg.github.io/CDMConnector/)
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html)

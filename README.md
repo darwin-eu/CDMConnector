@@ -1,6 +1,6 @@
-# [CDMConnector](https://OdyOSG.github.io/dm/)
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# [CDMConnector](https://odyosg.github.io/CDMConnector/)
 
 <!-- badges: start -->
 
@@ -89,7 +89,7 @@ Use dplyr verbs with the table references.
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpG51ej0/cdm.duckdb]
+    ## # Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpBYJkWX/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -101,7 +101,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpG51ej0/cdm.duckdb]
+    ## # Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpBYJkWX/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
