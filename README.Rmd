@@ -1,0 +1,109 @@
+---
+title: "README"
+output: md_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# [CDMConnector](https://OdyOSG.github.io/dm/)
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![Codecov test coverage](https://codecov.io/gh/darwin-eu/CDMConnector/branch/main/graph/badge.svg)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
+[![R-CMD-check](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+[![CRAN status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
+
+> Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP Common Data Model? 
+>
+> Interact with your CDM in a pipe-friendly way with CDMConnector.
+>
+> - Quickly connect to your CDM and start exploring.
+> - Build data analysis pipelines using familiar dplyr verbs.
+> - Easily extract subsets of CDM data from a database.
+
+
+## Overview
+
+CDMConnector introduces a single R object that represents an OMOP CDM relational database heavily inspired by the [dm](https://cynkra.github.io/dm/) pacakge. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to OMOP CDM tables in a remote RDBMS as well as metadata neccessary for interacting with a CDM. 
+
+
+[![OMOP CDM v5.4](https://ohdsi.github.io/CommonDataModel/images/cdm54.png)](https://ohdsi.github.io/CommonDataModel/)
+
+## Features
+
+CDMConnector is meant to be the entry point for composable tidyverse style data analysis operations on an OMOP CDM. 
+A `cdm_reference` object behaves like a named list of tables.
+
+- Quickly create a list of references to a subset of CDM tables
+- Store connection information for later use inside functions
+- Use any DBI driver backend with the OMOP CDM
+
+See Getting started for more details.
+
+
+## Installation
+
+CDMConnector can be installed from GitHub:
+
+```r
+# install.packages("devtools")
+devtools::install_github("darwin-eu/CDMConnector")
+```
+
+## Usage
+
+Create a `cdm_reference` object from any DBI connection.
+
+```{r}
+library(CDMConnector)
+
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+cdm <- cdm_from_con(con)
+cdm
+```
+
+A `cdm_reference` is a named list of table references:
+
+```{r}
+library(dplyr, warn.conflicts = FALSE)
+names(cdm)
+```
+
+Use dplyr verbs with the table references.
+
+```{r}
+tally(cdm$person)
+```
+
+Compose operations with the pipe.
+
+```{r}
+cdm$condition_era %>%
+  left_join(cdm$concept, by = c("condition_concept_id" = "concept_id")) %>% 
+  count(top_conditions = concept_name, sort = TRUE)
+```
+
+
+```{r, include=FALSE}
+DBI::dbDisconnect(con)
+```
+
+## Getting help
+
+If you encounter a clear bug, please file an issue with a minimal [reproducible example](https://reprex.tidyverse.org/) on [GitHub](https://github.com/OdyOSG/CDMConnector/issues).
+
+
+---
+
+License: Apache 2.0
+
+Funded by:
+
+[![DARWIN-EU](man/figures/darwin-eu-logo.png)](https://www.ema.europa.eu/en/about-us/how-we-work/big-data/data-analysis-real-world-interrogation-network-darwin-eu)
+<span style="padding-right:50px">
+</span>
+[![Odysseus](man/figures/logo_odys.svg)](https://odysseusinc.com/)
+
+
