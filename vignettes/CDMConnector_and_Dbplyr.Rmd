@@ -22,7 +22,6 @@ library(duckdb)
 library(dplyr)
 library(dbplyr)
 library(ggplot2)
-library(tictoc)
 ```
 
 ## Creating the cdm reference
