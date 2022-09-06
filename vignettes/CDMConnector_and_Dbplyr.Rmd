@@ -1,0 +1,192 @@
+---
+title: "CDMConnector and Dbplyr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CDMConnector_and_Dbplyr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Set up
+## Load required packages
+```{r, message=FALSE, warning=FALSE}
+library(CDMConnector)
+library(duckdb)
+library(dplyr)
+library(dbplyr)
+library(ggplot2)
+library(tictoc)
+```
+
+## Creating the cdm reference
+```{r, message=FALSE, warning=FALSE}
+con <- dbConnect(duckdb(), dbdir = eunomia_dir())
+cdm <- cdm_from_con(con)
+cdm
+```
+
+# Using familiar Dplyr verbs
+## Summarise 
+```{r, warning=FALSE}
+cdm$person %>% 
+  summarise(median(year_of_birth)) 
+```
+
+## Mutate
+```{r, warning=FALSE}
+cdm$person %>%
+    mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    )) %>% 
+  select("person_id","gender_concept_id", "gender") %>% 
+  head(10)
+```
+
+## Filter
+```{r, warning=FALSE}
+cdm$condition_occurrence %>%
+  filter(condition_concept_id == 317009) 
+```
+  
+## Joins
+We can also join to merge tables of interest - e.g. person & observation_period
+```{r}
+cdm$person  %>%
+  select(person_id , gender_concept_id, year_of_birth) %>% 
+  left_join(cdm$observation_period  %>% 
+              select(person_id, observation_period_start_date, observation_period_end_date),
+            by="person_id")
+
+```
+
+# Compute and collect
+## Compute 
+We can split multiple queries by running compute (to store information in temporary tables). 
+
+```{r }
+asthma_occurrences <- cdm$condition_occurrence %>%
+  filter(condition_concept_id == 317009) 
+
+# count of rows
+asthma_occurrences %>%
+  tally()
+
+# count of people
+asthma_occurrences %>%
+  select(person_id) %>%
+  distinct() %>%
+  tally()
+```
+
+## Collect 
+We can split also bring the results into memory in R like so
+```{r }
+cdm$condition_occurrence %>%
+  filter(condition_concept_id == 317009) %>% 
+  collect() %>% 
+  glimpse()
+
+```
+
+# Putting it all together
+## Histogram of year of birth
+```{r}
+cdm$person %>% 
+  select(year_of_birth) %>%
+  collect() %>% 
+  ggplot() +
+  geom_histogram(aes(year_of_birth))
+```
+
+## Boxplot for length of observation periods
+```{r}
+cdm$observation_period %>%
+  select(observation_period_start_date, observation_period_end_date) %>%
+  mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365,25) %>%
+  collect() %>%
+  ggplot() +
+  geom_boxplot(aes(observation_period))
+
+```
+
+
+# Behind the scenes
+
+## Use show_query is the sql being run
+```{r}
+cdm$person %>% 
+  tally() %>% 
+  show_query()
+```
+
+```{r}
+cdm$person %>% 
+  summarise(median(year_of_birth))%>% 
+  show_query() 
+```
+
+```{r, warning=FALSE}
+cdm$person %>%
+    mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))%>% 
+  show_query() 
+```
+
+## What would this look like for other dbms?
+The above was specific to duckdb which we have been using in this example. But what would this look like for other database management systems?
+```{r}
+person<-cdm$person %>% collect()
+
+tbl_lazy(person, con = simulate_sqlite()) %>% 
+  tally()
+tbl_lazy(person, con = simulate_sqlite()) %>% 
+  summarise(median(year_of_birth))
+tbl_lazy(person, con = simulate_sqlite()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
+
+tbl_lazy(person, con = simulate_postgres()) %>% 
+  tally()
+tbl_lazy(person, con = simulate_postgres()) %>% 
+  summarise(median(year_of_birth))
+tbl_lazy(person, con = simulate_postgres()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
+
+tbl_lazy(person, con = simulate_redshift()) %>% 
+  tally()
+tbl_lazy(person, con = simulate_redshift()) %>% 
+  summarise(median(year_of_birth))
+tbl_lazy(person, con = simulate_redshift()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
+
+tbl_lazy(person, con = simulate_snowflake()) %>% 
+  tally()
+tbl_lazy(person, con = simulate_snowflake()) %>% 
+  summarise(median(year_of_birth))
+tbl_lazy(person, con = simulate_snowflake()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
+
+tbl_lazy(person, con = simulate_mysql()) %>% 
+  tally()
+tbl_lazy(person, con = simulate_mysql()) %>% 
+  summarise(median(year_of_birth))
+tbl_lazy(person, con = simulate_mysql()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
+```
