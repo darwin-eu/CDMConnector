@@ -23,8 +23,6 @@ library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 cdm <- cdm_from_con(con)
-cdm
-remote_con(cdm)
 ```
 
 Individual CDM table references can be accessed using `$` and piped to dplyr verbs.
