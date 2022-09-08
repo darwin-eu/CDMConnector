@@ -53,13 +53,13 @@ devtools::install_github("darwin-eu/CDMConnector")
 
 ## Usage
 
-Create a `cdm_reference` object from any DBI connection.
+Create a `cdm_reference` object from any DBI connection. Use the `cdm_schema argument to point to a particular schema in your database.
 
 ```{r}
 library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con)
+cdm <- cdm_from_con(con, cdm_schema = "main")
 cdm
 ```
 
