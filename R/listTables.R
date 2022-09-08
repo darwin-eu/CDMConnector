@@ -18,31 +18,24 @@ listTables <- function(con, schema = NULL) {
   checkmate::assert_character(schema, null.ok = TRUE, min.len = 1, max.len = 2, min.chars = 1)
   if (is.null(schema)) return(DBI::dbListTables(con))
 
-  switch (class(con),
-    PqConnection = list_tables_postgresql(con, schema[[1]]),
-    duckdb_connection = list_tables_postgresql(con, schema[[1]]),
-    "Microsoft SQL Server" = list_tables_mssql(con, schema),
-    rlang::abort(paste(class(con), "connection not supported"))
-  )
-}
+  if (is(con, "PqConnection") || is(con, "RedshiftConnection")) {
+    glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con) %>%
+      DBI::dbGetQuery(con, .) %>%
+      dplyr::pull(table_name)
 
-list_tables_postgresql <- function(con, schema) {
-  glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema};", .con = con) %>%
-    DBI::dbGetQuery(con, .) %>%
-    dplyr::pull(table_name)
-}
+  } else if (is(con, "duckdb_connection")) {
+    glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con) %>%
+      DBI::dbGetQuery(con, .) %>%
+      dplyr::pull(table_name)
 
-list_tables_duckdb <- function(con, schema) {
-  glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema};", .con = con) %>%
-    DBI::dbGetQuery(con, .) %>%
-    dplyr::pull(table_name)
-}
-
-list_tables_mssql <- function(con, schema) {
-  if (length(schema) == 1) {
-    DBI::dbListTables(con, schema_name = schema)
+  } else if (is(con, "Microsoft SQL Server")) {
+    if (length(schema) == 1) {
+      DBI::dbListTables(con, schema_name = schema)
+    } else {
+      DBI::dbListTables(con, catalog_name = schema[[1]], schema_name = schema[[2]])
+    }
   } else {
-    # length(schema) must be 2
-    DBI::dbListTables(con, catalog_name = schema[[1]], schema_name = schema[[2]])
+    rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
   }
 }
+
