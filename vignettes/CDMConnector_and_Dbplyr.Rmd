@@ -1,0 +1,283 @@
+---
+title: "CDMConnector and dbplyr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CDMConnector_and_dbplyr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Set up
+## Load required packages
+```{r, message=FALSE, warning=FALSE}
+library(CDMConnector)
+library(dplyr)
+library(ggplot2)
+```
+
+## Creating the cdm reference
+
+```{r, message=FALSE, warning=FALSE}
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+cdm <- cdm_from_con(con)
+cdm
+```
+
+# Using familiar Dplyr verbs
+
+## Summarise 
+```{r, warning=FALSE}
+cdm$person %>% 
+  summarise(median(year_of_birth)) 
+```
+
+## Mutate
+```{r, warning=FALSE}
+cdm$person %>%
+    mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    )) %>% 
+  select("person_id","gender_concept_id", "gender") %>% 
+  head(10)
+```
+
+## Filter
+```{r, warning=FALSE}
+cdm$condition_occurrence %>%
+  filter(condition_concept_id == 317009) 
+```
+  
+## Joins
+We can also join to merge tables of interest - e.g. person & observation_period
+```{r}
+cdm$person  %>%
+  select(person_id , gender_concept_id, year_of_birth) %>% 
+  left_join(cdm$observation_period  %>% 
+              select(person_id, observation_period_start_date, observation_period_end_date),
+            by="person_id")
+
+```
+
+# Compute and collect
+
+## Compute 
+
+We can split multiple queries by running compute (to store information in temporary tables). 
+
+```{r }
+asthma_occurrences <- cdm$condition_occurrence %>%
+  filter(condition_concept_id == 317009) 
+
+# count of rows
+asthma_occurrences %>%
+  tally()
+
+# count of people
+asthma_occurrences %>%
+  select(person_id) %>%
+  distinct() %>%
+  tally()
+```
+
+## Collect 
+
+`collect` brings the query result into R as dataframe.
+
+```{r}
+cdm$condition_occurrence %>%
+  filter(condition_concept_id == 317009) %>% 
+  collect() %>% 
+  glimpse()
+
+```
+
+# Putting it all together
+
+Use the cdm object to quickly generate statistics from a CDM and interactively explore the data.
+
+## Histogram of year of birth
+
+```{r, message=FALSE}
+cdm$person %>% 
+  select(year_of_birth) %>%
+  collect() %>% 
+  ggplot() +
+  geom_histogram(aes(year_of_birth))
+```
+
+## Boxplot for length of observation periods
+
+```{r}
+cdm$observation_period %>%
+  select(observation_period_start_date, observation_period_end_date) %>%
+  mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365,25) %>%
+  collect() %>%
+  ggplot() +
+  geom_boxplot(aes(observation_period))
+
+```
+
+
+# Behind the scenes
+
+## Use `show_query` to inspect the sql
+
+```{r}
+cdm$person %>% 
+  tally() %>% 
+  show_query()
+```
+
+```{r}
+cdm$person %>% 
+  summarise(median(year_of_birth))%>% 
+  show_query() 
+```
+
+```{r, warning=FALSE}
+cdm$person %>%
+    mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))%>% 
+  show_query() 
+```
+
+## What would this look like for other dbms?
+
+The above was specific to duckdb which we have been using in this example. 
+But what would this look like for other database management systems?
+
+```{r, eval=FALSE}
+
+library(dbplyr)
+
+person <- cdm$person %>% collect()
+
+tbl_lazy(person, con = simulate_sqlite()) %>%
+  tally()
+
+tbl_lazy(person, con = simulate_sqlite()) %>%
+  summarise(median(year_of_birth, na.rm = TRUE))
+
+tbl_lazy(person, con = simulate_sqlite()) %>%
+  mutate(gender = case_when(
+    gender_concept_id == "8507" ~ "Male",
+    gender_concept_id == "8532" ~ "Female",
+    TRUE ~ NA_character_)
+  )
+
+tbl_lazy(person, con = simulate_postgres()) %>%
+  tally()
+
+tbl_lazy(person, con = simulate_postgres()) %>%
+  summarise(median(year_of_birth))
+
+tbl_lazy(person, con = simulate_postgres()) %>%
+  mutate(gender = case_when(
+    gender_concept_id == "8507" ~ "Male",
+    gender_concept_id == "8532" ~ "Female",
+    NA_character_)
+  )
+
+tbl_lazy(person, con = simulate_redshift()) %>%
+  tally()
+
+tbl_lazy(person, con = simulate_redshift()) %>%
+  summarise(median(year_of_birth))
+
+tbl_lazy(person, con = simulate_redshift()) %>%
+  mutate(gender = case_when(
+    gender_concept_id == "8507" ~ "Male",
+    gender_concept_id == "8532" ~ "Female",
+    NA_character_)
+  )
+
+tbl_lazy(person, con = simulate_snowflake()) %>%
+  tally()
+
+tbl_lazy(person, con = simulate_snowflake()) %>%
+  summarise(median(year_of_birth))
+
+tbl_lazy(person, con = simulate_snowflake()) %>%
+  mutate(gender = case_when(
+    gender_concept_id == "8507" ~ "Male",
+    gender_concept_id == "8532" ~ "Female",
+    NA_character_)
+  )
+
+tbl_lazy(person, con = simulate_mysql()) %>%
+  tally()
+
+tbl_lazy(person, con = simulate_mysql()) %>%
+  summarise(median(year_of_birth))
+
+tbl_lazy(person, con = simulate_mysql()) %>%
+  mutate(gender = case_when(
+    gender_concept_id == "8507" ~ "Male",
+    gender_concept_id == "8532" ~ "Female",
+    NA_character_)
+  )
+```
+
+```{r}
+DBI::dbDisconnect(con, shutdown = TRUE)
+```
+
+
+# Connection Examples
+
+## Postgres
+
+```{r, eval=FALSE}
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+                      host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+                      user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                      password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+
+cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), select = tbl_group("vocab"))
+DBI::dbDisconnect(con)
+```
+
+## SQL Server
+
+Using odbc with SQL Server requires driver setup described [here](https://solutions.rstudio.com/db/r-packages/odbc/).
+
+```{r, eval=FALSE}
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver   = "ODBC Driver 18 for SQL Server",
+                      Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+                      Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
+                      UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
+                      PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+                      TrustServerCertificate="yes",
+                      Port     = 1433)
+
+cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), select = tbl_group("vocab"))
+DBI::dbDisconnect(con)
+```
+
+## Redshift
+
+This is almost identical to Postgres.
+
+```{r, eval=FALSE}
+con <- DBI::dbConnect(RPostgres::Redshift(),
+                      dbname   = Sys.getenv("CDM5_REDSHIFT_DBNAME"),
+                      host     = Sys.getenv("CDM5_REDSHIFT_HOST"),
+                      port     = Sys.getenv("CDM5_REDSHIFT_PORT"),
+                      user     = Sys.getenv("CDM5_REDSHIFT_USER"),
+                      password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
+
+cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), select = tbl_group("vocab"))
+DBI::dbDisconnect(con)
+```
+
+<div style="margin-bottom:3cm;"></div>

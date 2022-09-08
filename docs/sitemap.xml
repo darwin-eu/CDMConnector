@@ -10,6 +10,9 @@
     <loc>/LICENSE.html</loc>
   </url>
   <url>
+    <loc>/articles/CDMConnector_and_dbplyr.html</loc>
+  </url>
+  <url>
     <loc>/articles/Introduction.html</loc>
   </url>
   <url>
@@ -25,7 +28,22 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/CDMConnector-package.html</loc>
+  </url>
+  <url>
+    <loc>/reference/assert_cdm_column_names.html</loc>
+  </url>
+  <url>
     <loc>/reference/cdm_from_con.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cdm_from_files.html</loc>
+  </url>
+  <url>
+    <loc>/reference/collect.cdm_reference.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dbConnect-dbConnectDetails-method.html</loc>
   </url>
   <url>
     <loc>/reference/dbConnectDetails-class.html</loc>
@@ -34,16 +52,28 @@
     <loc>/reference/dbConnectDetails.html</loc>
   </url>
   <url>
+    <loc>/reference/dbms.html</loc>
+  </url>
+  <url>
     <loc>/reference/eunomia_dir.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
   </url>
   <url>
+    <loc>/reference/listTables.html</loc>
+  </url>
+  <url>
     <loc>/reference/pipe.html</loc>
   </url>
   <url>
     <loc>/reference/print.cdm_reference.html</loc>
+  </url>
+  <url>
+    <loc>/reference/remote_con.html</loc>
+  </url>
+  <url>
+    <loc>/reference/stow.html</loc>
   </url>
   <url>
     <loc>/reference/tbl_group.html</loc>

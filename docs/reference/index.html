@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.1</span>
       </span>
     </div>
 
@@ -32,7 +32,10 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/getting-started.html">Introduction to CDMConnector</a>
+      <a href="../articles/CDMConnector_and_dbplyr.html">CDMConnector and dbplyr</a>
+    </li>
+    <li>
+      <a href="../articles/getting-started.html">Getting Started</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -52,21 +55,53 @@
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
+          <p><code><a href="assert_cdm_column_names.html">assert_cdm_column_names()</a></code> </p>
+        </td>
+        <td><p>Check column names of tables in a cdm reference</p></td>
+      </tr><tr><td>
           <p><code><a href="cdm_from_con.html">cdm_from_con()</a></code> </p>
         </td>
-        <td><p>Create a CDM reference reference to a database connection</p></td>
+        <td><p>Create a CDM reference object from a database connection</p></td>
+      </tr><tr><td>
+          <p><code><a href="cdm_from_files.html">cdm_from_files()</a></code> </p>
+        </td>
+        <td><p>Create a CDM reference from a folder containing parquet, csv, or feather files</p></td>
+      </tr><tr><td>
+          <p><code><a href="collect.cdm_reference.html">collect(<i>&lt;cdm_reference&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Bring a remote CDM reference into R</p></td>
+      </tr><tr><td>
+          <p><code><a href="dbConnect-dbConnectDetails-method.html">dbConnect(<i>&lt;dbConnectDetails&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Connect to a database using stored connection details</p></td>
       </tr><tr><td>
           <p><code><a href="dbConnectDetails.html">dbConnectDetails()</a></code> </p>
         </td>
         <td><p>Save database connection information in an object</p></td>
       </tr><tr><td>
+          <p><code><a href="dbms.html">dbms()</a></code> </p>
+        </td>
+        <td><p>Get the database management system (dbms) from a cdm_reference or DBI connection</p></td>
+      </tr><tr><td>
           <p><code><a href="eunomia_dir.html">eunomia_dir()</a></code> </p>
         </td>
         <td><p>Create a new Eunomia CDM</p></td>
       </tr><tr><td>
+          <p><code><a href="listTables.html">listTables()</a></code> </p>
+        </td>
+        <td><p>List tables in a schema</p></td>
+      </tr><tr><td>
           <p><code><a href="print.cdm_reference.html">print(<i>&lt;cdm_reference&gt;</i>)</a></code> </p>
         </td>
         <td><p>Print a CDM reference object</p></td>
+      </tr><tr><td>
+          <p><code><a href="remote_con.html">remote_con()</a></code> </p>
+        </td>
+        <td><p>Get the database connection from a cdm object or remote table reference</p></td>
+      </tr><tr><td>
+          <p><code><a href="stow.html">stow()</a></code> </p>
+        </td>
+        <td><p>Collect a list of lazy queries and save the results as files</p></td>
       </tr><tr><td>
           <p><code><a href="tbl_group.html">tbl_group()</a></code> </p>
         </td>
