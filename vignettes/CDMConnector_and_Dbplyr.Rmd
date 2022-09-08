@@ -14,8 +14,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Set up
-## Load required packages
+## Set up
+First let´s load the required packages for the code in this vignette. If you haven´t already installed them, all the other packages can be installed using ´install.packages()´ 
 ```{r, message=FALSE, warning=FALSE}
 library(CDMConnector)
 library(dplyr)
@@ -23,6 +23,7 @@ library(ggplot2)
 ```
 
 ## Creating the cdm reference
+Now let´s connect to a duckdb database with the Eunomia data (https://github.com/OHDSI/Eunomia).
 
 ```{r, message=FALSE, warning=FALSE}
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
@@ -30,15 +31,33 @@ cdm <- cdm_from_con(con)
 cdm
 ```
 
-# Using familiar Dplyr verbs
 
-## Summarise 
+This cdm object is now what we´ll use going forward. It provides a reference to the OMOP CDM tables. We can see that these tables are still in the database, but now we have a reference to each of the ones we might want to use in our analysis. For example, the person table can be referenced like so
+
+
+```{r, message=FALSE, warning=FALSE}
+cdm$person
+```
+
+The observation table with
+```{r, message=FALSE, warning=FALSE}
+cdm$observation_period
+```
+
+And so on, with the cdm object behaving like a named list of tables.  
+
+
+
+## Using familiar Dplyr verbs
+With our data left in the database, we can still use some of what may well be familiar dplyr verbs (https://dplyr.tidyverse.org/articles/dplyr.html) using the dbplyr backend (https://dbplyr.tidyverse.org/), which converts familiar dplyr code into SQL.
+
+So we can use `summarise` to get the median year of birth in the person table.
 ```{r, warning=FALSE}
 cdm$person %>% 
   summarise(median(year_of_birth)) 
 ```
 
-## Mutate
+We can use mutate to create a flag of "Male"/ "Female" based on the gender_concept_id in the person table.
 ```{r, warning=FALSE}
 cdm$person %>%
     mutate(gender = ifelse(gender_concept_id == "8507", "Male",
@@ -48,33 +67,42 @@ cdm$person %>%
   head(10)
 ```
 
-## Filter
+The filter command lets us subset the condition occurrence table to only those records with a specific condition_concept_id. In this case, 317009 is a standard code for asthma (https://athena.ohdsi.org/search-terms/terms/317009)
 ```{r, warning=FALSE}
 cdm$condition_occurrence %>%
   filter(condition_concept_id == 317009) 
 ```
   
-## Joins
-We can also join to merge tables of interest - e.g. person & observation_period
+And we can can also use joins to merge tables of interest, such as a `left_join` between the person and observation_period tables.
 ```{r}
 cdm$person  %>%
   select(person_id , gender_concept_id, year_of_birth) %>% 
   left_join(cdm$observation_period  %>% 
-              select(person_id, observation_period_start_date, observation_period_end_date),
+              select(person_id, observation_period_start_date,
+                     observation_period_end_date),
             by="person_id")
 
 ```
 
-# Compute and collect
+It is worth noting that not all dplyr verbs are supported by dplyr, and some are only supported for some database management systems. For example let´s see what happens if we try and use `slice` to subset rows using their positions.
 
-## Compute 
+```{r, error=TRUE}
+cdm$person %>% slice(1:5)
+```
 
-We can split multiple queries by running compute (to store information in temporary tables). 
+This is an example of a verb that would only work if we had the data in memory.
+
+## Compute and collect
+We can split multiple queries by running `compute` (to store information in temporary tables). For example, we can first find occurrences of asthma.
 
 ```{r }
 asthma_occurrences <- cdm$condition_occurrence %>%
   filter(condition_concept_id == 317009) 
+asthma_occurrences
+```
 
+And then run multiple queries against the result
+```{r }
 # count of rows
 asthma_occurrences %>%
   tally()
@@ -86,24 +114,19 @@ asthma_occurrences %>%
   tally()
 ```
 
-## Collect 
-
-`collect` brings the query result into R as dataframe.
-
-```{r}
-cdm$condition_occurrence %>%
+We can split also bring the results into memory in R with `collect`
+```{r }
+asthma_occurrences<-cdm$condition_occurrence %>%
   filter(condition_concept_id == 317009) %>% 
-  collect() %>% 
-  glimpse()
+  collect() 
 
+# now asthma_occurrences is in memory
+str(asthma_occurrences)
 ```
 
-# Putting it all together
 
-Use the cdm object to quickly generate statistics from a CDM and interactively explore the data.
-
-## Histogram of year of birth
-
+## Putting it all together
+Say we want to make a histogram of year of birth in the person table. We can select that variable, bring it into memory, and then use ggplot to make the histogram.
 ```{r, message=FALSE}
 cdm$person %>% 
   select(year_of_birth) %>%
@@ -112,23 +135,20 @@ cdm$person %>%
   geom_histogram(aes(year_of_birth))
 ```
 
-## Boxplot for length of observation periods
-
+If we wanted to make a boxplot for length of observation periods we could do the compuatiton on the database side, bring in the new variable into memory, and use ggplot to produce the boxplot
 ```{r}
 cdm$observation_period %>%
   select(observation_period_start_date, observation_period_end_date) %>%
   mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365,25) %>%
+  select(observation_period) %>% 
   collect() %>%
   ggplot() +
   geom_boxplot(aes(observation_period))
-
 ```
 
 
-# Behind the scenes
-
-## Use `show_query` to inspect the sql
-
+## Behind the scenes
+We use show_query to check the sql that is being run against duckdb
 ```{r}
 cdm$person %>% 
   tally() %>% 
@@ -149,91 +169,42 @@ cdm$person %>%
   show_query() 
 ```
 
-## What would this look like for other dbms?
-
-The above was specific to duckdb which we have been using in this example. 
-But what would this look like for other database management systems?
-
-```{r, eval=FALSE}
-
-library(dbplyr)
-
-person <- cdm$person %>% collect()
-
-tbl_lazy(person, con = simulate_sqlite()) %>%
-  tally()
-
-tbl_lazy(person, con = simulate_sqlite()) %>%
-  summarise(median(year_of_birth, na.rm = TRUE))
-
-tbl_lazy(person, con = simulate_sqlite()) %>%
-  mutate(gender = case_when(
-    gender_concept_id == "8507" ~ "Male",
-    gender_concept_id == "8532" ~ "Female",
-    TRUE ~ NA_character_)
-  )
-
-tbl_lazy(person, con = simulate_postgres()) %>%
-  tally()
-
-tbl_lazy(person, con = simulate_postgres()) %>%
-  summarise(median(year_of_birth))
-
-tbl_lazy(person, con = simulate_postgres()) %>%
-  mutate(gender = case_when(
-    gender_concept_id == "8507" ~ "Male",
-    gender_concept_id == "8532" ~ "Female",
-    NA_character_)
-  )
-
-tbl_lazy(person, con = simulate_redshift()) %>%
-  tally()
-
-tbl_lazy(person, con = simulate_redshift()) %>%
-  summarise(median(year_of_birth))
-
-tbl_lazy(person, con = simulate_redshift()) %>%
-  mutate(gender = case_when(
-    gender_concept_id == "8507" ~ "Male",
-    gender_concept_id == "8532" ~ "Female",
-    NA_character_)
-  )
-
-tbl_lazy(person, con = simulate_snowflake()) %>%
-  tally()
-
-tbl_lazy(person, con = simulate_snowflake()) %>%
-  summarise(median(year_of_birth))
-
-tbl_lazy(person, con = simulate_snowflake()) %>%
-  mutate(gender = case_when(
-    gender_concept_id == "8507" ~ "Male",
-    gender_concept_id == "8532" ~ "Female",
-    NA_character_)
-  )
-
-tbl_lazy(person, con = simulate_mysql()) %>%
-  tally()
-
-tbl_lazy(person, con = simulate_mysql()) %>%
-  summarise(median(year_of_birth))
-
-tbl_lazy(person, con = simulate_mysql()) %>%
-  mutate(gender = case_when(
-    gender_concept_id == "8507" ~ "Male",
-    gender_concept_id == "8532" ~ "Female",
-    NA_character_)
-  )
-```
+But that´s specific to duckdb, what would this look like for other database management systems? Below we can see what these queries would look like on postgres, redshift, and snowflake.
 
 ```{r}
-DBI::dbDisconnect(con, shutdown = TRUE)
+person<-cdm$person %>% collect()
+
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_postgres()) %>% 
+  tally()
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_postgres()) %>% 
+  summarise(median(year_of_birth))
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_postgres()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
+
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_redshift()) %>% 
+  tally()
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_redshift()) %>% 
+  summarise(median(year_of_birth))
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_redshift()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
+
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>% 
+  tally()
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>% 
+  summarise(median(year_of_birth))
+dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>% 
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+      ifelse(gender_concept_id == "8532", "Female", NA)
+    ))
 ```
 
+## Connection Examples
 
-# Connection Examples
-
-## Postgres
+### Postgres
 
 ```{r, eval=FALSE}
 con <- DBI::dbConnect(RPostgres::Postgres(),
@@ -246,7 +217,7 @@ cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
 DBI::dbDisconnect(con)
 ```
 
-## SQL Server
+### SQL Server
 
 Using odbc with SQL Server requires driver setup described [here](https://solutions.rstudio.com/db/r-packages/odbc/).
 
@@ -264,7 +235,7 @@ cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), select = tbl_group("voc
 DBI::dbDisconnect(con)
 ```
 
-## Redshift
+### Redshift
 
 This is almost identical to Postgres.
 
