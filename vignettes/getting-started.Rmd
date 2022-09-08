@@ -190,4 +190,5 @@ The `cdm_from_con` function should work with any DBI driver backend implementati
 
 -   [duckdb](https://duckdb.org/docs/api/r)
 
-    <div style="margin-bottom:3cm;"></div>
+    ::: {style="margin-bottom:3cm;"}
+    :::
