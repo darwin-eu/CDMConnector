@@ -11,9 +11,9 @@ output: md_document
 [![Lifecycle: experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![Codecov test coverage](https://codecov.io/gh/darwin-eu/CDMConnector/branch/main/graph/badge.svg)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
 [![R-CMD-check](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
 <!-- badges: end -->
 
-[![CRAN status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
 
 > Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP Common Data Model? 
 >
