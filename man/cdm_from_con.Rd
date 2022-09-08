@@ -2,13 +2,14 @@
 % Please edit documentation in R/cdm.R
 \name{cdm_from_con}
 \alias{cdm_from_con}
-\title{Create a CDM reference reference to a database connection}
+\title{Create a CDM reference object from a database connection}
 \usage{
 cdm_from_con(
   con,
   cdm_schema = NULL,
-  select = tbl_group("default"),
-  write_schema = NULL
+  cdm_tables = tbl_group("default"),
+  write_schema = NULL,
+  cohort_tables = NULL
 )
 }
 \arguments{
@@ -16,18 +17,21 @@ cdm_from_con(
 
 \item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults to NULL.}
 
-\item{select}{Which tables should be included?
+\item{cdm_tables}{Which tables should be included? Supports a character vector, tidyselect selection helpers, or table groups.
 \itemize{
-\item{"all"}{all CDM tables}
-\item{"vocab"}{the CDM vocabulary tables}
-\item{"clinical"}{the clinical CDM tables}
+\item{tbl_group("all")}{all CDM tables}
+\item{tbl_group("vocab")}{the CDM vocabulary tables}
+\item{tbl_group("clinical")}{the clinical CDM tables}
 }}
 
 \item{write_schema}{An optional schema in the CDM database that the user has write access to.}
+
+\item{cohort_tables}{A character vector listing the cohort table names to be included in the CDM object.
+Cohort tables must be in the write_schema.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables
 }
 \description{
-Create a CDM reference reference to a database connection
+Create a CDM reference object from a database connection
 }

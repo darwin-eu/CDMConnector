@@ -1,45 +1,57 @@
 
-#' Create a CDM reference reference to a database connection
+#' Create a CDM reference object from a database connection
 #'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 instance is located.
 #' @param cdm_schema The schema where the OMOP CDM tables are located. Defaults to NULL.
 #' @param write_schema An optional schema in the CDM database that the user has write access to.
-#' @param select Which tables should be included?
+#' @param cdm_tables Which tables should be included? Supports a character vector, tidyselect selection helpers, or table groups.
 #' \itemize{
-#'   \item{"all"}{all CDM tables}
-#'   \item{"vocab"}{the CDM vocabulary tables}
-#'   \item{"clinical"}{the clinical CDM tables}
+#'   \item{tbl_group("all")}{all CDM tables}
+#'   \item{tbl_group("vocab")}{the CDM vocabulary tables}
+#'   \item{tbl_group("clinical")}{the clinical CDM tables}
 #' }
+#' @param cohort_tables A character vector listing the cohort table names to be included in the CDM object.
+#' Cohort tables must be in the write_schema.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
-cdm_from_con <- function(con, cdm_schema = NULL, select = tbl_group("default"), write_schema = NULL) {
-
+cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default"), write_schema = NULL, cohort_tables = NULL) {
   checkmate::assert_class(con, "DBIConnection")
   checkmate::assert_true(DBI::dbIsValid(con))
   checkmate::assert_character(cdm_schema, null.ok = TRUE, min.len = 1, max.len = 2)
-  checkmate::assert_character(write_schema, null.ok = TRUE)
+  checkmate::assert_character(write_schema, null.ok = TRUE, min.len = 1, max.len = 2)
+  checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
 
-  cdm_tables <- select_cdm_tables(select)
+  cdm_tables <- select_cdm_tables(cdm_tables)
 
-  # TODO should this throw an error if the table does not exist?
-  if (is.null(cdm_schema)) {
+  if (dbms(con) == "duckdb") {
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")))
+  } else if (is.null(cdm_schema)) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, .))
   } else if (length(cdm_schema) == 1) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)))
   } else if (length(cdm_schema) == 2) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)))
   }
+  names(cdm) <- cdm_tables
 
-  cdm <- cdm %>%
-    magrittr::set_names(cdm_tables) %>%
-    magrittr::set_class("cdm_reference") %>%
-    assert_column_names()
+  if (!is.null(cohort_tables)) {
+    if (dbms(con) == "duckdb") {
+      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, paste(c(write_schema, .), collapse = ".")))
+    } else if (is.null(write_schema)) {
+      rlang::abort("write_schema not specified. Cohort tables must be in write_schema.")
+    } else if (length(write_schema) == 1) {
+      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, dbplyr::in_schema(write_schema, .)))
+    } else if (length(write_schema) == 2) {
+      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, dbplyr::in_catalog(write_schema[1], write_schema[2], .)))
+    }
+    names(ch) <- cohort_tables
+    cdm <- c(cdm, ch)
+  }
 
-  if(!is.null(write_schema)) verify_write_access(con, write_schema)
-
+  class(cdm) <- "cdm_reference"
   attr(cdm, "cdm_schema") <- cdm_schema
   attr(cdm, "write_schema") <- write_schema
-  attr(cdm, "con") <- con
+  attr(cdm, "dbcon") <- con
   cdm
 }
 
@@ -66,19 +78,28 @@ verify_write_access <- function(con, write_schema) {
   invisible(NULL)
 }
 
-assert_column_names <- function(cdm) {
-  # TODO how strict do we want to be here? Need to be clear on versioning.
-  # for (nm in names(cdm)) {
-  #   expected_columns <- cdm_fields %>% dplyr::filter(.data$cdmTableName == nm) %>% dplyr::pull(.data$cdmFieldName)
-  #   # require all expected columns are present but allow for additional columns
-  #   checkmate::assert_subset(expected_columns, colnames(cdm[[nm]]))
-  # }
+#' Check column names of tables in a cdm reference
+#'
+#' Throws an error if any column names are missing or don't match the v5.4 CDM spec.
+#'
+#' @param cdm A cdm reference object
+#'
+#' @export
+assert_cdm_column_names <- function(cdm) {
+  # TODO how strict do we want to be here? Need to be clear on CDM versioning.
+  for (nm in names(cdm)) {
+    # spec_cdm_field is a a global internal package dataframe created in extras/package_maintenece.R
+    expected_columns <- spec_cdm_field %>% dplyr::filter(.data$cdmTableName == nm) %>% dplyr::pull(.data$cdmFieldName)
+    # require all expected columns are present but allow for additional columns
+    checkmate::assert_subset(expected_columns, colnames(cdm[[nm]]))
+  }
   return(cdm)
 }
 
-select_cdm_tables <- function(select) {
-  data <- rlang::set_names(cdm_tables$cdmTableName, cdm_tables$cdmTableName)
-  expr <- rlang::enquo(select)
+select_cdm_tables <- function(cdm_tables) {
+  # spec_cdm_table is an internal package dataframe created in extras/package_maintenece.R
+  data <- rlang::set_names(spec_cdm_table$cdmTableName, spec_cdm_table$cdmTableName)
+  expr <- rlang::enquo(cdm_tables)
   i <- tidyselect::eval_select(expr, data = data)
   names(i)
 }
@@ -111,12 +132,12 @@ select_cdm_tables <- function(select) {
 #                       user = "postgres",
 #                       password = Sys.getenv("PASSWORD"))
 #'
-#' cdm <- cdm_from_con(con, select = tbl_group("vocab"))
+#' cdm <- cdm_from_con(con, cdm_tables = tbl_group("vocab"))
 #' }
 tbl_group <- function(group) {
-  # groups are defined in the internal package dataframe called cdm tables created by a script in the extras folder
+  # groups are defined in the internal package dataframe called spec_cdm_table created by a script in the extras folder
   checkmate::assert_subset(group, c("vocab", "clinical", "all", "default", "derived"))
-  purrr::map(group, ~cdm_tables[cdm_tables[[paste0("group_", .)]], ]$cdmTableName) %>% unlist() %>% unique()
+  purrr::map(group, ~spec_cdm_table[spec_cdm_table[[paste0("group_", .)]], ]$cdmTableName) %>% unlist() %>% unique()
 }
 
 #' Create a new Eunomia CDM
@@ -143,4 +164,157 @@ eunomia_dir <- function(exdir = tempdir()) {
   path <- file.path(exdir, "cdm.duckdb")
   if(!file.exists(path)) rlang::abort("Error creating Eunomia CDM")
   path
+}
+
+
+
+#' Get the database connection from a cdm object or remote table reference
+#'
+#' @param x A cdm_reference or tbl_sql object
+#'
+#' @return A DBI connection
+#' @export
+remote_con <- function(x) { UseMethod("remote_con") }
+
+#' @export
+remote_con.cdm_reference <- function(x) { attr(cdm, "dbcon") }
+
+#' @export
+remote_con.tbl_sql <- function(x) { dbplyr::remote_con(x) }
+
+
+#' Get the database management system (dbms) from a cdm_reference or DBI connection
+#'
+#' @param con A DBI connection or cdm_reference
+#'
+#' @return A character string representing the dbms that can be used with SqlRender
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' cdm <- cdm_from_con(con)
+#' dbms(cdm)
+#' dbms(con)
+#' }
+dbms <- function(con) { UseMethod("dbms") }
+
+dbms.cdm_reference <- function(con) {
+  dbms(attr(con, "dbcon"))
+}
+
+dbms.DBIConnection <- function(con) {
+  if(!is.null(attr(con, "dbms"))) return(attr(con, "dbms"))
+
+  switch (class(con),
+          'Microsoft SQL Server' = 'sql server',
+          'PqConnection' = 'postgresql',
+          'RedshiftConnection' = 'redshift',
+          'BigQueryConnection' = 'bigquery',
+          'SQLiteConnection' = 'sqlite',
+          'duckdb_connection' = 'duckdb'
+          # add mappings from various connection classes to dbms here
+  )
+}
+
+#' Collect a list of lazy queries and save the results as files
+#'
+#' @param cdm A cdm object
+#' @param path A folder to save the cdm object to
+#' @param format The file format to use: "parquet", "csv", "feather".
+#'
+#' @return Invisibly returns the cdm input
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
+#' stow(vocab, here::here("vocab_tables"))
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
+stow <- function(cdm, path, format = "parquet") {
+  checkmate::assert_class(cdm, "cdm_reference")
+  checkmate::assert_choice(format, c("parquet", "csv", "feather"))
+  path <- path.expand(path)
+  checkmate::assert_true(file.exists(path))
+
+  switch (format,
+    parquet = purrr::walk2(cdm, names(cdm), ~arrow::write_parquet(dplyr::collect(.x), file.path(path, paste0(.y, ".parquet")))),
+    csv = purrr::walk2(cdm, names(cdm), ~readr::write_csv(dplyr::collect(.x), file.path(path, paste0(.y, ".csv")))),
+    feather = purrr::walk2(cdm, names(cdm), ~arrow::write_feather(dplyr::collect(.x), file.path(path, paste0(.y, ".feather")))),
+  )
+  invisible(cdm)
+}
+
+#' Create a CDM reference from a folder containing parquet, csv, or feather files
+#'
+#' @param path A folder where an OMOP CDM v5.4 instance is located.
+#' @param cdm_schema The schema where the OMOP CDM tables are located. Defaults to NULL.
+#' @param write_schema An optional schema in the CDM database that the user has write access to.
+#' @param cdm_tables Which tables should be included? Supports tidyselect and custom selection groups.
+#' \itemize{
+#'   \item{tbl_group("all")}{all CDM tables}
+#'   \item{tbl_group("vocab")}{the CDM vocabulary tables}
+#'   \item{tbl_group("clinical")}{the clinical CDM tables}
+#' }
+#' @return A list of dplyr database table references pointing to CDM tables
+#' @export
+cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
+  checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
+  checkmate::assert_true(file.exists(path))
+
+  path <- path.expand(path)
+
+  files <- list.files(path, full.names = TRUE)
+
+  if (format == "auto") {
+    format <- unique(tools::file_ext(files))
+    if (length(format) > 1) rlang::abort(paste("Multiple file formats detected:", paste(format, collapse = ", ")))
+    checkmate::assert_choice(format, c("parquet", "csv", "feather"))
+  }
+
+  cdm_tables <- select_cdm_tables(cdm_tables)
+
+  cdm_table_files <- file.path(path, paste0(cdm_tables, ".", format))
+  purrr::walk(cdm_table_files, ~checkmate::assert_file_exists(., "r"))
+
+  cdm <- switch (format,
+    parquet = purrr::map(cdm_table_files, ~arrow::read_parquet(., as_data_frame = as_data_frame)),
+    csv = purrr::map(cdm_table_files, arrow::read_csv_arrow(., as_data_frame = as_data_frame)),
+    feather = purrr::map(cdm_table_files, arrow::read_feather(., as_data_frame = as_data_frame))
+  ) %>%
+  magrittr::set_names(cdm_tables) %>%
+  magrittr::set_class("cdm_reference")
+
+  attr(cdm, "cdm_schema") <- NULL
+  attr(cdm, "write_schema") <- NULL
+  attr(cdm, "dbcon") <- NULL
+  cdm
+}
+
+#' Bring a remote CDM reference into R
+#'
+#' This function calls collect on a list of lazy queries and returns
+#' the result as a list of dataframes.
+#'
+#' @param x A cdm_reference object.
+#' @param ... Not used. Included for compatibility.
+#'
+#' @return A cdm_reference object that is a list of R dataframes.
+#' @importFrom dplyr collect
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
+#' local_vocab <- collect(vocab)
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
+collect.cdm_reference <- function(x, ...) {
+  for (nm in names(x)) {
+    x[[nm]] <- dplyr::collect(x[[nm]])
+  }
+  x
 }

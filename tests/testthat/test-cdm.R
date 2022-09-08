@@ -47,6 +47,8 @@ test_that("cdm reference works on sql server", {
                         TrustServerCertificate="yes",
                         Port     = 1433)
 
+  expect_s3_class(listTables(con, schema = c("CDMV5", "dbo")), "character")
+
   cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), select = tbl_group("vocab"))
 
   expect_true("concept" %in% names(cdm))

@@ -1,5 +1,4 @@
 
-
 #' dbConnect arguments stored for later use
 #'
 #' @keywords internal
@@ -78,7 +77,3 @@ setMethod("dbConnect", "dbConnectDetails", function(drv) {
   l <- purrr::map(drv, rlang::eval_tidy)
   rlang::inject(DBI::dbConnect(!!!l))
 })
-
-
-
-

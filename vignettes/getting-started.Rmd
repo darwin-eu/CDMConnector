@@ -24,6 +24,7 @@ library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 cdm <- cdm_from_con(con)
 cdm
+remote_con(cdm)
 ```
 
 Individual CDM table references can be accessed using `$` and piped to dplyr verbs.
@@ -38,21 +39,33 @@ cdm$drug_exposure %>%
   count(drug = concept_name, sort = TRUE)
 ```
 
-To send SQL to the CDM use the connection object. The cdm reference also contains the connection as an attribute.
+To send SQL to the CDM use the connection object. The cdm reference also contains the connection as an attribute that can be accessed with the `dbcon` function.
 
 ```{r}
 DBI::dbGetQuery(con, "select count(*) as person_count from main.person")
-DBI::dbGetQuery(attr(cdm, "con"), "select count(*) as person_count from main.person")
+
+# get the connection from a cdm object using the dbcon accessor function
+DBI::dbGetQuery(remote_con(cdm), "select count(*) as person_count from main.person")
 ```
 
-# Subsetting the CDM
+To create SQL that can be executed across multiple database platorms the SqlRender package can be used.
+
+```{r, eval=FALSE}
+sql <- SqlRender::translate("select count(*) as person_count from main.person",
+                            targetDialect = dbms(con))
+DBI::dbGetQuery(con, sql)
+```
+
+# Select a subset of CDM tables
 
 If you do not need references to all tables you can easily select only a subset of tables to include in the cdm reference. The `select` argument of `cdm_from_con` supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
 
 ```{r}
-cdm_from_con(con, select = starts_with("concept"))
-cdm_from_con(con, select = contains("era"))
-cdm_from_con(con, select = tbl_group("vocab"))
+cdm_from_con(con, cdm_tables = starts_with("concept")) # tables that start with 'concept'
+cdm_from_con(con, cdm_tables = contains("era")) # tables that contain the substring 'era'
+cdm_from_con(con, cdm_tables = tbl_group("vocab")) # pre-defined groups
+cdm_from_con(con, cdm_tables = c("person", "observation_period")) # character vector
+cdm_from_con(con, cdm_tables = matches("person|period")) # regular expression
 ```
 
 `tbl_group` supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
@@ -63,13 +76,91 @@ The default set of CDM tables included in a CDM object is:
 tbl_group("default")
 ```
 
+# Include cohort tables
+
+It is common to use one or more cohort tables along with the CDM. A cohort table has the following structure and can be created by CDMConnector or SQL or another package.
+
+```{r, echo=FALSE}
+cohort <- tibble::tibble(cohort_id = 1L,
+                         subject_id = 1L:2L,
+                         cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
+                         cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
+
+invisible(DBI::dbExecute(con, "create schema write_schema;"))
+
+DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", table_name = "cohort"), cohort)
+
+```
+
+Creation of cohort tables is outside of the scope of the CDMConnector package. Cohort tables need to be a separate schema from the CDM tables where the user has both read and write access. Once the cohort table is created in the database it can be added to the cdm object as follows.
+
+```{r}
+listTables(con, schema = "write_schema")
+
+cdm <- cdm_from_con(con, 
+                    cdm_tables = c("person", "observation_period"), 
+                    write_schema = "write_schema",
+                    cohort_tables = "cohort") 
+
+cdm$cohort
+```
+
+# Extracting data
+
+There are two ways to extract subsets of the CDM.
+
+-   `collect` pulls data into R
+
+-   `stow` saves the cdm subset to a set of files on disk in either parquet, feather, or csv format
+
+```{r}
+local_cdm <- cdm %>% 
+  collect()
+
+# The cdm tables are now dataframes
+local_cdm$person[1:4, 1:4] 
+```
+
+```{r}
+save_path <- file.path(tempdir(), "tmp")
+dir.create(save_path)
+
+cdm %>% 
+  stow(path = save_path)
+
+list.files(save_path)
+```
+
+# Create a CDM reference from files
+
+`stow` saves the cdm object as a set of files. `cdm_from_files` read the files back into R as a cdm_reference object. The tables can be stored as R dataframes or Arrow Tables. In both cases cdm tables can be manipulated with `dplyr` verbs.
+
+```{r}
+cdm <- cdm_from_files(save_path, cdm_tables = c("cohort", "observation_period", "person"))
+
+class(cdm$cohort)
+
+cdm$cohort %>% 
+  tally() %>% 
+  pull(n)
+
+cdm <- cdm_from_files(save_path, 
+                      cdm_tables = c("cohort", "observation_period", "person"), 
+                      as_data_frame = FALSE)
+
+class(cdm$cohort)
+
+cdm$cohort %>% 
+  tally() %>% 
+  pull(n)
+```
+
 # Closing connections
 
 Close the database connection with `dbDisconnect`. After the connection is closed the cdm object can no longer be used.
 
 ```{r, error=TRUE}
 DBI::dbDisconnect(con, shutdown = TRUE)
-cdm$person
 ```
 
 # Delaying connections
@@ -90,3 +181,15 @@ self_contained_query <- function(connection_details) {
 
 self_contained_query(connection_details)
 ```
+
+# Supported DBI drivers
+
+The `cdm_from_con` function should work with any DBI driver backend implementation. However the package is tested using the following driver backends.
+
+-   [RPostgres](https://rpostgres.r-dbi.org/) for Postgres and Redshift
+
+-   [odbc](https://github.com/r-dbi/odbc) for Microsoft SQL Server
+
+-   [duckdb](https://duckdb.org/docs/api/r)
+
+    <div style="margin-bottom:3cm;"></div>

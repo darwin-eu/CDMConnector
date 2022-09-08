@@ -3,7 +3,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(DBI)
 
 self_contained_query <- function(connection_details, cdm_schema) {
-  con <- dbConnect(connection_details)
+  con <- DBI::dbConnect(connection_details)
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   DBI::dbGetQuery(con, paste0("select count(*) as n from ", cdm_schema, ".person"))
 }

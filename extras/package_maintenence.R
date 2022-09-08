@@ -43,7 +43,7 @@ derived_tables <- c("condition_era", "drug_era", "dose_era")
 
 
 
-cdm_tables <-  cdm_tables_src %>%
+spec_cdm_table <-  cdm_tables_src %>%
   select(1:4) %>%
   mutate(across(everything(), tolower)) %>%
   mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE)) %>%
@@ -55,15 +55,15 @@ cdm_tables <-  cdm_tables_src %>%
 
 
 
-cdm_fields <-  cdm_fields_src %>%
+spec_cdm_field <-  cdm_fields_src %>%
   select(1:4) %>%
   mutate(across(everything(), tolower)) %>%
   mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE))
 
 
-readr::write_csv(cdm_fields, file.path("inst", "csv", "OMOP_CDMv5.4_Field_Level.csv"))
-readr::write_csv(cdm_tables, file.path("inst", "csv", "OMOP_CDMv5.4_Table_Level.csv"))
+readr::write_csv(spec_cdm_field, file.path("inst", "csv", "OMOP_CDMv5.4_Field_Level.csv"))
+readr::write_csv(spec_cdm_table, file.path("inst", "csv", "OMOP_CDMv5.4_Table_Level.csv"))
 
-usethis::use_data(cdm_fields, cdm_tables, internal = TRUE, overwrite = TRUE)
+usethis::use_data(spec_cdm_field, spec_cdm_table, internal = TRUE, overwrite = TRUE)
 
 

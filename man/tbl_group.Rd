@@ -30,6 +30,6 @@ concept_ancestor, drug_strength
 \examples{
 \dontrun{
 
-cdm <- cdm_from_con(con, select = tbl_group("vocab"))
+cdm <- cdm_from_con(con, cdm_tables = tbl_group("vocab"))
 }
 }
