@@ -8,7 +8,6 @@ output: md_document
 # [CDMConnector](https://odyosg.github.io/CDMConnector/)
 
 <!-- badges: start -->
-[![Lifecycle: experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![Codecov test coverage](https://codecov.io/gh/darwin-eu/CDMConnector/branch/main/graph/badge.svg)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
 [![R-CMD-check](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml)
 [![CRAN status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
@@ -89,6 +88,15 @@ cdm$condition_era %>%
 ```{r, include=FALSE}
 DBI::dbDisconnect(con)
 ```
+
+## DBI Drivers
+
+CDMConnector is tested using the following DBI driver backends:
+
+- [RPostgres](https://rpostgres.r-dbi.org/reference/postgres) on Postgres and Redshift
+- [odbc](https://solutions.rstudio.com/db/r-packages/odbc/) on Microsoft SQL Server and [snowflake](https://community.snowflake.com/s/article/How-To-Connect-Snowflake-with-R-RStudio-using-RODBC-driver-on-Windows-MacOS-Linux)
+- [duckdb](https://duckdb.org/docs/api/r) 
+
 
 ## Getting help
 

@@ -4,15 +4,12 @@
 
 <!-- badges: start -->
 
-[![Lifecycle:
-experimental](https://lifecycle.r-lib.org/reference/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![Codecov test
 coverage](https://codecov.io/gh/darwin-eu/CDMConnector/branch/main/graph/badge.svg)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
 [![R-CMD-check](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
-
 [![CRAN
 status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
+<!-- badges: end -->
 
 > Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
 > Common Data Model?
@@ -89,7 +86,7 @@ Use dplyr verbs with the table references.
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpBYJkWX/cdm.duckdb]
+    ## # Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp8sQffe/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -101,7 +98,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpBYJkWX/cdm.duckdb]
+    ## # Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp8sQffe/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -117,6 +114,17 @@ Compose operations with the pipe.
     ## 10 Acute bacterial sinusitis                  939
     ## # … with more rows
     ## # ℹ Use `print(n = ...)` to see more rows
+
+## DBI Drivers
+
+CDMConnector is tested using the following DBI driver backends:
+
+-   [RPostgres](https://rpostgres.r-dbi.org/reference/postgres) on
+    Postgres and Redshift
+-   [odbc](https://solutions.rstudio.com/db/r-packages/odbc/) on
+    Microsoft SQL Server and
+    [snowflake](https://community.snowflake.com/s/article/How-To-Connect-Snowflake-with-R-RStudio-using-RODBC-driver-on-Windows-MacOS-Linux)
+-   [duckdb](https://duckdb.org/docs/api/r)
 
 ## Getting help
 
