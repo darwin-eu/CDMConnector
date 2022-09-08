@@ -35,7 +35,7 @@ test_that("dbConnectDetails works on postgres", {
 })
 
 
-test_that("cdm reference works on sql server", {
+test_that("dbConnectDetails works on sql server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
 
   details <- dbConnectDetails(odbc::odbc(),
@@ -52,7 +52,7 @@ test_that("cdm reference works on sql server", {
   expect_true("n" %in% names(result))
 })
 
-test_that("cdm reference works on sql server", {
+test_that("dbConnectDetails works on sql server", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
 
   details <- dbConnectDetails(RPostgres::Redshift(),
@@ -68,7 +68,7 @@ test_that("cdm reference works on sql server", {
 })
 
 
-test_that("cdm reference works on duckdb", {
+test_that("dbConnectDetails works on duckdb", {
 
   details <- dbConnectDetails(duckdb::duckdb(), dbdir = eunomia_dir())
 

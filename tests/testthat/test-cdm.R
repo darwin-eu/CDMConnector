@@ -9,14 +9,15 @@ test_that("cdm reference works locally", {
                         user = Sys.getenv("LOCAL_POSTGRESQL_USER"),
                         password = Sys.getenv("LOCAL_POSTGRESQL_PASSWORD"))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"), select = tbl_group("vocab"))
+  expect_true(is.character(listTables(con, schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"))))
+
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
   DBI::dbDisconnect(con)
 })
-
 
 test_that("cdm reference works on postgres", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
@@ -26,7 +27,9 @@ test_that("cdm reference works on postgres", {
                         user = Sys.getenv("CDM5_POSTGRESQL_USER"),
                         password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), select = tbl_group("vocab"))
+  expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))))
+
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
@@ -44,12 +47,13 @@ test_that("cdm reference works on sql server", {
                         Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
                         UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
                         PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                        TrustServerCertificate="yes",
+                        TrustServerCertificate = "yes",
                         Port     = 1433)
 
-  expect_s3_class(listTables(con, schema = c("CDMV5", "dbo")), "character")
+  expect_true(is.character(listTables(con, schema = c("CDMV5", "dbo"))))
+  expect_true(is.character(listTables(con, schema = c("dbo"))))
 
-  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), select = tbl_group("vocab"))
+  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = tbl_group("vocab"))
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
@@ -57,7 +61,7 @@ test_that("cdm reference works on sql server", {
   DBI::dbDisconnect(con)
 })
 
-test_that("cdm reference works on sql server", {
+test_that("cdm reference works on redshift", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
 
   con <- DBI::dbConnect(RPostgres::Redshift(),
@@ -67,7 +71,9 @@ test_that("cdm reference works on sql server", {
                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), select = tbl_group("vocab"))
+  expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))))
+
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
@@ -79,7 +85,10 @@ test_that("cdm reference works on sql server", {
 test_that("cdm reference works on duckdb", {
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, select = tbl_group("vocab"))
+
+  expect_true(is.character(listTables(con)))
+
+  cdm <- cdm_from_con(con, cdm_tables = tbl_group("vocab"))
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
