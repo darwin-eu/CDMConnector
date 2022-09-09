@@ -22,7 +22,9 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   checkmate::assert_character(write_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
 
-  cdm_tables <- select_cdm_tables(cdm_tables)
+  # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
+  all_cdm_tables <- rlang::set_names(spec_cdm_table$cdmTableName, spec_cdm_table$cdmTableName)
+  cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
 
   if (dbms(con) == "duckdb") {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")))
@@ -84,14 +86,6 @@ verify_write_access <- function(con, write_schema) {
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
   if(!dplyr::all_equal(spec_cdm_table[1:4,], to_compare)) rlang::abort(paste("Write access to schema", write_schema, "could not be verified."))
   invisible(NULL)
-}
-
-select_cdm_tables <- function(cdm_tables) {
-  # spec_cdm_table is an internal package dataframe created in extras/package_maintenece.R
-  data <- rlang::set_names(spec_cdm_table$cdmTableName, spec_cdm_table$cdmTableName)
-  expr <- rlang::enquo(cdm_tables)
-  i <- tidyselect::eval_select(expr, data = data)
-  names(i)
 }
 
 #' CDM table selection helper
@@ -205,7 +199,7 @@ dbms.DBIConnection <- function(con) {
 #' @examples
 #' \dontrun{
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
+#' vocab <- cdm_from_con(con, cdm_tables = all_of(c("concept", "concept_ancestor")))
 #' stow(vocab, here::here("vocab_tables"))
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
@@ -245,7 +239,9 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
     checkmate::assert_choice(format, c("parquet", "csv", "feather"))
   }
 
-  cdm_tables <- select_cdm_tables(cdm_tables)
+  # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
+  all_cdm_tables <- rlang::set_names(spec_cdm_table$cdmTableName, spec_cdm_table$cdmTableName)
+  cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
 
   cdm_table_files <- file.path(path, paste0(cdm_tables, ".", format))
   purrr::walk(cdm_table_files, function(.) checkmate::assert_file_exists(., "r"))
@@ -279,7 +275,7 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
 #' @examples
 #' \dontrun{
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
+#' vocab <- cdm_from_con(con, cdm_tables = all_of(c("concept", "concept_ancestor")))
 #' local_vocab <- collect(vocab)
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }

@@ -15,7 +15,9 @@ knitr::opts_chunk$set(
 ```
 
 ## Set up
-First let´s load the required packages for the code in this vignette. If you haven´t already installed them, all the other packages can be installed using ´install.packages()´ 
+
+First let's load the required packages for the code in this vignette. If you haven't already installed them, all the other packages can be installed using ´install.packages()´ 
+
 ```{r, message=FALSE, warning=FALSE}
 library(CDMConnector)
 library(dplyr)
@@ -23,11 +25,12 @@ library(ggplot2)
 ```
 
 ## Creating the cdm reference
+
 Now let´s connect to a duckdb database with the Eunomia data (https://github.com/OHDSI/Eunomia).
 
 ```{r, message=FALSE, warning=FALSE}
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con)
+cdm <- cdm_from_con(con, cdm_schema = "main")
 cdm
 ```
 
@@ -49,15 +52,18 @@ And so on, with the cdm object behaving like a named list of tables.
 
 
 ## Using familiar Dplyr verbs
+
 With our data left in the database, we can still use some of what may well be familiar dplyr verbs (https://dplyr.tidyverse.org/articles/dplyr.html) using the dbplyr backend (https://dbplyr.tidyverse.org/), which converts familiar dplyr code into SQL.
 
 So we can use `summarise` to get the median year of birth in the person table.
+
 ```{r, warning=FALSE}
 cdm$person %>% 
   summarise(median(year_of_birth)) 
 ```
 
 We can use mutate to create a flag of "Male"/ "Female" based on the gender_concept_id in the person table.
+
 ```{r, warning=FALSE}
 cdm$person %>%
     mutate(gender = ifelse(gender_concept_id == "8507", "Male",
@@ -68,12 +74,14 @@ cdm$person %>%
 ```
 
 The filter command lets us subset the condition occurrence table to only those records with a specific condition_concept_id. In this case, 317009 is a standard code for asthma (https://athena.ohdsi.org/search-terms/terms/317009)
+
 ```{r, warning=FALSE}
 cdm$condition_occurrence %>%
   filter(condition_concept_id == 317009) 
 ```
   
 And we can can also use joins to merge tables of interest, such as a `left_join` between the person and observation_period tables.
+
 ```{r}
 cdm$person  %>%
   select(person_id , gender_concept_id, year_of_birth) %>% 
@@ -93,16 +101,18 @@ cdm$person %>% slice(1:5)
 This is an example of a verb that would only work if we had the data in memory.
 
 ## Compute and collect
+
 We can split multiple queries by running `compute` (to store information in temporary tables). For example, we can first find occurrences of asthma.
 
-```{r }
+```{r}
 asthma_occurrences <- cdm$condition_occurrence %>%
   filter(condition_concept_id == 317009) 
+
 asthma_occurrences
 ```
 
 And then run multiple queries against the result
-```{r }
+```{r}
 # count of rows
 asthma_occurrences %>%
   tally()
@@ -115,6 +125,7 @@ asthma_occurrences %>%
 ```
 
 We can split also bring the results into memory in R with `collect`
+
 ```{r }
 asthma_occurrences<-cdm$condition_occurrence %>%
   filter(condition_concept_id == 317009) %>% 
@@ -126,7 +137,9 @@ str(asthma_occurrences)
 
 
 ## Putting it all together
+
 Say we want to make a histogram of year of birth in the person table. We can select that variable, bring it into memory, and then use ggplot to make the histogram.
+
 ```{r, message=FALSE}
 cdm$person %>% 
   select(year_of_birth) %>%
@@ -202,53 +215,5 @@ dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>%
     ))
 ```
 
-## Connection Examples
-
-### Postgres
-
-```{r, eval=FALSE}
-con <- DBI::dbConnect(RPostgres::Postgres(),
-                      dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
-                      host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
-                      user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-                      password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
-
-cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), select = tbl_group("vocab"))
-DBI::dbDisconnect(con)
-```
-
-### SQL Server
-
-Using odbc with SQL Server requires driver setup described [here](https://solutions.rstudio.com/db/r-packages/odbc/).
-
-```{r, eval=FALSE}
-con <- DBI::dbConnect(odbc::odbc(),
-                      Driver   = "ODBC Driver 18 for SQL Server",
-                      Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
-                      Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
-                      UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                      PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                      TrustServerCertificate="yes",
-                      Port     = 1433)
-
-cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), select = tbl_group("vocab"))
-DBI::dbDisconnect(con)
-```
-
-### Redshift
-
-This is almost identical to Postgres.
-
-```{r, eval=FALSE}
-con <- DBI::dbConnect(RPostgres::Redshift(),
-                      dbname   = Sys.getenv("CDM5_REDSHIFT_DBNAME"),
-                      host     = Sys.getenv("CDM5_REDSHIFT_HOST"),
-                      port     = Sys.getenv("CDM5_REDSHIFT_PORT"),
-                      user     = Sys.getenv("CDM5_REDSHIFT_USER"),
-                      password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
-
-cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), select = tbl_group("vocab"))
-DBI::dbDisconnect(con)
-```
 
 <div style="margin-bottom:3cm;"></div>

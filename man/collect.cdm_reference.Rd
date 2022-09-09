@@ -21,7 +21,7 @@ the result as a list of dataframes.
 \examples{
 \dontrun{
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
+vocab <- cdm_from_con(con, cdm_tables = all_of(c("concept", "concept_ancestor")))
 local_vocab <- collect(vocab)
 DBI::dbDisconnect(con, shutdown = TRUE)
 }

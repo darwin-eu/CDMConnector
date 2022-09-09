@@ -1,0 +1,109 @@
+---
+title: "Using SQL on an OMOP CDM from R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{sing SQL on an OMOP CDM from R"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+It is common to send SQL to an OMOP CDM database from R. This vignette describes one process for including SQL in your analytic package or study.
+
+```{r setup}
+library(CDMConnector)
+```
+
+
+If your study needs to run across multiple database platforms then you will need a way to translate SQL into the different dialects used by each database. The `SqlRender` package provides this functionality. Start by creating an R function that includes the SQL you want to run and takes a database connection as the first argument. Additional query parameters should be added as detail arguments after the first one.
+
+```{r}
+count_drug_records <- function(con, cdm_schema, ingredient_concept_id) {
+  
+  # Write the SQL in an R function replacing the parameters
+  sql <- glue::glue("
+    select count(*) as drug_count 
+    from {cdm_schema}.drug_exposure de
+    inner join {cdm_schema}.concept_ancestor ca
+    on de.drug_concept_id = ca.descendant_concept_id
+    where ca.ancestor_concept_id = {ingredient_concept_id}")
+  
+  # Translate the sql to the correct dialect
+  sql <- SqlRender::translate(sql, targetDialect = dbms(con))
+  
+  # Execute the SQL and return the result
+  DBI::dbGetQuery(con, sql)
+}
+```
+
+
+
+```{r, eval=FALSE}
+library(DBI)
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      dbname = "cdm",
+                      host = "localhost",
+                      user = "postgres",
+                      password = Sys.getenv("password"))
+
+count_drug_records(con, cdm_schema = "synthea1k", ingredient_concept_id = 923672)
+```
+
+```{r, echo=FALSE}
+dplyr::tibble(drug_count = 11)
+```
+
+The CDMConnector package has a function `dbms` that will return the correct dialect for a connection.
+
+```{r, eval=FALSE}
+dbms(con)
+```
+
+```{r, echo=FALSE}
+print(c("postgresql"))
+```
+
+`SQLRender` also includes a function called `render` to insert values into parameterized SQL.
+
+```{r, eval=FALSE}
+count_drug_records <- function(con, cdm_schema, ingredient_concept_id) {
+  
+  # Write the SQL in an R function replacing the parameters
+  sql <- SqlRender::render("
+    select count(*) as drug_count 
+    from @cdm_schema.drug_exposure de
+    inner join @cdm_schema.concept_ancestor ca
+    on de.drug_concept_id = ca.descendant_concept_id
+    where ca.ancestor_concept_id = @ingredient_concept_id",
+    cdm_schema = cdm_schema, 
+    ingredient_concept_id = ingredient_concept_id)
+  
+  # Translate the sql to the correct dialect
+  sql <- SqlRender::translate(sql, targetDialect = dbms(con))
+  
+  # Execute the SQL and return the result
+  DBI::dbGetQuery(con, sql)
+}
+
+count_drug_records(con, cdm_schema = "synthea1k", ingredient_concept_id = 923672)
+```
+
+```{r, echo=FALSE}
+dplyr::tibble(drug_count = 11)
+```
+
+
+`SqlRender` translates a particular dialect of SQL known as OHDSI-SQL to various supported database platforms. OHDSI-SQL is loosely defined as a subset of Microsoft T-SQL used by SQL Server. It also has branching logic and parameterization added to it. 
+
+More details about using SqlRender to run SQL across multiple database platforms can be found in the "SQL and R" chapter of the ["The Book of OHDSI"](https://ohdsi.github.io/TheBookOfOhdsi/SqlAndR.html).
+
+The [OHDSI Query Library](https://data.ohdsi.org/QueryLibrary/) contains example SQL queries for the OMOP CDM.
+
+<div style="margin-bottom:3cm;"></div>

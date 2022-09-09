@@ -146,7 +146,7 @@ test_that("inclusion of cohort tables", {
   expect_equal(listTables(con, schema = "write_schema"), "cohort")
 
   cdm <- cdm_from_con(con,
-                      cdm_tables = c("person", "observation_period"),
+                      cdm_tables = all_of(c("person", "observation_period")),
                       write_schema = "write_schema",
                       cohort_tables = "cohort")
 
@@ -180,11 +180,25 @@ test_that("stow and cdm_from_files works", {
   dir.create(save_path)
   cdm_tables <- c("person", "observation_period")
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_tables = cdm_tables)
+
+  # Test tidyselect in cdm_from_con. Should not produce message about ambiguous names.
+  expect_message(cdm_from_con(con, cdm_tables = tbl_group("vocab")), NA)
+  expect_message(cdm_from_con(con, cdm_tables = matches("person|observation_period")), NA)
+  expect_message(cdm_from_con(con, cdm_tables = c(person, observation_period)), NA)
+  expect_message(cdm_from_con(con, cdm_tables = c("person", "observation_period")), NA)
+  expect_message(cdm_from_con(con, cdm_tables = all_of(cdm_tables)), NA)
+
+  cdm <- cdm_from_con(con, cdm_tables = all_of(cdm_tables))
 
   stow(cdm, path = save_path)
 
   expect_equal(list.files(save_path), c("observation_period.parquet" ,"person.parquet"))
+
+  # test tidyselect in cdm_from_files. Should not produce message about ambiguous names.
+  expect_message(cdm_from_files(save_path, cdm_tables = matches("person|observation_period")), NA)
+  expect_message(cdm_from_files(save_path, cdm_tables = c(person, observation_period)), NA)
+  expect_message(cdm_from_files(save_path, cdm_tables = c("person", "observation_period")), NA)
+  expect_message(cdm_from_files(save_path, cdm_tables = all_of(cdm_tables)), NA)
 
   local_cdm <- cdm_from_files(save_path, cdm_tables = all_of(cdm_tables))
   expect_s3_class(local_cdm, "cdm_reference")
@@ -196,4 +210,5 @@ test_that("stow and cdm_from_files works", {
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
+
 

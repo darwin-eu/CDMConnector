@@ -13,7 +13,16 @@
     <loc>/articles/CDMConnector_and_dbplyr.html</loc>
   </url>
   <url>
+    <loc>/articles/DBI_connection_examples.html</loc>
+  </url>
+  <url>
     <loc>/articles/Introduction.html</loc>
+  </url>
+  <url>
+    <loc>/articles/SQL.html</loc>
+  </url>
+  <url>
+    <loc>/articles/cdm_reference_backends.html</loc>
   </url>
   <url>
     <loc>/articles/getting-started.html</loc>

@@ -22,7 +22,8 @@ The main function provided by the package is `cdm_from_con` which creates a CDM 
 library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con)
+cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm
 ```
 
 Individual CDM table references can be accessed using `$` and piped to dplyr verbs.
@@ -46,7 +47,7 @@ DBI::dbGetQuery(con, "select count(*) as person_count from main.person")
 DBI::dbGetQuery(dbplyr::remote_con(cdm$person), "select count(*) as person_count from main.person")
 ```
 
-To create SQL that can be executed across multiple database platorms the SqlRender package can be used.
+To create SQL that can be executed across multiple database platforms the SqlRender package can be used.
 
 ```{r, eval=FALSE}
 sql <- SqlRender::translate("select count(*) as person_count from main.person",
@@ -62,8 +63,13 @@ If you do not need references to all tables you can easily select only a subset 
 cdm_from_con(con, cdm_tables = starts_with("concept")) # tables that start with 'concept'
 cdm_from_con(con, cdm_tables = contains("era")) # tables that contain the substring 'era'
 cdm_from_con(con, cdm_tables = tbl_group("vocab")) # pre-defined groups
-cdm_from_con(con, cdm_tables = all_of(c("person", "observation_period"))) # character vector
+cdm_from_con(con, cdm_tables = c("person", "observation_period")) # character vector
+cdm_from_con(con, cdm_tables = c(person, observation_period)) # bare names
 cdm_from_con(con, cdm_tables = matches("person|period")) # regular expression
+
+# If you are using a variable to hold selections then use the `all_of` selection helper
+tables_to_include <- c("person", "observation_period")
+cdm_from_con(con, cdm_tables = all_of(tables_to_include))
 ```
 
 `tbl_group` supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
@@ -96,7 +102,7 @@ Creation of cohort tables is outside of the scope of the CDMConnector package. C
 listTables(con, schema = "write_schema")
 
 cdm <- cdm_from_con(con, 
-                    cdm_tables = all_of(c("person", "observation_period")), 
+                    cdm_tables = c("person", "observation_period"), 
                     write_schema = "write_schema",
                     cohort_tables = "cohort") 
 
@@ -143,7 +149,7 @@ cdm$cohort %>%
   pull(n)
 
 cdm <- cdm_from_files(save_path, 
-                      cdm_tables = all_of(c("cohort", "observation_period", "person")), 
+                      cdm_tables = c("cohort", "observation_period", "person"), 
                       as_data_frame = FALSE)
 
 class(cdm$cohort)
