@@ -35,6 +35,7 @@ Suggests:
     RPostgres,
     odbc,
     ggplot2,
+    SqlRender,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
