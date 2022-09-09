@@ -79,10 +79,10 @@ tbl_group("default")
 It is common to use one or more cohort tables along with the CDM. A cohort table has the following structure and can be created by CDMConnector or SQL or another package.
 
 ```{r, echo=FALSE}
-cohort <- tibble::tibble(cohort_id = 1L,
-                         subject_id = 1L:2L,
-                         cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
-                         cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
+cohort <- tibble(cohort_id = 1L,
+                 subject_id = 1L:2L,
+                 cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
+                 cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
 
 invisible(DBI::dbExecute(con, "create schema write_schema;"))
 

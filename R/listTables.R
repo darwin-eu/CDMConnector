@@ -8,6 +8,7 @@
 #'
 #' @return A character vector of table names
 #' @export
+#' @importFrom rlang .data
 #'
 #' @examples
 #' \dontrun{
@@ -19,14 +20,14 @@ listTables <- function(con, schema = NULL) {
   if (is.null(schema)) return(DBI::dbListTables(con))
 
   if (is(con, "PqConnection") || is(con, "RedshiftConnection")) {
-    glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con) %>%
-      DBI::dbGetQuery(con, .) %>%
-      dplyr::pull(table_name)
+    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
+    DBI::dbGetQuery(con, sql) %>%
+      dplyr::pull(.data$table_name)
 
   } else if (is(con, "duckdb_connection")) {
-    glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con) %>%
-      DBI::dbGetQuery(con, .) %>%
-      dplyr::pull(table_name)
+    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
+    DBI::dbGetQuery(con, sql) %>%
+      dplyr::pull(.data$table_name)
 
   } else if (is(con, "Microsoft SQL Server")) {
     if (length(schema) == 1) {

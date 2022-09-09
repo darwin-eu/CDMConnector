@@ -66,7 +66,7 @@ test_that("cdm reference works on sql server", {
   expect_null(verify_write_access(con, write_schema = c("tempdb.dbo")))
   expect_null(verify_write_access(con, write_schema = c("tempdb", "dbo")))
 
-  cohort <- tibble::tibble(cohort_id = 1L,
+  cohort <- dplyr::tibble(cohort_id = 1L,
                            subject_id = 1L:2L,
                            cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
                            cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
@@ -132,10 +132,10 @@ test_that("cdm reference works on duckdb", {
 test_that("inclusion of cohort tables", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
-  cohort <- tibble::tibble(cohort_id = 1L,
-                           subject_id = 1L:2L,
-                           cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
-                           cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
+  cohort <- dplyr::tibble(cohort_id = 1L,
+                          subject_id = 1L:2L,
+                          cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
+                          cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
 
   DBI::dbExecute(con, "create schema write_schema;")
 

@@ -14,16 +14,11 @@ cdm_from_files(
 \arguments{
 \item{path}{A folder where an OMOP CDM v5.4 instance is located.}
 
-\item{cdm_tables}{Which tables should be included? Supports tidyselect and custom selection groups.
-\itemize{
-\item{tbl_group("all")}{all CDM tables}
-\item{tbl_group("vocab")}{the CDM vocabulary tables}
-\item{tbl_group("clinical")}{the clinical CDM tables}
-}}
+\item{cdm_tables}{Which tables should be included? Supports tidyselect and custom selection groups.}
 
-\item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults to NULL.}
+\item{format}{What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".}
 
-\item{write_schema}{An optional schema in the CDM database that the user has write access to.}
+\item{as_data_frame}{TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

@@ -23,6 +23,9 @@ Imports:
     purrr,
     rlang,
     tidyselect,
+    readr,
+    glue,
+    arrow,
     methods
 Suggests: 
     covr,

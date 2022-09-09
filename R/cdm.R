@@ -226,14 +226,9 @@ stow <- function(cdm, path, format = "parquet") {
 #' Create a CDM reference from a folder containing parquet, csv, or feather files
 #'
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
-#' @param cdm_schema The schema where the OMOP CDM tables are located. Defaults to NULL.
-#' @param write_schema An optional schema in the CDM database that the user has write access to.
 #' @param cdm_tables Which tables should be included? Supports tidyselect and custom selection groups.
-#' \itemize{
-#'   \item{tbl_group("all")}{all CDM tables}
-#'   \item{tbl_group("vocab")}{the CDM vocabulary tables}
-#'   \item{tbl_group("clinical")}{the clinical CDM tables}
-#' }
+#' @param format What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".
+#' @param as_data_frame TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
 cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
@@ -253,12 +248,12 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
   cdm_tables <- select_cdm_tables(cdm_tables)
 
   cdm_table_files <- file.path(path, paste0(cdm_tables, ".", format))
-  purrr::walk(cdm_table_files, ~checkmate::assert_file_exists(., "r"))
+  purrr::walk(cdm_table_files, function(.) checkmate::assert_file_exists(., "r"))
 
   cdm <- switch (format,
-    parquet = purrr::map(cdm_table_files, ~arrow::read_parquet(., as_data_frame = as_data_frame)),
-    csv = purrr::map(cdm_table_files, arrow::read_csv_arrow(., as_data_frame = as_data_frame)),
-    feather = purrr::map(cdm_table_files, arrow::read_feather(., as_data_frame = as_data_frame))
+    parquet = purrr::map(cdm_table_files, function(.) arrow::read_parquet(., as_data_frame = as_data_frame)),
+    csv = purrr::map(cdm_table_files, function(.) arrow::read_csv_arrow(., as_data_frame = as_data_frame)),
+    feather = purrr::map(cdm_table_files, function(.) arrow::read_feather(., as_data_frame = as_data_frame))
   ) %>%
   magrittr::set_names(cdm_tables) %>%
   magrittr::set_class("cdm_reference")

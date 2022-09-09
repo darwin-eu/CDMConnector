@@ -10,3 +10,4 @@
 ^README.Rmd$
 scratch/*
 
+^cran-comments\.md$
