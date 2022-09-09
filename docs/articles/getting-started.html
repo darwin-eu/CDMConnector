@@ -50,7 +50,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/CDMConnector_and_dbplyr.html">CDMConnector and dbplyr</a>
+      <a href="../articles/CDMConnector_and_Dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
       <a href="../articles/getting-started.html">Getting Started</a>
@@ -100,7 +100,7 @@ and piped to dplyr verbs.</p>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [1 x 1]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpsDwDrf/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpqR5d59/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt;       n</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  <span style="text-decoration: underline;">2</span>694</span></span>
@@ -109,7 +109,7 @@ and piped to dplyr verbs.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drug_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span>drug <span class="op">=</span> <span class="va">concept_name</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:     SQL [?? x 2]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpsDwDrf/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpqR5d59/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Ordered by: desc(n)</span></span></span>
 <span><span class="co">#&gt;    drug                                                                        n</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -133,8 +133,8 @@ the <code>dbcon</code> function.</p>
 <span><span class="co">#&gt;   person_count</span></span>
 <span><span class="co">#&gt; 1         2694</span></span>
 <span></span>
-<span><span class="co"># get the connection from a cdm object using the dbcon accessor function</span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="fu"><a href="../reference/remote_con.html">remote_con</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>, <span class="st">"select count(*) as person_count from main.person"</span><span class="op">)</span></span>
+<span><span class="co"># get the connection from a cdm object using the function `remote_con` from dbplyr</span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/remote_name.html" class="external-link">remote_con</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span><span class="op">)</span>, <span class="st">"select count(*) as person_count from main.person"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   person_count</span></span>
 <span><span class="co">#&gt; 1         2694</span></span></code></pre></div>
 <p>To create SQL that can be executed across multiple database platorms
@@ -154,23 +154,23 @@ selection language</a> and provides a new selection helper:
 <code>tbl_group</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"concept"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that start with 'concept'</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: concept, concept_class, concept_relationship, concept_synonym, concept_ancestor</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"era"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that contain the substring 'era'</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: drug_era, dose_era, condition_era</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="fu"><a href="../reference/tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"vocab"</span><span class="op">)</span><span class="op">)</span> <span class="co"># pre-defined groups</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span>
-<span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span><span class="op">)</span> <span class="co"># character vector</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference</span></span></span>
+<span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="co"># character vector</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: person, observation_period</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">"person|period"</span><span class="op">)</span><span class="op">)</span> <span class="co"># regular expression</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: person, observation_period, payer_plan_period</span></span></code></pre></div>
 <p><code>tbl_group</code> supports several subsets of the CDM: “all”,
@@ -205,13 +205,13 @@ follows.</p>
 <span><span class="co">#&gt; [1] "cohort"</span></span>
 <span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
-<span>                    cdm_tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span>, </span>
+<span>                    cdm_tables <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>                    write_schema <span class="op">=</span> <span class="st">"write_schema"</span>,</span>
 <span>                    cohort_tables <span class="op">=</span> <span class="st">"cohort"</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;write_schema.cohort&gt; [2 x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpsDwDrf/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpqR5d59/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt;   cohort_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         1          1 2022-09-08        2022-09-08     </span></span>
@@ -270,7 +270,7 @@ Tables. In both cases cdm tables can be manipulated with
 <span><span class="co">#&gt; [1] 2</span></span>
 <span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_files.html">cdm_from_files</a></span><span class="op">(</span><span class="va">save_path</span>, </span>
-<span>                      cdm_tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cohort"</span>, <span class="st">"observation_period"</span>, <span class="st">"person"</span><span class="op">)</span>, </span>
+<span>                      cdm_tables <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cohort"</span>, <span class="st">"observation_period"</span>, <span class="st">"person"</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>                      as_data_frame <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>

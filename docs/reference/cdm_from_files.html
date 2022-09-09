@@ -32,7 +32,7 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/CDMConnector_and_dbplyr.html">CDMConnector and dbplyr</a>
+      <a href="../articles/CDMConnector_and_Dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
       <a href="../articles/getting-started.html">Getting Started</a>
@@ -72,18 +72,15 @@
 
 
 <dt>cdm_tables</dt>
-<dd><p>Which tables should be included? Supports tidyselect and custom selection groups.</p><ul><li><p>tbl_group("all")all CDM tables</p></li>
-<li><p>tbl_group("vocab")the CDM vocabulary tables</p></li>
-<li><p>tbl_group("clinical")the clinical CDM tables</p></li>
-</ul></dd>
+<dd><p>Which tables should be included? Supports tidyselect and custom selection groups.</p></dd>
 
 
-<dt>cdm_schema</dt>
-<dd><p>The schema where the OMOP CDM tables are located. Defaults to NULL.</p></dd>
+<dt>format</dt>
+<dd><p>What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".</p></dd>
 
 
-<dt>write_schema</dt>
-<dd><p>An optional schema in the CDM database that the user has write access to.</p></dd>
+<dt>as_data_frame</dt>
+<dd><p>TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.</p></dd>
 
 </dl></div>
     <div id="value">
