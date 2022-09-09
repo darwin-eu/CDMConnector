@@ -13,6 +13,7 @@
 #' @param cohort_tables A character vector listing the cohort table names to be included in the CDM object.
 #' Cohort tables must be in the write_schema.
 #' @return A list of dplyr database table references pointing to CDM tables
+#' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
 cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default"), write_schema = NULL, cohort_tables = NULL) {
   checkmate::assert_class(con, "DBIConnection")
@@ -33,6 +34,8 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)))
   }
   names(cdm) <- cdm_tables
+
+  if (!is.null(write_schema)) verify_write_access(con, write_schema = write_schema)
 
   if (!is.null(cohort_tables)) {
     if (dbms(con) == "duckdb") {
@@ -63,37 +66,24 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
 #' @return Invisibly returns the input
 #' @export
 print.cdm_reference <- function(x, ...) {
-  cli::cat_line(pillar::style_subtle("# OMOP CDM reference"))
+
+  type <- class(x[[1]])[[1]]
+  cli::cat_line(pillar::style_subtle(glue::glue("# OMOP CDM reference ({type})")))
   cli::cat_line("")
   cli::cat_line(paste("Tables:", paste(names(x), collapse = ", ")))
   invisible(x)
 }
 
 verify_write_access <- function(con, write_schema) {
-  tablename <- paste(write_schema, paste(c(sample(letters, 10, replace = TRUE), "_cdm_tables"), collapse = ""), sep = ".")
-  DBI::dbWriteTable(con, DBI::SQL(tablename), cdm_tables)
+  write_schema <- paste(write_schema, collapse = ".")
+  tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
+  tablename <- paste(write_schema, tablename, sep = ".")
+  # spec_cdm_table is a global internal package dataframe
+  DBI::dbWriteTable(con, DBI::SQL(tablename), spec_cdm_table[1:4,])
   to_compare <- DBI::dbReadTable(con, DBI::SQL(tablename))
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
-  if(!dplyr::all_equal(cdm_tables, to_compare)) rlang::abort(paste("Write access to schema", write_schema, "could not be verified."))
+  if(!dplyr::all_equal(spec_cdm_table[1:4,], to_compare)) rlang::abort(paste("Write access to schema", write_schema, "could not be verified."))
   invisible(NULL)
-}
-
-#' Check column names of tables in a cdm reference
-#'
-#' Throws an error if any column names are missing or don't match the v5.4 CDM spec.
-#'
-#' @param cdm A cdm reference object
-#'
-#' @export
-assert_cdm_column_names <- function(cdm) {
-  # TODO how strict do we want to be here? Need to be clear on CDM versioning.
-  for (nm in names(cdm)) {
-    # spec_cdm_field is a a global internal package dataframe created in extras/package_maintenece.R
-    expected_columns <- spec_cdm_field %>% dplyr::filter(.data$cdmTableName == nm) %>% dplyr::pull(.data$cdmFieldName)
-    # require all expected columns are present but allow for additional columns
-    checkmate::assert_subset(expected_columns, colnames(cdm[[nm]]))
-  }
-  return(cdm)
 }
 
 select_cdm_tables <- function(cdm_tables) {
@@ -167,22 +157,6 @@ eunomia_dir <- function(exdir = tempdir()) {
 }
 
 
-
-#' Get the database connection from a cdm object or remote table reference
-#'
-#' @param x A cdm_reference or tbl_sql object
-#'
-#' @return A DBI connection
-#' @export
-remote_con <- function(x) { UseMethod("remote_con") }
-
-#' @export
-remote_con.cdm_reference <- function(x) { attr(cdm, "dbcon") }
-
-#' @export
-remote_con.tbl_sql <- function(x) { dbplyr::remote_con(x) }
-
-
 #' Get the database management system (dbms) from a cdm_reference or DBI connection
 #'
 #' @param con A DBI connection or cdm_reference
@@ -199,10 +173,12 @@ remote_con.tbl_sql <- function(x) { dbplyr::remote_con(x) }
 #' }
 dbms <- function(con) { UseMethod("dbms") }
 
+#' @export
 dbms.cdm_reference <- function(con) {
   dbms(attr(con, "dbcon"))
 }
 
+#' @export
 dbms.DBIConnection <- function(con) {
   if(!is.null(attr(con, "dbms"))) return(attr(con, "dbms"))
 

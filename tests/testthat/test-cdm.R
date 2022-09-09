@@ -1,5 +1,5 @@
 library(testthat)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 
 test_that("cdm reference works locally", {
   skip_if(Sys.getenv("LOCAL_POSTGRESQL_USER") == "")
@@ -13,8 +13,13 @@ test_that("cdm reference works locally", {
 
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
+  expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
+
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
+
+  expect_equal(dbms(con), "postgresql")
+  expect_equal(dbms(cdm), "postgresql")
 
   DBI::dbDisconnect(con)
 })
@@ -58,6 +63,31 @@ test_that("cdm reference works on sql server", {
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
+  expect_null(verify_write_access(con, write_schema = c("tempdb.dbo")))
+  expect_null(verify_write_access(con, write_schema = c("tempdb", "dbo")))
+
+  cohort <- tibble::tibble(cohort_id = 1L,
+                           subject_id = 1L:2L,
+                           cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
+                           cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
+
+  DBI::dbWriteTable(con, DBI::Id(catalog = "tempdb", schema = "dbo", table = "cohort"), cohort, overwrite = TRUE)
+
+  cdm <- cdm_from_con(con,
+                      cdm_schema = c("CDMV5", "dbo"),
+                      cdm_tables = tbl_group("vocab"),
+                      write_schema = c("tempdb", "dbo"),
+                      cohort_tables = "cohort")
+
+  expect_equal(collect(cdm$cohort), cohort)
+
+  DBI::dbRemoveTable(con, DBI::Id(catalog = "tempdb", schema = "dbo", table = "cohort"))
+
+  expect_error(DBI::dbGetQuery(con, "select * from tempdb.dbo.cohort"), "Invalid object")
+
+  expect_equal(dbms(con), "sql server")
+  expect_equal(dbms(cdm), "sql server")
+
   DBI::dbDisconnect(con)
 })
 
@@ -78,6 +108,9 @@ test_that("cdm reference works on redshift", {
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
+  expect_equal(dbms(con), "redshift")
+  expect_equal(dbms(cdm), "redshift")
+
   DBI::dbDisconnect(con)
 })
 
@@ -96,7 +129,71 @@ test_that("cdm reference works on duckdb", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
+test_that("inclusion of cohort tables", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+
+  cohort <- tibble::tibble(cohort_id = 1L,
+                           subject_id = 1L:2L,
+                           cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
+                           cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
+
+  DBI::dbExecute(con, "create schema write_schema;")
+
+  expect_null(verify_write_access(con, "write_schema"))
+
+  DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", table_name = "cohort"), cohort)
+
+  expect_equal(listTables(con, schema = "write_schema"), "cohort")
+
+  cdm <- cdm_from_con(con,
+                      cdm_tables = c("person", "observation_period"),
+                      write_schema = "write_schema",
+                      cohort_tables = "cohort")
+
+  expect_output(print(cdm), "CDM")
+  expect_equal(collect(cdm$cohort), cohort)
+  DBI::dbDisconnect(con, shutdown = TRUE)
+
+})
+
+test_that("collect a cdm", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con)
+
+  local_cdm <- collect(cdm)
+
+  expect_s3_class(local_cdm, "cdm_reference")
+  expect_equal(local_cdm$person, collect(cdm$person))
+
+  query <- function(con) DBI::dbGetQuery(con, "select count(*) as n from person")
+
+  expect_equal(query(con), query(dbplyr::remote_con(cdm$person)))
+  expect_equal(dbms(con), "duckdb")
+  expect_equal(dbms(cdm), "duckdb")
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
 
 
+test_that("stow and cdm_from_files works", {
+  save_path <- file.path(tempdir(), paste0("tmp_", paste(sample(letters, 10, replace = TRUE), collapse = "")))
+  dir.create(save_path)
+  cdm_tables <- c("person", "observation_period")
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_tables = cdm_tables)
 
+  stow(cdm, path = save_path)
+
+  expect_equal(list.files(save_path), c("observation_period.parquet" ,"person.parquet"))
+
+  local_cdm <- cdm_from_files(save_path, cdm_tables = all_of(cdm_tables))
+  expect_s3_class(local_cdm, "cdm_reference")
+  expect_equal(local_cdm$person, collect(cdm$person))
+
+  local_arrow_cdm <- cdm_from_files(save_path, cdm_tables = all_of(cdm_tables), as_data_frame = FALSE)
+  expect_s3_class(local_arrow_cdm, "cdm_reference")
+  expect_equal(collect(local_arrow_cdm$person), collect(cdm$person))
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
 

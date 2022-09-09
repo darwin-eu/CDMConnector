@@ -8,4 +8,5 @@
 ^extras$
 ^Meta$
 ^README.Rmd$
+scratch/*
 

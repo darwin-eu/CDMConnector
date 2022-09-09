@@ -41,3 +41,7 @@ vignettes/*.pdf
 inst/doc
 /doc/
 /Meta/
+
+# Local work files
+/scratch/
+
