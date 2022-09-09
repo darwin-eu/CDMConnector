@@ -199,7 +199,7 @@ dbms.DBIConnection <- function(con) {
 #' @examples
 #' \dontrun{
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' vocab <- cdm_from_con(con, cdm_tables = all_of(c("concept", "concept_ancestor")))
+#' vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
 #' stow(vocab, here::here("vocab_tables"))
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
@@ -275,7 +275,7 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
 #' @examples
 #' \dontrun{
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' vocab <- cdm_from_con(con, cdm_tables = all_of(c("concept", "concept_ancestor")))
+#' vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
 #' local_vocab <- collect(vocab)
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }

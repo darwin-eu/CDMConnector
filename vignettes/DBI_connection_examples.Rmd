@@ -1,8 +1,8 @@
 ---
-title: "DBI_connection_examples"
+title: "DBI connection examples"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{DBI_connection_examples}
+  %\VignetteIndexEntry{DBI connection examples}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

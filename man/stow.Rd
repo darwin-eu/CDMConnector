@@ -22,7 +22,7 @@ Collect a list of lazy queries and save the results as files
 \examples{
 \dontrun{
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-vocab <- cdm_from_con(con, cdm_tables = all_of(c("concept", "concept_ancestor")))
+vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
 stow(vocab, here::here("vocab_tables"))
 DBI::dbDisconnect(con, shutdown = TRUE)
 }

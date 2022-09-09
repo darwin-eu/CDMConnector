@@ -146,7 +146,7 @@ test_that("inclusion of cohort tables", {
   expect_equal(listTables(con, schema = "write_schema"), "cohort")
 
   cdm <- cdm_from_con(con,
-                      cdm_tables = all_of(c("person", "observation_period")),
+                      cdm_tables = c("person", "observation_period"),
                       write_schema = "write_schema",
                       cohort_tables = "cohort")
 

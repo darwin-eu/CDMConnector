@@ -1,8 +1,8 @@
 ---
-title: "Using SQL on an OMOP CDM from R"
+title: "Using SQL from R"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{sing SQL on an OMOP CDM from R"}
+  %\VignetteIndexEntry{Using SQL from R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
