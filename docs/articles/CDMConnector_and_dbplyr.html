@@ -98,7 +98,7 @@ If you haven’t already installed them, all the other packages can be
 installed using ´install.packages()´</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">CDMConnector</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -108,60 +108,17 @@ installed using ´install.packages()´</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, dbdir <span class="op">=</span> <span class="fu"><a href="../reference/eunomia_dir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
-<span><span class="va">cdm</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_ancestor, drug_strength</span></span></code></pre></div>
+<span><span class="va">cdm</span></span></code></pre></div>
 <p>This cdm object is now what we´ll use going forward. It provides a
 reference to the OMOP CDM tables. We can see that these tables are still
 in the database, but now we have a reference to each of the ones we
 might want to use in our analysis. For example, the person table can be
 referenced like so</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.person&gt; [?? x 18]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;    person_id gende…¹ year_…² month…³ day_o…⁴ birth_datetime      race_…⁵ ethni…⁶</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>         6    <span style="text-decoration: underline;">8</span>532    <span style="text-decoration: underline;">1</span>963      12      31 1963-12-31 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>516       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>       123    <span style="text-decoration: underline;">8</span>507    <span style="text-decoration: underline;">1</span>950       4      12 1950-04-12 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>       129    <span style="text-decoration: underline;">8</span>507    <span style="text-decoration: underline;">1</span>974      10       7 1974-10-07 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        16    <span style="text-decoration: underline;">8</span>532    <span style="text-decoration: underline;">1</span>971      10      13 1971-10-13 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        65    <span style="text-decoration: underline;">8</span>532    <span style="text-decoration: underline;">1</span>967       3      31 1967-03-31 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>516       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        74    <span style="text-decoration: underline;">8</span>532    <span style="text-decoration: underline;">1</span>972       1       5 1972-01-05 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        42    <span style="text-decoration: underline;">8</span>532    <span style="text-decoration: underline;">1</span>909      11       2 1909-11-02 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       187    <span style="text-decoration: underline;">8</span>507    <span style="text-decoration: underline;">1</span>945       7      23 1945-07-23 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        18    <span style="text-decoration: underline;">8</span>532    <span style="text-decoration: underline;">1</span>965      11      17 1965-11-17 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       111    <span style="text-decoration: underline;">8</span>532    <span style="text-decoration: underline;">1</span>975       5       2 1975-05-02 <span style="color: #949494;">00:00:00</span>    <span style="text-decoration: underline;">8</span>527       0</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with more rows, 10 more variables: location_id &lt;lgl&gt;, provider_id &lt;lgl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   care_site_id &lt;lgl&gt;, person_source_value &lt;chr&gt;, gender_source_value &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   gender_source_concept_id &lt;dbl&gt;, race_source_value &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   race_source_concept_id &lt;dbl&gt;, ethnicity_source_value &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ethnicity_source_concept_id &lt;dbl&gt;, and abbreviated variable names</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ¹​gender_concept_id, ²​year_of_birth, ³​month_of_birth, ⁴​day_of_birth,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ⁵​race_concept_id, ⁶​ethnicity_concept_id</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names</span></span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span></span></code></pre></div>
 <p>The observation table with</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.observation_period&gt; [?? x 5]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;    observation_period_id person_id observation_period_start…¹ observat…² perio…³</span></span>
-<span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31                 2007-02-06  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    13        13 2009-04-26                 2019-04-14  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    27        27 2002-01-30                 2018-11-21  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    16        16 1971-10-14                 2017-11-02  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    55        55 2009-05-30                 2019-03-23  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    60        60 1990-11-21                 2019-01-23  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    42        42 1909-11-03                 2019-03-13  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    33        33 1986-05-12                 2018-09-10  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    18        18 1965-11-17                 2018-11-07  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    25        25 2007-03-18                 2019-04-07  4.48<span style="color: #949494;">e</span>7</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with more rows, and abbreviated variable names</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ¹​observation_period_start_date, ²​observation_period_end_date,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ³​period_type_concept_id</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ Use `print(n = ...)` to see more rows</span></span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span></code></pre></div>
 <p>And so on, with the cdm object behaving like a named list of
 tables.</p>
 </div>
@@ -176,12 +133,7 @@ dplyr code into SQL.</p>
 in the person table.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [1 x 1]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;   `median(year_of_birth)`</span></span>
-<span><span class="co">#&gt;                     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    <span style="text-decoration: underline;">1</span>961</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
 <p>We can use mutate to create a flag of “Male”/ “Female” based on the
 gender_concept_id in the person table.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -190,44 +142,13 @@ gender_concept_id in the person table.</p>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8532"</span>, <span class="st">"Female"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="st">"person_id"</span>,<span class="st">"gender_concept_id"</span>, <span class="st">"gender"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [10 x 3]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;    person_id gender_concept_id gender</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>         6              <span style="text-decoration: underline;">8</span>532 Female</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>       123              <span style="text-decoration: underline;">8</span>507 Male  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>       129              <span style="text-decoration: underline;">8</span>507 Male  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        16              <span style="text-decoration: underline;">8</span>532 Female</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        65              <span style="text-decoration: underline;">8</span>532 Female</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        74              <span style="text-decoration: underline;">8</span>532 Female</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        42              <span style="text-decoration: underline;">8</span>532 Female</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       187              <span style="text-decoration: underline;">8</span>507 Male  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        18              <span style="text-decoration: underline;">8</span>532 Female</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       111              <span style="text-decoration: underline;">8</span>532 Female</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <p>The filter command lets us subset the condition occurrence table to
 only those records with a specific condition_concept_id. In this case,
 317009 is a standard code for asthma (<a href="https://athena.ohdsi.org/search-terms/terms/317009" class="external-link uri">https://athena.ohdsi.org/search-terms/terms/317009</a>)</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">317009</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [5 x 16]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;   condition_occurren…¹ perso…² condi…³ conditio…⁴ condition_start_d…⁵ conditio…⁶</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                <span style="text-decoration: underline;">27</span>995    <span style="text-decoration: underline;">1</span>655  <span style="text-decoration: underline;">317</span>009 2004-09-29 2004-09-29 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                <span style="text-decoration: underline;">26</span>333    <span style="text-decoration: underline;">1</span>563  <span style="text-decoration: underline;">317</span>009 1977-06-25 1977-06-25 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                <span style="text-decoration: underline;">47</span>602    <span style="text-decoration: underline;">2</span>830  <span style="text-decoration: underline;">317</span>009 2006-08-11 2006-08-11 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                <span style="text-decoration: underline;">82</span>008    <span style="text-decoration: underline;">4</span>861  <span style="text-decoration: underline;">317</span>009 1982-06-02 1982-06-02 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                <span style="text-decoration: underline;">80</span>995    <span style="text-decoration: underline;">4</span>804  <span style="text-decoration: underline;">317</span>009 1997-03-23 1997-03-23 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 10 more variables: condition_end_datetime &lt;dttm&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   condition_type_concept_id &lt;dbl&gt;, stop_reason &lt;lgl&gt;, provider_id &lt;lgl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   visit_occurrence_id &lt;dbl&gt;, visit_detail_id &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   condition_source_value &lt;chr&gt;, condition_source_concept_id &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   condition_status_source_value &lt;lgl&gt;, condition_status_concept_id &lt;dbl&gt;, and</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   abbreviated variable names ¹​condition_occurrence_id, ²​person_id,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ³​condition_concept_id, ⁴​condition_start_date, ⁵​condition_start_datetime, …</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ Use `colnames()` to see all variable names</span></span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">317009</span><span class="op">)</span> </span></code></pre></div>
 <p>And we can can also use joins to merge tables of interest, such as a
 <code>left_join</code> between the person and observation_period
 tables.</p>
@@ -237,32 +158,13 @@ tables.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span>  <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>              <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">person_id</span>, <span class="va">observation_period_start_date</span>,</span>
 <span>                     <span class="va">observation_period_end_date</span><span class="op">)</span>,</span>
-<span>            by<span class="op">=</span><span class="st">"person_id"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [?? x 5]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;    person_id gender_concept_id year_of_birth observation_period_sta…¹ observat…²</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">2</span>651              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>946 1946-09-18               2019-06-26</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">2</span>590              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>962 1962-10-16               2018-11-20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">2</span>541              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>975 1975-09-29               2019-05-27</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">2</span>485              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>913 1913-07-02               2019-02-06</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">2</span>459              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>976 1976-06-21               2019-04-21</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      <span style="text-decoration: underline;">2</span>461              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>966 1966-11-01               2019-01-08</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">2</span>443              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>961 1961-12-29               2019-02-03</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">2</span>458              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>970 1970-05-24               2018-06-17</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">2</span>423              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>956 1956-10-22               2019-06-03</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">2</span>419              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>944 1944-10-20               2019-05-31</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with more rows, and abbreviated variable names</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ¹​observation_period_start_date, ²​observation_period_end_date</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ Use `print(n = ...)` to see more rows</span></span></span></code></pre></div>
+<span>            by<span class="op">=</span><span class="st">"person_id"</span><span class="op">)</span></span></code></pre></div>
 <p>It is worth noting that not all dplyr verbs are supported by dplyr,
 and some are only supported for some database management systems. For
 example let´s see what happens if we try and use <code>slice</code> to
 subset rows using their positions.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `slice()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `slice()` is not supported on database backends</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <p>This is an example of a verb that would only work if we had the data
 in memory.</p>
 </div>
@@ -276,45 +178,18 @@ occurrences of asthma.</p>
 <code class="sourceCode R"><span><span class="va">asthma_occurrences</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">317009</span><span class="op">)</span> </span>
 <span></span>
-<span><span class="va">asthma_occurrences</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [5 x 16]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;   condition_occurren…¹ perso…² condi…³ conditio…⁴ condition_start_d…⁵ conditio…⁶</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                <span style="text-decoration: underline;">27</span>995    <span style="text-decoration: underline;">1</span>655  <span style="text-decoration: underline;">317</span>009 2004-09-29 2004-09-29 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                <span style="text-decoration: underline;">26</span>333    <span style="text-decoration: underline;">1</span>563  <span style="text-decoration: underline;">317</span>009 1977-06-25 1977-06-25 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                <span style="text-decoration: underline;">47</span>602    <span style="text-decoration: underline;">2</span>830  <span style="text-decoration: underline;">317</span>009 2006-08-11 2006-08-11 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                <span style="text-decoration: underline;">82</span>008    <span style="text-decoration: underline;">4</span>861  <span style="text-decoration: underline;">317</span>009 1982-06-02 1982-06-02 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                <span style="text-decoration: underline;">80</span>995    <span style="text-decoration: underline;">4</span>804  <span style="text-decoration: underline;">317</span>009 1997-03-23 1997-03-23 <span style="color: #949494;">00:00:00</span> <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 10 more variables: condition_end_datetime &lt;dttm&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   condition_type_concept_id &lt;dbl&gt;, stop_reason &lt;lgl&gt;, provider_id &lt;lgl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   visit_occurrence_id &lt;dbl&gt;, visit_detail_id &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   condition_source_value &lt;chr&gt;, condition_source_concept_id &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   condition_status_source_value &lt;lgl&gt;, condition_status_concept_id &lt;dbl&gt;, and</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   abbreviated variable names ¹​condition_occurrence_id, ²​person_id,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ³​condition_concept_id, ⁴​condition_start_date, ⁵​condition_start_datetime, …</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ Use `colnames()` to see all variable names</span></span></span></code></pre></div>
+<span><span class="va">asthma_occurrences</span></span></code></pre></div>
 <p>And then run multiple queries against the result</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># count of rows</span></span>
 <span><span class="va">asthma_occurrences</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [1 x 1]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;       n</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     5</span></span>
 <span></span>
 <span><span class="co"># count of people</span></span>
 <span><span class="va">asthma_occurrences</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [1 x 1]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp3W5dss/cdm.duckdb]</span></span></span>
-<span><span class="co">#&gt;       n</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     5</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>We can split also bring the results into memory in R with
 <code>collect</code></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -323,24 +198,7 @@ occurrences of asthma.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># now asthma_occurrences is in memory</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">asthma_occurrences</span><span class="op">)</span></span>
-<span><span class="co">#&gt; tibble [5 × 16] (S3: tbl_df/tbl/data.frame)</span></span>
-<span><span class="co">#&gt;  $ condition_occurrence_id      : num [1:5] 27995 26333 47602 82008 80995</span></span>
-<span><span class="co">#&gt;  $ person_id                    : num [1:5] 1655 1563 2830 4861 4804</span></span>
-<span><span class="co">#&gt;  $ condition_concept_id         : num [1:5] 317009 317009 317009 317009 317009</span></span>
-<span><span class="co">#&gt;  $ condition_start_date         : Date[1:5], format: "2004-09-29" "1977-06-25" ...</span></span>
-<span><span class="co">#&gt;  $ condition_start_datetime     : POSIXct[1:5], format: "2004-09-29" "1977-06-25" ...</span></span>
-<span><span class="co">#&gt;  $ condition_end_date           : Date[1:5], format: NA NA ...</span></span>
-<span><span class="co">#&gt;  $ condition_end_datetime       : POSIXct[1:5], format: NA NA ...</span></span>
-<span><span class="co">#&gt;  $ condition_type_concept_id    : num [1:5] 32020 32020 32020 32020 32020</span></span>
-<span><span class="co">#&gt;  $ stop_reason                  : logi [1:5] NA NA NA NA NA</span></span>
-<span><span class="co">#&gt;  $ provider_id                  : logi [1:5] NA NA NA NA NA</span></span>
-<span><span class="co">#&gt;  $ visit_occurrence_id          : num [1:5] 110995 104703 187767 323415 319587</span></span>
-<span><span class="co">#&gt;  $ visit_detail_id              : num [1:5] 0 0 0 0 0</span></span>
-<span><span class="co">#&gt;  $ condition_source_value       : chr [1:5] "195967001" "195967001" "195967001" "195967001" ...</span></span>
-<span><span class="co">#&gt;  $ condition_source_concept_id  : num [1:5] 317009 317009 317009 317009 317009</span></span>
-<span><span class="co">#&gt;  $ condition_status_source_value: logi [1:5] NA NA NA NA NA</span></span>
-<span><span class="co">#&gt;  $ condition_status_concept_id  : num [1:5] 0 0 0 0 0</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">asthma_occurrences</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="putting-it-all-together">Putting it all together<a class="anchor" aria-label="anchor" href="#putting-it-all-together"></a>
@@ -354,7 +212,6 @@ to make the histogram.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="CDMConnector_and_Dbplyr_files/figure-html/unnamed-chunk-14-1.png" width="700"></p>
 <p>If we wanted to make a boxplot for length of observation periods we
 could do the compuatiton on the database side, bring in the new variable
 into memory, and use ggplot to produce the boxplot</p>
@@ -366,7 +223,6 @@ into memory, and use ggplot to produce the boxplot</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">observation_period</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="CDMConnector_and_Dbplyr_files/figure-html/unnamed-chunk-15-1.png" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="behind-the-scenes">Behind the scenes<a class="anchor" aria-label="anchor" href="#behind-the-scenes"></a>
@@ -376,28 +232,17 @@ duckdb</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> COUNT(*)<span style="color: #0000BB;"> AS </span>"n"</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> main.person</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span><span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "year_of_birth")<span style="color: #0000BB;"> AS </span>"median(year_of_birth)"</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> main.person</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span> </span></code></pre></div>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>gender <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8507"</span>, <span class="st">"Male"</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8532"</span>, <span class="st">"Female"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span><span class="op">)</span><span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span></span></span>
-<span><span class="co">#&gt;   *,</span></span>
-<span><span class="co">#&gt;   CASE WHEN ("gender_concept_id" = '8507') THEN 'Male' WHEN NOT ("gender_concept_id" = '8507') THEN (CASE WHEN ("gender_concept_id" = '8532') THEN 'Female' WHEN NOT ("gender_concept_id" = '8532') THEN NULL END) END<span style="color: #0000BB;"> AS </span>"gender"</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> main.person</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span> </span></code></pre></div>
 <p>But that´s specific to duckdb, what would this look like for other
 database management systems? Below we can see what these queries would
 look like on postgres, redshift, and snowflake.</p>
@@ -406,63 +251,32 @@ look like on postgres, redshift, and snowflake.</p>
 <span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-postgres.html" class="external-link">simulate_postgres</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> COUNT(*)<span style="color: #0000BB;"> AS </span>`n`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-postgres.html" class="external-link">simulate_postgres</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY `year_of_birth`)<span style="color: #0000BB;"> AS </span>`median(year_of_birth)`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-postgres.html" class="external-link">simulate_postgres</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>gender <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8507"</span>, <span class="st">"Male"</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8532"</span>, <span class="st">"Female"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span></span></span>
-<span><span class="co">#&gt;   *,</span></span>
-<span><span class="co">#&gt;   CASE WHEN (`gender_concept_id` = '8507') THEN 'Male' WHEN NOT (`gender_concept_id` = '8507') THEN (CASE WHEN (`gender_concept_id` = '8532') THEN 'Female' WHEN NOT (`gender_concept_id` = '8532') THEN NULL END) END<span style="color: #0000BB;"> AS </span>`gender`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-redshift.html" class="external-link">simulate_redshift</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> COUNT(*)<span style="color: #0000BB;"> AS </span>`n`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-redshift.html" class="external-link">simulate_redshift</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY `year_of_birth`)<span style="color: #0000BB;"> AS </span>`median(year_of_birth)`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-redshift.html" class="external-link">simulate_redshift</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>gender <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8507"</span>, <span class="st">"Male"</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8532"</span>, <span class="st">"Female"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span></span></span>
-<span><span class="co">#&gt;   *,</span></span>
-<span><span class="co">#&gt;   CASE WHEN (`gender_concept_id` = '8507') THEN 'Male' WHEN NOT (`gender_concept_id` = '8507') THEN (CASE WHEN (`gender_concept_id` = '8532') THEN 'Female' WHEN NOT (`gender_concept_id` = '8532') THEN NULL END) END<span style="color: #0000BB;"> AS </span>`gender`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-snowflake.html" class="external-link">simulate_snowflake</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> COUNT(*)<span style="color: #0000BB;"> AS </span>`n`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-snowflake.html" class="external-link">simulate_snowflake</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY `year_of_birth`)<span style="color: #0000BB;"> AS </span>`median(year_of_birth)`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span>
 <span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/tbl_lazy.html" class="external-link">tbl_lazy</a></span><span class="op">(</span><span class="va">person</span>, con <span class="op">=</span> <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/backend-snowflake.html" class="external-link">simulate_snowflake</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>gender <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8507"</span>, <span class="st">"Male"</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">gender_concept_id</span> <span class="op">==</span> <span class="st">"8532"</span>, <span class="st">"Female"</span>, <span class="cn">NA</span><span class="op">)</span></span>
-<span>    <span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span></span></span>
-<span><span class="co">#&gt;   *,</span></span>
-<span><span class="co">#&gt;   CASE WHEN (`gender_concept_id` = '8507') THEN 'Male' WHEN NOT (`gender_concept_id` = '8507') THEN (CASE WHEN (`gender_concept_id` = '8532') THEN 'Female' WHEN NOT (`gender_concept_id` = '8532') THEN NULL END) END<span style="color: #0000BB;"> AS </span>`gender`</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> `df`</span></span></code></pre></div>
+<span>    <span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, disconnect <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div style="margin-bottom:3cm;">
 
 </div>

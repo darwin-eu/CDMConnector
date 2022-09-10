@@ -16,9 +16,6 @@
     <loc>/articles/DBI_connection_examples.html</loc>
   </url>
   <url>
-    <loc>/articles/Introduction.html</loc>
-  </url>
-  <url>
     <loc>/articles/SQL.html</loc>
   </url>
   <url>
@@ -38,9 +35,6 @@
   </url>
   <url>
     <loc>/reference/CDMConnector-package.html</loc>
-  </url>
-  <url>
-    <loc>/reference/assert_cdm_column_names.html</loc>
   </url>
   <url>
     <loc>/reference/cdm_from_con.html</loc>
@@ -77,9 +71,6 @@
   </url>
   <url>
     <loc>/reference/print.cdm_reference.html</loc>
-  </url>
-  <url>
-    <loc>/reference/remote_con.html</loc>
   </url>
   <url>
     <loc>/reference/stow.html</loc>
