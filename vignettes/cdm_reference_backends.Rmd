@@ -32,7 +32,7 @@ To show how this can work (and slightly overcomplicate things to show different 
 
 ```{r, message=FALSE, warning=FALSE}
 library(CDMConnector)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 ```
 
