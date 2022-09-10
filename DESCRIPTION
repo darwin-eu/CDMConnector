@@ -25,6 +25,7 @@ Imports:
     tidyselect,
     readr,
     glue,
+    waldo,
     arrow,
     methods
 Suggests: 

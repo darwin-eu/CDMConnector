@@ -203,10 +203,12 @@ test_that("stow and cdm_from_files works", {
   local_cdm <- cdm_from_files(save_path, cdm_tables = all_of(cdm_tables))
   expect_s3_class(local_cdm, "cdm_reference")
   expect_equal(local_cdm$person, collect(cdm$person))
+  expect_output(validate_cdm(local_cdm))
 
   local_arrow_cdm <- cdm_from_files(save_path, cdm_tables = all_of(cdm_tables), as_data_frame = FALSE)
   expect_s3_class(local_arrow_cdm, "cdm_reference")
   expect_equal(collect(local_arrow_cdm$person), collect(cdm$person))
+  expect_output(validate_cdm(local_arrow_cdm))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
