@@ -11,21 +11,21 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = TRUE
 )
 ```
 
 
 It is common to send SQL to an OMOP CDM database from R. This vignette describes one process for including SQL in your analytic package or study.
 
-```{r setup}
+```{r, eval=FALSE}
 library(CDMConnector)
 ```
 
 
 If your study needs to run across multiple database platforms then you will need a way to translate SQL into the different dialects used by each database. The `SqlRender` package provides this functionality. Start by creating an R function that includes the SQL you want to run and takes a database connection as the first argument. Additional query parameters should be added as detail arguments after the first one.
 
-```{r}
+```{r, eval=FALSE}
 count_drug_records <- function(con, cdm_schema, ingredient_concept_id) {
   
   # Write the SQL in an R function replacing the parameters
