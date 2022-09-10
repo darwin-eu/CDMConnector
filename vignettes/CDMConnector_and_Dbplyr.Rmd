@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
@@ -20,7 +21,7 @@ First let's load the required packages for the code in this vignette. If you hav
 
 ```{r, message=FALSE, warning=FALSE}
 library(CDMConnector)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 ```
 
@@ -215,5 +216,8 @@ dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>%
     ))
 ```
 
+```{r}
+DBI::dbDisconnect(con, disconnect = TRUE)
+```
 
 <div style="margin-bottom:3cm;"></div>

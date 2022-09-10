@@ -10,7 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
@@ -198,3 +199,4 @@ The `cdm_from_con` function should work with any DBI driver backend implementati
 
     ::: {style="margin-bottom:3cm;"}
     :::
+
