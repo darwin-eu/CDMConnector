@@ -62,7 +62,7 @@ Create a `cdm_reference` object from any DBI connection. Use the
     cdm <- cdm_from_con(con, cdm_schema = "main")
     cdm
 
-    ## # OMOP CDM reference
+    ## # OMOP CDM reference (tbl_duckdb_connection)
     ## 
     ## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_ancestor, drug_strength
 
@@ -87,7 +87,7 @@ Use dplyr verbs with the table references.
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp8edTx7/cdm.duckdb]
+    ## # Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmprBcx88/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -99,7 +99,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp8edTx7/cdm.duckdb]
+    ## # Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmprBcx88/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -115,6 +115,15 @@ Compose operations with the pipe.
     ## 10 Acute bacterial sinusitis                  939
     ## # … with more rows
     ## # ℹ Use `print(n = ...)` to see more rows
+
+Run a simple quality check on a cdm.
+
+    cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
+    validate_cdm(cdm)
+
+    ## ── CDM v5.4 validation (checking 2 tables) ─────────────────────────────────────
+    ## ✔ cdm table names
+    ## ✔ all row counts > 0
 
 ## DBI Drivers
 

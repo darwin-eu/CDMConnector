@@ -84,6 +84,13 @@ cdm$condition_era %>%
   count(top_conditions = concept_name, sort = TRUE)
 ```
 
+Run a simple quality check on a cdm.
+
+```{r}
+cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
+validate_cdm(cdm)
+```
+
 
 ```{r, include=FALSE}
 DBI::dbDisconnect(con)
