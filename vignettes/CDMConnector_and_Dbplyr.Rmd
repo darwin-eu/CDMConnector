@@ -11,7 +11,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = TRUE
 )
 ```
 
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 First let's load the required packages for the code in this vignette. If you haven't already installed them, all the other packages can be installed using ´install.packages()´ 
 
-```{r, message=FALSE, warning=FALSE}
+```{r}
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
@@ -29,7 +29,7 @@ library(ggplot2)
 
 Now let´s connect to a duckdb database with the Eunomia data (https://github.com/OHDSI/Eunomia).
 
-```{r, message=FALSE, warning=FALSE}
+```{r}
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 cdm <- cdm_from_con(con, cdm_schema = "main")
 cdm
@@ -44,48 +44,48 @@ This cdm object is now what we´ll use going forward. It provides a reference to
 Say we want to make a histogram of year of birth in the person table. We can select that variable, bring it into memory, and then use ggplot to make the histogram.
 
 ```{r, message=FALSE}
-cdm$person %>%
-  select(year_of_birth) %>%
-  collect() %>%
-  ggplot() +
-  geom_histogram(aes(year_of_birth))
+# cdm$person %>%
+#   select(year_of_birth) %>%
+#   collect() %>%
+#   ggplot() +
+#   geom_histogram(aes(year_of_birth))
 ```
 
 If we wanted to make a boxplot for length of observation periods we could do the compuatiton on the database side, bring in the new variable into memory, and use ggplot to produce the boxplot
 
 ```{r}
-cdm$observation_period %>%
-  select(observation_period_start_date, observation_period_end_date) %>%
-  mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365, 25) %>%
-  select(observation_period) %>%
-  collect() %>%
-  ggplot() +
-  geom_boxplot(aes(observation_period))
+# cdm$observation_period %>%
+#   select(observation_period_start_date, observation_period_end_date) %>%
+#   mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365, 25) %>%
+#   select(observation_period) %>%
+#   collect() %>%
+#   ggplot() +
+#   geom_boxplot(aes(observation_period))
 ```
 
 
 ## Behind the scenes
 We use show_query to check the sql that is being run against duckdb
 ```{r}
-cdm$person %>%
-  tally() %>%
-  show_query()
+# cdm$person %>%
+#   tally() %>%
+#   show_query()
 ```
 
 
 ```{r}
-cdm$person %>%
-  summarise(median(year_of_birth))%>%
-  show_query()
+# cdm$person %>%
+#   summarise(median(year_of_birth))%>%
+#   show_query()
 ```
 
 ```{r, warning=FALSE}
-cdm$person %>%
-  mutate(gender = case_when(
-    gender_concept_id == "8507" ~ "Male",
-    gender_concept_id == "8532" ~ "Female", 
-    TRUE ~ NA_character_))%>%
-  show_query()
+# cdm$person %>%
+#   mutate(gender = case_when(
+#     gender_concept_id == "8507" ~ "Male",
+#     gender_concept_id == "8532" ~ "Female", 
+#     TRUE ~ NA_character_))%>%
+#   show_query()
 ```
 
 But that´s specific to duckdb, what would this look like for other database management systems? Below we can see what these queries would look like on postgres, redshift, and snowflake.
