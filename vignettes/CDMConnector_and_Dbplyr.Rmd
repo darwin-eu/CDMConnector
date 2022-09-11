@@ -30,9 +30,9 @@ library(ggplot2)
 Now let´s connect to a duckdb database with the Eunomia data (https://github.com/OHDSI/Eunomia).
 
 ```{r}
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con, cdm_schema = "main")
-cdm
+# con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+# cdm <- cdm_from_con(con, cdm_schema = "main")
+# cdm
 ```
 
 
@@ -122,7 +122,7 @@ But that´s specific to duckdb, what would this look like for other database man
 ```
 
 ```{r}
-DBI::dbDisconnect(con, disconnect = TRUE)
+# DBI::dbDisconnect(con, disconnect = TRUE)
 ```
 
 <div style="margin-bottom:3cm;"></div>
