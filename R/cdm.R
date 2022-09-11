@@ -63,7 +63,7 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
 #' Print a CDM reference object
 #'
 #' @param x A cdm_reference object
-#' @param ... Included for compatiblity with generic. Not used.
+#' @param ... Included for compatibility with generic. Not used.
 #'
 #' @return Invisibly returns the input
 #' @export

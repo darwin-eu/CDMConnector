@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{A cdm_reference object}
 
-\item{...}{Included for compatiblity with generic. Not used.}
+\item{...}{Included for compatibility with generic. Not used.}
 }
 \value{
 Invisibly returns the input

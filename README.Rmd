@@ -25,7 +25,7 @@ output: md_document
 
 ## Overview
 
-CDMConnector introduces a single R object that represents an OMOP CDM relational database heavily inspired by the [dm](https://cynkra.github.io/dm/) pacakge. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to OMOP CDM tables in a remote RDBMS as well as metadata neccessary for interacting with a CDM. 
+CDMConnector introduces a single R object that represents an OMOP CDM relational database heavily inspired by the [dm](https://cynkra.github.io/dm/) package. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to OMOP CDM tables in a remote RDBMS as well as metadata neccessary for interacting with a CDM. 
 
 
 [![OMOP CDM v5.4](https://ohdsi.github.io/CommonDataModel/images/cdm54.png)](https://ohdsi.github.io/CommonDataModel/)

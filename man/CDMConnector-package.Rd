@@ -6,7 +6,7 @@
 \alias{CDMConnector-package}
 \title{CDMConnector: Connect to an OMOP Common Data Model}
 \description{
-Provides tools for working OMOP CDM tables in a pipe friendly syntax. CDM table references are stored in a sigle compound object along with metadata.
+Provides tools for working OMOP CDM tables in a pipe friendly syntax. CDM table references are stored in a single compound object along with metadata.
 }
 \author{
 \strong{Maintainer}: Adam Black \email{black@ohdsi.org} (\href{https://orcid.org/0000-0001-5576-8701}{ORCID})

@@ -5,7 +5,7 @@ Authors@R:
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701"))
 Description: Provides tools for working OMOP CDM tables in a pipe friendly syntax.
-  CDM table references are stored in a sigle compound object along with metadata.
+  CDM table references are stored in a single compound object along with metadata.
 License: file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
