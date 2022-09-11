@@ -11,7 +11,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = TRUE
+  eval = FALSE
 )
 ```
 
@@ -56,7 +56,7 @@ If we wanted to make a boxplot for length of observation periods we could do the
 ```{r}
 cdm$observation_period %>%
   select(observation_period_start_date, observation_period_end_date) %>%
-  mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365,25) %>%
+  mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365, 25) %>%
   select(observation_period) %>%
   collect() %>%
   ggplot() +
@@ -81,9 +81,10 @@ cdm$person %>%
 
 ```{r, warning=FALSE}
 cdm$person %>%
-  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
-                         ifelse(gender_concept_id == "8532", "Female", NA)
-  ))%>%
+  mutate(gender = case_when(
+    gender_concept_id == "8507" ~ "Male",
+    gender_concept_id == "8532" ~ "Female", 
+    TRUE ~ NA_character_))%>%
   show_query()
 ```
 
