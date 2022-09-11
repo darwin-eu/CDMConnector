@@ -71,3 +71,57 @@ cdm$person %>%
   tally() %>%
   show_query()
 ```
+
+
+```{r}
+cdm$person %>%
+  summarise(median(year_of_birth))%>%
+  show_query()
+```
+
+```{r, warning=FALSE}
+cdm$person %>%
+  mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+                         ifelse(gender_concept_id == "8532", "Female", NA)
+  ))%>%
+  show_query()
+```
+
+But that´s specific to duckdb, what would this look like for other database management systems? Below we can see what these queries would look like on postgres, redshift, and snowflake.
+
+```{r}
+# person<-cdm$person %>% collect()
+# 
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_postgres()) %>%
+#   tally()
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_postgres()) %>%
+#   summarise(median(year_of_birth))
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_postgres()) %>%
+#   mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+#                          ifelse(gender_concept_id == "8532", "Female", NA)
+#   ))
+# 
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_redshift()) %>%
+#   tally()
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_redshift()) %>%
+#   summarise(median(year_of_birth))
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_redshift()) %>%
+#   mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+#                          ifelse(gender_concept_id == "8532", "Female", NA)
+#   ))
+# 
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>%
+#   tally()
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>%
+#   summarise(median(year_of_birth))
+# dbplyr::tbl_lazy(person, con = dbplyr::simulate_snowflake()) %>%
+#   mutate(gender = ifelse(gender_concept_id == "8507", "Male",
+#                          ifelse(gender_concept_id == "8532", "Female", NA)
+#   ))
+```
+
+```{r}
+DBI::dbDisconnect(con, disconnect = TRUE)
+```
+
+<div style="margin-bottom:3cm;"></div>
