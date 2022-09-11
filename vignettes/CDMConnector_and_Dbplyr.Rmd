@@ -60,7 +60,7 @@ cdm$observation_period %>%
   select(observation_period) %>%
   collect() %>%
   ggplot() +
-  geom_boxplot(aes(observation_period))
+  geom_boxplot(aes(observation_period), bins = 30)
 ```
 
 

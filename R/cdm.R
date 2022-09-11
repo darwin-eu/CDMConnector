@@ -128,7 +128,8 @@ tbl_group <- function(group) {
 #'
 #' Create a copy of the duckdb Eunomia CDM and return the file path
 #'
-#' @param exdir Enclosing directory where the Eunomia CDM should be created
+#' @param exdir Enclosing directory where the Eunomia CDM should be created.
+#' If NULL (default) then a temp folder is created.
 #'
 #' @return The full path to the new Eunomia CDM that can be passed to `dbConnect()`
 #' @export
@@ -141,7 +142,8 @@ tbl_group <- function(group) {
 #' dbListTables(con)
 #' dbDisconnect(con)
 #' }
-eunomia_dir <- function(exdir = tempdir()) {
+eunomia_dir <- function(exdir = NULL) {
+  if (is.null(exdir)) exdir <- file.path(tempdir(TRUE), paste(sample(letters, 8, replace = TRUE), collapse = ""))
   file <- xzfile(system.file("duckdb", "cdm.duckdb.tar.xz", package = "CDMConnector"), open = "rb")
   untar(file, exdir = exdir)
   close(file)

@@ -4,10 +4,11 @@
 \alias{eunomia_dir}
 \title{Create a new Eunomia CDM}
 \usage{
-eunomia_dir(exdir = tempdir())
+eunomia_dir(exdir = NULL)
 }
 \arguments{
-\item{exdir}{Enclosing directory where the Eunomia CDM should be created}
+\item{exdir}{Enclosing directory where the Eunomia CDM should be created.
+If NULL (default) then a temp folder is created.}
 }
 \value{
 The full path to the new Eunomia CDM that can be passed to \code{dbConnect()}
