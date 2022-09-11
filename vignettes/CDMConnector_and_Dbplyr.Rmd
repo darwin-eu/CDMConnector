@@ -47,8 +47,8 @@ Say we want to make a histogram of year of birth in the person table. We can sel
 cdm$person %>%
   select(year_of_birth) %>%
   collect() %>%
-  ggplot() +
-  geom_histogram(aes(year_of_birth))
+  ggplot(aes(x = year_of_birth)) +
+  geom_histogram(bins = 30)
 ```
 
 If we wanted to make a boxplot for length of observation periods we could do the compuatiton on the database side, bring in the new variable into memory, and use ggplot to produce the boxplot
@@ -59,8 +59,8 @@ cdm$observation_period %>%
   mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365, 25) %>%
   select(observation_period) %>%
   collect() %>%
-  ggplot() +
-  geom_boxplot(aes(observation_period), bins = 30)
+  ggplot(aes(x = observation_period)) +
+  geom_boxplot()
 ```
 
 
