@@ -24,3 +24,50 @@ library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 ```
+
+## Creating the cdm reference
+
+Now let´s connect to a duckdb database with the Eunomia data (https://github.com/OHDSI/Eunomia).
+
+```{r, message=FALSE, warning=FALSE}
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm
+```
+
+
+This cdm object is now what we´ll use going forward. It provides a reference to the OMOP CDM tables. We can see that these tables are still in the database, but now we have a reference to each of the ones we might want to use in our analysis. For example, the person table can be referenced like so
+
+
+## Putting it all together
+
+Say we want to make a histogram of year of birth in the person table. We can select that variable, bring it into memory, and then use ggplot to make the histogram.
+
+```{r, message=FALSE}
+cdm$person %>%
+  select(year_of_birth) %>%
+  collect() %>%
+  ggplot() +
+  geom_histogram(aes(year_of_birth))
+```
+
+If we wanted to make a boxplot for length of observation periods we could do the compuatiton on the database side, bring in the new variable into memory, and use ggplot to produce the boxplot
+
+```{r}
+cdm$observation_period %>%
+  select(observation_period_start_date, observation_period_end_date) %>%
+  mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365,25) %>%
+  select(observation_period) %>%
+  collect() %>%
+  ggplot() +
+  geom_boxplot(aes(observation_period))
+```
+
+
+## Behind the scenes
+We use show_query to check the sql that is being run against duckdb
+```{r}
+cdm$person %>%
+  tally() %>%
+  show_query()
+```
