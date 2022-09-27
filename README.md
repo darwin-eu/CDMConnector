@@ -2,15 +2,6 @@
 
 # [CDMConnector](https://odyosg.github.io/CDMConnector/)
 
-<!-- badges: start -->
-
-[![Codecov test
-coverage](https://codecov.io/gh/darwin-eu/CDMConnector/branch/main/graph/badge.svg)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
-[![R-CMD-check](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions/workflows/R-CMD-check.yaml)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
-<!-- badges: end -->
-
 > Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
 > Common Data Model?
 >
