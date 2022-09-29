@@ -9,6 +9,6 @@
 ^Meta$
 ^README.Rmd$
 scratch/*
-
+LICENSE
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
