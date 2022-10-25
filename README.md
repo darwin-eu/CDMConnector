@@ -141,4 +141,4 @@ Funded by:
 
 [![DARWIN-EU](man/figures/darwin-eu-logo.png)](https://www.ema.europa.eu/en/about-us/how-we-work/big-data/data-analysis-real-world-interrogation-network-darwin-eu)
 <span style="padding-right:50px"> </span>
-[![Odysseus](man/figures/logo_odys.svg)](https://odysseusinc.com/)
+
