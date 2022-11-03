@@ -2,6 +2,12 @@
 
 # [CDMConnector](https://odyosg.github.io/CDMConnector/)
 
+<!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
+<!-- badges: end -->
+
 > Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
 > Common Data Model?
 >
@@ -15,7 +21,7 @@
 
 CDMConnector introduces a single R object that represents an OMOP CDM
 relational database heavily inspired by the
-[dm](https://cynkra.github.io/dm/) pacakge. The cdm object can be used
+[dm](https://cynkra.github.io/dm/) package. The cdm object can be used
 in dplyr style data analysis pipelines and facilitates interactive data
 exploration. cdm objects encapsulate references to OMOP CDM tables in a
 remote RDBMS as well as metadata neccessary for interacting with a CDM.
@@ -55,7 +61,7 @@ Create a `cdm_reference` object from any DBI connection. Use the
 
     ## # OMOP CDM reference (tbl_duckdb_connection)
     ## 
-    ## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_ancestor, drug_strength
+    ## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_ancestor, drug_strength
 
 A `cdm_reference` is a named list of table references:
 
@@ -64,21 +70,18 @@ A `cdm_reference` is a named list of table references:
 
     ##  [1] "person"               "observation_period"   "visit_occurrence"    
     ##  [4] "visit_detail"         "condition_occurrence" "drug_exposure"       
-    ##  [7] "procedure_occurrence" "device_exposure"      "measurement"         
-    ## [10] "observation"          "death"                "note"                
-    ## [13] "note_nlp"             "specimen"             "fact_relationship"   
-    ## [16] "location"             "care_site"            "provider"            
-    ## [19] "payer_plan_period"    "cost"                 "drug_era"            
-    ## [22] "dose_era"             "condition_era"        "concept"             
-    ## [25] "vocabulary"           "concept_relationship" "concept_ancestor"    
-    ## [28] "drug_strength"
+    ##  [7] "procedure_occurrence" "measurement"          "observation"         
+    ## [10] "death"                "location"             "care_site"           
+    ## [13] "provider"             "drug_era"             "dose_era"            
+    ## [16] "condition_era"        "concept"              "vocabulary"          
+    ## [19] "concept_relationship" "concept_ancestor"     "drug_strength"
 
 Use dplyr verbs with the table references.
 
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmprBcx88/cdm.duckdb]
+    ## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmphqQmpf/ucryswwd/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -90,7 +93,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.3.5-dev1410 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmprBcx88/cdm.duckdb]
+    ## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmphqQmpf/ucryswwd/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -105,7 +108,6 @@ Compose operations with the pipe.
     ##  9 Sinusitis                                 1001
     ## 10 Acute bacterial sinusitis                  939
     ## # … with more rows
-    ## # ℹ Use `print(n = ...)` to see more rows
 
 Run a simple quality check on a cdm.
 
@@ -136,9 +138,3 @@ If you encounter a clear bug, please file an issue with a minimal
 ------------------------------------------------------------------------
 
 License: Apache 2.0
-
-Funded by:
-
-[![DARWIN-EU](man/figures/darwin-eu-logo.png)](https://www.ema.europa.eu/en/about-us/how-we-work/big-data/data-analysis-real-world-interrogation-network-darwin-eu)
-<span style="padding-right:50px"> </span>
-[![Odysseus](man/figures/logo_odys.svg)](https://odysseusinc.com/)

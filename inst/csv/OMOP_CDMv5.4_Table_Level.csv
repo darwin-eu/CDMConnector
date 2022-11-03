@@ -32,7 +32,7 @@ domain,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,FALSE
 concept_class,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,FALSE
 concept_relationship,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,TRUE
 relationship,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,FALSE
-concept_synonym,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,FALSE
+concept_synonym,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,TRUE
 concept_ancestor,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,TRUE
 source_to_concept_map,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,FALSE
 drug_strength,vocab,FALSE,NA,TRUE,TRUE,FALSE,FALSE,TRUE

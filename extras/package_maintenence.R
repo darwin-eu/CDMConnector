@@ -17,7 +17,7 @@ default_tables <- c("person", "observation_period", "visit_occurrence", "visit_d
   "measurement", "observation", "death",
   "location", "care_site", "provider", "drug_era", "dose_era",
   "condition_era", "concept", "vocabulary",  "concept_relationship", "concept_ancestor",
-  "drug_strength")
+  "concept_synonym", "drug_strength")
 
 
 clinical_tables <- c("person", "observation_period", "visit_occurrence", "visit_detail",

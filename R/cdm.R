@@ -101,7 +101,7 @@ verify_write_access <- function(con, write_schema) {
 #' device_exposure, measurement, observation, death, note, note_nlp, specimen,
 #' fact_relationship, location, care_site, provider, payer_plan_period,
 #' cost, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship,
-#' concept_ancestor, drug_strength
+#' concept_ancestor, concept_synonym, drug_strength
 #'
 #' @param group A character vector of CDM table groups: "vocab", "clinical", "all", "default", "derived".
 #'
