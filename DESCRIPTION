@@ -37,6 +37,7 @@ Suggests:
     odbc,
     ggplot2,
     SqlRender,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    DatabaseConnector
 Config/testthat/edition: 3
 VignetteBuilder: knitr

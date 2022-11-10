@@ -4,7 +4,11 @@ library(DBI)
 
 self_contained_query <- function(connection_details, cdm_schema) {
   con <- DBI::dbConnect(connection_details)
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  if(dbms(con) == "duckdb") {
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  } else {
+    on.exit(DBI::dbDisconnect(con))
+  }
   DBI::dbGetQuery(con, paste0("select count(*) as n from ", cdm_schema, ".person"))
 }
 
@@ -52,7 +56,7 @@ test_that("dbConnectDetails works on sql server", {
   expect_true("n" %in% names(result))
 })
 
-test_that("dbConnectDetails works on sql server", {
+test_that("dbConnectDetails works on Redshift", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
 
   details <- dbConnectDetails(RPostgres::Redshift(),
@@ -76,3 +80,54 @@ test_that("dbConnectDetails works on duckdb", {
   expect_s3_class(result, "data.frame")
   expect_true("n" %in% names(result))
 })
+
+library(DatabaseConnector)
+# keyring::key_set("cdm_password") # only need to do this once
+connectionDetails <- createConnectionDetails(dbms = "postgresql",
+                                             server = "testnode.arachnenetwork.com/synpuf_110k",
+                                             user = "ohdsi",
+                                             password = Sys.getenv("ODYS_DB_PASSWORD"),
+                                             port = "5441")
+conn <- connect(connectionDetails)
+
+test_that("dbConnectDetails works on postgres using DatabaseConnector", {
+  skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
+  details <- dbConnectDetails(DatabaseConnector::DatabaseConnectorDriver(),
+                              dbms = "postgresql",
+                              server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
+                              user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                              password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+
+  result <- self_contained_query(details, Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
+  expect_s3_class(result, "data.frame")
+  expect_true("n" %in% names(result))
+})
+
+
+test_that("dbConnectDetails works on SQL Server using DatabaseConnector", {
+  skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
+  details <- dbConnectDetails(DatabaseConnector::DatabaseConnectorDriver(),
+                              dbms = "sql server",
+                              server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+                              user     = Sys.getenv("CDM5_SQL_SERVER_USER"),
+                              password = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"))
+
+  result <- self_contained_query(details, Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"))
+  expect_s3_class(result, "data.frame")
+  expect_true("n" %in% names(result))
+})
+
+test_that("dbConnectDetails works on redshift using DatabaseConnector", {
+  skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
+
+  details <- dbConnectDetails(DatabaseConnector::DatabaseConnectorDriver(),
+                              dbms = "redshift",
+                              server   = Sys.getenv("CDM5_REDSHIFT_SERVER"),
+                              user     = Sys.getenv("CDM5_REDSHIFT_USER"),
+                              password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
+
+  result <- self_contained_query(details, Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
+  expect_s3_class(result, "data.frame")
+  expect_true("n" %in% names(result))
+})
+
