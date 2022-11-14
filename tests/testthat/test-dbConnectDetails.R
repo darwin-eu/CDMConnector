@@ -71,7 +71,6 @@ test_that("dbConnectDetails works on Redshift", {
   expect_true("n" %in% names(result))
 })
 
-
 test_that("dbConnectDetails works on duckdb", {
 
   details <- dbConnectDetails(duckdb::duckdb(), dbdir = eunomia_dir())
@@ -81,17 +80,14 @@ test_that("dbConnectDetails works on duckdb", {
   expect_true("n" %in% names(result))
 })
 
-library(DatabaseConnector)
-# keyring::key_set("cdm_password") # only need to do this once
-connectionDetails <- createConnectionDetails(dbms = "postgresql",
-                                             server = "testnode.arachnenetwork.com/synpuf_110k",
-                                             user = "ohdsi",
-                                             password = Sys.getenv("ODYS_DB_PASSWORD"),
-                                             port = "5441")
-conn <- connect(connectionDetails)
-
 test_that("dbConnectDetails works on postgres using DatabaseConnector", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
+
+  if (Sys.getenv("DATABASECONNECTOR_JAR_FOLDER") == "") {
+    Sys.setenv("DATABASECONNECTOR_JAR_FOLDER" = "~/DATABASECONNECTOR_JAR_FOLDER")
+    DatabaseConnector::downloadJdbcDrivers("postgresql")
+  }
+
   details <- dbConnectDetails(DatabaseConnector::DatabaseConnectorDriver(),
                               dbms = "postgresql",
                               server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
@@ -103,9 +99,14 @@ test_that("dbConnectDetails works on postgres using DatabaseConnector", {
   expect_true("n" %in% names(result))
 })
 
-
 test_that("dbConnectDetails works on SQL Server using DatabaseConnector", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
+
+  if (Sys.getenv("DATABASECONNECTOR_JAR_FOLDER") == "") {
+    Sys.setenv("DATABASECONNECTOR_JAR_FOLDER" = "~/DATABASECONNECTOR_JAR_FOLDER")
+    DatabaseConnector::downloadJdbcDrivers("sql server")
+  }
+
   details <- dbConnectDetails(DatabaseConnector::DatabaseConnectorDriver(),
                               dbms = "sql server",
                               server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
@@ -119,6 +120,11 @@ test_that("dbConnectDetails works on SQL Server using DatabaseConnector", {
 
 test_that("dbConnectDetails works on redshift using DatabaseConnector", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
+
+  if (Sys.getenv("DATABASECONNECTOR_JAR_FOLDER") == "") {
+    Sys.setenv("DATABASECONNECTOR_JAR_FOLDER" = "~/DATABASECONNECTOR_JAR_FOLDER")
+    DatabaseConnector::downloadJdbcDrivers("redshift")
+  }
 
   details <- dbConnectDetails(DatabaseConnector::DatabaseConnectorDriver(),
                               dbms = "redshift",
