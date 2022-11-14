@@ -26,7 +26,7 @@ validate_cdm <- function(cdm) {
 }
 
 #' @export
-#' @describeIn validate_cdm
+#' @describeIn validate_cdm Camel case alias
 validateCdm <- validate_cdm
 
 validate_cdm_colnames <- function(cdm) {
@@ -50,11 +50,6 @@ validate_cdm_colnames <- function(cdm) {
   if (!any_dif) cli::cat_bullet("cdm table names", bullet = "tick", bullet_col = "green")
 }
 
-#' @export
-#' @describeIn validate_cdm_colnames
-validateCdmColnames <- validate_cdm_colnames
-
-
 validate_cdm_rowcounts <- function(cdm) {
   nm <- names(cdm)
   rowcounts <- purrr::map_dbl(nm, function(.) dplyr::tally(cdm[[.]], name = "n") %>% dplyr::pull(.data$n)) %>%
@@ -69,10 +64,6 @@ validate_cdm_rowcounts <- function(cdm) {
   }
   invisible(cdm)
 }
-
-#' @export
-#' @describeIn validate_cdm_rowcounts
-validateCdmRowcounts <- validate_cdm_rowcounts
 
 #' Assert that tables exist in a cdm object
 #'
@@ -154,5 +145,5 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 }
 
 #' @export
-#' @describeIn assert_tables
+#' @describeIn assert_tables Camel case alias
 assertTables <- assert_tables

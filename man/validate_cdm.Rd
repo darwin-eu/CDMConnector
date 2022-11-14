@@ -2,9 +2,12 @@
 % Please edit documentation in R/validate.R
 \name{validate_cdm}
 \alias{validate_cdm}
+\alias{validateCdm}
 \title{Validation report for a CDM}
 \usage{
 validate_cdm(cdm)
+
+validateCdm(cdm)
 }
 \arguments{
 \item{cdm}{A cdm reference object.}
@@ -17,6 +20,11 @@ Print a short validation report for a cdm object. The validation includes
 checking that column names are correct and that no tables are empty. A short
 report is printed to the console. This function is meant for interactive use.
 }
+\section{Functions}{
+\itemize{
+\item \code{validateCdm()}: Camel case alias
+
+}}
 \examples{
 \dontrun{
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())

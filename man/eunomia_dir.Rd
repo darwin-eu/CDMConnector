@@ -2,9 +2,12 @@
 % Please edit documentation in R/cdm.R
 \name{eunomia_dir}
 \alias{eunomia_dir}
+\alias{eunomiaDir}
 \title{Create a new Eunomia CDM}
 \usage{
 eunomia_dir(exdir = NULL)
+
+eunomiaDir(exdir = NULL)
 }
 \arguments{
 \item{exdir}{Enclosing directory where the Eunomia CDM should be created.
@@ -16,6 +19,11 @@ The full path to the new Eunomia CDM that can be passed to \code{dbConnect()}
 \description{
 Create a copy of the duckdb Eunomia CDM and return the file path
 }
+\section{Functions}{
+\itemize{
+\item \code{eunomiaDir()}: Camel case alias
+
+}}
 \examples{
 \dontrun{
 library(DBI)
