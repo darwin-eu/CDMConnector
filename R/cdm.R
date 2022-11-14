@@ -298,7 +298,7 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
 cdmFromFiles <- function(path, cdmTables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
-  cdm_from_files(path = path, cdm_tables = cdm_tables, format = format, as_data_frame = as_data_frame)
+  cdm_from_files(path = path, cdm_tables = cdmTables, format = format, as_data_frame = as_data_frame)
 }
 
 # collect <- function(x, ...) {UseMethod("collect")}

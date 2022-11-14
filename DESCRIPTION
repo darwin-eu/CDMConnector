@@ -39,6 +39,8 @@ Suggests:
     ggplot2,
     SqlRender,
     testthat (>= 3.0.0),
-    DatabaseConnector
+    DatabaseConnector,
+    lubridate,
+    withR
 Config/testthat/edition: 3
 VignetteBuilder: knitr, rmarkdown
