@@ -30,6 +30,7 @@ validate_cdm <- function(cdm) {
 validateCdm <- validate_cdm
 
 validate_cdm_colnames <- function(cdm) {
+  withr::local_options(list(arrow.pull_as_vector = TRUE)) # needed for pull with arrow
   any_dif <- FALSE
   for (nm in names(cdm)) {
       # spec_cdm_field is a a global internal package dataframe created in extras/package_maintenece.R
@@ -51,6 +52,7 @@ validate_cdm_colnames <- function(cdm) {
 }
 
 validate_cdm_rowcounts <- function(cdm) {
+  withr::local_options(list(arrow.pull_as_vector = TRUE)) # needed for pull with arrow
   nm <- names(cdm)
   rowcounts <- purrr::map_dbl(nm, function(.) dplyr::tally(cdm[[.]], name = "n") %>% dplyr::pull(.data$n)) %>%
     rlang::set_names(nm)
@@ -105,6 +107,7 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
   checkmate::assertLogical(empty.ok, len = 1, null.ok = FALSE)
   checkmate::assertCharacter(tables, min.len = 1, min.chars = 1, null.ok = FALSE)
   checkmate::assertClass(cdm, "cdm_reference")
+  withr::local_options(list(arrow.pull_as_vector = TRUE))
 
   missingTables <- tables[!(tables %in% names(cdm))]
   existingTables <- tables[tables %in% names(cdm)]
