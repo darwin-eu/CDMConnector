@@ -23,6 +23,7 @@
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 dateadd <- function(date, number, interval = "day") {
+  ensure_installed("SqlRender")
   checkmate::assertCharacter(interval, len = 1)
   checkmate::assertSubset(interval, choices = c("day", "year"))
   checkmate::assertCharacter(date, len = 1)
@@ -64,6 +65,7 @@ dateadd <- function(date, number, interval = "day") {
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 datediff <- function(start, end, interval = "day") {
+  ensure_installed("SqlRender")
   checkmate::assertCharacter(interval, len = 1)
   checkmate::assertSubset(interval, choices = c("day", "year"))
   checkmate::assertCharacter(start, len = 1)
