@@ -60,6 +60,27 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   cdm
 }
 
+
+#' Create a CDM reference object from a database connection
+#'
+#' @param con A DBI database connection to a database where an OMOP CDM v5.4 instance is located.
+#' @param cdmSchema The schema where the OMOP CDM tables are located. Defaults to NULL.
+#' @param writeSchema An optional schema in the CDM database that the user has write access to.
+#' @param cdmTables Which tables should be included? Supports a character vector, tidyselect selection helpers, or table groups.
+#' \itemize{
+#'   \item{tbl_group("all")}{all CDM tables}
+#'   \item{tbl_group("vocab")}{the CDM vocabulary tables}
+#'   \item{tbl_group("clinical")}{the clinical CDM tables}
+#' }
+#' @param cohortTables A character vector listing the cohort table names to be included in the CDM object.
+#' Cohort tables must be in the write_schema.
+#' @return A list of dplyr database table references pointing to CDM tables
+#' @importFrom dplyr all_of matches starts_with ends_with contains
+#' @export
+cdmFromCon <- function(con, cdmSchema = NULL, cdmTables = tbl_group("default"), writeSchema = NULL, cohortTables = NULL) {
+  cdm_from_con(con = con, cdm_schema = cdmSchema, cdm_tables = cdmTables, write_schema = writeSchema, cohort_tables = cohortTables)
+}
+
 #' Print a CDM reference object
 #'
 #' @param x A cdm_reference object
@@ -150,6 +171,9 @@ eunomia_dir <- function(exdir = tempdir()) {
   path
 }
 
+#' @export
+#' @describeIn eunomia_dir
+eunomiaDir <- eunomia_dir
 
 #' Get the database management system (dbms) from a cdm_reference or DBI connection
 #'
@@ -258,6 +282,18 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
   attr(cdm, "write_schema") <- NULL
   attr(cdm, "dbcon") <- NULL
   cdm
+}
+
+#' Create a CDM reference from a folder containing parquet, csv, or feather files
+#'
+#' @param path A folder where an OMOP CDM v5.4 instance is located.
+#' @param cdmTables Which tables should be included? Supports tidyselect and custom selection groups.
+#' @param format What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".
+#' @param as_data_frame TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.
+#' @return A list of dplyr database table references pointing to CDM tables
+#' @export
+cdmFromFiles <- function(path, cdmTables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
+  cdm_from_files(path = path, cdm_tables = cdm_tables, format = format, as_data_frame = as_data_frame)
 }
 
 #' Bring a remote CDM reference into R

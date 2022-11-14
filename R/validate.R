@@ -25,6 +25,10 @@ validate_cdm <- function(cdm) {
   validate_cdm_rowcounts(cdm)
 }
 
+#' @export
+#' @describeIn validate_cdm
+validateCdm <- validate_cdm
+
 validate_cdm_colnames <- function(cdm) {
   any_dif <- FALSE
   for (nm in names(cdm)) {
@@ -45,6 +49,11 @@ validate_cdm_colnames <- function(cdm) {
   }
   if (!any_dif) cli::cat_bullet("cdm table names", bullet = "tick", bullet_col = "green")
 }
+
+#' @export
+#' @describeIn validate_cdm_colnames
+validateCdmColnames <- validate_cdm_colnames
+
 
 validate_cdm_rowcounts <- function(cdm) {
   nm <- names(cdm)
