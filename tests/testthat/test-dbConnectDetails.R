@@ -80,7 +80,9 @@ test_that("dbConnectDetails works on duckdb", {
   expect_true("n" %in% names(result))
 })
 
+# DatabaseConnector tests ----
 test_that("dbConnectDetails works on postgres using DatabaseConnector", {
+  skip_on_ci()
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
 
   if (Sys.getenv("DATABASECONNECTOR_JAR_FOLDER") == "") {
@@ -100,6 +102,7 @@ test_that("dbConnectDetails works on postgres using DatabaseConnector", {
 })
 
 test_that("dbConnectDetails works on SQL Server using DatabaseConnector", {
+  skip_on_ci()
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
 
   if (Sys.getenv("DATABASECONNECTOR_JAR_FOLDER") == "") {
@@ -119,6 +122,7 @@ test_that("dbConnectDetails works on SQL Server using DatabaseConnector", {
 })
 
 test_that("dbConnectDetails works on redshift using DatabaseConnector", {
+  skip_on_ci()
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
 
   if (Sys.getenv("DATABASECONNECTOR_JAR_FOLDER") == "") {
