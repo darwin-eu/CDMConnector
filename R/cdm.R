@@ -84,7 +84,7 @@ cdmFromCon <- function(con, cdmSchema = NULL, cdmTables = tbl_group("default"), 
 #' Print a CDM reference object
 #'
 #' @param x A cdm_reference object
-#' @param ... Included for compatiblity with generic. Not used.
+#' @param ... Included for compatibility with generic. Not used.
 #'
 #' @return Invisibly returns the input
 #' @export
@@ -122,7 +122,7 @@ verify_write_access <- function(con, write_schema) {
 #' device_exposure, measurement, observation, death, note, note_nlp, specimen,
 #' fact_relationship, location, care_site, provider, payer_plan_period,
 #' cost, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship,
-#' concept_ancestor, drug_strength
+#' concept_ancestor, concept_synonym, drug_strength
 #'
 #' @param group A character vector of CDM table groups: "vocab", "clinical", "all", "default", "derived".
 #'
@@ -149,7 +149,8 @@ tbl_group <- function(group) {
 #'
 #' Create a copy of the duckdb Eunomia CDM and return the file path
 #'
-#' @param exdir Enclosing directory where the Eunomia CDM should be created
+#' @param exdir Enclosing directory where the Eunomia CDM should be created.
+#' If NULL (default) then a temp folder is created.
 #'
 #' @return The full path to the new Eunomia CDM that can be passed to `dbConnect()`
 #' @export
@@ -162,7 +163,11 @@ tbl_group <- function(group) {
 #' dbListTables(con)
 #' dbDisconnect(con)
 #' }
-eunomia_dir <- function(exdir = tempdir()) {
+eunomia_dir <- function(exdir = NULL) {
+  if (utils::packageVersion("duckdb") != "0.5.1")
+    rlang::abort("duckdb version 0.5.1 is required to use eunomia_dir(). \nPlease install the latest version of duckdb (0.5.1).")
+
+  if (is.null(exdir)) exdir <- file.path(tempdir(TRUE), paste(sample(letters, 8, replace = TRUE), collapse = ""))
   file <- xzfile(system.file("duckdb", "cdm.duckdb.tar.xz", package = "CDMConnector"), open = "rb")
   untar(file, exdir = exdir)
   close(file)

@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # - {os: macOS-latest,   r: 'release'}
+          - {os: macOS-latest,   r: 'release'}
           - {os: windows-latest, r: 'release'}
-          # - {os: ubuntu-latest,   r: 'release'}
-          # - {os: ubuntu-latest,   r: 'devel'}
+          - {os: ubuntu-latest,   r: 'release'}
+          - {os: ubuntu-latest,   r: 'devel'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -46,9 +46,7 @@ jobs:
       - name: Install latest duckdb version on windows
         if: runner.os == 'Windows'
         run: |
-          if(substr(packageVersion("duckdb"), 1, 5) != "0.3.2") {
-            install.packages("duckdb"", repos = "https://packagemanager.rstudio.com/all/latest", type = "win.binary")
-          }
+            install.packages("duckdb", repos = "https://packagemanager.rstudio.com/all/latest", type = "win.binary")
         shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v2

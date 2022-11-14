@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
       </span>
     </div>
 
@@ -32,7 +32,7 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/CDMConnector_and_dbplyr.html">CDMConnector and dbplyr</a>
+      <a href="../articles/CDMConnector_and_Dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
       <a href="../articles/DBI_connection_examples.html">DBI connection examples</a>
@@ -47,6 +47,9 @@
       <a href="../articles/getting-started.html">Getting Started</a>
     </li>
   </ul></li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -66,13 +69,14 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">eunomia_dir</span><span class="op">(</span>exdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">eunomia_dir</span><span class="op">(</span>exdir <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>exdir</dt>
-<dd><p>Enclosing directory where the Eunomia CDM should be created</p></dd>
+<dd><p>Enclosing directory where the Eunomia CDM should be created.
+If NULL (default) then a temp folder is created.</p></dd>
 
 </dl></div>
     <div id="value">

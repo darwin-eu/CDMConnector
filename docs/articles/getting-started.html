@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
       </span>
     </div>
 
@@ -50,7 +50,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/CDMConnector_and_dbplyr.html">CDMConnector and dbplyr</a>
+      <a href="../articles/CDMConnector_and_Dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
       <a href="../articles/DBI_connection_examples.html">DBI connection examples</a>
@@ -65,6 +65,9 @@
       <a href="../articles/getting-started.html">Getting Started</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
@@ -105,7 +108,7 @@ CDMConnector package.</p>
 <span><span class="va">cdm</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_ancestor, drug_strength</span></span></code></pre></div>
+<span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength</span></span></code></pre></div>
 <p>Individual CDM table references can be accessed using <code>$</code>
 and piped to dplyr verbs.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -113,7 +116,7 @@ and piped to dplyr verbs.</p>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [1 x 1]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.0 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCcIsmi/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpHns48h/yvruodfl/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt;       n</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  <span style="text-decoration: underline;">2</span>694</span></span>
@@ -122,7 +125,7 @@ and piped to dplyr verbs.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drug_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span>drug <span class="op">=</span> <span class="va">concept_name</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:     SQL [?? x 2]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database:   DuckDB 0.5.0 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCcIsmi/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpHns48h/yvruodfl/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Ordered by: desc(n)</span></span></span>
 <span><span class="co">#&gt;    drug                                                                        n</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -136,8 +139,7 @@ and piped to dplyr verbs.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> zoster vaccine, live                                                     <span style="text-decoration: underline;">2</span>125</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Acetaminophen 21.7 MG/ML / Dextromethorphan Hydrobromide 1 MG/ML / dox…  <span style="text-decoration: underline;">1</span>993</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> hepatitis B vaccine, adult dosage                                        <span style="text-decoration: underline;">1</span>916</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ Use `print(n = ...)` to see more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># … with more rows</span></span></span></code></pre></div>
 <p>To send SQL to the CDM use the connection object. The cdm reference
 also contains the connection as an attribute that can be accessed with
 the <code>dbcon</code> function.</p>
@@ -204,14 +206,12 @@ selection language</a> and provides a new selection helper:
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "person"               "observation_period"   "visit_occurrence"    </span></span>
 <span><span class="co">#&gt;  [4] "visit_detail"         "condition_occurrence" "drug_exposure"       </span></span>
-<span><span class="co">#&gt;  [7] "procedure_occurrence" "device_exposure"      "measurement"         </span></span>
-<span><span class="co">#&gt; [10] "observation"          "death"                "note"                </span></span>
-<span><span class="co">#&gt; [13] "note_nlp"             "specimen"             "fact_relationship"   </span></span>
-<span><span class="co">#&gt; [16] "location"             "care_site"            "provider"            </span></span>
-<span><span class="co">#&gt; [19] "payer_plan_period"    "cost"                 "drug_era"            </span></span>
-<span><span class="co">#&gt; [22] "dose_era"             "condition_era"        "concept"             </span></span>
-<span><span class="co">#&gt; [25] "vocabulary"           "concept_relationship" "concept_ancestor"    </span></span>
-<span><span class="co">#&gt; [28] "drug_strength"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [7] "procedure_occurrence" "measurement"          "observation"         </span></span>
+<span><span class="co">#&gt; [10] "death"                "location"             "care_site"           </span></span>
+<span><span class="co">#&gt; [13] "provider"             "drug_era"             "dose_era"            </span></span>
+<span><span class="co">#&gt; [16] "condition_era"        "concept"              "vocabulary"          </span></span>
+<span><span class="co">#&gt; [19] "concept_relationship" "concept_synonym"      "concept_ancestor"    </span></span>
+<span><span class="co">#&gt; [22] "drug_strength"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="include-cohort-tables">Include cohort tables<a class="anchor" aria-label="anchor" href="#include-cohort-tables"></a>
@@ -235,10 +235,10 @@ follows.</p>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;write_schema.cohort&gt; [2 x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.0 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCcIsmi/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpHns48h/yvruodfl/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt;   cohort_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         1          1 2022-09-10        2022-09-10     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         1          1 2022-11-02        2022-11-02     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         1          2 2020-02-03        2020-11-04</span></span></code></pre></div>
 </div>
 <div class="section level2">
