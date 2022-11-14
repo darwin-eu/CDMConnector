@@ -58,6 +58,12 @@
     <loc>/reference/collect.cdm_reference.html</loc>
   </url>
   <url>
+    <loc>/reference/dateadd.html</loc>
+  </url>
+  <url>
+    <loc>/reference/datediff.html</loc>
+  </url>
+  <url>
     <loc>/reference/dbConnect-dbConnectDetails-method.html</loc>
   </url>
   <url>

@@ -21,7 +21,7 @@ Create a copy of the duckdb Eunomia CDM and return the file path
 }
 \section{Functions}{
 \itemize{
-\item \code{eunomiaDir()}: Camel case alias
+\item \code{eunomiaDir()}: camelCase alias
 
 }}
 \examples{

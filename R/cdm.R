@@ -177,7 +177,7 @@ eunomia_dir <- function(exdir = NULL) {
 }
 
 #' @export
-#' @describeIn eunomia_dir Camel case alias
+#' @describeIn eunomia_dir camelCase alias
 eunomiaDir <- eunomia_dir
 
 #' Get the database management system (dbms) from a cdm_reference or DBI connection

@@ -22,7 +22,7 @@ report is printed to the console. This function is meant for interactive use.
 }
 \section{Functions}{
 \itemize{
-\item \code{validateCdm()}: Camel case alias
+\item \code{validateCdm()}: camelCase alias
 
 }}
 \examples{

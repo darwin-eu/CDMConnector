@@ -28,7 +28,7 @@ that the tables you need are in the cdm object, have the correct columns/fields,
 }
 \section{Functions}{
 \itemize{
-\item \code{assertTables()}: Camel case alias
+\item \code{assertTables()}: camelCase alias
 
 }}
 \examples{

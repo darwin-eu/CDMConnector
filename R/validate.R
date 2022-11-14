@@ -26,7 +26,7 @@ validate_cdm <- function(cdm) {
 }
 
 #' @export
-#' @describeIn validate_cdm Camel case alias
+#' @describeIn validate_cdm camelCase alias
 validateCdm <- validate_cdm
 
 validate_cdm_colnames <- function(cdm) {
@@ -149,5 +149,5 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 }
 
 #' @export
-#' @describeIn assert_tables Camel case alias
+#' @describeIn assert_tables camelCase alias
 assertTables <- assert_tables
