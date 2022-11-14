@@ -4,7 +4,7 @@
 \alias{collect.cdm_reference}
 \title{Bring a remote CDM reference into R}
 \usage{
-collect.cdm_reference(x, ...)
+\method{collect}{cdm_reference}(x, ...)
 }
 \arguments{
 \item{x}{A cdm_reference object.}

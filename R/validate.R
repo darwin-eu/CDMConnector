@@ -136,7 +136,8 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
     empty_tables <- rowcounts[rowcounts == 0]
 
     if (length(empty_tables) > 0) {
-      msg <- glue::glue("- {paste(names(empty_tables), collapse = ', ')} cdm tables are empty")
+      s <- ifelse(length(empty_tables) > 1, "s are", " is")
+      msg <- glue::glue("- {paste(names(empty_tables), collapse = ', ')} cdm table{s} empty")
       if (is.null(add)) rlang::abort(msg) else add$push(msg)
     }
   }

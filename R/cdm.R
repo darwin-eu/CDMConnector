@@ -301,6 +301,8 @@ cdmFromFiles <- function(path, cdmTables = tbl_group("default"), format = "auto"
   cdm_from_files(path = path, cdm_tables = cdm_tables, format = format, as_data_frame = as_data_frame)
 }
 
+# collect <- function(x, ...) {UseMethod("collect")}
+
 #' Bring a remote CDM reference into R
 #'
 #' This function calls collect on a list of lazy queries and returns
@@ -326,3 +328,7 @@ collect.cdm_reference <- function(x, ...) {
   }
   x
 }
+
+##' @importFrom dplyr collect
+##' @export
+NULL

@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -116,7 +116,7 @@ and piped to dplyr verbs.</p>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   SQL [1 x 1]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpHns48h/yvruodfl/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCofLL7/lqzhjimu/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt;       n</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  <span style="text-decoration: underline;">2</span>694</span></span>
@@ -125,7 +125,7 @@ and piped to dplyr verbs.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drug_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span>drug <span class="op">=</span> <span class="va">concept_name</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:     SQL [?? x 2]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpHns48h/yvruodfl/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCofLL7/lqzhjimu/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Ordered by: desc(n)</span></span></span>
 <span><span class="co">#&gt;    drug                                                                        n</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -235,10 +235,10 @@ follows.</p>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;write_schema.cohort&gt; [2 x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpHns48h/yvruodfl/cdm.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCofLL7/lqzhjimu/cdm.duckdb]</span></span></span>
 <span><span class="co">#&gt;   cohort_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         1          1 2022-11-02        2022-11-02     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         1          1 2022-11-14        2022-11-14     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         1          2 2020-02-03        2020-11-04</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -337,6 +337,62 @@ connection before the function exits.</p>
 <span><span class="fu">self_contained_query</span><span class="op">(</span><span class="va">connection_details</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      n</span></span>
 <span><span class="co">#&gt; 1 2694</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="programming-with-cdm-objects">Programming with cdm objects<a class="anchor" aria-label="anchor" href="#programming-with-cdm-objects"></a>
+</h2>
+<p>Since cdm object can include any subset of cdm tables it is important
+for functions that take cdm objects as input to check that the expected
+tables exists. The <code>assert_tables</code> function provides a
+checkmate style function that tests if the expected tables exist, have
+the correct columns, and (optionally) are not empty. It can also be used
+with checkmate assert collections.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mllg.github.io/checkmate/" class="external-link">checkmate</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, dbdir <span class="op">=</span> <span class="fu"><a href="../reference/eunomia_dir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/assert_tables.html">assertTables</a></span><span class="op">(</span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="st">"drug_era"</span><span class="op">)</span>, tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"person"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `assertTables()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> - person table not found in cdm object</span></span>
+<span></span>
+<span><span class="co"># add missing table error to collection</span></span>
+<span><span class="va">err</span> <span class="op">&lt;-</span> <span class="fu">checkmate</span><span class="fu">::</span><span class="fu"><a href="https://mllg.github.io/checkmate/reference/AssertCollection.html" class="external-link">makeAssertCollection</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/assert_tables.html">assertTables</a></span><span class="op">(</span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="st">"drug_era"</span><span class="op">)</span>, tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"person"</span><span class="op">)</span>, add <span class="op">=</span> <span class="va">err</span><span class="op">)</span></span>
+<span><span class="va">err</span><span class="op">$</span><span class="fu">getMessages</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "- person table not found in cdm object"</span></span></code></pre></div>
+<p><code>assert_tables</code> can be used in functions that accept
+<code>cdm_reference</code> objects as a parameter.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">countDrugsByGender</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/assert_tables.html">assertTables</a></span><span class="op">(</span><span class="va">cdm</span>, tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"drug_era"</span><span class="op">)</span>, empty.ok <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">drug_era</span>, by <span class="op">=</span> <span class="st">"person_id"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">gender_concept_id</span>, <span class="va">.data</span><span class="op">$</span><span class="va">drug_concept_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">countDrugsByGender</span><span class="op">(</span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="st">"person"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `assertTables()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> - drug_era table not found in cdm object</span></span>
+<span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"delete from drug_era"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 52508</span></span>
+<span><span class="fu">countDrugsByGender</span><span class="op">(</span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `assertTables()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> - drug_era cdm table is empty</span></span>
+<span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="code-style">Code style<a class="anchor" aria-label="anchor" href="#code-style"></a>
+</h2>
+<p>Camel case aliases are provided for many functions to fit both
+<code>snake_case</code> and <code>camelCase</code> programming
+styles.</p>
 </div>
 <div class="section level2">
 <h2 id="supported-dbi-drivers">Supported DBI drivers<a class="anchor" aria-label="anchor" href="#supported-dbi-drivers"></a>
