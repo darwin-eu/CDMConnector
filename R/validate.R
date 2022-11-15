@@ -32,9 +32,10 @@ validateCdm <- validate_cdm
 validate_cdm_colnames <- function(cdm) {
   withr::local_options(list(arrow.pull_as_vector = TRUE)) # needed for pull with arrow
   any_dif <- FALSE
+  ver <- attr(cdm, "cdm_version")
   for (nm in names(cdm)) {
       # spec_cdm_field is a a global internal package dataframe created in extras/package_maintenece.R
-      expected_columns <- spec_cdm_field %>% dplyr::filter(.data$cdmTableName == nm) %>% dplyr::pull(.data$cdmFieldName)
+      expected_columns <- spec_cdm_field[[ver]] %>% dplyr::filter(.data$cdmTableName == nm) %>% dplyr::pull(.data$cdmFieldName)
       actual_columns <- cdm[[nm]] %>% head(1) %>% collect() %>% colnames()
       # actual_columns <- actual_columns[-1]
       dif <- waldo::compare(expected_columns,
@@ -109,6 +110,8 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
   checkmate::assertClass(cdm, "cdm_reference")
   withr::local_options(list(arrow.pull_as_vector = TRUE))
 
+  ver <- attr(cdm, "cdm_version")
+
   missingTables <- tables[!(tables %in% names(cdm))]
   existingTables <- tables[tables %in% names(cdm)]
 
@@ -120,8 +123,8 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 
   # checking of column names will not throw an error if column names exist but are in the wrong order
   for (nm in existingTables) {
-    # spec_cdm_field is a a global internal package dataframe created in extras/package_maintenance.R
-    expectedColumns <- spec_cdm_field %>% dplyr::filter(.data$cdmTableName == nm) %>% dplyr::pull(.data$cdmFieldName)
+    # spec_cdm_field is global internal package data (list of dataframes) created in extras/package_maintenance.R
+    expectedColumns <- spec_cdm_field[[ver]] %>% dplyr::filter(.data$cdmTableName == .env$nm) %>% dplyr::pull(.data$cdmFieldName)
     actualColumns <- cdm[[nm]] %>% head(1) %>% collect() %>% colnames()
     missingColumns <- dplyr::setdiff(expectedColumns, actualColumns)
 

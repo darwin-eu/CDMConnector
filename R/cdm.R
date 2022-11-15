@@ -1,7 +1,7 @@
 
 #' Create a CDM reference object from a database connection
 #'
-#' @param con A DBI database connection to a database where an OMOP CDM v5.4 instance is located.
+#' @param con A DBI database connection to a database where an OMOP CDM v5.4 or v5.3 instance is located.
 #' @param cdm_schema The schema where the OMOP CDM tables are located. Defaults to NULL.
 #' @param write_schema An optional schema in the CDM database that the user has write access to.
 #' @param cdm_tables Which tables should be included? Supports a character vector, tidyselect selection helpers, or table groups.
@@ -15,15 +15,18 @@
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
-cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default"), write_schema = NULL, cohort_tables = NULL) {
+cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default"), write_schema = NULL, cohort_tables = NULL, cdm_version = "auto") {
   checkmate::assert_class(con, "DBIConnection")
   checkmate::assert_true(DBI::dbIsValid(con))
   checkmate::assert_character(cdm_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   checkmate::assert_character(write_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
+  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
+
+  if (cdm_version == "auto") cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
 
   # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
-  all_cdm_tables <- rlang::set_names(spec_cdm_table$cdmTableName, spec_cdm_table$cdmTableName)
+  all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
   cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
 
   if (dbms(con) == "duckdb") {
@@ -57,7 +60,39 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   attr(cdm, "cdm_schema") <- cdm_schema
   attr(cdm, "write_schema") <- write_schema
   attr(cdm, "dbcon") <- con
+  attr(cdm, "cdm_version") <- cdm_version
   cdm
+}
+
+detect_cdm_version <- function(con, cdm_schema = NULL) {
+
+  cdm_tables <- c("visit_occurrence", "cdm_source", "procedure_occurrence")
+  if (dbms(con) == "duckdb") {
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")))
+  } else if (is.null(cdm_schema)) {
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, .))
+  } else if (length(cdm_schema) == 1) {
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)))
+  } else if (length(cdm_schema) == 2) {
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)))
+  }
+  names(cdm) <- cdm_tables
+
+  # Try a few different things to figure out what the cdm version is
+  visit_occurrence_names <- cdm$visit_occurrence %>% head() %>% collect() %>% names() %>% tolower()
+  if ("admitting_source_concept_id" %in% visit_occurrence_names) return("5.4")
+  if ("admitted_from_concept_id" %in% visit_occurrence_names) return("5.3")
+
+  procedure_occurrence_names <- cdm$procedure_occurrence %>% head() %>% collect() %>% names() %>% tolower()
+  if ("procedure_end_date" %in% procedure_occurrence_names) return("5.4")
+
+  cdm_version <- cdm$cdm_source %>% pull(.data$cdm_version)
+  if (isTRUE(grepl("5\\.4", cdm_version))) return("5.4")
+  if (isTRUE(grepl("5\\.3", cdm_version))) return("5.3")
+
+  if ("episode" %in% listTables(con, schema = cdm_schema)) return("5.4") else return("5.3")
+
+  # rlang::abort("cdm version could not be automatically detected.")
 }
 
 
@@ -101,11 +136,11 @@ verify_write_access <- function(con, write_schema) {
   write_schema <- paste(write_schema, collapse = ".")
   tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
   tablename <- paste(write_schema, tablename, sep = ".")
-  # spec_cdm_table is a global internal package dataframe
-  DBI::dbWriteTable(con, DBI::SQL(tablename), spec_cdm_table[1:4,])
+  # spec_cdm_table is global internal package data (a list of dataframes) used here just to test write access
+  DBI::dbWriteTable(con, DBI::SQL(tablename), spec_cdm_table[[1]][1:4,])
   to_compare <- DBI::dbReadTable(con, DBI::SQL(tablename))
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
-  if(!dplyr::all_equal(spec_cdm_table[1:4,], to_compare)) rlang::abort(paste("Write access to schema", write_schema, "could not be verified."))
+  if(!dplyr::all_equal(spec_cdm_table[[1]][1:4,], to_compare)) rlang::abort(paste("Write access to schema", write_schema, "could not be verified."))
   invisible(NULL)
 }
 
@@ -142,7 +177,8 @@ verify_write_access <- function(con, write_schema) {
 tbl_group <- function(group) {
   # groups are defined in the internal package dataframe called spec_cdm_table created by a script in the extras folder
   checkmate::assert_subset(group, c("vocab", "clinical", "all", "default", "derived"))
-  purrr::map(group, ~spec_cdm_table[spec_cdm_table[[paste0("group_", .)]], ]$cdmTableName) %>% unlist() %>% unique()
+  spec <- spec_cdm_table[["5.3"]] # use v5.3 here. Currently the set of table groups between 5.3 and 5.4 are the same.
+  purrr::map(group, ~spec[spec[[paste0("group_", .)]], ]$cdmTableName) %>% unlist() %>% unique()
 }
 
 #' Create a new Eunomia CDM
@@ -254,8 +290,10 @@ stow <- function(cdm, path, format = "parquet") {
 #' @param as_data_frame TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
-cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
+cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "auto", as_data_frame = TRUE, cdm_version = "5.3") {
   checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
+  checkmate::assert_choice(cdm_version, c("5.3", "5.4"))
+  checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
   checkmate::assert_true(file.exists(path))
 
   path <- path.expand(path)
@@ -269,7 +307,7 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
   }
 
   # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
-  all_cdm_tables <- rlang::set_names(spec_cdm_table$cdmTableName, spec_cdm_table$cdmTableName)
+  all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
   cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
 
   cdm_table_files <- file.path(path, paste0(cdm_tables, ".", format))
@@ -286,6 +324,7 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL
   attr(cdm, "dbcon") <- NULL
+  attr(cdm, "cdm_version") <- cdm_version
   cdm
 }
 

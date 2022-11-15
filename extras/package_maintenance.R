@@ -1,8 +1,10 @@
-
+# Create internal package data
 
 library(dplyr)
-cdm_fields_src <- readr::read_csv(system.file(file.path("csv", "OMOP_CDMv5.4_Field_Level.csv"), package = "CommonDataModel"))
-cdm_tables_src <- readr::read_csv(system.file(file.path("csv", "OMOP_CDMv5.4_Table_Level.csv"), package = "CommonDataModel"))
+cdm_fields_src_54 <- readr::read_csv(system.file(file.path("csv", "OMOP_CDMv5.4_Field_Level.csv"), package = "CommonDataModel"))
+cdm_tables_src_54 <- readr::read_csv(system.file(file.path("csv", "OMOP_CDMv5.4_Table_Level.csv"), package = "CommonDataModel"))
+cdm_fields_src_53 <- readr::read_csv(system.file(file.path("csv", "OMOP_CDMv5.3_Field_Level.csv"), package = "CommonDataModel"))
+cdm_tables_src_53 <- readr::read_csv(system.file(file.path("csv", "OMOP_CDMv5.3_Table_Level.csv"), package = "CommonDataModel"))
 
 
 # define table groupings
@@ -39,9 +41,9 @@ derived_tables <- c("condition_era", "drug_era", "dose_era")
 #   "relationship", "concept_synonym", "concept_ancestor", "source_to_concept_map",
 #   "drug_strength", "cohort", "cohort_definition")
 
+# CDM 5.3 and 5.4 specs
 
-
-spec_cdm_table <-  cdm_tables_src %>%
+spec_cdm_table_54 <-  cdm_tables_src_54 %>%
   select(1:4) %>%
   mutate(across(everything(), tolower)) %>%
   mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE)) %>%
@@ -53,14 +55,36 @@ spec_cdm_table <-  cdm_tables_src %>%
 
 
 
-spec_cdm_field <-  cdm_fields_src %>%
+spec_cdm_field_54 <-  cdm_fields_src_54 %>%
   select(1:4) %>%
   mutate(across(everything(), tolower)) %>%
   mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE))
 
 
-readr::write_csv(spec_cdm_field, file.path("inst", "csv", "OMOP_CDMv5.4_Field_Level.csv"))
-readr::write_csv(spec_cdm_table, file.path("inst", "csv", "OMOP_CDMv5.4_Table_Level.csv"))
+spec_cdm_table_53 <-  cdm_tables_src_53 %>%
+  select(1:4) %>%
+  mutate(across(everything(), tolower)) %>%
+  mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE)) %>%
+  mutate(group_vocab = cdmTableName %in% vocab_tables,
+         group_all = TRUE,
+         group_clinical = cdmTableName %in% clinical_tables,
+         group_derived = cdmTableName %in% derived_tables,
+         group_default = cdmTableName %in% default_tables)
+
+spec_cdm_field_53 <-  cdm_fields_src_53 %>%
+  select(1:4) %>%
+  mutate(across(everything(), tolower)) %>%
+  mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE))
+
+spec_cdm_table <- list("5.4" = spec_cdm_table_54, "5.3" = spec_cdm_table_53)
+spec_cdm_field <- list("5.4" = spec_cdm_field_54, "5.3" = spec_cdm_field_53)
+
+
+readr::write_csv(spec_cdm_field_54, file.path("inst", "csv", "OMOP_CDMv5.4_Field_Level.csv"))
+readr::write_csv(spec_cdm_table_54, file.path("inst", "csv", "OMOP_CDMv5.4_Table_Level.csv"))
+
+readr::write_csv(spec_cdm_field_53, file.path("inst", "csv", "OMOP_CDMv5.3_Field_Level.csv"))
+readr::write_csv(spec_cdm_table_53, file.path("inst", "csv", "OMOP_CDMv5.3_Table_Level.csv"))
 
 usethis::use_data(spec_cdm_field, spec_cdm_table, internal = TRUE, overwrite = TRUE)
 

@@ -45,7 +45,7 @@ test_that("cdm reference works on postgres", {
 
 test_that("cdm reference works on sql server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-
+  debugonce(detect_cdm_version)
   con <- DBI::dbConnect(odbc::odbc(),
                         Driver   = "ODBC Driver 18 for SQL Server",
                         Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
