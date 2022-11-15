@@ -154,3 +154,26 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 #' @export
 #' @describeIn assert_tables camelCase alias
 assertTables <- assert_tables
+
+#' Assert that cdm has a writeable schema
+#'
+#' A cdm object can optionally contain a single schema in a database with write access.
+#' assert_write_schema checks that the cdm contains the "write_schema" attribute and
+#' tests that local dataframes can be written to tables in this schema.
+#'
+#' @param cdm A cdm object
+#' @param add An optional AssertCollection created by `checkmate::makeAssertCollection()` that errors should be added to.
+#'
+#' @return Invisibly returns the cdm object
+#' @export
+assert_write_schema <- function(cdm, add = NULL) {
+  write_schema <- attr(cdm, "write_schema")
+  checkmate::assert_character(write_schema, add = add)
+  verify_write_access(attr(cdm, "dbcon"), write_schema = write_schema, add = add)
+  invisible(cdm)
+}
+
+
+
+
+

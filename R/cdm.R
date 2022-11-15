@@ -80,8 +80,8 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 
   # Try a few different things to figure out what the cdm version is
   visit_occurrence_names <- cdm$visit_occurrence %>% head() %>% collect() %>% names() %>% tolower()
-  if ("admitting_source_concept_id" %in% visit_occurrence_names) return("5.4")
-  if ("admitted_from_concept_id" %in% visit_occurrence_names) return("5.3")
+  if ("admitting_source_concept_id" %in% visit_occurrence_names) return("5.3")
+  if ("admitted_from_concept_id" %in% visit_occurrence_names) return("5.4")
 
   procedure_occurrence_names <- cdm$procedure_occurrence %>% head() %>% collect() %>% names() %>% tolower()
   if ("procedure_end_date" %in% procedure_occurrence_names) return("5.4")
@@ -95,6 +95,28 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   # rlang::abort("cdm version could not be automatically detected.")
 }
 
+#' Get the CDM version
+#'
+#' @param cdm A cdm object
+#'
+#' @return "5.3" or "5.4"
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' cdm <- cdm_from_con(con, cdm_tables = c(tbl_group("default"), "cdm_source"))
+#' version(cdm)
+#'
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
+version <- function(cdm) {
+  checkmate::assert_class(cdm, "cdm_reference")
+  v <- attr(cdm, "cdm_version")
+  if (!(v %in% c("5.3", "5.4"))) rlang::abort("cdm object version attribute is not 5.3 or 5.4. Contact the maintainer.")
+  v
+}
 
 #' Create a CDM reference object from a database connection
 #'
@@ -132,7 +154,10 @@ print.cdm_reference <- function(x, ...) {
   invisible(x)
 }
 
-verify_write_access <- function(con, write_schema) {
+# con = database connection
+# write_schema = schema with write access
+# add = checkmate collection
+verify_write_access <- function(con, write_schema, add = NULL) {
   write_schema <- paste(write_schema, collapse = ".")
   tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
   tablename <- paste(write_schema, tablename, sep = ".")
@@ -140,7 +165,11 @@ verify_write_access <- function(con, write_schema) {
   DBI::dbWriteTable(con, DBI::SQL(tablename), spec_cdm_table[[1]][1:4,])
   to_compare <- DBI::dbReadTable(con, DBI::SQL(tablename))
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
-  if(!dplyr::all_equal(spec_cdm_table[[1]][1:4,], to_compare)) rlang::abort(paste("Write access to schema", write_schema, "could not be verified."))
+
+  if(!dplyr::all_equal(spec_cdm_table[[1]][1:4,], to_compare)) {
+    msg <- paste("Write access to schema", write_schema, "could not be verified.")
+    if (is.null(add)) rlang::abort(msg) else add$push(msg)
+  }
   invisible(NULL)
 }
 
@@ -371,3 +400,51 @@ collect.cdm_reference <- function(x, ...) {
 ##' @importFrom dplyr collect
 ##' @export
 NULL
+
+#' Extract CDM metadata
+#'
+#' Extract the name, version, and selected record counts from a cdm.
+#'
+#' @param cdm A cdm object
+#'
+#' @return A list of attributes about the cdm including selected fields from the
+#' cdm_source table and record counts from the person and observation_period tables
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' cdm <- cdm_from_con(con, cdm_tables = c(tbl_group("default"), "cdm_source"))
+#' snapshot(cdm)
+#'
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
+snapshot <- function(cdm) {
+
+  assert_tables(cdm, tables = c("cdm_source", "person", "observation_period", "vocabulary"))
+
+  person_cnt <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
+  observation_period_cnt <- dplyr::tally(cdm$observation_period, name = "n") %>% dplyr::pull(.data$n)
+  vocab_version <- cdm$vocabulary %>% dplyr::filter(.data$vocabulary_id == "None") %>% dplyr::pull(.data$vocabulary_version)
+  cdm_source_name <- cdm$cdm_source %>% dplyr::pull(.data$cdm_source_name)
+
+  dplyr::collect(cdm$cdm_source) %>%
+    dplyr::mutate(vocabulary_version = dplyr::coalesce(.env$vocab_version, .data$vocabulary_version)) %>%
+    dplyr::mutate(person_cnt = .env$person_cnt, observation_period_cnt = .env$observation_period_cnt) %>%
+    dplyr::select(.data$cdm_source_name,
+                  .data$cdm_version,
+                  .data$cdm_holder,
+                  .data$cdm_release_date,
+                  .data$vocabulary_version,
+                  .data$person_cnt,
+                  .data$observation_period_cnt) %>%
+    as.list() %>%
+    magrittr::set_class("cdm_snapshot")
+}
+
+print.cdm_snapshot <- function(x, ...) {
+  cli::cat_rule(s$cdm_source_name)
+  purrr::walk2(names(s[-1]), s[-1], ~cli::cat_bullet(.x, ": ", .y))
+}
+

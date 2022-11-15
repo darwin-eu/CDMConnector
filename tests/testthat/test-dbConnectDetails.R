@@ -3,7 +3,9 @@ library(dplyr, warn.conflicts = FALSE)
 library(DBI)
 
 self_contained_query <- function(connection_details, cdm_schema) {
-  con <- DBI::dbConnect(connection_details)
+  suppressMessages({
+    con <- DBI::dbConnect(connection_details)
+  })
   if(dbms(con) == "duckdb") {
     on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else {

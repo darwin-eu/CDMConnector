@@ -13,6 +13,10 @@ test_that("cdm reference works locally", {
 
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
+  expect_error(assert_tables(cdm, "person"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
   expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
 
   expect_true("concept" %in% names(cdm))
@@ -36,6 +40,10 @@ test_that("cdm reference works on postgres", {
 
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
+  expect_error(assert_tables(cdm, "person"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
@@ -45,7 +53,7 @@ test_that("cdm reference works on postgres", {
 
 test_that("cdm reference works on sql server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-  debugonce(detect_cdm_version)
+  # debugonce(detect_cdm_version)
   con <- DBI::dbConnect(odbc::odbc(),
                         Driver   = "ODBC Driver 18 for SQL Server",
                         Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
@@ -60,6 +68,10 @@ test_that("cdm reference works on sql server", {
 
   cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = tbl_group("vocab"))
 
+  expect_error(assert_tables(cdm, "person"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
@@ -67,9 +79,9 @@ test_that("cdm reference works on sql server", {
   expect_null(verify_write_access(con, write_schema = c("tempdb", "dbo")))
 
   cohort <- dplyr::tibble(cohort_id = 1L,
-                           subject_id = 1L:2L,
-                           cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
-                           cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
+                          subject_id = 1L:2L,
+                          cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
+                          cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
 
   DBI::dbWriteTable(con, DBI::Id(catalog = "tempdb", schema = "dbo", table = "cohort"), cohort, overwrite = TRUE)
 
@@ -105,6 +117,10 @@ test_that("cdm reference works on redshift", {
 
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
+  expect_error(assert_tables(cdm, "person"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
@@ -122,6 +138,10 @@ test_that("cdm reference works on duckdb", {
   expect_true(is.character(listTables(con)))
 
   cdm <- cdm_from_con(con, cdm_tables = tbl_group("vocab"))
+
+  expect_error(assert_tables(cdm, "person"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
