@@ -29,6 +29,7 @@ test_that("Date functions work on duckdb", {
 
 
 test_that("Date functions work on Postgres", {
+  skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
   con <- DBI::dbConnect(RPostgres::Postgres(),
                         dbname =   Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
                         host =     Sys.getenv("CDM5_POSTGRESQL_HOST"),
@@ -63,6 +64,7 @@ test_that("Date functions work on Postgres", {
 
 
 test_that("Date functions work on SQL Server", {
+  skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
   con <-   con <- DBI::dbConnect(odbc::odbc(),
                                  Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
                                  Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
@@ -100,6 +102,7 @@ test_that("Date functions work on SQL Server", {
 
 
 test_that("Date functions work on Redshift", {
+  skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
   con <- DBI::dbConnect(RPostgres::Redshift(),
                         dbname   = Sys.getenv("CDM5_REDSHIFT_DBNAME"),
                         host     = Sys.getenv("CDM5_REDSHIFT_HOST"),
