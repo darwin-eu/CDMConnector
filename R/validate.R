@@ -173,6 +173,9 @@ assert_write_schema <- function(cdm, add = NULL) {
   invisible(cdm)
 }
 
+#' @export
+#' @describeIn assert_tables camelCase alias
+assertWriteSchema <- assert_write_schema
 
 
 
