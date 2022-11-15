@@ -117,7 +117,7 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 
   if (length(missingTables) > 0) {
     s <- ifelse(length(missingTables) > 1, "s", "")
-    msg <- glue::glue("- {paste(missingTables, collapse = ',' )} table{s} not found in cdm object")
+    msg <- glue::glue("- {paste(missingTables, collapse = ', ' )} table{s} not found in cdm object")
     if (is.null(add)) rlang::abort(msg) else add$push(msg)
   }
 

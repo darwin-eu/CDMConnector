@@ -9,11 +9,12 @@ cdm_from_con(
   cdm_schema = NULL,
   cdm_tables = tbl_group("default"),
   write_schema = NULL,
-  cohort_tables = NULL
+  cohort_tables = NULL,
+  cdm_version = "auto"
 )
 }
 \arguments{
-\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 instance is located.}
+\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or v5.3 instance is located.}
 
 \item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults to NULL.}
 
