@@ -6,6 +6,9 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
+[![codecov.io](https://codecov.io/github/OdyOSG/CDMConnector/coverage.svg?branch=main)](https://codecov.io/github/OdyOSG/CDMConnector?branch=main)
+[![Build
+Status](https://github.com/OdyOSG/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/OdyOSG/CDMConnector/actions?query=workflow%3AR-CMD-check)
 <!-- badges: end -->
 
 > Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
@@ -67,7 +70,7 @@ Create a `cdm_reference` object from any DBI connection. Use the
 
     ## # OMOP CDM reference (tbl_duckdb_connection)
     ## 
-    ## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_ancestor, drug_strength
+    ## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength
 
 A `cdm_reference` is a named list of table references:
 
@@ -80,14 +83,15 @@ A `cdm_reference` is a named list of table references:
     ## [10] "death"                "location"             "care_site"           
     ## [13] "provider"             "drug_era"             "dose_era"            
     ## [16] "condition_era"        "concept"              "vocabulary"          
-    ## [19] "concept_relationship" "concept_ancestor"     "drug_strength"
+    ## [19] "concept_relationship" "concept_synonym"      "concept_ancestor"    
+    ## [22] "drug_strength"
 
 Use dplyr verbs with the table references.
 
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpFda1KI/ymwnttkr/cdm.duckdb]
+    ## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpp4PBsV/dcdsdhnh/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -99,7 +103,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpFda1KI/ymwnttkr/cdm.duckdb]
+    ## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpp4PBsV/dcdsdhnh/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
