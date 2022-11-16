@@ -52,7 +52,7 @@ test_that("cdm reference works on postgres", {
 
 test_that("cdm reference works on sql server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-  # debugonce(detect_cdm_version)
+
   con <- DBI::dbConnect(odbc::odbc(),
                         Driver   = "ODBC Driver 18 for SQL Server",
                         Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
@@ -115,8 +115,9 @@ test_that("cdm reference works on redshift", {
 
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), cdm_tables = tbl_group("default"))
 
-  expect_error(assert_tables(cdm, "person"))
+  expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_e
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
@@ -211,21 +212,18 @@ test_that("stow and cdm_from_files works", {
 
   expect_equal(list.files(save_path), c("observation_period.parquet" ,"person.parquet"))
 
-  # test tidyselect in cdm_from_files. Should not produce message about ambiguous names.
-  expect_message(cdm_from_files(save_path, cdm_tables = matches("person|observation_period")), NA)
-  expect_message(cdm_from_files(save_path, cdm_tables = c(person, observation_period)), NA)
-  expect_message(cdm_from_files(save_path, cdm_tables = c("person", "observation_period")), NA)
-  expect_message(cdm_from_files(save_path, cdm_tables = all_of(cdm_tables)), NA)
+  expect_message(cdm_from_files(save_path), NA)
+  expect_warning(cdm_from_files(save_path, cdm_tables = all_of(cdm_tables)), "deprecated")
 
-  local_cdm <- cdm_from_files(save_path, cdm_tables = all_of(cdm_tables))
+  local_cdm <- cdm_from_files(save_path)
   expect_s3_class(local_cdm, "cdm_reference")
   expect_equal(local_cdm$person, collect(cdm$person))
-  expect_output(validate_cdm(local_cdm))
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
 
-  local_arrow_cdm <- cdm_from_files(save_path, cdm_tables = all_of(cdm_tables), as_data_frame = FALSE)
+  local_arrow_cdm <- cdm_from_files(save_path, as_data_frame = FALSE)
   expect_s3_class(local_arrow_cdm, "cdm_reference")
   expect_equal(collect(local_arrow_cdm$person), collect(cdm$person))
-  expect_output(validate_cdm(local_arrow_cdm))
+  expect_error(validate_cdm(local_arrow_cdm))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
