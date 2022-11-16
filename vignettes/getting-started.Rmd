@@ -141,7 +141,7 @@ list.files(save_path)
 `stow` saves the cdm object as a set of files. `cdm_from_files` read the files back into R as a cdm_reference object. The tables can be stored as R dataframes or Arrow Tables. In both cases cdm tables can be manipulated with `dplyr` verbs.
 
 ```{r}
-cdm <- cdm_from_files(save_path, cdm_tables = c("cohort", "observation_period", "person"))
+cdm <- cdm_from_files(save_path)
 
 class(cdm$cohort)
 

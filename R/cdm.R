@@ -320,13 +320,20 @@ stow <- function(cdm, path, format = "parquet") {
 #' @param format What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".
 #' @param as_data_frame TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
+#' @importFrom lifecycle deprecated
 #' @export
-cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
+cdm_from_files <- function(path, cdm_tables = deprecated(), format = "auto", as_data_frame = TRUE) {
   checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
-  checkmate::assert_choice(cdm_version, c("5.3", "5.4"))
   checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
   checkmate::assert_true(file.exists(path))
 
+  if (lifecycle::is_present(cdm_tables)) {
+    lifecycle::deprecate_warn(
+      when = "0.2.0",
+      what = "cdm_from_files(cdm_tables)",
+      details = "Ability to select a subset of cdm tables when reading a cdm from files has been deprecated. All cdm table files are read into R."
+    )
+  }
   path <- path.expand(path)
 
   files <- list.files(path, full.names = TRUE)
@@ -337,23 +344,17 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
     checkmate::assert_choice(format, c("parquet", "csv", "feather"))
   }
 
-  # TODO how should we handle subsetting from a set of files and using additional tables like cohort.
-  # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
-  # all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
-  all_files <- tools::file_path_sans_ext(basename(list.files(path)))
-  names(all_files) <- all_files
-  cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_files))
-
+  cdm_tables <- tools::file_path_sans_ext(basename(list.files(path)))
   cdm_table_files <- file.path(path, paste0(cdm_tables, ".", format))
   purrr::walk(cdm_table_files, function(.) checkmate::assert_file_exists(., "r"))
 
   cdm <- switch (format,
-    parquet = purrr::map(cdm_table_files, function(.) arrow::read_parquet(., as_data_frame = as_data_frame)),
-    csv = purrr::map(cdm_table_files, function(.) arrow::read_csv_arrow(., as_data_frame = as_data_frame)),
-    feather = purrr::map(cdm_table_files, function(.) arrow::read_feather(., as_data_frame = as_data_frame))
+                 parquet = purrr::map(cdm_table_files, function(.) arrow::read_parquet(., as_data_frame = as_data_frame)),
+                 csv = purrr::map(cdm_table_files, function(.) arrow::read_csv_arrow(., as_data_frame = as_data_frame)),
+                 feather = purrr::map(cdm_table_files, function(.) arrow::read_feather(., as_data_frame = as_data_frame))
   ) %>%
-  magrittr::set_names(cdm_tables) %>%
-  magrittr::set_class("cdm_reference")
+    magrittr::set_names(cdm_tables) %>%
+    magrittr::set_class("cdm_reference")
 
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL
