@@ -335,9 +335,12 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
     checkmate::assert_choice(format, c("parquet", "csv", "feather"))
   }
 
+  # TODO how should we handle subsetting from a set of files and using additional tables like cohort.
   # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
-  all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
-  cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
+  # all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
+  all_files <- tools::file_path_sans_ext(list.files(path))
+  names(all_files) <- all_files
+  cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_files))
 
   cdm_table_files <- file.path(path, paste0(cdm_tables, ".", format))
   purrr::walk(cdm_table_files, function(.) checkmate::assert_file_exists(., "r"))
