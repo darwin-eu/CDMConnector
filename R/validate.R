@@ -20,6 +20,8 @@
 #' }
 validate_cdm <- function(cdm) {
   checkmate::assert_class(cdm, "cdm_reference")
+  if(is.null(attr(cdm, "dbcon"))) rlang::abort("validate_cdm is not implement for local cdms")
+
   cli::cat_rule(glue::glue("CDM v5.4 validation (checking {length(cdm)} tables)"))
   validate_cdm_colnames(cdm)
   validate_cdm_rowcounts(cdm)
@@ -168,6 +170,7 @@ assertTables <- assert_tables
 #' @return Invisibly returns the cdm object
 #' @export
 assert_write_schema <- function(cdm, add = NULL) {
+  if (is.null(attr(cdm, "dbcon"))) rlang::abort("Local cdm objects do not have a write schema.")
   write_schema <- attr(cdm, "write_schema")
   checkmate::assert_character(write_schema, add = add)
   verify_write_access(attr(cdm, "dbcon"), write_schema = write_schema, add = add)
