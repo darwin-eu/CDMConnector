@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: 
       person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
              comment = c(ORCID = "0000-0001-5576-8701"))
@@ -28,7 +28,9 @@ Imports:
     glue,
     waldo,
     arrow,
-    methods
+    methods,
+    withr,
+    lifecycle
 Suggests: 
     covr,
     knitr,
@@ -38,6 +40,8 @@ Suggests:
     odbc,
     ggplot2,
     SqlRender,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    DatabaseConnector,
+    lubridate
 Config/testthat/edition: 3
 VignetteBuilder: knitr, rmarkdown

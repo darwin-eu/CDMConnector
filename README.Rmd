@@ -9,6 +9,8 @@ output: md_document
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
+[![codecov.io](https://codecov.io/github/OdyOSG/CDMConnector/coverage.svg?branch=main)](https://codecov.io/github/OdyOSG/CDMConnector?branch=main)
+[![Build Status](https://github.com/OdyOSG/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/OdyOSG/CDMConnector/actions?query=workflow%3AR-CMD-check)
 <!-- badges: end -->
 
 
@@ -23,7 +25,7 @@ output: md_document
 
 ## Overview
 
-CDMConnector introduces a single R object that represents an OMOP CDM relational database heavily inspired by the [dm](https://cynkra.github.io/dm/) package. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to OMOP CDM tables in a remote RDBMS as well as metadata neccessary for interacting with a CDM. 
+CDMConnector introduces a single R object that represents an OMOP CDM relational database inspired by the [dm](https://cynkra.github.io/dm/), [DatabaseConnector](http://ohdsi.github.io/DatabaseConnector/), and [Andromeda](https://ohdsi.github.io/Andromeda/) packages. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to [OMOP CDM tables](https://ohdsi.github.io/CommonDataModel/) in a remote RDBMS as well as metadata necessary for interacting with a CDM. 
 
 
 [![OMOP CDM v5.4](https://ohdsi.github.io/CommonDataModel/images/cdm54.png)](https://ohdsi.github.io/CommonDataModel/)
@@ -35,14 +37,20 @@ A `cdm_reference` object behaves like a named list of tables.
 
 - Quickly create a list of references to a subset of CDM tables
 - Store connection information for later use inside functions
-- Use any DBI driver backend with the OMOP CDM
+- Use any DBI driver back-end with the OMOP CDM
 
 See Getting started for more details.
 
 
 ## Installation
 
-CDMConnector can be installed from GitHub:
+CDMConnector can be installed from CRAN:
+
+```r
+install.packages("CDMConnector")
+```
+
+The development version can be installed from GitHub:
 
 ```r
 # install.packages("devtools")
@@ -99,7 +107,7 @@ DBI::dbDisconnect(con)
 CDMConnector is tested using the following DBI driver backends:
 
 - [RPostgres](https://rpostgres.r-dbi.org/reference/postgres) on Postgres and Redshift
-- [odbc](https://solutions.rstudio.com/db/r-packages/odbc/) on Microsoft SQL Server and [snowflake](https://community.snowflake.com/s/article/How-To-Connect-Snowflake-with-R-RStudio-using-RODBC-driver-on-Windows-MacOS-Linux)
+- [odbc](https://solutions.rstudio.com/db/r-packages/odbc/) on Microsoft SQL Server
 - [duckdb](https://duckdb.org/docs/api/r) 
 
 
@@ -111,4 +119,5 @@ If you encounter a clear bug, please file an issue with a minimal [reproducible 
 ---
 
 License: Apache 2.0
+
 

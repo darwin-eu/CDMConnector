@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -74,14 +74,15 @@
 <span>  cdm_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdm_tables <span class="op">=</span> <span class="fu"><a href="tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span>,</span>
 <span>  write_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cohort_tables <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cohort_tables <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cdm_version <span class="op">=</span> <span class="st">"auto"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>con</dt>
-<dd><p>A DBI database connection to a database where an OMOP CDM v5.4 instance is located.</p></dd>
+<dd><p>A DBI database connection to a database where an OMOP CDM v5.4 or v5.3 instance is located.</p></dd>
 
 
 <dt>cdm_schema</dt>
@@ -100,7 +101,12 @@
 
 
 <dt>cohort_tables</dt>
-<dd><p>A character vector listing the cohort table names to be included in the CDM object.
+<dd><p>A character vector listing the cohort table names to be included in the CDM object.</p></dd>
+
+
+<dt>cdm_version</dt>
+<dd><p>The version of the OMOP CDM: "5.3", "5.4", "auto" (default).
+"auto" attempts to automatically determine the cdm version using heuristics.
 Cohort tables must be in the write_schema.</p></dd>
 
 </dl></div>

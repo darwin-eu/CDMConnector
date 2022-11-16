@@ -6,7 +6,7 @@
 \usage{
 cdm_from_files(
   path,
-  cdm_tables = tbl_group("default"),
+  cdm_tables = deprecated(),
   format = "auto",
   as_data_frame = TRUE
 )
