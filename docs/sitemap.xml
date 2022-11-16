@@ -43,6 +43,9 @@
     <loc>/reference/assert_tables.html</loc>
   </url>
   <url>
+    <loc>/reference/assert_write_schema.html</loc>
+  </url>
+  <url>
     <loc>/reference/cdmFromCon.html</loc>
   </url>
   <url>
@@ -91,6 +94,9 @@
     <loc>/reference/print.cdm_reference.html</loc>
   </url>
   <url>
+    <loc>/reference/snapshot.html</loc>
+  </url>
+  <url>
     <loc>/reference/stow.html</loc>
   </url>
   <url>
@@ -98,5 +104,8 @@
   </url>
   <url>
     <loc>/reference/validate_cdm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/version.html</loc>
   </url>
 </urlset>

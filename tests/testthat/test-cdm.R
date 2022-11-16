@@ -117,7 +117,6 @@ test_that("cdm reference works on redshift", {
 
   expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
-  expect_e
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
@@ -196,7 +195,7 @@ test_that("collect a cdm", {
 test_that("stow and cdm_from_files works", {
   save_path <- file.path(tempdir(), paste0("tmp_", paste(sample(letters, 10, replace = TRUE), collapse = "")))
   dir.create(save_path)
-  cdm_tables <- c("person", "observation_period")
+  cdm_tables <- c("person", "observation_period", "cdm_source", "vocabulary")
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
   # Test tidyselect in cdm_from_con. Should not produce message about ambiguous names.
@@ -210,7 +209,7 @@ test_that("stow and cdm_from_files works", {
 
   stow(cdm, path = save_path)
 
-  expect_equal(list.files(save_path), c("observation_period.parquet" ,"person.parquet"))
+  expect_setequal(list.files(save_path), paste0(cdm_tables, ".parquet"))
 
   expect_message(cdm_from_files(save_path), NA)
   expect_warning(cdm_from_files(save_path, cdm_tables = all_of(cdm_tables)), "deprecated")

@@ -29,7 +29,8 @@ Imports:
     waldo,
     arrow,
     methods,
-    withr
+    withr,
+    lifecycle
 Suggests: 
     covr,
     knitr,
