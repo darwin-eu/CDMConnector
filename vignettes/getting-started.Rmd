@@ -141,7 +141,7 @@ list.files(save_path)
 `stow` saves the cdm object as a set of files. `cdm_from_files` read the files back into R as a cdm_reference object. The tables can be stored as R dataframes or Arrow Tables. In both cases cdm tables can be manipulated with `dplyr` verbs.
 
 ```{r}
-cdm <- cdm_from_files(save_path, cdm_tables = c("cohort", "observation_period", "person"))
+cdm <- cdm_from_files(save_path)
 
 class(cdm$cohort)
 
@@ -186,6 +186,54 @@ self_contained_query <- function(connection_details) {
 
 self_contained_query(connection_details)
 ```
+
+
+# Programming with cdm objects
+
+Since cdm object can include any subset of cdm tables it is important for functions that take cdm objects as input to check
+that the expected tables exists. The `assert_tables` function provides a checkmate style function that tests if the 
+expected tables exist, have the correct columns, and (optionally) are not empty. It can also be used with 
+checkmate assert collections.
+
+```{r, error=TRUE}
+
+library(checkmate)
+
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+
+
+assertTables(cdm_from_con(con, cdm_tables = "drug_era"), tables = c("person"))
+
+# add missing table error to collection
+err <- checkmate::makeAssertCollection()
+assertTables(cdm_from_con(con, cdm_tables = "drug_era"), tables = c("person"), add = err)
+err$getMessages()
+
+```
+
+`assert_tables` can be used in functions that accept `cdm_reference` objects as a parameter.
+
+```{r, error=TRUE}
+countDrugsByGender <- function(cdm) {
+  assertTables(cdm, tables = c("person", "drug_era"), empty.ok = FALSE)
+
+  cdm$person %>%
+    dplyr::inner_join(cdm$drug_era, by = "person_id") %>%
+    dplyr::count(.data$gender_concept_id, .data$drug_concept_id) %>%
+    dplyr::collect()
+}
+
+countDrugsByGender(cdm_from_con(con, cdm_tables = "person"))
+
+DBI::dbExecute(con, "delete from drug_era")
+countDrugsByGender(cdm_from_con(con))
+
+DBI::dbDisconnect(con, shutdown = TRUE)
+```
+
+# Code style
+
+Camel case aliases are provided for many functions to fit both `snake_case` and `camelCase` programming styles.
 
 # Supported DBI drivers
 

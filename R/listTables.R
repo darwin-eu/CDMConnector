@@ -18,6 +18,7 @@
 listTables <- function(con, schema = NULL) {
   checkmate::assert_character(schema, null.ok = TRUE, min.len = 1, max.len = 2, min.chars = 1)
   if (is.null(schema)) return(DBI::dbListTables(con))
+  withr::local_options(list(arrow.pull_as_vector = TRUE))
 
   if (is(con, "PqConnection") || is(con, "RedshiftConnection")) {
     sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)

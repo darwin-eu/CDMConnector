@@ -2,8 +2,6 @@
 
 0 errors | 0 warnings | 1 notes
 
-* This is a new release.
-
 The NOTE is about the package size which is 5MB. I anticipate the size will be 
 reduced in future releases after the embedded data is moved to a different package.
 

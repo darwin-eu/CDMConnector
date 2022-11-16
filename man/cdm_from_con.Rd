@@ -9,11 +9,12 @@ cdm_from_con(
   cdm_schema = NULL,
   cdm_tables = tbl_group("default"),
   write_schema = NULL,
-  cohort_tables = NULL
+  cohort_tables = NULL,
+  cdm_version = "auto"
 )
 }
 \arguments{
-\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 instance is located.}
+\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or v5.3 instance is located.}
 
 \item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults to NULL.}
 
@@ -26,7 +27,10 @@ cdm_from_con(
 
 \item{write_schema}{An optional schema in the CDM database that the user has write access to.}
 
-\item{cohort_tables}{A character vector listing the cohort table names to be included in the CDM object.
+\item{cohort_tables}{A character vector listing the cohort table names to be included in the CDM object.}
+
+\item{cdm_version}{The version of the OMOP CDM: "5.3", "5.4", "auto" (default).
+"auto" attempts to automatically determine the cdm version using heuristics.
 Cohort tables must be in the write_schema.}
 }
 \value{
