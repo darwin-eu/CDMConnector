@@ -80,6 +80,7 @@ validate_cdm_rowcounts <- function(cdm) {
 #' @param add An optional AssertCollection created by `checkmate::makeAssertCollection()` that errors should be added to.
 #'
 #' @return Invisibly returns the cdm object
+#' @importFrom rlang .env .data
 #' @export
 #'
 #' @examples

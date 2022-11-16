@@ -11,6 +11,8 @@
 #'   \item{tbl_group("clinical")}{the clinical CDM tables}
 #' }
 #' @param cohort_tables A character vector listing the cohort table names to be included in the CDM object.
+#' @param cdm_version The version of the OMOP CDM: "5.3", "5.4", "auto" (default).
+#' "auto" attempts to automatically determine the cdm version using heuristics.
 #' Cohort tables must be in the write_schema.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
@@ -86,7 +88,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   procedure_occurrence_names <- cdm$procedure_occurrence %>% head() %>% collect() %>% names() %>% tolower()
   if ("procedure_end_date" %in% procedure_occurrence_names) return("5.4")
 
-  cdm_version <- cdm$cdm_source %>% pull(.data$cdm_version)
+  cdm_version <- cdm$cdm_source %>% dplyr::pull(.data$cdm_version)
   if (isTRUE(grepl("5\\.4", cdm_version))) return("5.4")
   if (isTRUE(grepl("5\\.3", cdm_version))) return("5.3")
 
@@ -319,7 +321,7 @@ stow <- function(cdm, path, format = "parquet") {
 #' @param as_data_frame TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
-cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "auto", as_data_frame = TRUE, cdm_version = "5.3") {
+cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
   checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
   checkmate::assert_choice(cdm_version, c("5.3", "5.4"))
   checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
@@ -338,7 +340,7 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
   # TODO how should we handle subsetting from a set of files and using additional tables like cohort.
   # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
   # all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
-  all_files <- tools::file_path_sans_ext(list.files(path))
+  all_files <- tools::file_path_sans_ext(basename(list.files(path)))
   names(all_files) <- all_files
   cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_files))
 
@@ -356,7 +358,7 @@ cdm_from_files <- function(path, cdm_tables = tbl_group("default"), format = "au
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL
   attr(cdm, "dbcon") <- NULL
-  attr(cdm, "cdm_version") <- cdm_version
+  attr(cdm, "cdm_version") <- NULL
   cdm
 }
 
@@ -447,7 +449,7 @@ snapshot <- function(cdm) {
 }
 
 print.cdm_snapshot <- function(x, ...) {
-  cli::cat_rule(s$cdm_source_name)
-  purrr::walk2(names(s[-1]), s[-1], ~cli::cat_bullet(.x, ": ", .y))
+  cli::cat_rule(x$cdm_source_name)
+  purrr::walk2(names(x[-1]), x[-1], ~cli::cat_bullet(.x, ": ", .y))
 }
 

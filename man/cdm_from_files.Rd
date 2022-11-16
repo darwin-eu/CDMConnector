@@ -8,8 +8,7 @@ cdm_from_files(
   path,
   cdm_tables = tbl_group("default"),
   format = "auto",
-  as_data_frame = TRUE,
-  cdm_version = "5.3"
+  as_data_frame = TRUE
 )
 }
 \arguments{
