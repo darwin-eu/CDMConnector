@@ -2,7 +2,7 @@
 title: "CDMConnector and dbplyr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{CDMConnector and dbplyr}
+  %\VignetteIndexEntry{dbplyr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

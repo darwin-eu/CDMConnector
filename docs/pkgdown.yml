@@ -2,10 +2,10 @@ pandoc: 2.17.1.1
 pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
-  CDMConnector_and_Dbplyr: CDMConnector_and_Dbplyr.html
   DBI_connection_examples: DBI_connection_examples.html
   SQL: SQL.html
   cdm_reference_backends: cdm_reference_backends.html
+  dbplyr: dbplyr.html
   getting-started: getting-started.html
-last_built: 2022-11-17T15:18Z
+last_built: 2022-11-17T16:53Z
 
