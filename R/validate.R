@@ -158,7 +158,7 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 #' @describeIn assert_tables camelCase alias
 assertTables <- assert_tables
 
-#' Assert that cdm has a writeable schema
+#' Assert that cdm has a writable schema
 #'
 #' A cdm object can optionally contain a single schema in a database with write access.
 #' assert_write_schema checks that the cdm contains the "write_schema" attribute and
@@ -178,9 +178,7 @@ assert_write_schema <- function(cdm, add = NULL) {
 }
 
 #' @export
-#' @describeIn assert_tables camelCase alias
+#' @describeIn assert_write_schema camelCase alias
 assertWriteSchema <- assert_write_schema
-
-
 
 

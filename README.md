@@ -23,7 +23,7 @@ Status](https://github.com/OdyOSG/CDMConnector/workflows/R-CMD-check/badge.svg)]
 ## Overview
 
 CDMConnector introduces a single R object that represents an OMOP CDM
-relational database inspired by the [dm](https://cynkra.github.io/dm/),
+relational database inspired by the [dm](https://dm.cynkra.com/),
 [DatabaseConnector](http://ohdsi.github.io/DatabaseConnector/), and
 [Andromeda](https://ohdsi.github.io/Andromeda/) packages. The cdm object
 can be used in dplyr style data analysis pipelines and facilitates
@@ -70,7 +70,7 @@ Create a `cdm_reference` object from any DBI connection. Use the
 
     ## # OMOP CDM reference (tbl_duckdb_connection)
     ## 
-    ## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength
+    ## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, cdm_source, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength
 
 A `cdm_reference` is a named list of table references:
 
@@ -82,16 +82,16 @@ A `cdm_reference` is a named list of table references:
     ##  [7] "procedure_occurrence" "measurement"          "observation"         
     ## [10] "death"                "location"             "care_site"           
     ## [13] "provider"             "drug_era"             "dose_era"            
-    ## [16] "condition_era"        "concept"              "vocabulary"          
-    ## [19] "concept_relationship" "concept_synonym"      "concept_ancestor"    
-    ## [22] "drug_strength"
+    ## [16] "condition_era"        "cdm_source"           "concept"             
+    ## [19] "vocabulary"           "concept_relationship" "concept_synonym"     
+    ## [22] "concept_ancestor"     "drug_strength"
 
 Use dplyr verbs with the table references.
 
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpp4PBsV/dcdsdhnh/cdm.duckdb]
+    ## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpA7SXZK/mqwjfklh/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -103,7 +103,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpp4PBsV/dcdsdhnh/cdm.duckdb]
+    ## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpA7SXZK/mqwjfklh/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>

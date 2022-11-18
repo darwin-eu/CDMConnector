@@ -2,9 +2,12 @@
 % Please edit documentation in R/validate.R
 \name{assert_write_schema}
 \alias{assert_write_schema}
-\title{Assert that cdm has a writeable schema}
+\alias{assertWriteSchema}
+\title{Assert that cdm has a writable schema}
 \usage{
 assert_write_schema(cdm, add = NULL)
+
+assertWriteSchema(cdm, add = NULL)
 }
 \arguments{
 \item{cdm}{A cdm object}
@@ -19,3 +22,8 @@ A cdm object can optionally contain a single schema in a database with write acc
 assert_write_schema checks that the cdm contains the "write_schema" attribute and
 tests that local dataframes can be written to tables in this schema.
 }
+\section{Functions}{
+\itemize{
+\item \code{assertWriteSchema()}: camelCase alias
+
+}}
