@@ -10,7 +10,7 @@ cdm_from_con(
   cdm_tables = tbl_group("default"),
   write_schema = NULL,
   cohort_tables = NULL,
-  cdm_version = "auto"
+  cdm_version = "5.3"
 )
 }
 \arguments{
@@ -29,7 +29,7 @@ cdm_from_con(
 
 \item{cohort_tables}{A character vector listing the cohort table names to be included in the CDM object.}
 
-\item{cdm_version}{The version of the OMOP CDM: "5.3", "5.4", "auto" (default).
+\item{cdm_version}{The version of the OMOP CDM: "5.3" (default), "5.4", "auto".
 "auto" attempts to automatically determine the cdm version using heuristics.
 Cohort tables must be in the write_schema.}
 }

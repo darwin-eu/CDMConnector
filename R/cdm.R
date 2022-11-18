@@ -11,13 +11,13 @@
 #'   \item{tbl_group("clinical")}{the clinical CDM tables}
 #' }
 #' @param cohort_tables A character vector listing the cohort table names to be included in the CDM object.
-#' @param cdm_version The version of the OMOP CDM: "5.3", "5.4", "auto" (default).
+#' @param cdm_version The version of the OMOP CDM: "5.3" (default), "5.4", "auto".
 #' "auto" attempts to automatically determine the cdm version using heuristics.
 #' Cohort tables must be in the write_schema.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
-cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default"), write_schema = NULL, cohort_tables = NULL, cdm_version = "auto") {
+cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default"), write_schema = NULL, cohort_tables = NULL, cdm_version = "5.3") {
   checkmate::assert_class(con, "DBIConnection")
   checkmate::assert_true(DBI::dbIsValid(con))
   checkmate::assert_character(cdm_schema, null.ok = TRUE, min.len = 1, max.len = 2)
@@ -69,6 +69,9 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
 detect_cdm_version <- function(con, cdm_schema = NULL) {
 
   cdm_tables <- c("visit_occurrence", "cdm_source", "procedure_occurrence")
+  if (!all(cdm_tables %in% listTables(con, schema = cdm_schema))) {
+    rlang::abort(paste0("The ", paste(cdm_tables, collapse = ", "), " tables are require for auto-detection of cdm version."))
+  }
   if (dbms(con) == "duckdb") {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")))
   } else if (is.null(cdm_schema)) {

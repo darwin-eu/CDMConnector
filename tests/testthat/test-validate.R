@@ -1,4 +1,6 @@
 test_that("validate cdm works", {
+  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
   expect_output(validate_cdm(cdm))
@@ -11,6 +13,7 @@ test_that("validate cdm works", {
 
 
 test_that("assert_tables works", {
+  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 

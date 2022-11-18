@@ -129,6 +129,7 @@ test_that("cdm reference works on redshift", {
 
 
 test_that("cdm reference works on duckdb", {
+  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
@@ -147,6 +148,8 @@ test_that("cdm reference works on duckdb", {
 })
 
 test_that("inclusion of cohort tables", {
+  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
   cohort <- dplyr::tibble(cohort_id = 1L,
@@ -174,6 +177,8 @@ test_that("inclusion of cohort tables", {
 })
 
 test_that("collect a cdm", {
+  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   cdm <- cdm_from_con(con)
 
@@ -193,6 +198,8 @@ test_that("collect a cdm", {
 
 
 test_that("stow and cdm_from_files works", {
+  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+
   save_path <- file.path(tempdir(), paste0("tmp_", paste(sample(letters, 10, replace = TRUE), collapse = "")))
   dir.create(save_path)
   cdm_tables <- c("person", "observation_period", "cdm_source", "vocabulary")
