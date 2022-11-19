@@ -38,6 +38,9 @@ test_that("cdm reference works on postgres", {
 
   expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))))
 
+  expect_null(verify_write_access(con, Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")))
+  verify_write_access(con, write_schema = "public")
+
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
   expect_error(assert_tables(cdm, "person"))
@@ -111,6 +114,9 @@ test_that("cdm reference works on redshift", {
                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
+
+  expect_null(verify_write_access(con, Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA")))
+
   expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))))
 
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), cdm_tables = tbl_group("default"))
@@ -122,7 +128,6 @@ test_that("cdm reference works on redshift", {
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
   expect_equal(dbms(con), "redshift")
-  expect_equal(dbms(cdm), "redshift")
 
   DBI::dbDisconnect(con)
 })
@@ -132,6 +137,8 @@ test_that("cdm reference works on duckdb", {
   skip_if_not_installed("duckdb", minimum_version = "0.5.0")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+
+  expect_null(verify_write_access(con, "main"))
 
   expect_true(is.character(listTables(con)))
 

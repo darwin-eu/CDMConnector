@@ -166,12 +166,12 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   write_schema <- paste(write_schema, collapse = ".")
   tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
   tablename <- paste(write_schema, tablename, sep = ".")
-  # spec_cdm_table is global internal package data (a list of dataframes) used here just to test write access
-  DBI::dbWriteTable(con, DBI::SQL(tablename), spec_cdm_table[[1]][1:4,])
-  to_compare <- DBI::dbReadTable(con, DBI::SQL(tablename))
+  df1 <- data.frame(chr = "a", lgl = TRUE, int = 1L)
+  DBI::dbWriteTable(con, DBI::SQL(tablename), df1)
+  df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
 
-  if(!dplyr::all_equal(spec_cdm_table[[1]][1:4,], to_compare)) {
+  if(!dplyr::all_equal(df1, df2)) {
     msg <- paste("Write access to schema", write_schema, "could not be verified.")
     if (is.null(add)) rlang::abort(msg) else add$push(msg)
   }
