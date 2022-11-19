@@ -17,7 +17,7 @@ test_that("cdm reference works locally", {
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "cdm_snapshot")
 
-  expect_true(is.null(CDMConnector:::verify_write_access(con, write_schema = "scratch")))
+  expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
@@ -39,7 +39,6 @@ test_that("cdm reference works on postgres", {
   expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))))
 
   expect_null(verify_write_access(con, Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")))
-  verify_write_access(con, write_schema = "public")
 
   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
 
