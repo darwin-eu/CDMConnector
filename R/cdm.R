@@ -234,8 +234,8 @@ tbl_group <- function(group) {
 #' dbDisconnect(con)
 #' }
 eunomia_dir <- function(exdir = NULL) {
-  if (utils::packageVersion("duckdb") != "0.5.1")
-    rlang::abort("duckdb version 0.5.1 is required to use eunomia_dir(). \nPlease install the latest version of duckdb (0.5.1).")
+  if (substr(utils::packageVersion("duckdb"), 1, 3) != "0.5")
+    rlang::abort("duckdb version 0.5 is required to use eunomia_dir(). \nPlease install the latest version of duckdb (0.5.1).")
 
   if (is.null(exdir)) exdir <- file.path(tempdir(TRUE), paste(sample(letters, 8, replace = TRUE), collapse = ""))
   file <- xzfile(system.file("duckdb", "cdm.duckdb.tar.xz", package = "CDMConnector"), open = "rb")
