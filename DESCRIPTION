@@ -44,4 +44,4 @@ Suggests:
     DatabaseConnector,
     lubridate
 Config/testthat/edition: 3
-VignetteBuilder: knitr, rmarkdown
+VignetteBuilder: knitr

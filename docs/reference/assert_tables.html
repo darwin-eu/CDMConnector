@@ -34,9 +34,6 @@ that the tables you need are in the cdm object, have the correct columns/fields,
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/CDMConnector_and_Dbplyr.html">CDMConnector and dbplyr</a>
-    </li>
-    <li>
       <a href="../articles/DBI_connection_examples.html">DBI connection examples</a>
     </li>
     <li>
@@ -44,6 +41,9 @@ that the tables you need are in the cdm object, have the correct columns/fields,
     </li>
     <li>
       <a href="../articles/cdm_reference_backends.html">CDM reference backends</a>
+    </li>
+    <li>
+      <a href="../articles/dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
       <a href="../articles/getting-started.html">Getting Started</a>
@@ -75,9 +75,7 @@ that the tables you need are in the cdm object, have the correct columns/fields,
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">assert_tables</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">tables</span>, empty.ok <span class="op">=</span> <span class="cn">FALSE</span>, add <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">assertTables</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">tables</span>, empty.ok <span class="op">=</span> <span class="cn">FALSE</span>, add <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">assertWriteSchema</span><span class="op">(</span><span class="va">cdm</span>, add <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">assertTables</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">tables</span>, empty.ok <span class="op">=</span> <span class="cn">FALSE</span>, add <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -108,7 +106,6 @@ that the tables you need are in the cdm object, have the correct columns/fields,
     <h2>Functions</h2>
     
 <ul><li><p><code>assertTables()</code>: camelCase alias</p></li>
-<li><p><code>assertWriteSchema()</code>: camelCase alias</p></li>
 </ul></div>
 
     <div id="ref-examples">
@@ -147,7 +144,7 @@ that the tables you need are in the cdm object, have the correct columns/fields,
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

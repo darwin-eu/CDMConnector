@@ -3,14 +3,11 @@
 \name{assert_tables}
 \alias{assert_tables}
 \alias{assertTables}
-\alias{assertWriteSchema}
 \title{Assert that tables exist in a cdm object}
 \usage{
 assert_tables(cdm, tables, empty.ok = FALSE, add = NULL)
 
 assertTables(cdm, tables, empty.ok = FALSE, add = NULL)
-
-assertWriteSchema(cdm, add = NULL)
 }
 \arguments{
 \item{cdm}{A cdm object}
@@ -32,8 +29,6 @@ that the tables you need are in the cdm object, have the correct columns/fields,
 \section{Functions}{
 \itemize{
 \item \code{assertTables()}: camelCase alias
-
-\item \code{assertWriteSchema()}: camelCase alias
 
 }}
 \examples{

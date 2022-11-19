@@ -52,9 +52,6 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/CDMConnector_and_Dbplyr.html">CDMConnector and dbplyr</a>
-    </li>
-    <li>
       <a href="articles/DBI_connection_examples.html">DBI connection examples</a>
     </li>
     <li>
@@ -62,6 +59,9 @@
     </li>
     <li>
       <a href="articles/cdm_reference_backends.html">CDM reference backends</a>
+    </li>
+    <li>
+      <a href="articles/dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
       <a href="articles/getting-started.html">Getting Started</a>
@@ -102,7 +102,7 @@
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p>CDMConnector introduces a single R object that represents an OMOP CDM relational database inspired by the <a href="https://cynkra.github.io/dm/" class="external-link">dm</a>, <a href="http://ohdsi.github.io/DatabaseConnector/" class="external-link">DatabaseConnector</a>, and <a href="https://ohdsi.github.io/Andromeda/" class="external-link">Andromeda</a> packages. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to <a href="https://ohdsi.github.io/CommonDataModel/" class="external-link">OMOP CDM tables</a> in a remote RDBMS as well as metadata necessary for interacting with a CDM.</p>
+<p>CDMConnector introduces a single R object that represents an OMOP CDM relational database inspired by the <a href="https://dm.cynkra.com/" class="external-link">dm</a>, <a href="http://ohdsi.github.io/DatabaseConnector/" class="external-link">DatabaseConnector</a>, and <a href="https://ohdsi.github.io/Andromeda/" class="external-link">Andromeda</a> packages. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to <a href="https://ohdsi.github.io/CommonDataModel/" class="external-link">OMOP CDM tables</a> in a remote RDBMS as well as metadata necessary for interacting with a CDM.</p>
 <p><a href="https://ohdsi.github.io/CommonDataModel/" class="external-link"><img src="https://ohdsi.github.io/CommonDataModel/images/cdm54.png" alt="OMOP CDM v5.4"></a></p>
 </div>
 <div class="section level2">
@@ -137,7 +137,7 @@
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="do">## # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength</span></span></code></pre></div>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, cdm_source, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength</span></span></code></pre></div>
 <p>A <code>cdm_reference</code> is a named list of table references:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr, <span class="at">warn.conflicts =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(cdm)</span>
@@ -147,14 +147,14 @@
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="do">##  [7] "procedure_occurrence" "measurement"          "observation"         </span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [10] "death"                "location"             "care_site"           </span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [13] "provider"             "drug_era"             "dose_era"            </span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [16] "condition_era"        "concept"              "vocabulary"          </span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [19] "concept_relationship" "concept_synonym"      "concept_ancestor"    </span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## [22] "drug_strength"</span></span></code></pre></div>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [16] "condition_era"        "cdm_source"           "concept"             </span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [19] "vocabulary"           "concept_relationship" "concept_synonym"     </span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## [22] "concept_ancestor"     "drug_strength"</span></span></code></pre></div>
 <p>Use dplyr verbs with the table references.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tally</span>(cdm<span class="sc">$</span>person)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">## # Source:   SQL [1 x 1]</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpp4PBsV/dcdsdhnh/cdm.duckdb]</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpA7SXZK/mqwjfklh/cdm.duckdb]</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="do">##       n</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
@@ -164,7 +164,7 @@
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(<span class="at">top_conditions =</span> concept_name, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpp4PBsV/dcdsdhnh/cdm.duckdb]</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpA7SXZK/mqwjfklh/cdm.duckdb]</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
@@ -259,7 +259,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
