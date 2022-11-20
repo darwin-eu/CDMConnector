@@ -133,7 +133,7 @@ test_that("cdm reference works on redshift", {
 
 
 test_that("cdm reference works on duckdb", {
-  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+  skip_if(substr(utils::packageVersion("duckdb"), 1, 3) != "0.5")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
@@ -154,7 +154,7 @@ test_that("cdm reference works on duckdb", {
 })
 
 test_that("inclusion of cohort tables", {
-  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+  skip_if(substr(utils::packageVersion("duckdb"), 1, 3) != "0.5")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
@@ -183,7 +183,7 @@ test_that("inclusion of cohort tables", {
 })
 
 test_that("collect a cdm", {
-  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+  skip_if(substr(utils::packageVersion("duckdb"), 1, 3) != "0.5")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   cdm <- cdm_from_con(con)
@@ -204,7 +204,7 @@ test_that("collect a cdm", {
 
 
 test_that("stow and cdm_from_files works", {
-  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+  skip_if(substr(utils::packageVersion("duckdb"), 1, 3) != "0.5")
 
   save_path <- file.path(tempdir(), paste0("tmp_", paste(sample(letters, 10, replace = TRUE), collapse = "")))
   dir.create(save_path)

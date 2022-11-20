@@ -74,7 +74,7 @@ test_that("dbConnectDetails works on Redshift", {
 })
 
 test_that("dbConnectDetails works on duckdb", {
-  skip_if_not_installed("duckdb", minimum_version = "0.5.0")
+  skip_if(substr(utils::packageVersion("duckdb"), 1, 3) != "0.5")
   details <- dbConnectDetails(duckdb::duckdb(), dbdir = eunomia_dir())
 
   result <- self_contained_query(details, "main")
