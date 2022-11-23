@@ -8,10 +8,12 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+build <- is_installed("duckdb", "0.5")
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = TRUE
+  eval = build
 )
 ```
 
