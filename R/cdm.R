@@ -171,7 +171,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
 
-  if(!dplyr::all_equal(df1, df2)) {
+  if(!isTRUE(dplyr::all_equal(df1, df2))) {
     msg <- paste("Write access to schema", write_schema, "could not be verified.")
     if (is.null(add)) rlang::abort(msg) else add$push(msg)
   }
