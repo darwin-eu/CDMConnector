@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
       person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
              comment = c(ORCID = "0000-0001-5576-8701"))
@@ -30,16 +30,18 @@ Imports:
     arrow,
     methods,
     withr,
-    lifecycle
+    lifecycle,
+    jsonlite,
+    tibble,
+    SqlRender
 Suggests: 
     covr,
     knitr,
     rmarkdown,
-    duckdb (>= 0.5.0),
+    duckdb (>= 0.6.0),
     RPostgres,
     odbc,
     ggplot2,
-    SqlRender,
     testthat (>= 3.0.0),
     DatabaseConnector,
     lubridate

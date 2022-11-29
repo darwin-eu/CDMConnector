@@ -20,7 +20,10 @@ listTables <- function(con, schema = NULL) {
   if (is.null(schema)) return(DBI::dbListTables(con))
   withr::local_options(list(arrow.pull_as_vector = TRUE))
 
-  if (is(con, "PqConnection") || is(con, "RedshiftConnection")) {
+  if (is(con, "DatabaseConnectorJdbcConnection")) {
+    DBI::dbListTables(con, databaseSchema = paste0(schema, collapse = "."))
+
+  } else if (is(con, "PqConnection") || is(con, "RedshiftConnection")) {
     sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
     DBI::dbGetQuery(con, sql) %>%
       dplyr::pull(.data$table_name)

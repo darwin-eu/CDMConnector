@@ -170,9 +170,10 @@ assertTables <- assert_tables
 #' @return Invisibly returns the cdm object
 #' @export
 assert_write_schema <- function(cdm, add = NULL) {
+  checkmate::assert_class(cdm, "cdm_reference")
   if (is.null(attr(cdm, "dbcon"))) rlang::abort("Local cdm objects do not have a write schema.")
   write_schema <- attr(cdm, "write_schema")
-  checkmate::assert_character(write_schema, add = add)
+  checkmate::assert_character(write_schema, len = 1, min.chars = 1, add = add)
   verify_write_access(attr(cdm, "dbcon"), write_schema = write_schema, add = add)
   invisible(cdm)
 }

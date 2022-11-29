@@ -12,3 +12,4 @@ scratch/*
 LICENSE
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
+^testData$

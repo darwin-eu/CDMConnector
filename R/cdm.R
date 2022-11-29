@@ -25,6 +25,16 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
 
+  # handle schema names like 'schema.dbo'
+  if (!is.null(cdm_schema) && length(cdm_schema) == 1) {
+    cdm_schema <- strsplit(cdm_schema, "\\.")[[1]]
+    checkmate::assert_character(cdm_schema, null.ok = TRUE, min.len = 1, max.len = 2)
+  }
+  if (!is.null(write_schema) && length(write_schema) == 1) {
+    write_schema <- strsplit(write_schema, "\\.")[[1]]
+    checkmate::assert_character(write_schema, null.ok = TRUE, min.len = 1, max.len = 2)
+  }
+
   if (cdm_version == "auto") cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
 
   # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
@@ -163,13 +173,31 @@ print.cdm_reference <- function(x, ...) {
 # write_schema = schema with write access
 # add = checkmate collection
 verify_write_access <- function(con, write_schema, add = NULL) {
+  checkmate::assert_character(write_schema, min.len = 1, max.len = 2, min.chars = 1)
+  checkmate::assert_class(add, "AssertCollection", null.ok = TRUE)
+  checkmate::assert_true(DBI::dbIsValid(con))
+
   write_schema <- paste(write_schema, collapse = ".")
   tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
   tablename <- paste(write_schema, tablename, sep = ".")
-  df1 <- data.frame(chr_col = "a", dbl_col = 1.0)
+
+  df1 <- data.frame(chr_col = "a", numeric_col = 1, int_col = 1L)
+  # df1 <- data.frame(chr_col = "a", dbl_col = 1.0)
   DBI::dbWriteTable(con, DBI::SQL(tablename), df1)
-  df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
+  withr::with_options(list(databaseConnectorIntegerAsNumeric = FALSE), {
+    df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
+  })
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
+
+  # if(is(con, "DatabaseConnectorConnection") && isTRUE(dplyr::all_equal(df1[,-2], df2[,-2]))) {
+  #   rlang::inform("Write access verified. Note TRUE/FALSE values and upper case table names are not supported by `DatabaseConnector`.",
+  #                 .frequency = "once", .frequency_id = "DatabaseConnectorBooleans")
+  #   if (is.null(add)) rlang::abort(msg) else add$push(msg)
+  #
+  # } else if(!isTRUE(dplyr::all_equal(df1, df2))) {
+  #   msg <- paste("Write access to schema", write_schema, "could not be verified.")
+  #   if (is.null(add)) rlang::abort(msg) else add$push(msg)
+  # }
 
   if(!isTRUE(dplyr::all_equal(df1, df2))) {
     msg <- paste("Write access to schema", write_schema, "could not be verified.")
@@ -224,7 +252,7 @@ tbl_group <- function(group) {
 #'
 #' @return The full path to the new Eunomia CDM that can be passed to `dbConnect()`
 #' @export
-#' @importFrom utils untar
+#' @importFrom utils untar download.file menu
 #' @examples
 #' \dontrun{
 #' library(DBI)
@@ -234,16 +262,46 @@ tbl_group <- function(group) {
 #' dbDisconnect(con)
 #' }
 eunomia_dir <- function(exdir = NULL) {
-  if (substr(utils::packageVersion("duckdb"), 1, 3) != "0.5")
-    rlang::abort("duckdb version 0.5 is required to use eunomia_dir(). \nPlease install the latest version of duckdb (0.5.1).")
+  rlang::check_installed("duckdb", version = "0.6.0", reason = "duckdb version 0.6 is required to use eunomia_dir()")
+  if (!eunomia_is_available() && interactive()) {
+    rc <- menu(c("Yes", "No"),
+              title = "Eunomia has not been downloaded yet.\nWould you like to download the Eunomia example CDM dataset?")
+  } else {
+    rc <- 1 # Automatically try downloading Eunomia if R is running non-interactively.
+  }
+
+  if (rc != 1) rlang::abort("Eunomia dataset is not available")
 
   if (is.null(exdir)) exdir <- file.path(tempdir(TRUE), paste(sample(letters, 8, replace = TRUE), collapse = ""))
-  file <- xzfile(system.file("duckdb", "cdm.duckdb.tar.xz", package = "CDMConnector"), open = "rb")
+  file <- xzfile(eunomia_cache(), open = "rb")
   untar(file, exdir = exdir)
   close(file)
   path <- file.path(exdir, "cdm.duckdb")
   if(!file.exists(path)) rlang::abort("Error creating Eunomia CDM")
-  path
+  return(path)
+}
+
+# has the eunomia dataset been cached?
+eunomia_is_available <- function() {
+  path <- Sys.getenv("EUNOMIA_CACHE_DIR", unset = "~/eunomia_cache")
+  path <- path.expand(path)
+  file.exists(file.path(path, "cdm.duckdb.tar.xz"))
+}
+
+# return the location to the cached eunomia dataset
+eunomia_cache <- function() {
+  path <- Sys.getenv("EUNOMIA_CACHE_DIR", unset = "~/eunomia_cache")
+  path <- path.expand(path)
+  if (!eunomia_is_available()) {
+    if (!dir.exists(path)) dir.create(path)
+
+    download.file("https://github.com/OdyOSG/EunomiaData/raw/main/cdm.duckdb.tar.xz",
+                  file.path(path, "cdm.duckdb.tar.xz"),
+                  method = "auto")
+  }
+  if (!eunomia_is_available()) rlang::abort("Error downloading Eunomia dataset.")
+
+  return(file.path(path, "cdm.duckdb.tar.xz"))
 }
 
 #' @export
@@ -441,13 +499,13 @@ snapshot <- function(cdm) {
   dplyr::collect(cdm$cdm_source) %>%
     dplyr::mutate(vocabulary_version = dplyr::coalesce(.env$vocab_version, .data$vocabulary_version)) %>%
     dplyr::mutate(person_cnt = .env$person_cnt, observation_period_cnt = .env$observation_period_cnt) %>%
-    dplyr::select(.data$cdm_source_name,
-                  .data$cdm_version,
-                  .data$cdm_holder,
-                  .data$cdm_release_date,
-                  .data$vocabulary_version,
-                  .data$person_cnt,
-                  .data$observation_period_cnt) %>%
+    dplyr::select("cdm_source_name",
+                  "cdm_version",
+                  "cdm_holder",
+                  "cdm_release_date",
+                  "vocabulary_version",
+                  "person_cnt",
+                  "observation_period_cnt") %>%
     as.list() %>%
     magrittr::set_class("cdm_snapshot")
 }
@@ -457,3 +515,5 @@ print.cdm_snapshot <- function(x, ...) {
   purrr::walk2(names(x[-1]), x[-1], ~cli::cat_bullet(.x, ": ", .y))
 }
 
+setOldClass("cdm_reference")
+setOldClass("CohortSet")
