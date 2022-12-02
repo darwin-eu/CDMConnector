@@ -32,7 +32,7 @@ DBI::dbDisconnect(con)
 
 ### SQL Server
 
-Using odbc with SQL Server requires driver setup described [here](https://solutions.rstudio.com/db/r-packages/odbc/).
+Using odbc with SQL Server requires driver setup described [here](https://solutions.posit.co/connections/db/r-packages/odbc/).
 
 ```{r, eval=FALSE}
 con <- DBI::dbConnect(odbc::odbc(),

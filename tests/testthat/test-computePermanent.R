@@ -2,6 +2,7 @@
 test_that("computePermanent works on duckdb", {
 
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   concept <- dplyr::tbl(con, "concept")

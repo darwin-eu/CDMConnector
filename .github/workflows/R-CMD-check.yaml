@@ -38,8 +38,16 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install CirceR
+        run: |
+            install.packages("rJava")
+            install.packages("RJSONIO")
+            install.packages("CirceR", repos = "https://OHDSI.github.io/drat", type = "source")
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          dependencies: '"hard"'
           extra-packages: any::rcmdcheck
           needs: check
 
