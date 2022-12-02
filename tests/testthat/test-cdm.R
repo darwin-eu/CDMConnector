@@ -24,7 +24,6 @@ test_that("cdm reference works locally", {
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
-  expect_equal(dbms(con), "postgresql")
   expect_equal(dbms(cdm), "postgresql")
 
   DBI::dbDisconnect(con)
@@ -136,6 +135,7 @@ test_that("cdm reference works on redshift", {
 
 test_that("cdm reference works on duckdb", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
@@ -157,6 +157,7 @@ test_that("cdm reference works on duckdb", {
 
 test_that("inclusion of cohort tables", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
@@ -186,6 +187,7 @@ test_that("inclusion of cohort tables", {
 
 test_that("collect a cdm", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   cdm <- cdm_from_con(con)
@@ -207,6 +209,7 @@ test_that("collect a cdm", {
 
 test_that("stow and cdm_from_files works", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
 
   save_path <- file.path(tempdir(), paste0("tmp_", paste(sample(letters, 10, replace = TRUE), collapse = "")))
   dir.create(save_path)
@@ -227,7 +230,7 @@ test_that("stow and cdm_from_files works", {
   expect_setequal(list.files(save_path), paste0(cdm_tables, ".parquet"))
 
   expect_message(cdm_from_files(save_path), NA)
-  expect_warning(cdm_from_files(save_path, cdm_tables = all_of(cdm_tables)), "deprecated")
+  expect_warning(cdm_from_files(save_path, cdm_tables = "person"), "deprecated")
 
   local_cdm <- cdm_from_files(save_path)
   expect_s3_class(local_cdm, "cdm_reference")
@@ -367,6 +370,7 @@ test_that("DatabaseConnector cdm reference works on sql server", {
 
 test_that("autodetect cdm version works", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   cdm <- cdm_from_con(con, cdm_tables = tbl_group("default"), cdm_version = "auto")
   expect_true(version(cdm) == c("5.3"))

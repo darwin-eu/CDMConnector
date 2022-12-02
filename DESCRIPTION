@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: 
       person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
              comment = c(ORCID = "0000-0001-5576-8701"))
@@ -33,7 +33,8 @@ Imports:
     lifecycle,
     jsonlite,
     tibble,
-    SqlRender
+    SqlRender,
+    pkgfilecache
 Suggests: 
     covr,
     knitr,
@@ -45,5 +46,8 @@ Suggests:
     testthat (>= 3.0.0),
     DatabaseConnector,
     lubridate
+Enhances:
+    CirceR
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Additional_repositories: https://OHDSI.github.io/drat

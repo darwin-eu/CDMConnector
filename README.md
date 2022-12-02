@@ -91,7 +91,7 @@ Use dplyr verbs with the table references.
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpA7SXZK/mqwjfklh/cdm.duckdb]
+    ## # Database: DuckDB 0.6.0 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpjH2sR6/rvmmghtk/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -103,7 +103,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.5.1 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpA7SXZK/mqwjfklh/cdm.duckdb]
+    ## # Database:   DuckDB 0.6.0 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpjH2sR6/rvmmghtk/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -134,8 +134,8 @@ CDMConnector is tested using the following DBI driver backends:
 
 -   [RPostgres](https://rpostgres.r-dbi.org/reference/postgres) on
     Postgres and Redshift
--   [odbc](https://solutions.rstudio.com/db/r-packages/odbc/) on
-    Microsoft SQL Server
+-   [odbc](https://solutions.posit.co/connections/db/r-packages/odbc/)
+    on Microsoft SQL Server
 -   [duckdb](https://duckdb.org/docs/api/r)
 
 ## Getting help
