@@ -38,9 +38,10 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install knitr
+      - name: Install rmarkdown
         run: |
             install.packages("knitr")
+            install.packages("rmarkdown")
         shell: Rscript {0}
 
       - name: Install CirceR
