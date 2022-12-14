@@ -21,8 +21,20 @@ test_that("Date functions work on duckdb", {
     dplyr::collect()
 
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
+  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
   expect_equal(df$dif_days2, 1)
   expect_equal(df$dif_days3, -1)
+
+  # can add a date and an integer column
+  df <- date_tbl %>%
+    dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
+    dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
+    dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
+    dplyr::collect()
+
+
+  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
+  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -58,6 +70,18 @@ test_that("Date functions work on Postgres", {
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
   expect_equal(df$dif_days2, 1)
   expect_equal(df$dif_days3, -1)
+
+  # can add a date and an integer column
+  df <- date_tbl %>%
+    dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
+    dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
+    dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
+    dplyr::collect()
+
+
+  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
+  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
+
 
   DBI::dbDisconnect(con)
 })
@@ -99,6 +123,17 @@ test_that("Date functions work on SQL Server", {
   expect_equal(df$dif_days2, 1)
   expect_equal(df$dif_days3, -1)
 
+  # can add a date and an integer column
+  df <- date_tbl %>%
+    dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
+    dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
+    dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
+    dplyr::collect()
+
+
+  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
+  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
+
   DBI::dbDisconnect(con)
 })
 
@@ -136,6 +171,17 @@ test_that("Date functions work on Redshift", {
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
   expect_equal(as.integer(df$dif_days2), 1)
   expect_equal(as.integer(df$dif_days3), -1)
+
+  # can add a date and an integer column
+  df <- date_tbl %>%
+    dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
+    dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
+    dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
+    dplyr::collect()
+
+
+  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
+  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
 
   DBI::dbDisconnect(con)
 })

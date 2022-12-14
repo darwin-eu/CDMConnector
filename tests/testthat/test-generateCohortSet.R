@@ -136,7 +136,7 @@ test_that("cohort generation works on postgres", {
 
   cdm <- cdmFromCon(con,
                     cdmSchema = cdm_schema,
-                    cdmTables = c(tbl_group("default")),
+                    cdmTables = tbl_group("default"),
                     writeSchema = write_schema)
 
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))

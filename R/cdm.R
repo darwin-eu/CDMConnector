@@ -150,7 +150,7 @@ version <- function(cdm) {
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
 cdmFromCon <- function(con, cdmSchema = NULL, cdmTables = tbl_group("default"), writeSchema = NULL, cohortTables = NULL) {
-  cdm_from_con(con = con, cdm_schema = cdmSchema, cdm_tables = cdmTables, write_schema = writeSchema, cohort_tables = cohortTables)
+  cdm_from_con(con = con, cdm_schema = cdmSchema, cdm_tables = {{cdmTables}}, write_schema = writeSchema, cohort_tables = cohortTables)
 }
 
 #' Print a CDM reference object

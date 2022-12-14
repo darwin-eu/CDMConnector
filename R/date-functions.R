@@ -27,7 +27,9 @@ dateadd <- function(date, number, interval = "day") {
   checkmate::assertCharacter(interval, len = 1)
   checkmate::assertSubset(interval, choices = c("day", "year"))
   checkmate::assertCharacter(date, len = 1)
-  checkmate::assertIntegerish(number)
+  if(!(checkmate::testCharacter(number, len = 1) || checkmate::testIntegerish(number, len = 1))) {
+    rlang::abort("`number` must a character string with a column name or a number.")
+  }
 
   dot <- get(".", envir = parent.frame())
   targetDialect <- CDMConnector::dbms(dot$src$con)
