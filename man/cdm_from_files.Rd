@@ -14,7 +14,7 @@ cdm_from_files(
 \arguments{
 \item{path}{A folder where an OMOP CDM v5.4 instance is located.}
 
-\item{cdm_tables}{Which tables should be included? Supports tidyselect and custom selection groups.}
+\item{cdm_tables}{deprecated}
 
 \item{format}{What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".}
 

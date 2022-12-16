@@ -133,7 +133,7 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 
     if (length(missingColumns) > 0) {
       s <- ifelse(length(missingColumns) > 1, "s", "")
-      msg <- glue::glue("- {paste(missingColumns, collapse = ',' )} column{s} not found in cdm table {nm}")
+      msg <- glue::glue("- {paste(missingColumns, collapse = ', ' )} column{s} not found in cdm table {nm}")
       if (is.null(add)) rlang::abort(msg) else add$push(msg)
     }
   }

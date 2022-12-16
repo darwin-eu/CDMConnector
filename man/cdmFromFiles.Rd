@@ -6,7 +6,7 @@
 \usage{
 cdmFromFiles(
   path,
-  cdmTables = tbl_group("default"),
+  cdmTables = deprecated(),
   format = "auto",
   as_data_frame = TRUE
 )
@@ -14,7 +14,7 @@ cdmFromFiles(
 \arguments{
 \item{path}{A folder where an OMOP CDM v5.4 instance is located.}
 
-\item{cdmTables}{Which tables should be included? Supports tidyselect and custom selection groups.}
+\item{cdmTables}{deprecated}
 
 \item{format}{What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".}
 

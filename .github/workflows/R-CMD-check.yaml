@@ -38,10 +38,18 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install rmarkdown
+      - name: Install suggested packages
         run: |
             install.packages("knitr")
             install.packages("rmarkdown")
+            install.packages("ggplot2")
+            install.packages("odbc")
+            install.packages("testthat")
+            install.packages("DatabaseConnector")
+            install.packages("lubridate")
+            install.packages("duckdb")
+            install.packages("covr")
+            install.packages("RPostgres")
         shell: Rscript {0}
 
       - name: Install CirceR

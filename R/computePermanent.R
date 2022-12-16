@@ -43,14 +43,17 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   if (name %in% existingTables) {
     if (overwrite) {
       DBI::dbRemoveTable(x$src$con, DBI::SQL(fullName))
-    } else if (!append) {
-      rlang::abort(paste(fullName, "already exists. Set overwrite = TRUE to recreate it"))
+    } else {
+      rlang::abort(paste(fullName, "already exists. Set overwrite = TRUE to recreate it."))
     }
   }
 
+  if (CDMConnector::dbms(x$src$con) == "spark" && !rlang::is_installed("SqlRender", version = "1.8.0")) {
+    rlang::abort("SqlRender version 1.8.0 or later is required to use computePermanent with spark.")
+  }
 
   # TODO fix select * INTO translation for duckdb in SqlRender
-  if (CDMConnector::dbms(x$src$con) == "duckdb") {
+  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "spark")) {
     sql <- glue::glue("CREATE TABLE {fullName} AS {dbplyr::sql_render(x)}")
   } else {
     sql <- glue::glue("SELECT * INTO {fullName} FROM ({dbplyr::sql_render(x)}) x")

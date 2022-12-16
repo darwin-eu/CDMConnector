@@ -146,3 +146,39 @@ test_that("computePermanent works on Redshift", {
   DBI::dbDisconnect(con)
 })
 
+test_that("computePermanent works on Spark", {
+
+  skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
+  # skip("Only run this test manually")
+
+
+  con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
+
+  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = T)), collapse = "")
+
+  vocab <- dplyr::tbl(con, dbplyr::in_schema("omop531", "vocabulary"))
+
+  tempSchema <- "omop531results"
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computePermanent(newTableName, schema = tempSchema, overwrite = T)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+  expect_true(newTableName %in% CDMConnector::listTables(con, tempSchema))
+
+  expect_error({vocab %>%
+      dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+      computePermanent(newTableName, schema = tempSchema)}, "already exists")
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
+    appendPermanent(newTableName, schema = tempSchema)
+
+  expect_true(nrow(dplyr::collect(x)) == 3)
+
+  DBI::dbRemoveTable(con, DBI::SQL(paste0(c(tempSchema, newTableName), collapse = ".")))
+  expect_false(newTableName %in% CDMConnector::listTables(con, tempSchema))
+  DBI::dbDisconnect(con)
+})
+

@@ -30,18 +30,21 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
     cdm_schema <- strsplit(cdm_schema, "\\.")[[1]]
     checkmate::assert_character(cdm_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   }
+
   if (!is.null(write_schema) && length(write_schema) == 1) {
     write_schema <- strsplit(write_schema, "\\.")[[1]]
     checkmate::assert_character(write_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   }
 
-  if (cdm_version == "auto") cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
+  if (cdm_version == "auto") {
+    cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
+  }
 
   # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
   all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
   cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
 
-  if (dbms(con) == "duckdb") {
+  if (is(con, "duckdb_connection")) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")))
   } else if (is.null(cdm_schema)) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, .))
@@ -52,10 +55,12 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   }
   names(cdm) <- cdm_tables
 
-  if (!is.null(write_schema)) verify_write_access(con, write_schema = write_schema)
+  if (!is.null(write_schema)) {
+    verify_write_access(con, write_schema = write_schema)
+  }
 
   if (!is.null(cohort_tables)) {
-    if (dbms(con) == "duckdb") {
+    if (is(con, "duckdb_connection")) {
       ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, paste(c(write_schema, .), collapse = ".")))
     } else if (is.null(write_schema)) {
       rlang::abort("write_schema not specified. Cohort tables must be in write_schema.")
@@ -268,15 +273,21 @@ dbms.cdm_reference <- function(con) {
 dbms.DBIConnection <- function(con) {
   if(!is.null(attr(con, "dbms"))) return(attr(con, "dbms"))
 
-  switch (class(con),
+  result <- switch (class(con),
           'Microsoft SQL Server' = 'sql server',
           'PqConnection' = 'postgresql',
           'RedshiftConnection' = 'redshift',
           'BigQueryConnection' = 'bigquery',
           'SQLiteConnection' = 'sqlite',
-          'duckdb_connection' = 'duckdb'
+          'duckdb_connection' = 'duckdb',
+          'Spark SQL' = 'spark'
           # add mappings from various connection classes to dbms here
   )
+
+  if (is.null(result)) {
+    rlang::abort(glue::glue("{class(con) is not a supported connection type."))
+  }
+  return(result)
 }
 
 #' Collect a list of lazy queries and save the results as files
@@ -312,7 +323,7 @@ stow <- function(cdm, path, format = "parquet") {
 #' Create a CDM reference from a folder containing parquet, csv, or feather files
 #'
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
-#' @param cdm_tables Which tables should be included? Supports tidyselect and custom selection groups.
+#' @param cdm_tables deprecated
 #' @param format What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".
 #' @param as_data_frame TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
@@ -362,12 +373,12 @@ cdm_from_files <- function(path, cdm_tables = deprecated(), format = "auto", as_
 #' Create a CDM reference from a folder containing parquet, csv, or feather files
 #'
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
-#' @param cdmTables Which tables should be included? Supports tidyselect and custom selection groups.
+#' @param cdmTables deprecated
 #' @param format What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".
 #' @param as_data_frame TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
-cdmFromFiles <- function(path, cdmTables = tbl_group("default"), format = "auto", as_data_frame = TRUE) {
+cdmFromFiles <- function(path, cdmTables = deprecated(), format = "auto", as_data_frame = TRUE) {
   cdm_from_files(path = path, cdm_tables = cdmTables, format = format, as_data_frame = as_data_frame)
 }
 

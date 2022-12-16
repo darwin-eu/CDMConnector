@@ -155,5 +155,34 @@ test_that("cohort generation works on postgres", {
   DBI::dbDisconnect(con)
 })
 
+test_that("cohort generation works on spark", {
 
+  skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
+  skip("Only run this test manually")
+  skip_if_not_installed("CirceR")
 
+  con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
+
+  write_schema <- "omop531results"
+  cdm_schema <- "omop531"
+
+  cdm <- cdmFromCon(con,
+                    cdmSchema = cdm_schema,
+                    cdmTables = tbl_group("default"),
+                    writeSchema = write_schema)
+
+  cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
+  expect_equal(nrow(cohortSet), 2)
+
+  cdm <- addCohortTable(cdm, name = "cohorts", overwrite = TRUE)
+  expect_true("cohorts" %in% names(cdm))
+
+  cdm <- generateCohortSet(cdm, cohortSet, cohortTableName = "cohorts", overwrite = TRUE)
+  df <- cdm$cohorts %>% head() %>% dplyr::collect()
+  expect_s3_class(df, "data.frame")
+  expect_true(all(names(df) == c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")))
+
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "cohorts"))
+  expect_false("cohorts" %in% listTables(con, schema = write_schema))
+  DBI::dbDisconnect(con)
+})

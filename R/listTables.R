@@ -33,7 +33,7 @@ listTables <- function(con, schema = NULL) {
     DBI::dbGetQuery(con, sql) %>%
       dplyr::pull(.data$table_name)
 
-  } else if (is(con, "Microsoft SQL Server")) {
+  } else if (is(con, "OdbcConnection")) {
     if (length(schema) == 1) {
       DBI::dbListTables(con, schema_name = schema)
     } else {
