@@ -45,13 +45,13 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
 
   if (is(con, "duckdb_connection")) {
-    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")))
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")) %>% dplyr::rename_all(tolower))
   } else if (is.null(cdm_schema)) {
-    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, .))
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, .) %>% dplyr::rename_all(tolower))
   } else if (length(cdm_schema) == 1) {
-    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)))
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)) %>% dplyr::rename_all(tolower))
   } else if (length(cdm_schema) == 2) {
-    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)))
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)) %>% dplyr::rename_all(tolower))
   }
   names(cdm) <- cdm_tables
 
@@ -61,13 +61,13 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
 
   if (!is.null(cohort_tables)) {
     if (is(con, "duckdb_connection")) {
-      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, paste(c(write_schema, .), collapse = ".")))
+      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, paste(c(write_schema, .), collapse = ".")) %>% dplyr::rename_all(tolower))
     } else if (is.null(write_schema)) {
       rlang::abort("write_schema not specified. Cohort tables must be in write_schema.")
     } else if (length(write_schema) == 1) {
-      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, dbplyr::in_schema(write_schema, .)))
+      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, dbplyr::in_schema(write_schema, .)) %>% dplyr::rename_all(tolower))
     } else if (length(write_schema) == 2) {
-      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, dbplyr::in_catalog(write_schema[1], write_schema[2], .)))
+      ch <- purrr::map(cohort_tables, ~dplyr::tbl(con, dbplyr::in_catalog(write_schema[1], write_schema[2], .)) %>% dplyr::rename_all(tolower))
     }
     names(ch) <- cohort_tables
     cdm <- c(cdm, ch)
