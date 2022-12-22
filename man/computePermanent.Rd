@@ -25,7 +25,6 @@ Run a dplyr query and store the result in a permanent table
 \examples{
 \dontrun{
 library(CDMConnector)
-library(SqlUtilities)
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
 concept <- dplyr::tbl(con, "concept")

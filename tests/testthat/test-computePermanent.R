@@ -182,3 +182,36 @@ test_that("computePermanent works on Spark", {
   DBI::dbDisconnect(con)
 })
 
+
+test_that("computeQuery works on Oracle", {
+  library(ROracle)
+  con <- DBI::dbConnect(DBI::dbDriver("Oracle"),
+                   username = Sys.getenv("CDM5_ORACLE_USER"),
+                   password= Sys.getenv("CDM5_ORACLE_PASSWORD"),
+                   dbname = Sys.getenv("CDM5_ORACLE_SERVER"))
+
+
+  person <- dplyr::tbl(con, dbplyr::in_schema("CDMV5", "PERSON")) %>%
+    dplyr::rename_all(tolower)
+
+  x <- person %>%
+    dplyr::select(person_id) %>%
+    head(5) %>%
+    computeQuery()
+
+  expect_equal(nrow(dplyr::collect(x)), 5)
+  expect_s3_class(dplyr::collect(x), "data.frame")
+
+  # list schemas
+  # dbGetQuery(con, "select username as schema from sys.all_users")
+
+  # TODO add support to listTables
+  # x <- person %>%
+  #   dplyr::select(person_id) %>%
+  #   head(5) %>%
+  #   computeQuery(temporary = FALSE, name = "tmp", schema = "TEMPEMULSCHEMA")
+  #
+
+  DBI::dbDisconnect(con)
+
+})
