@@ -22,7 +22,7 @@ validate_cdm <- function(cdm) {
   checkmate::assert_class(cdm, "cdm_reference")
   if(is.null(attr(cdm, "dbcon"))) rlang::abort("validate_cdm is not implement for local cdms")
 
-  cli::cat_rule(glue::glue("CDM v5.4 validation (checking {length(cdm)} tables)"))
+  cli::cat_rule(glue::glue("CDM v{version(cdm)} validation (checking {length(cdm)} tables)"))
   validate_cdm_colnames(cdm)
   validate_cdm_rowcounts(cdm)
 }
@@ -47,7 +47,7 @@ validate_cdm_colnames <- function(cdm) {
                             ignore_attr = TRUE)
 
       if (length(dif) > 0) {
-        print(dif)
+        print(dif, n = 100)
         any_dif <- TRUE
       }
   }
@@ -63,7 +63,8 @@ validate_cdm_rowcounts <- function(cdm) {
   empty_tables <- rowcounts[rowcounts == 0]
   if (length(empty_tables) > 0) {
     table_text <- cli::col_grey(paste(names(empty_tables), collapse = ', '))
-    cli::cat_bullet(glue::glue("{length(empty_tables)} empty CDM tables: {table_text}"), bullet_col = "red")
+    s <- ifelse(length(empty_tables) > 1, "s", "")
+    cli::cat_bullet(glue::glue("{length(empty_tables)} empty CDM table{s}: {table_text}"), bullet_col = "red")
   } else {
     cli::cat_bullet("all row counts > 0", bullet = "tick", bullet_col = "green")
   }

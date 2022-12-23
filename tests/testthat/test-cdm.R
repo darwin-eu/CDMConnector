@@ -159,6 +159,44 @@ test_that("cdm reference works on spark", {
   DBI::dbDisconnect(con)
 })
 
+test_that("cdm reference works on Oracle", {
+
+  skip_on_ci()
+  skip_on_cran()
+  # skip("Only run this test manually")
+
+  library(ROracle)
+  con <- DBI::dbConnect(DBI::dbDriver("Oracle"),
+                        username = Sys.getenv("CDM5_ORACLE_USER"),
+                        password= Sys.getenv("CDM5_ORACLE_PASSWORD"),
+                        dbname = Sys.getenv("CDM5_ORACLE_SERVER"))
+
+  # allTables <- DBI::dbListTables(con, schema = "CDMV5", full = TRUE)
+  writeSchema <- "TEMPEMULSCHEMA"
+  cdmSchema <- "CDMV5"
+
+  # List schemas
+  # dbGetQuery(con, "select username as schema from sys.all_users")
+
+  expect_true(is.character(listTables(con, schema = cdmSchema)))
+
+  # Oracle test cdm v5.3 is missing visit_detail
+  cdm <- cdm_from_con(con, cdm_schema = cdmSchema, cdm_tables = c(tbl_group("default"), -visit_detail))
+
+  expect_error(assert_tables(cdm, "cost"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  # expect_s3_class(snapshot(cdm), "cdm_snapshot") # test database person table is missing birth_datetime
+
+  expect_true(is.null(verify_write_access(con, write_schema = writeSchema)))
+
+  expect_true("concept" %in% names(cdm))
+  expect_s3_class(collect(head(cdm$concept)), "data.frame")
+
+  expect_equal(dbms(cdm), "oracle")
+
+  DBI::dbDisconnect(con)
+})
+
 test_that("cdm reference works on duckdb", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
   skip_if_not(eunomia_is_available())

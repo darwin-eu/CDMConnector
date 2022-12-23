@@ -19,7 +19,7 @@
 #' @export
 cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default"), write_schema = NULL, cohort_tables = NULL, cdm_version = "5.3") {
   checkmate::assert_class(con, "DBIConnection")
-  checkmate::assert_true(DBI::dbIsValid(con))
+  checkmate::assert_true(.dbIsValid(con))
   checkmate::assert_character(cdm_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   checkmate::assert_character(write_schema, null.ok = TRUE, min.len = 1, max.len = 2)
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
@@ -44,6 +44,11 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   all_cdm_tables <- rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName, spec_cdm_table[[cdm_version]]$cdmTableName)
   cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables), data = all_cdm_tables))
 
+  # Handle uppercase table names in the database
+  if (all(listTables(con, schema = cdm_schema) == toupper(listTables(con, schema = cdm_schema)))) {
+    cdm_tables <- toupper(cdm_tables)
+  }
+
   if (is(con, "duckdb_connection")) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")) %>% dplyr::rename_all(tolower))
   } else if (is.null(cdm_schema)) {
@@ -53,7 +58,7 @@ cdm_from_con <- function(con, cdm_schema = NULL, cdm_tables = tbl_group("default
   } else if (length(cdm_schema) == 2) {
     cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)) %>% dplyr::rename_all(tolower))
   }
-  names(cdm) <- cdm_tables
+  names(cdm) <- tolower(cdm_tables)
 
   if (!is.null(write_schema)) {
     verify_write_access(con, write_schema = write_schema)
@@ -180,14 +185,13 @@ print.cdm_reference <- function(x, ...) {
 verify_write_access <- function(con, write_schema, add = NULL) {
   checkmate::assert_character(write_schema, min.len = 1, max.len = 2, min.chars = 1)
   checkmate::assert_class(add, "AssertCollection", null.ok = TRUE)
-  checkmate::assert_true(DBI::dbIsValid(con))
+  checkmate::assert_true(.dbIsValid(con))
 
   write_schema <- paste(write_schema, collapse = ".")
   tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
   tablename <- paste(write_schema, tablename, sep = ".")
 
-  df1 <- data.frame(chr_col = "a", numeric_col = 1, int_col = 1L)
-  # df1 <- data.frame(chr_col = "a", dbl_col = 1.0)
+  df1 <- data.frame(chr_col = "a", numeric_col = 1) #, int_col = 1L) # ROracle does not support integer round trip
   DBI::dbWriteTable(con, DBI::SQL(tablename), df1)
   withr::with_options(list(databaseConnectorIntegerAsNumeric = FALSE), {
     df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
@@ -280,12 +284,13 @@ dbms.DBIConnection <- function(con) {
           'BigQueryConnection' = 'bigquery',
           'SQLiteConnection' = 'sqlite',
           'duckdb_connection' = 'duckdb',
-          'Spark SQL' = 'spark'
+          'Spark SQL' = 'spark',
+          'OraConnection' = 'oracle'
           # add mappings from various connection classes to dbms here
   )
 
   if (is.null(result)) {
-    rlang::abort(glue::glue("{class(con) is not a supported connection type."))
+    rlang::abort(glue::glue("{class(con)} is not a supported connection type."))
   }
   return(result)
 }

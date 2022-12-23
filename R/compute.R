@@ -52,7 +52,7 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   }
 
   # TODO fix select * INTO translation for duckdb in SqlRender
-  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "spark")) {
+  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "spark", "oracle")) {
     sql <- glue::glue("CREATE TABLE {fullName} AS {dbplyr::sql_render(x)}")
   } else {
     sql <- glue::glue("SELECT * INTO {fullName} FROM ({dbplyr::sql_render(x)}) x")
@@ -61,7 +61,13 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 
   DBI::dbExecute(x$src$con, sql)
 
-  if (length(schema) == 2) {
+  if (dbms(x$src$con) == "oracle") {
+    name <- toupper(name)
+  }
+
+  if (is(x$src$con, "duckdb_connection")) {
+    ref <- dplyr::tbl(x$src$con, paste(c(schema, name), collapse = "."))
+  } else if (length(schema) == 2) {
     ref <- dplyr::tbl(x$src$con, dbplyr::in_catalog(schema[[1]], schema[[2]], name))
   } else if (length(schema) == 1) {
     ref <- dplyr::tbl(x$src$con, dbplyr::in_schema(schema, name))
@@ -120,7 +126,7 @@ appendPermanent <- function(x, name, schema = NULL) {
   }
 
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
-  if (!(name %in% existingTables)) {
+  if (!(tolower(name) %in% tolower(existingTables))) {
     return(computePermanent(x = x, name = name, schema = schema, overwrite = FALSE))
   }
 
