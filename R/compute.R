@@ -173,7 +173,7 @@ computeQuery <- function(x, name = uniqueTableName(), temporary = TRUE, schema =
   con <- x$src$con
 
   if (temporary) {
-    if(is(con, "OraConnection")) {
+    if(is(con, "OraConnection") || is(con, "Oracle")) {
       name <- paste0("ORA$PTT_", name)
       sql <- dbplyr::build_sql(
         "CREATE ", dbplyr::sql("PRIVATE TEMPORARY "), "TABLE \n",

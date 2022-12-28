@@ -188,7 +188,7 @@ test_that("computeQuery works on Redshift", {
 test_that("computePermanent works on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-  # skip("Only run this test manually")
+  skip("Only run this test manually")
 
   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
 
@@ -222,12 +222,15 @@ test_that("computePermanent works on Spark", {
 
 
 test_that("computeQuery works on Oracle", {
-  library(ROracle)
-  con <- DBI::dbConnect(DBI::dbDriver("Oracle"),
-                        username = Sys.getenv("CDM5_ORACLE_USER"),
-                        password= Sys.getenv("CDM5_ORACLE_PASSWORD"),
-                        dbname = Sys.getenv("CDM5_ORACLE_SERVER"))
+  # library(ROracle)
+  # con <- DBI::dbConnect(DBI::dbDriver("Oracle"),
+  #                       username = Sys.getenv("CDM5_ORACLE_USER"),
+  #                       password= Sys.getenv("CDM5_ORACLE_PASSWORD"),
+  #                       dbname = Sys.getenv("CDM5_ORACLE_SERVER"))
 
+  skip_if_not("OracleODBC-19" %in% odbc::odbcListDataSources()$name)
+
+  con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
 
   # dbGetQuery(con, "select username as schema from sys.all_users")
 

@@ -285,7 +285,8 @@ dbms.DBIConnection <- function(con) {
           'SQLiteConnection' = 'sqlite',
           'duckdb_connection' = 'duckdb',
           'Spark SQL' = 'spark',
-          'OraConnection' = 'oracle'
+          'OraConnection' = 'oracle',
+          'Oracle' = 'oracle'
           # add mappings from various connection classes to dbms here
   )
 
