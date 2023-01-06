@@ -277,5 +277,30 @@ test_that("Date functions work on Oracle", {
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
   expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
 
+
+  dplyr::mutate(dob = as.Date(paste0(
+    .data$year_of_birth1, "/",
+    .data$month_of_birth1, "/",
+    .data$day_of_birth1
+  )))
+
+  date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 10L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
+
+  # This fails on Oracle
+  # df <- date_tbl2 %>%
+  #   dplyr::mutate(date_from_parts = as.Date(paste0(
+  #   .data$year_of_birth1, "/",
+  #   .data$month_of_birth1, "/",
+  #   .data$day_of_birth1
+  # )))
+
+  df <- date_tbl2 %>%
+    dplyr::mutate(date_from_parts = !!asDate(paste0(
+    .data$y, "/",
+    .data$m, "/",
+    .data$d
+  ))) %>%
+    collect()
+
   DBI::dbDisconnect(con)
 })
