@@ -34,6 +34,13 @@ dateadd <- function(date, number, interval = "day") {
   dot <- get(".", envir = parent.frame())
   targetDialect <- CDMConnector::dbms(dot$src$con)
 
+  if (targetDialect == "oracle") {
+    date <- as.character(DBI::dbQuoteIdentifier(dot$src$con, date))
+    if (is.character(number)) {
+      number <- as.character(DBI::dbQuoteIdentifier(dot$src$con, number))
+    }
+  }
+
   sql <- glue::glue("DATEADD({interval}, {number}, {date})")
   sql <- SqlRender::translate(sql = as.character(sql), targetDialect = targetDialect)
   dbplyr::sql(sql)
@@ -75,6 +82,11 @@ datediff <- function(start, end, interval = "day") {
 
   dot <- get(".", envir = parent.frame())
   targetDialect <- CDMConnector::dbms(dot$src$con)
+
+  if (targetDialect == "oracle") {
+    start <- as.character(DBI::dbQuoteIdentifier(dot$src$con, start))
+    end <- as.character(DBI::dbQuoteIdentifier(dot$src$con, end))
+  }
 
   sql <- glue::glue("DATEDIFF({interval}, {start},  {end})")
   sql <- SqlRender::translate(sql = as.character(sql), targetDialect = targetDialect)

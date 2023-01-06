@@ -238,7 +238,6 @@ test_that("Date functions work on spark", {
 
 test_that("Date functions work on Oracle", {
   skip_if_not("OracleODBC-19" %in% odbc::odbcListDataSources()$name)
-  skip("not passing because of Oracle's upper case names")
 
   con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
 
