@@ -188,7 +188,7 @@ test_that("computeQuery works on Redshift", {
 test_that("computePermanent works on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-  skip("Only run this test manually")
+  skip("Only run this test manually. Spark server needs to be online.")
 
   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
 
@@ -196,11 +196,33 @@ test_that("computePermanent works on Spark", {
 
   vocab <- dplyr::tbl(con, dbplyr::in_schema("omop531", "vocabulary"))
 
+  # tables <- DBI::dbGetQuery(con, "select * from information_schema.tables")
+  # tibble::tibble(tables) %>% dplyr::distinct(table_schema)
+
   tempSchema <- "omop531results"
 
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
-    computePermanent(newTableName, schema = tempSchema, overwrite = T)
+    # dplyr::compute() # Fails
+    computeQuery()
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, overwrite = TRUE)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE) # fails when overwrite is FALSE
 
   expect_true(nrow(dplyr::collect(x)) == 2)
   expect_true(newTableName %in% CDMConnector::listTables(con, tempSchema))

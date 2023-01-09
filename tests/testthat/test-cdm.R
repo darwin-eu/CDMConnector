@@ -146,7 +146,7 @@ test_that("cdm reference works on spark", {
   expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   cdm$cdm_source
-  debugonce(snapshot)
+  # debugonce(snapshot)
   # expect_s3_class(snapshot(cdm), "cdm_snapshot") # test database has upper case names
 
   expect_true(is.null(verify_write_access(con, write_schema = "omop531results")))

@@ -52,8 +52,15 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   }
 
   # TODO fix select * INTO translation for duckdb in SqlRender
-  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "spark", "oracle")) {
+  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "oracle")) {
     sql <- glue::glue("CREATE TABLE {fullName} AS {dbplyr::sql_render(x)}")
+  } else if (CDMConnector::dbms(x$src$con) == "spark") {
+    # sql <- dbplyr::build_sql("CREATE ",  if(overwrite) dbplyr::sql("OR REPLACE "),  "TABLE ",
+    #                          if (!is.null(schema)) schema,
+    #                          if (!is.null(schema)) dbplyr::sql("."), name,
+    #                          " AS ", dbplyr::sql_render(x), con = x$src$con)
+
+    sql <- glue::glue("CREATE {if(overwrite) 'OR REPLACE'} TABLE {fullName} AS {dbplyr::sql_render(x)}")
   } else {
     sql <- glue::glue("SELECT * INTO {fullName} FROM ({dbplyr::sql_render(x)}) x")
     sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(x$src$con))
@@ -176,8 +183,17 @@ computeQuery <- function(x, name = uniqueTableName(), temporary = TRUE, schema =
     if(is(con, "OraConnection") || is(con, "Oracle")) {
       name <- paste0("ORA$PTT_", name)
       sql <- dbplyr::build_sql(
-        "CREATE ", dbplyr::sql("PRIVATE TEMPORARY "), "TABLE \n",
+        "CREATE PRIVATE TEMPORARY TABLE \n",
         dbplyr::as.sql(name, con), dbplyr::sql(" ON COMMIT PRESERVE DEFINITION \n"), " AS\n",
+        dbplyr::sql_render(x),
+        con = con
+      )
+      DBI::dbExecute(con, sql)
+      return(dplyr::tbl(con, name))
+    } else if(is(con, "Spark SQL")) {
+      sql <- dbplyr::build_sql(
+        "CREATE ", if (overwrite) dbplyr::sql("OR REPLACE "), "TEMPORARY VIEW \n",
+        dbplyr::as.sql(name, con), " AS\n",
         dbplyr::sql_render(x),
         con = con
       )
