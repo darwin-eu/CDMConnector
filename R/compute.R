@@ -12,7 +12,6 @@
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' library(SqlUtilities)
 #'
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
 #' concept <- dplyr::tbl(con, "concept")
@@ -53,8 +52,15 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   }
 
   # TODO fix select * INTO translation for duckdb in SqlRender
-  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "spark")) {
+  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "oracle")) {
     sql <- glue::glue("CREATE TABLE {fullName} AS {dbplyr::sql_render(x)}")
+  } else if (CDMConnector::dbms(x$src$con) == "spark") {
+    # sql <- dbplyr::build_sql("CREATE ",  if(overwrite) dbplyr::sql("OR REPLACE "),  "TABLE ",
+    #                          if (!is.null(schema)) schema,
+    #                          if (!is.null(schema)) dbplyr::sql("."), name,
+    #                          " AS ", dbplyr::sql_render(x), con = x$src$con)
+
+    sql <- glue::glue("CREATE {if(overwrite) 'OR REPLACE'} TABLE {fullName} AS {dbplyr::sql_render(x)}")
   } else {
     sql <- glue::glue("SELECT * INTO {fullName} FROM ({dbplyr::sql_render(x)}) x")
     sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(x$src$con))
@@ -62,7 +68,13 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 
   DBI::dbExecute(x$src$con, sql)
 
-  if (length(schema) == 2) {
+  if (dbms(x$src$con) == "oracle") {
+    name <- toupper(name)
+  }
+
+  if (is(x$src$con, "duckdb_connection")) {
+    ref <- dplyr::tbl(x$src$con, paste(c(schema, name), collapse = "."))
+  } else if (length(schema) == 2) {
     ref <- dplyr::tbl(x$src$con, dbplyr::in_catalog(schema[[1]], schema[[2]], name))
   } else if (length(schema) == 1) {
     ref <- dplyr::tbl(x$src$con, dbplyr::in_schema(schema, name))
@@ -121,7 +133,7 @@ appendPermanent <- function(x, name, schema = NULL) {
   }
 
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
-  if (!(name %in% existingTables)) {
+  if (!(tolower(name) %in% tolower(existingTables))) {
     return(computePermanent(x = x, name = name, schema = schema, overwrite = FALSE))
   }
 
@@ -140,5 +152,76 @@ appendPermanent <- function(x, name, schema = NULL) {
   return(ref)
 }
 
+uniqueTableName <- function() {
+  i <- getOption("dbplyr_table_name", 0) + 1
+  options(dbplyr_table_name = i)
+  sprintf("dbplyr_%03i", i)
+}
 
+#' Execute dplyr query and save result in remote database
+#'
+#' This function is a wrapper around `dplyr::compute` that is tested on several database systems.
+#' It is needed to handle edge cases where `dplyr::compute` does not produce correct SQL.
+#'
+#' @param x A dplyr query
+#' @param name The name of the table to create.
+#' @param temporary Should the table be temporary: TRUE (default) or FALSE
+#' @param schema The schema where the table should be created. Ignored if temporary = TRUE.
+#' @param overwrite Should the table be overwritten if it already exists: TRUE or FALSE (default)
+#'       Ignored if temporary = TRUE.
+#' @param ... Further arguments passed on the `dplyr::compute`
+#'
+#' @return A `dplyr::tbl()` reference to the newly created table.
+#' @export
+computeQuery <- function(x, name = uniqueTableName(), temporary = TRUE, schema = NULL, overwrite = FALSE, ...) {
+
+  checkmate::assertLogical(temporary, len = 1)
+
+  con <- x$src$con
+
+  if (temporary) {
+    if(is(con, "OraConnection") || is(con, "Oracle")) {
+      name <- paste0("ORA$PTT_", name)
+      sql <- dbplyr::build_sql(
+        "CREATE PRIVATE TEMPORARY TABLE \n",
+        dbplyr::as.sql(name, con), dbplyr::sql(" ON COMMIT PRESERVE DEFINITION \n"), " AS\n",
+        dbplyr::sql_render(x),
+        con = con
+      )
+      DBI::dbExecute(con, sql)
+      return(dplyr::tbl(con, name))
+    } else if(is(con, "Spark SQL")) {
+      sql <- dbplyr::build_sql(
+        "CREATE ", if (overwrite) dbplyr::sql("OR REPLACE "), "TEMPORARY VIEW \n",
+        dbplyr::as.sql(name, con), " AS\n",
+        dbplyr::sql_render(x),
+        con = con
+      )
+      DBI::dbExecute(con, sql)
+      return(dplyr::tbl(con, name))
+    } else {
+      return(dplyr::compute(x, name = name, temporary = temporary, ...))
+    }
+  } else {
+    computePermanent(x, name = name, schema = schema, overwrite = overwrite)
+  }
+}
+
+
+# possible dbplyr solution from https://github.com/tidyverse/dbplyr/issues/621#issuecomment-1362229669
+# sql_query_save.OraConnection <- function(con, sql, name, temporary = TRUE, ...) {
+#   print(name)
+#   if (temporary) {
+#     assign(analyze, FALSE, parent.frame())
+#     assign("name", paste0("ORA$PTT_", name), parent.frame())
+#     name <- paste0("ORA$PTT_", name)
+#   }
+#   s <- dbplyr::build_sql(
+#     "CREATE ", if (temporary) dbplyr::sql("PRIVATE TEMPORARY "), "TABLE \n",
+#     dbplyr::as.sql(name, con), if (temporary) dbplyr::sql(" ON COMMIT PRESERVE DEFINITION \n"), " AS\n", sql,
+#     con = con
+#   )
+#   print(s)
+#   s
+# }
 

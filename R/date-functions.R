@@ -34,6 +34,13 @@ dateadd <- function(date, number, interval = "day") {
   dot <- get(".", envir = parent.frame())
   targetDialect <- CDMConnector::dbms(dot$src$con)
 
+  if (targetDialect == "oracle") {
+    date <- as.character(DBI::dbQuoteIdentifier(dot$src$con, date))
+    if (is.character(number)) {
+      number <- as.character(DBI::dbQuoteIdentifier(dot$src$con, number))
+    }
+  }
+
   sql <- glue::glue("DATEADD({interval}, {number}, {date})")
   sql <- SqlRender::translate(sql = as.character(sql), targetDialect = targetDialect)
   dbplyr::sql(sql)
@@ -76,8 +83,50 @@ datediff <- function(start, end, interval = "day") {
   dot <- get(".", envir = parent.frame())
   targetDialect <- CDMConnector::dbms(dot$src$con)
 
+  if (targetDialect == "oracle") {
+    start <- as.character(DBI::dbQuoteIdentifier(dot$src$con, start))
+    end <- as.character(DBI::dbQuoteIdentifier(dot$src$con, end))
+  }
+
   sql <- glue::glue("DATEDIFF({interval}, {start},  {end})")
   sql <- SqlRender::translate(sql = as.character(sql), targetDialect = targetDialect)
   dbplyr::sql(sql)
 }
 
+#' as.Date dbplyr translation wrapper
+#'
+#' This is a workaround for using as.Date inside dplyr verbs against a database
+#' backend. This function should only be used inside dplyr verbs where the first
+#' argument is a database table reference. `asDate` must be unquoted with !! inside
+#' dplyr verbs (see example).
+#'
+#' @param x an R expression
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(odbc::odbc(), "Oracle")
+#' date_tbl <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 10L), name = "tmp", temporary = TRUE)
+#'
+#' df <- date_tbl %>%
+#'   dplyr::mutate(date_from_parts = !!asDate(paste0(
+#'     .data$y, "/",
+#'     .data$m, "/",
+#'     .data$d
+#'   ))) %>%
+#'   collect()
+#' }
+asDate <- function(x) {
+  x_quo <- rlang::enquo(x)
+  .data <- get(".", envir = parent.frame())
+  dialect <- CDMConnector::dbms(.data$src$con)
+
+  if (dialect == "oracle") {
+    x <- dbplyr::partial_eval(x_quo, data = .data)
+    x <- dbplyr::translate_sql(!!x, con = .data$src$con)
+    x <- glue::glue("TO_DATE({x}, 'YYYY/MM/DD')")
+    return(dplyr::sql(x))
+  } else {
+    return(rlang::expr(as.Date(!!x)))
+  }
+}

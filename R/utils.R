@@ -12,3 +12,12 @@
 #' @param rhs A function call using the magrittr semantics.
 #' @return The result of calling `rhs(lhs)`.
 NULL
+
+# Workaround for Oracle since ROracle does not define dbIsValid
+.dbIsValid <- function(dbObj, ...) {
+  if (is(dbObj, "OraConnection")) {
+    is.character(DBI::dbListTables(con))
+  } else {
+    DBI::dbIsValid(dbObj, ...)
+  }
+}
