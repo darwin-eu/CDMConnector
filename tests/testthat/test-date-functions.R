@@ -36,6 +36,19 @@ test_that("Date functions work on duckdb", {
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
   expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
 
+
+  date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
+
+  df <- date_tbl2 %>%
+    dplyr::mutate(date_from_parts = !!asDate(paste0(
+      as.character(.data$y), "-",
+      as.character(.data$m), "-",
+      as.character(.data$d)
+    ))) %>%
+    dplyr::collect()
+
+  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
+
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
@@ -82,6 +95,17 @@ test_that("Date functions work on Postgres", {
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
   expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
 
+  date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
+
+  df <- date_tbl2 %>%
+    dplyr::mutate(date_from_parts = !!asDate(paste0(
+      as.character(.data$y), "-",
+      as.character(.data$m), "-",
+      as.character(.data$d)
+    ))) %>%
+    dplyr::collect()
+
+  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
 
   DBI::dbDisconnect(con)
 })
@@ -134,6 +158,20 @@ test_that("Date functions work on SQL Server", {
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
   expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
 
+  suppressMessages({
+    date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
+  })
+
+  df <- date_tbl2 %>%
+    dplyr::mutate(date_from_parts = !!asDate(paste0(
+      as.character(.data$y), "-",
+      as.character(.data$m), "-",
+      as.character(.data$d)
+    ))) %>%
+    dplyr::collect()
+
+  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
+
   DBI::dbDisconnect(con)
 })
 
@@ -183,10 +221,22 @@ test_that("Date functions work on Redshift", {
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
   expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
 
+  date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
+
+  df <- date_tbl2 %>%
+    dplyr::mutate(date_from_parts = !!asDate(paste0(
+      as.character(.data$y), "-",
+      as.character(.data$m), "-",
+      as.character(.data$d)
+    ))) %>%
+    dplyr::collect()
+
+  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
+
   DBI::dbDisconnect(con)
 })
 
-test_that("Date functions work on spark", {
+test_that("Date functions work on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
   skip("only run test manually")
@@ -204,7 +254,7 @@ test_that("Date functions work on spark", {
 
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::years(1), 1)
 
-  # TODO Datediff returns integer64 on spark - How to handle different return types? Use the bigint argument when connecting?
+  # Datediff returns integer64 on spark but we can use the bigint argument when connecting to have it return a double instead.
   expect_equal(as.integer(df$dif_years), 1)
   expect_equal(as.integer(df$dif_days), 365)
 
@@ -232,6 +282,19 @@ test_that("Date functions work on spark", {
 
   DBI::dbRemoveTable(con, DBI::SQL("omop531results.tmpdate"))
 
+  DBI::dbWriteTable(con, name = DBI::SQL("omop531results.tmpdate2"), value = data.frame(y = 2000L, m = 10L, d = 11L))
+  date_tbl2 <- dplyr::tbl(con, DBI::Id(schema = "omop531results", table = "tmpdate2"))
+
+  df <- date_tbl2 %>%
+    dplyr::mutate(date_from_parts = !!asDate(paste0(
+      as.character(.data$y), "-",
+      as.character(.data$m), "-",
+      as.character(.data$d)
+    ))) %>%
+    dplyr::collect()
+
+  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
+  DBI::dbRemoveTable(con, DBI::SQL("omop531results.tmpdate2"))
   DBI::dbDisconnect(con)
 })
 
@@ -285,7 +348,7 @@ test_that("Date functions work on Oracle", {
 
   date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
 
-  # This fails on Oracle
+  # This fails on Oracle. asDate provides the workaround.
   # df <- date_tbl2 %>%
   #   dplyr::mutate(date_from_parts = as.Date(paste0(
   #   .data$year_of_birth1, "/",
@@ -295,11 +358,11 @@ test_that("Date functions work on Oracle", {
 
   df <- date_tbl2 %>%
     dplyr::mutate(date_from_parts = !!asDate(paste0(
-    .data$y, "/",
-    .data$m, "/",
-    .data$d
+    as.character(.data$y), "-",
+    as.character(.data$m), "-",
+    as.character(.data$d)
   ))) %>%
-    collect()
+    dplyr::collect()
 
   expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
 
