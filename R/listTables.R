@@ -33,6 +33,13 @@ listTables <- function(con, schema = NULL) {
     DBI::dbGetQuery(con, sql) %>%
       dplyr::pull(.data$table_name)
 
+  } else if (is(con, "Spark SQL")) {
+    # spark odbc connection
+    sql <- paste("SHOW TABLES", if (!is.null(schema)) paste("IN", schema[[1]]))
+    DBI::dbGetQuery(con, sql) %>%
+      dplyr::filter(isTemporary == FALSE) %>%
+      dplyr::pull(.data$tableName)
+
   } else if (is(con, "OdbcConnection")) {
     if (length(schema) == 1) {
       DBI::dbListTables(con, schema_name = schema)
