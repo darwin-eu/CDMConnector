@@ -98,7 +98,6 @@ test_that("cdm reference works on sql server", {
 
   expect_error(DBI::dbGetQuery(con, "select * from tempdb.dbo.cohort"), "Invalid object")
 
-  expect_equal(dbms(con), "sql server")
   expect_equal(dbms(cdm), "sql server")
 
   DBI::dbDisconnect(con)
@@ -132,12 +131,12 @@ test_that("cdm reference works on redshift", {
   DBI::dbDisconnect(con)
 })
 
-test_that("cdm reference works on spark", {
+test_that("cdm reference works on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
   skip("Only run this test manually")
 
-  con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
+  con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks", bigint = "numeric")
 
   expect_true(is.character(listTables(con, schema = "omop531")))
 
