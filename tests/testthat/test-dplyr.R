@@ -11,7 +11,7 @@ test_that("Oracle dplyr works", {
   )
 
   df <- cdm$observation_period %>%
-    dplyr::mutate(new_date = as.Date(observation_period_start_date)) %>%
+    dplyr::mutate(new_date = !!asDate(observation_period_start_date)) %>% #as.Date translation is incorrect
     head() %>%
     dplyr::collect()
 
@@ -33,12 +33,13 @@ test_that("Oracle dplyr works", {
   expect_s3_class(df, "data.frame")
 
   cdm$person %>%
-    select(year_of_birth, month_of_birth, day_of_birth) %>%
+    dplyr::select(year_of_birth, month_of_birth, day_of_birth) %>%
     dplyr::mutate(dob = as.Date(paste0(
       .data$year_of_birth, "/",
       .data$month_of_birth, "/",
       .data$day_of_birth
-    ))) %>% dbplyr::sql_render()
+    ))) %>%
+    dbplyr::sql_render()
 
   DBI::dbDisconnect(con)
 })
