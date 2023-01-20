@@ -31,19 +31,28 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   checkmate::assertLogical(overwrite, len = 1)
 
   if (length(schema) == 2) {
-    fullName <- paste(schema[[1]], schema[[2]], name, sep = ".")
+    # fullName <- paste(schema[[1]], schema[[2]], name, sep = ".")
+    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema[[1]]),
+                            DBI::dbQuoteIdentifier(x$src$con, schema[[2]]),
+                            DBI::dbQuoteIdentifier(x$src$con, name),
+                            sep = ".")
   } else if (length(schema) == 1) {
-    fullName <- paste(schema, name, sep = ".")
+    # fullName <- paste(schema, name, sep = ".")
+    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema),
+                            DBI::dbQuoteIdentifier(x$src$con, name),
+                            sep = ".")
   } else {
-    fullName <- name
+    # fullName <- name
+    fullNameQuoted <- DBI::dbQuoteIdentifier(x$src$con, name)
   }
 
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
   if (name %in% existingTables) {
     if (overwrite) {
-      DBI::dbRemoveTable(x$src$con, DBI::SQL(fullName))
+      DBI::dbRemoveTable(x$src$con, DBI::SQL(fullNameQuoted))
+      # DBI::dbRemoveTable(x$src$con, DBI::SQL(fullName))
     } else {
-      rlang::abort(paste(fullName, "already exists. Set overwrite = TRUE to recreate it."))
+      rlang::abort(paste(fullNameQuoted, "already exists. Set overwrite = TRUE to recreate it."))
     }
   }
 
@@ -51,26 +60,29 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
     rlang::abort("SqlRender version 1.8.0 or later is required to use computePermanent with spark.")
   }
 
-  # TODO fix select * INTO translation for duckdb in SqlRender
   if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "oracle")) {
-    sql <- glue::glue("CREATE TABLE {fullName} AS {dbplyr::sql_render(x)}")
-  } else if (CDMConnector::dbms(x$src$con) == "spark") {
-    # sql <- dbplyr::build_sql("CREATE ",  if(overwrite) dbplyr::sql("OR REPLACE "),  "TABLE ",
-    #                          if (!is.null(schema)) schema,
-    #                          if (!is.null(schema)) dbplyr::sql("."), name,
-    #                          " AS ", dbplyr::sql_render(x), con = x$src$con)
+    # sql <- glue::glue("CREATE TABLE {fullName} AS {dbplyr::sql_render(x)}")
+    sql <- dbplyr::build_sql("CREATE TABLE ",
+                             if (!is.null(schema)) dbplyr::ident(schema),
+                             if (!is.null(schema)) dbplyr::sql("."), dbplyr::ident(name),
+                             " AS ", dbplyr::sql_render(x), con = x$src$con)
 
-    sql <- glue::glue("CREATE {if(overwrite) 'OR REPLACE'} TABLE {fullName} AS {dbplyr::sql_render(x)}")
+  } else if (CDMConnector::dbms(x$src$con) == "spark") {
+    # sql <- glue::glue("CREATE {if(overwrite) 'OR REPLACE'} TABLE {fullName} AS {dbplyr::sql_render(x)}")
+    sql <- dbplyr::build_sql("CREATE ",  if(overwrite) dbplyr::sql("OR REPLACE "),  "TABLE ",
+                             if (!is.null(schema)) dbplyr::ident(schema),
+                             if (!is.null(schema)) dbplyr::sql("."), dbplyr::ident(name),
+                             " AS ", dbplyr::sql_render(x), con = x$src$con)
   } else {
-    sql <- glue::glue("SELECT * INTO {fullName} FROM ({dbplyr::sql_render(x)}) x")
+    sql <- glue::glue("SELECT * INTO {fullNameQuoted} FROM ({dbplyr::sql_render(x)}) x")
     sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(x$src$con))
   }
 
   DBI::dbExecute(x$src$con, sql)
 
-  if (dbms(x$src$con) == "oracle") {
-    name <- toupper(name)
-  }
+  # if (dbms(x$src$con) == "oracle") {
+  #   name <- toupper(name)
+  # }
 
   if (is(x$src$con, "duckdb_connection")) {
     ref <- dplyr::tbl(x$src$con, paste(c(schema, name), collapse = "."))
@@ -125,11 +137,16 @@ appendPermanent <- function(x, name, schema = NULL) {
   checkmate::assertClass(x, "tbl_sql")
 
   if (length(schema) == 2) {
-    fullName <- paste(schema[[1]], schema[[2]], name, sep = ".")
+    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema[[1]]),
+                            DBI::dbQuoteIdentifier(x$src$con, schema[[2]]),
+                            DBI::dbQuoteIdentifier(x$src$con, name),
+                            sep = ".")
   } else if (length(schema) == 1) {
-    fullName <- paste(schema, name, sep = ".")
+    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema),
+                            DBI::dbQuoteIdentifier(x$src$con, name),
+                            sep = ".")
   } else {
-    fullName <- name
+    fullNameQuoted <- DBI::dbQuoteIdentifier(x$src$con, name)
   }
 
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
@@ -137,7 +154,7 @@ appendPermanent <- function(x, name, schema = NULL) {
     return(computePermanent(x = x, name = name, schema = schema, overwrite = FALSE))
   }
 
-  sql <- glue::glue("INSERT INTO {fullName} {dbplyr::sql_render(x)}")
+  sql <- glue::glue("INSERT INTO {fullNameQuoted} {dbplyr::sql_render(x)}")
   sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(x$src$con))
 
   DBI::dbExecute(x$src$con, sql)
@@ -184,7 +201,7 @@ computeQuery <- function(x, name = uniqueTableName(), temporary = TRUE, schema =
       name <- paste0("ORA$PTT_", name)
       sql <- dbplyr::build_sql(
         "CREATE PRIVATE TEMPORARY TABLE \n",
-        dbplyr::as.sql(name, con), dbplyr::sql(" ON COMMIT PRESERVE DEFINITION \n"), " AS\n",
+        dbplyr::ident(name), dbplyr::sql(" ON COMMIT PRESERVE DEFINITION \n"), " AS\n",
         dbplyr::sql_render(x),
         con = con
       )
@@ -193,7 +210,7 @@ computeQuery <- function(x, name = uniqueTableName(), temporary = TRUE, schema =
     } else if(is(con, "Spark SQL")) {
       sql <- dbplyr::build_sql(
         "CREATE ", if (overwrite) dbplyr::sql("OR REPLACE "), "TEMPORARY VIEW \n",
-        dbplyr::as.sql(name, con), " AS\n",
+        dbplyr::ident(name), " AS\n",
         dbplyr::sql_render(x),
         con = con
       )

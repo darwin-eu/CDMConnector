@@ -67,6 +67,12 @@ test_that("computeQuery works on Postgres", {
       dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
       computeQuery(newTableName, schema = tempSchema, temporary = FALSE)}, "already exists")
 
+  expect_error({x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE)}, NA)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
     appendPermanent(newTableName, schema = tempSchema)
@@ -118,7 +124,13 @@ test_that("computeQuery works on SQL Server", {
 
   expect_error({vocab %>%
       dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
-      computePermanent(newTableName, schema = tempSchema)}, "already exists")
+      computeQuery(newTableName, schema = tempSchema, temporary = FALSE)}, "already exists")
+
+  expect_error({x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE)}, NA)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
 
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
@@ -172,7 +184,13 @@ test_that("computeQuery works on Redshift", {
 
   expect_error({vocab %>%
       dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
-      computePermanent(newTableName, schema = tempSchema)}, "already exists")
+      computeQuery(newTableName, schema = tempSchema, temporary = FALSE)}, "already exists")
+
+  expect_error({x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE)}, NA)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
 
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
@@ -185,7 +203,7 @@ test_that("computeQuery works on Redshift", {
   DBI::dbDisconnect(con)
 })
 
-test_that("computePermanent works on Spark", {
+test_that("computeQuery works on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
   skip("Only run this test manually. Spark server needs to be online.")
@@ -225,11 +243,16 @@ test_that("computePermanent works on Spark", {
     computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE) # fails when overwrite is FALSE
 
   expect_true(nrow(dplyr::collect(x)) == 2)
-  expect_true(newTableName %in% CDMConnector::listTables(con, tempSchema))
 
-  expect_error({vocab %>%
-      dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
-      computePermanent(newTableName, schema = tempSchema)}, "already exists")
+  expect_true(newTableName %in% listTables(con, tempSchema))
+
+  expect_error({x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE)}, "already exists")
+
+  expect_error({x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE)}, NA)
 
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
@@ -238,7 +261,7 @@ test_that("computePermanent works on Spark", {
   expect_true(nrow(dplyr::collect(x)) == 3)
 
   DBI::dbRemoveTable(con, DBI::SQL(paste0(c(tempSchema, newTableName), collapse = ".")))
-  expect_false(newTableName %in% CDMConnector::listTables(con, tempSchema))
+  expect_false(newTableName %in% listTables(con, tempSchema))
   DBI::dbDisconnect(con)
 })
 
@@ -259,7 +282,8 @@ test_that("computeQuery works on Oracle", {
   newTableName <- paste0(c("temptable", sample(1:9, 7, replace = T)), collapse = "")
   # newTableName <- toupper(newTableName) # This test only passes when the table name is uppercase
 
-  vocab <- dplyr::tbl(con, dbplyr::in_schema("CDMV5", "VOCABULARY")) %>% dplyr::rename_all(tolower)
+  vocab <- dplyr::tbl(con, dbplyr::in_schema("CDMV5", "VOCABULARY")) %>%
+    dplyr::rename_all(tolower)
 
   # tempSchema <- "TEMPEMULSCHEMA"
   tempSchema <- "OHDSI"
@@ -276,32 +300,33 @@ test_that("computeQuery works on Oracle", {
     computeQuery()
 
   expect_true(nrow(dplyr::collect(x)) == 2)
-  # debugonce(computePermanent)
-
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
     computeQuery(newTableName, schema = tempSchema, temporary = FALSE)
 
   expect_true(nrow(dplyr::collect(x)) == 2)
-  expect_false(newTableName %in% listTables(con, tempSchema)) # on oracle names that are not quoted are cast to uppercase
-  expect_true(toupper(newTableName) %in% listTables(con, tempSchema))
+  expect_true(newTableName %in% listTables(con, tempSchema))
 
   expect_error({vocab %>%
       dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
-      computePermanent(newTableName, schema = tempSchema)})
+      computeQuery(newTableName, schema = tempSchema, temporary = FALSE)}, "already exists")
+
+  expect_error({x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE)}, NA)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
 
   # x <- vocab %>%
   #   dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
   #   appendPermanent(newTableName, schema = tempSchema)
-
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
-    appendPermanent(toupper(newTableName), schema = tempSchema)
+    appendPermanent(newTableName, schema = tempSchema)
 
   expect_true(nrow(dplyr::collect(x)) == 3)
 
-  fullname <- paste0(c(tempSchema, toupper(newTableName)), collapse = ".")
-  DBI::dbRemoveTable(con, name = toupper(newTableName), schema = tempSchema)
+  DBI::dbRemoveTable(con, name = newTableName, schema = tempSchema)
   expect_false(newTableName %in% listTables(con, tempSchema))
   DBI::dbDisconnect(con)
 })

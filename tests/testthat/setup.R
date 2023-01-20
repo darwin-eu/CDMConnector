@@ -1,7 +1,8 @@
 withr::local_envvar(
   R_USER_CACHE_DIR = tempfile(),
-  .local_envir = teardown_env()
+  .local_envir = teardown_env(),
+  EUNOMIA_DATA_FOLDER = tempfile()
 )
 
-tryCatch(download_optional_data(), error = function(e) NA)
+tryCatch(downloadEunomiaData(), error = function(e) NA)
 

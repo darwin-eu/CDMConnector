@@ -4,7 +4,12 @@
 \alias{eunomia_is_available}
 \title{Has the eunomia dataset been cached?}
 \usage{
-eunomia_is_available()
+eunomia_is_available(datasetName = "GiBleed", cdmVersion = "5.3")
+}
+\arguments{
+\item{datasetName}{Name of the Eunomia dataset to check. Defaults to "GiBleed".}
+
+\item{cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3" or "5.4".}
 }
 \value{
 TRUE if the eunomia example dataset is available and FASLE otherwise

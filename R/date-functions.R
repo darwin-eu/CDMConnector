@@ -106,7 +106,10 @@ datediff <- function(start, end, interval = "day") {
 #' @examples
 #' \dontrun{
 #' con <- DBI::dbConnect(odbc::odbc(), "Oracle")
-#' date_tbl <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 10L), name = "tmp", temporary = TRUE)
+#' date_tbl <- dplyr::copy_to(con,
+#'                            data.frame(y = 2000L, m = 10L, d = 10L),
+#'                            name = "tmp",
+#'                            temporary = TRUE)
 #'
 #' df <- date_tbl %>%
 #'   dplyr::mutate(date_from_parts = !!asDate(paste0(

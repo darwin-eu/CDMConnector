@@ -33,13 +33,13 @@ Imports:
     lifecycle,
     jsonlite,
     tibble,
-    SqlRender,
-    pkgfilecache
+    SqlRender
 Suggests: 
     covr,
     knitr,
     rmarkdown,
-    duckdb (>= 0.6.0),
+    duckdb,
+    RSQLite,
     RPostgres,
     odbc,
     ggplot2,
