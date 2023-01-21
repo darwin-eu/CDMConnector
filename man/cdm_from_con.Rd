@@ -14,24 +14,29 @@ cdm_from_con(
 )
 }
 \arguments{
-\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or v5.3 instance is located.}
+\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or
+v5.3 instance is located.}
 
-\item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults to NULL.}
+\item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults
+to NULL.}
 
-\item{cdm_tables}{Which tables should be included? Supports a character vector, tidyselect selection helpers, or table groups.
+\item{cdm_tables}{Which tables should be included? Supports a character
+vector, tidyselect selection helpers, or table groups.
 \itemize{
 \item{tbl_group("all")}{all CDM tables}
 \item{tbl_group("vocab")}{the CDM vocabulary tables}
 \item{tbl_group("clinical")}{the clinical CDM tables}
 }}
 
-\item{write_schema}{An optional schema in the CDM database that the user has write access to.}
+\item{write_schema}{An optional schema in the CDM database that the user has
+write access to.}
 
-\item{cohort_tables}{A character vector listing the cohort table names to be included in the CDM object.}
+\item{cohort_tables}{A character vector listing the cohort table names to be
+included in the CDM object.}
 
-\item{cdm_version}{The version of the OMOP CDM: "5.3" (default), "5.4", "auto".
-"auto" attempts to automatically determine the cdm version using heuristics.
-Cohort tables must be in the write_schema.}
+\item{cdm_version}{The version of the OMOP CDM: "5.3" (default), "5.4",
+"auto". "auto" attempts to automatically determine the cdm version using
+heuristics. Cohort tables must be in the write_schema.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

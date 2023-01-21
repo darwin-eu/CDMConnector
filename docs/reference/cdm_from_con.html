@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
       </span>
     </div>
 
@@ -82,32 +82,37 @@
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>con</dt>
-<dd><p>A DBI database connection to a database where an OMOP CDM v5.4 or v5.3 instance is located.</p></dd>
+<dd><p>A DBI database connection to a database where an OMOP CDM v5.4 or
+v5.3 instance is located.</p></dd>
 
 
 <dt>cdm_schema</dt>
-<dd><p>The schema where the OMOP CDM tables are located. Defaults to NULL.</p></dd>
+<dd><p>The schema where the OMOP CDM tables are located. Defaults
+to NULL.</p></dd>
 
 
 <dt>cdm_tables</dt>
-<dd><p>Which tables should be included? Supports a character vector, tidyselect selection helpers, or table groups.</p><ul><li><p>tbl_group("all")all CDM tables</p></li>
+<dd><p>Which tables should be included? Supports a character
+vector, tidyselect selection helpers, or table groups.</p><ul><li><p>tbl_group("all")all CDM tables</p></li>
 <li><p>tbl_group("vocab")the CDM vocabulary tables</p></li>
 <li><p>tbl_group("clinical")the clinical CDM tables</p></li>
 </ul></dd>
 
 
 <dt>write_schema</dt>
-<dd><p>An optional schema in the CDM database that the user has write access to.</p></dd>
+<dd><p>An optional schema in the CDM database that the user has
+write access to.</p></dd>
 
 
 <dt>cohort_tables</dt>
-<dd><p>A character vector listing the cohort table names to be included in the CDM object.</p></dd>
+<dd><p>A character vector listing the cohort table names to be
+included in the CDM object.</p></dd>
 
 
 <dt>cdm_version</dt>
-<dd><p>The version of the OMOP CDM: "5.3" (default), "5.4", "auto".
-"auto" attempts to automatically determine the cdm version using heuristics.
-Cohort tables must be in the write_schema.</p></dd>
+<dd><p>The version of the OMOP CDM: "5.3" (default), "5.4",
+"auto". "auto" attempts to automatically determine the cdm version using
+heuristics. Cohort tables must be in the write_schema.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -129,7 +134,7 @@ Cohort tables must be in the write_schema.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

@@ -107,7 +107,7 @@ test_that("computeQuery works on SQL Server", {
 
   expect_true(nrow(dplyr::collect(x)) == 2)
 
-  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = T)), collapse = "")
+  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = TRUE)), collapse = "")
 
   x <- vocab %>%
     dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
@@ -154,12 +154,12 @@ test_that("computeQuery works on Redshift", {
                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
-  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = T)), collapse = "")
+  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = TRUE)), collapse = "")
 
   vocab <- dplyr::tbl(con, dbplyr::in_schema("cdmv531", "vocabulary"))
 
   # tables <- DBI::dbGetQuery(con, "select * from information_schema.tables")
-  # tibble::tibble(tables) %>% dplyr::distinct(table_schema)
+  # dplyr:tibble(tables) %>% dplyr::distinct(table_schema)
 
   tempSchema <- "public"
 
@@ -210,12 +210,12 @@ test_that("computeQuery works on Spark", {
 
   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
 
-  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = T)), collapse = "")
+  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = TRUE)), collapse = "")
 
   vocab <- dplyr::tbl(con, dbplyr::in_schema("omop531", "vocabulary"))
 
   # tables <- DBI::dbGetQuery(con, "select * from information_schema.tables")
-  # tibble::tibble(tables) %>% dplyr::distinct(table_schema)
+  # dplyr::tibble(tables) %>% dplyr::distinct(table_schema)
 
   tempSchema <- "omop531results"
 

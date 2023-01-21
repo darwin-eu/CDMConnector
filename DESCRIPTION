@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 0.3.1
+Version: 0.4.0
 Authors@R: 
       person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
              comment = c(ORCID = "0000-0001-5576-8701"))
@@ -32,7 +32,6 @@ Imports:
     withr,
     lifecycle,
     jsonlite,
-    tibble,
     SqlRender
 Suggests: 
     covr,

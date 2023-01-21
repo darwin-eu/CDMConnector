@@ -2,7 +2,8 @@
 % Please edit documentation in R/cdm.R
 \name{dbms}
 \alias{dbms}
-\title{Get the database management system (dbms) from a cdm_reference or DBI connection}
+\title{Get the database management system (dbms) from a cdm_reference or DBI
+connection}
 \usage{
 dbms(con)
 }
@@ -10,10 +11,12 @@ dbms(con)
 \item{con}{A DBI connection or cdm_reference}
 }
 \value{
-A character string representing the dbms that can be used with SqlRender
+A character string representing the dbms that can be used with
+SqlRender
 }
 \description{
-Get the database management system (dbms) from a cdm_reference or DBI connection
+Get the database management system (dbms) from a cdm_reference or DBI
+connection
 }
 \examples{
 \dontrun{

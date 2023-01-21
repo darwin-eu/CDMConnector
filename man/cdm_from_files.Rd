@@ -2,7 +2,8 @@
 % Please edit documentation in R/cdm.R
 \name{cdm_from_files}
 \alias{cdm_from_files}
-\title{Create a CDM reference from a folder containing parquet, csv, or feather files}
+\title{Create a CDM reference from a folder containing parquet, csv, or feather
+files}
 \usage{
 cdm_from_files(
   path,
@@ -16,13 +17,16 @@ cdm_from_files(
 
 \item{cdm_tables}{deprecated}
 
-\item{format}{What is the file format to be read in? Must be "auto" (default), "parquet", "csv", "feather".}
+\item{format}{What is the file format to be read in? Must be "auto"
+(default), "parquet", "csv", "feather".}
 
-\item{as_data_frame}{TRUE (default) will read files into R as dataframes. FALSE will read files into R as Arrow Datasets.}
+\item{as_data_frame}{TRUE (default) will read files into R as dataframes.
+FALSE will read files into R as Arrow Datasets.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables
 }
 \description{
-Create a CDM reference from a folder containing parquet, csv, or feather files
+Create a CDM reference from a folder containing parquet, csv, or feather
+files
 }

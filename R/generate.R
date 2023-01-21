@@ -13,29 +13,42 @@
 
 #' Add a cohort table to a cdm object
 #'
-#' @description
-#' This function creates an empty cohort table in a cdm and returns the cdm with the cohort table added.
+#' @description This function creates an empty cohort table in a cdm and returns
+#' the cdm with the cohort table added.
 #'
-#' @param cdm A cdm reference created by CDMConnector. write_schema must be specified.
+#' @param cdm A cdm reference created by CDMConnector. write_schema must be
+#'   specified.
 #' @param name Name of the cohort table to be created.
-#' @param overwrite Should the cohort table be overwritten if it already exists? (TRUE or FALSE)
+#' @param overwrite Should the cohort table be overwritten if it already exists?
+#'   (TRUE or FALSE)
 addCohortTable <- function(cdm,
                            name = "cohort",
                            overwrite = FALSE) {
 
-  if(is.null(attr(cdm, "write_schema"))) stop("write_schema must be set in the cdm object")
+  if(is.null(attr(cdm, "write_schema"))) {
+    stop("write_schema must be set in the cdm object")
+  }
 
   con <- attr(cdm, "dbcon")
   schema <- attr(cdm, "write_schema")
 
-  checkmate::assertCharacter(schema, min.len = 1, max.len = 2, min.chars = 1, null.ok = FALSE)
+  checkmate::assertCharacter(schema,
+                             min.len = 1,
+                             max.len = 2,
+                             min.chars = 1,
+                             null.ok = FALSE)
   checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE)
-  if (name != tolower(name)) rlang::abort("Cohort table names must be lowercase.")
+  if (name != tolower(name)) {
+    rlang::abort("Cohort table names must be lowercase.")
+  }
 
   tables <- CDMConnector::listTables(con, schema = schema)
 
   if ((name %in% tables) && !overwrite) {
-    rlang::abort(paste0("Table \"", name, "\" already exists. Set overwrite = TRUE to recreate it."))
+    rlang::abort(
+      paste0("Table \"",
+             name,
+             "\" already exists. Set overwrite = TRUE to recreate it."))
   }
 
   sql <- "
@@ -49,23 +62,32 @@ addCohortTable <- function(cdm,
       	cohort_end_date DATE
       );
   "
-  cohort_database_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
+  cohort_database_schema <- glue::glue_sql_collapse(
+    DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")),
+    sep = ".")
+
   sql <- SqlRender::render(sql = sql,
                            cohort_database_schema = cohort_database_schema,
                            cohort_table = name,
                            warnOnMissingParameters = TRUE
   )
 
-  sql <- SqlRender::translate(sql = sql, targetDialect = CDMConnector::dbms(con))
+  sql <- SqlRender::translate(sql = sql,
+                              targetDialect = CDMConnector::dbms(con))
 
   sqlStatements <- SqlRender::splitSql(sql)
 
-  purrr::walk(sqlStatements, ~suppressMessages(DBI::dbExecute(attr(cdm, "dbcon"), .x, immediate = TRUE)))
+  purrr::walk(sqlStatements,
+              ~suppressMessages(DBI::dbExecute(attr(cdm, "dbcon"),
+                                               .x,
+                                               immediate = TRUE)))
 
   if (dbms(con) == "duckdb") {
     cdm[[name]] <- dplyr::tbl(con, paste(c(schema, name), collapse = "."))
   } else if (length(schema) == 2) {
-    cdm[[name]] <- dplyr::tbl(con, dbplyr::in_catalog(schema[[1]], schema[[2]], name))
+    cdm[[name]] <- dplyr::tbl(con, dbplyr::in_catalog(schema[[1]],
+                                                      schema[[2]],
+                                                      name))
   } else if (length(schema) == 1) {
     cdm[[name]] <- dplyr::tbl(con, dbplyr::in_schema(schema, name))
   }
@@ -76,22 +98,31 @@ addCohortTable <- function(cdm,
 
 #' Generate a set of cohorts
 #'
-#' @description
-#' This function generates a set of cohorts in the cohort table.
+#' @description This function generates a set of cohorts in the cohort table.
 #' @param cdm cdm reference object
 #'
 #' @param cohortSet A cohort definition set dataframe
-#' @param cohortTableName The name of the cohort table in the cdm. Defaults to 'cohort'.
-#' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE (default).
+#' @param cohortTableName The name of the cohort table in the cdm. Defaults to
+#'   'cohort'.
+#' @param overwrite Should the cohort table be overwritten if it already exists?
+#'   TRUE or FALSE (default).
 #'
-#' @returns cdm reference object with the added cohort table containing generated cohorts
+#' @returns cdm reference object with the added cohort table containing
+#'   generated cohorts
 #'
 #' @export
-generateCohortSet <- function(cdm, cohortSet, cohortTableName = "cohort", overwrite = FALSE) {
+generateCohortSet <- function(cdm,
+                              cohortSet,
+                              cohortTableName = "cohort",
+                              overwrite = FALSE) {
 
   checkmate::assertDataFrame(cohortSet, min.rows = 0, col.names = "named")
-  checkmate::assertNames(colnames(cohortSet), must.include = c("cohortId", "cohortName", "sql"))
-  checkmate::assert_character(attr(cdm, "write_schema"), min.chars = 1, min.len = 1, max.len = 2)
+  checkmate::assertNames(colnames(cohortSet),
+                         must.include = c("cohortId", "cohortName", "sql"))
+  checkmate::assert_character(attr(cdm, "write_schema"),
+                              min.chars = 1,
+                              min.len = 1,
+                              max.len = 2)
 
   if (nrow(cohortSet) == 0) return(cdm)
 
@@ -117,7 +148,7 @@ generateCohortSet <- function(cdm, cohortSet, cohortTableName = "cohort", overwr
   write_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
   target_cohort_table <- glue::glue_sql(DBI::dbQuoteIdentifier(con, cohortTableName))
 
-  for (i in 1:nrow(cohortSet)) {
+  for (i in seq_len(nrow(cohortSet))) {
 
     sql <- cohortSet$sql[i] %>%
       SqlRender::render(

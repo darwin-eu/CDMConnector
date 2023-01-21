@@ -13,13 +13,10 @@ if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") Sys.setenv("EUNOMIA_DATA_FOLDER" = 
 if (!dir.exists(Sys.getenv("EUNOMIA_DATA_FOLDER"))) dir.create(Sys.getenv("EUNOMIA_DATA_FOLDER"))
 if (!eunomia_is_available()) downloadEunomiaData()
 
-installed_version <- tryCatch(utils::packageVersion("duckdb"), error = function(e) NA)
-build <- !is.na(installed_version) && installed_version >= "0.6" && eunomia_is_available()
-
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  eval = build
+  comment = "#>", 
+  build = eunomia_is_available()
 )
 ```
 

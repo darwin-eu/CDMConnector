@@ -7,12 +7,15 @@
 addCohortTable(cdm, name = "cohort", overwrite = FALSE)
 }
 \arguments{
-\item{cdm}{A cdm reference created by CDMConnector. write_schema must be specified.}
+\item{cdm}{A cdm reference created by CDMConnector. write_schema must be
+specified.}
 
 \item{name}{Name of the cohort table to be created.}
 
-\item{overwrite}{Should the cohort table be overwritten if it already exists? (TRUE or FALSE)}
+\item{overwrite}{Should the cohort table be overwritten if it already exists?
+(TRUE or FALSE)}
 }
 \description{
-This function creates an empty cohort table in a cdm and returns the cdm with the cohort table added.
+This function creates an empty cohort table in a cdm and returns
+the cdm with the cohort table added.
 }

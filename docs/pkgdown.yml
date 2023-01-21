@@ -1,5 +1,5 @@
 pandoc: 2.19.2
-pkgdown: 2.0.6
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   DBI_connection_examples: DBI_connection_examples.html
@@ -7,5 +7,5 @@ articles:
   cdm_reference_backends: cdm_reference_backends.html
   dbplyr: dbplyr.html
   getting-started: getting-started.html
-last_built: 2022-12-01T13:24Z
+last_built: 2023-01-21T00:23Z
 

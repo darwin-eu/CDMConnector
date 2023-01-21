@@ -12,9 +12,11 @@ computePermanent(x, name, schema = NULL, overwrite = FALSE)
 \item{name}{Name of the table to be created}
 
 \item{schema}{Schema to create the new table in
-Can be a length 1 or 2 vector. (e.g. schema = "my_schema", schema = c("my_schema", "dbo))}
+Can be a length 1 or 2 vector.
+(e.g. schema = "my_schema", schema = c("my_schema", "dbo))}
 
-\item{overwrite}{If the table already exists in the remote database should it be overwritten? (TRUE or FALSE)}
+\item{overwrite}{If the table already exists in the remote database
+should it be overwritten? (TRUE or FALSE)}
 }
 \value{
 A dplyr reference to the newly created table

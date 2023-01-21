@@ -17,7 +17,7 @@ datediff(start, end, interval = "day")
 Platform specific SQL that can be used in a dplyr query.
 }
 \description{
-#' This function must be "unquoted" using the "bang bang" operator (!!). See example.
+This function must be "unquoted" using the "bang bang" operator (!!). See example.
 }
 \examples{
 \dontrun{

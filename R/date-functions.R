@@ -49,7 +49,7 @@ dateadd <- function(date, number, interval = "day") {
 
 #' Compute the difference between two days
 #'
-#' #' This function must be "unquoted" using the "bang bang" operator (!!). See example.
+#' This function must be "unquoted" using the "bang bang" operator (!!). See example.
 #'
 #' @param start The name of the start date column in the database as a string.
 #' @param end The name of the end date column in the database as a string.

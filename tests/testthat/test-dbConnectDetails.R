@@ -6,7 +6,7 @@ self_contained_query <- function(connection_details, cdm_schema) {
   suppressMessages({
     con <- DBI::dbConnect(connection_details)
   })
-  if(dbms(con) == "duckdb") {
+  if (dbms(con) == "duckdb") {
     on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
   } else {
     on.exit(DBI::dbDisconnect(con))
@@ -50,7 +50,7 @@ test_that("dbConnectDetails works on sql server", {
                         Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
                         UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
                         PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                        TrustServerCertificate="yes",
+                        TrustServerCertificate = "yes",
                         Port     = 1433)
 
   result <- self_contained_query(details, Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"))
@@ -143,4 +143,3 @@ test_that("dbConnectDetails works on redshift using DatabaseConnector", {
   expect_s3_class(result, "data.frame")
   expect_true("n" %in% names(result))
 })
-

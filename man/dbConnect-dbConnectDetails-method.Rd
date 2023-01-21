@@ -10,8 +10,8 @@
 \item{drv}{An dbConnectDetails object created by \code{dbConnectDetails()}}
 }
 \value{
-An S4 object that inherits from DBIConnection used to communicate with
-the database engine.
+An S4 object that inherits from DBIConnection used to communicate
+with the database engine.
 }
 \description{
 Create connection details, save them in an object, and use them to connect

@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
       </span>
     </div>
 
@@ -75,6 +75,10 @@
         </td>
         <td><p>Run a dplyr query and add the result set to an existing</p></td>
       </tr><tr><td>
+          <p><code><a href="asDate.html">asDate()</a></code> </p>
+        </td>
+        <td><p>as.Date dbplyr translation wrapper</p></td>
+      </tr><tr><td>
           <p><code><a href="assert_tables.html">assert_tables()</a></code> <code><a href="assert_tables.html">assertTables()</a></code> </p>
         </td>
         <td><p>Assert that tables exist in a cdm object</p></td>
@@ -89,7 +93,8 @@
       </tr><tr><td>
           <p><code><a href="cdmFromFiles.html">cdmFromFiles()</a></code> </p>
         </td>
-        <td><p>Create a CDM reference from a folder containing parquet, csv, or feather files</p></td>
+        <td><p>Create a CDM reference from a folder containing parquet, csv, or feather
+files</p></td>
       </tr><tr><td>
           <p><code><a href="cdm_from_con.html">cdm_from_con()</a></code> </p>
         </td>
@@ -97,7 +102,8 @@
       </tr><tr><td>
           <p><code><a href="cdm_from_files.html">cdm_from_files()</a></code> </p>
         </td>
-        <td><p>Create a CDM reference from a folder containing parquet, csv, or feather files</p></td>
+        <td><p>Create a CDM reference from a folder containing parquet, csv, or feather
+files</p></td>
       </tr><tr><td>
           <p><code><a href="collect.cdm_reference.html">collect(<i>&lt;cdm_reference&gt;</i>)</a></code> </p>
         </td>
@@ -106,6 +112,10 @@
           <p><code><a href="computePermanent.html">computePermanent()</a></code> </p>
         </td>
         <td><p>Run a dplyr query and store the result in a permanent table</p></td>
+      </tr><tr><td>
+          <p><code><a href="computeQuery.html">computeQuery()</a></code> </p>
+        </td>
+        <td><p>Execute dplyr query and save result in remote database</p></td>
       </tr><tr><td>
           <p><code><a href="dateadd.html">dateadd()</a></code> </p>
         </td>
@@ -125,17 +135,22 @@
       </tr><tr><td>
           <p><code><a href="dbms.html">dbms()</a></code> </p>
         </td>
-        <td><p>Get the database management system (dbms) from a cdm_reference or DBI connection</p></td>
+        <td><p>Get the database management system (dbms) from a cdm_reference or DBI
+connection</p></td>
       </tr><tr><td>
-          <p><code><a href="delete_all_optional_data.html">delete_all_optional_data()</a></code> </p>
+          <p><code><a href="downloadEunomiaData.html">downloadEunomiaData()</a></code> </p>
         </td>
-        <td><p>Delete all data in the package cache.</p></td>
+        <td><p>Download Eunomia data files</p></td>
       </tr><tr><td>
           <p><code><a href="download_optional_data.html">download_optional_data()</a></code> </p>
         </td>
-        <td><p>Download optional data for this package if required.</p></td>
+        <td><p>Download the example Eunomia CDM dataset</p></td>
       </tr><tr><td>
-          <p><code><a href="eunomia_dir.html">eunomia_dir()</a></code> <code><a href="eunomia_dir.html">eunomiaDir()</a></code> </p>
+          <p><code><a href="eunomiaDir.html">eunomiaDir()</a></code> </p>
+        </td>
+        <td><p>Create a copy of a Eunomia dataset</p></td>
+      </tr><tr><td>
+          <p><code><a href="eunomia_dir.html">eunomia_dir()</a></code> </p>
         </td>
         <td><p>Create a new Eunomia CDM</p></td>
       </tr><tr><td>
@@ -143,21 +158,17 @@
         </td>
         <td><p>Has the eunomia dataset been cached?</p></td>
       </tr><tr><td>
+          <p><code><a href="extractLoadData.html">extractLoadData()</a></code> </p>
+        </td>
+        <td><p>Extract the Eunomia data files and load into a SQLite or duckdb database</p></td>
+      </tr><tr><td>
           <p><code><a href="generateCohortSet.html">generateCohortSet()</a></code> </p>
         </td>
         <td><p>Generate a set of cohorts</p></td>
       </tr><tr><td>
-          <p><code><a href="get_optional_data_filepath.html">get_optional_data_filepath()</a></code> </p>
-        </td>
-        <td><p>Access a single file from the package cache by its file name.</p></td>
-      </tr><tr><td>
           <p><code><a href="listTables.html">listTables()</a></code> </p>
         </td>
         <td><p>List tables in a schema</p></td>
-      </tr><tr><td>
-          <p><code><a href="list_optional_data.html">list_optional_data()</a></code> </p>
-        </td>
-        <td><p>Get file names available in package cache.</p></td>
       </tr><tr><td>
           <p><code><a href="print.cdm_reference.html">print(<i>&lt;cdm_reference&gt;</i>)</a></code> </p>
         </td>
@@ -199,7 +210,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

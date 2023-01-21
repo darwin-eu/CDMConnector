@@ -43,6 +43,9 @@
     <loc>/reference/appendPermanent.html</loc>
   </url>
   <url>
+    <loc>/reference/asDate.html</loc>
+  </url>
+  <url>
     <loc>/reference/assert_tables.html</loc>
   </url>
   <url>
@@ -67,6 +70,9 @@
     <loc>/reference/computePermanent.html</loc>
   </url>
   <url>
+    <loc>/reference/computeQuery.html</loc>
+  </url>
+  <url>
     <loc>/reference/dateadd.html</loc>
   </url>
   <url>
@@ -88,13 +94,22 @@
     <loc>/reference/delete_all_optional_data.html</loc>
   </url>
   <url>
+    <loc>/reference/downloadEunomiaData.html</loc>
+  </url>
+  <url>
     <loc>/reference/download_optional_data.html</loc>
+  </url>
+  <url>
+    <loc>/reference/eunomiaDir.html</loc>
   </url>
   <url>
     <loc>/reference/eunomia_dir.html</loc>
   </url>
   <url>
     <loc>/reference/eunomia_is_available.html</loc>
+  </url>
+  <url>
+    <loc>/reference/extractLoadData.html</loc>
   </url>
   <url>
     <loc>/reference/generateCohortSet.html</loc>

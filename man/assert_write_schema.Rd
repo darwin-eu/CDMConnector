@@ -12,15 +12,17 @@ assertWriteSchema(cdm, add = NULL)
 \arguments{
 \item{cdm}{A cdm object}
 
-\item{add}{An optional AssertCollection created by \code{checkmate::makeAssertCollection()} that errors should be added to.}
+\item{add}{An optional AssertCollection created by
+\code{checkmate::makeAssertCollection()} that errors should be added to.}
 }
 \value{
 Invisibly returns the cdm object
 }
 \description{
-A cdm object can optionally contain a single schema in a database with write access.
-assert_write_schema checks that the cdm contains the "write_schema" attribute and
-tests that local dataframes can be written to tables in this schema.
+A cdm object can optionally contain a single schema in a database with
+write access. assert_write_schema checks that the cdm contains the
+"write_schema" attribute and tests that local dataframes can be written
+to tables in this schema.
 }
 \section{Functions}{
 \itemize{

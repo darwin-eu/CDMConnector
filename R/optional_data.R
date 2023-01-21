@@ -46,7 +46,7 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
   datasetNameVersion <- paste0(datasetName, "_", cdmVersion)
   zipName <- paste0(datasetNameVersion, ".zip")
 
-  if (file.exists(file.path(pathToData, zipName)) & !overwrite) {
+  if (file.exists(file.path(pathToData, zipName)) && !overwrite) {
     cat(paste0(
       "Dataset already exists (",
       file.path(pathToData, zipName),
@@ -68,6 +68,15 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
   }
 }
 
+#' Download the example Eunomia CDM dataset
+#'
+#' This function is deprecated. Use downloadEunomiaData instead.
+#' @export
+download_optional_data <- function() {
+  rlang::inform("download_optional_data is deprecated. Use downloadEunomiaData() instead.")
+  downloadEunomiaData()
+}
+
 #' Extract the Eunomia data files and load into a SQLite or duckdb database
 #'
 #' Extract files from a .ZIP file and creates a SQLite or duckdb OMOP CDM database that is then stored in the
@@ -86,7 +95,7 @@ extractLoadData <- function(from, to, dbms = "sqlite", verbose = FALSE) {
   if (!file.exists(from)) stop(paste0("zipped csv archive '", from, "' not found!"))
 
   tempFileLocation <- tempfile()
-  if(verbose) cli::cat_line(paste0("Unzipping ", from))
+  if (verbose) cli::cat_line(paste0("Unzipping ", from))
   utils::unzip(zipfile = from, exdir = tempFileLocation)
 
 
@@ -116,7 +125,7 @@ extractLoadData <- function(from, to, dbms = "sqlite", verbose = FALSE) {
     cli::cat_rule(paste0("Loading database ", databaseFileName), col = "grey")
   }
 
-  for (i in 1:length(dataFiles)) {
+  for (i in seq_len(length(dataFiles))) {
     tableData <- readr::read_csv(
       file = file.path(tempFileLocation, dataFiles[i]),
       col_types = readr::cols(),
@@ -206,13 +215,13 @@ eunomiaDir <- function(datasetName = "GiBleed",
   archiveLocation <- file.path(pathToData, archiveName)
   archiveAvailable <- file.exists(archiveLocation)
 
-  if (!datasetAvailable & !archiveAvailable) {
+  if (!datasetAvailable && !archiveAvailable) {
     writeLines(paste("attempting to download", datasetName))
     downloadEunomiaData(datasetName = datasetName, cdmVersion = cdmVersion)
     archiveAvailable <- TRUE
   }
 
-  if (!datasetAvailable & archiveAvailable) {
+  if (!datasetAvailable && archiveAvailable) {
     writeLines(paste("attempting to extract and load", archiveLocation))
     extractLoadData(from = archiveLocation, to = datasetLocation, dbms = dbms)
     datasetAvailable <- TRUE
@@ -256,7 +265,7 @@ eunomia_dir <- function(exdir = NULL) {
                      dbms = "duckdb",
                      databaseFile = exdir)
 
-  if(!file.exists(path)) rlang::abort("Error creating Eunomia CDM")
+  if (!file.exists(path)) rlang::abort("Error creating Eunomia CDM")
   return(path)
 }
 
@@ -281,6 +290,3 @@ eunomia_is_available <- function(datasetName = "GiBleed",
   archiveLocation <- file.path(Sys.getenv("EUNOMIA_DATA_FOLDER"), archiveName)
   return(file.exists(archiveLocation))
 }
-
-
-

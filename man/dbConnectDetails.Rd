@@ -9,16 +9,18 @@ dbConnectDetails(drv, ...)
 \arguments{
 \item{drv}{A DBI driver (e.g. \code{RPostgres::Postgres()})}
 
-\item{...}{DBI Driver parameters needed to create a connection using DBI::dbConnect()}
+\item{...}{DBI Driver parameters needed to create a connection using
+DBI::dbConnect()}
 }
 \value{
 A dbConnectArgs object that can be passed to dbConnect
 }
 \description{
-\code{dbConnectDetails} returns an object that can be used to connect to a database
-with dbConnect at some future point in execution. Functions that need to create
-a new connection to a database with \code{dbConnect} can accept a \code{dbConnectDetails} object
-as an argument and use it to create a new connection.
+\code{dbConnectDetails} returns an object that can be used to connect to a
+database with dbConnect at some future point in execution. Functions that
+need to create a new connection to a database with \code{dbConnect} can accept a
+\code{dbConnectDetails} object as an argument and use it to create a new
+connection.
 }
 \examples{
 \dontrun{

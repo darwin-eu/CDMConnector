@@ -20,10 +20,11 @@ computeQuery(
 
 \item{temporary}{Should the table be temporary: TRUE (default) or FALSE}
 
-\item{schema}{The schema where the table should be created. Ignored if temporary = TRUE.}
+\item{schema}{The schema where the table should be created. Ignored if
+temporary = TRUE.}
 
-\item{overwrite}{Should the table be overwritten if it already exists: TRUE or FALSE (default)
-Ignored if temporary = TRUE.}
+\item{overwrite}{Should the table be overwritten if it already exists: TRUE
+or FALSE (default) Ignored if temporary = TRUE.}
 
 \item{...}{Further arguments passed on the \code{dplyr::compute}}
 }
@@ -31,6 +32,7 @@ Ignored if temporary = TRUE.}
 A \code{dplyr::tbl()} reference to the newly created table.
 }
 \description{
-This function is a wrapper around \code{dplyr::compute} that is tested on several database systems.
-It is needed to handle edge cases where \code{dplyr::compute} does not produce correct SQL.
+This function is a wrapper around \code{dplyr::compute} that is tested on several
+database systems. It is needed to handle edge cases where \code{dplyr::compute}
+does not produce correct SQL.
 }

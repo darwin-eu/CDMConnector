@@ -1,3 +1,14 @@
+# CDMConnector 0.4.0
+
+* Add `computeQuery` function for creating temp and persistent tables from dplyr queries
+* Download Eunomia from darwin-eu repository as zipped csv files
+* Add passing tests for Oracle and Spark
+* Add `asDate` wrapper that provides correct as.Date dbplyr translations
+* Incorporate code review suggestions from @mvankessel-EMC
+
+
+Released Jan 21, 2023
+
 # CDMConnector 0.3.0
 
 * Add computePermanent and appendPermanent functions

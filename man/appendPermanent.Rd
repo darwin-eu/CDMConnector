@@ -9,10 +9,11 @@ appendPermanent(x, name, schema = NULL)
 \arguments{
 \item{x}{A dplyr query}
 
-\item{name}{Name of the table to be appended. If it does not already exist it will be created.}
+\item{name}{Name of the table to be appended. If it does not already exist it
+will be created.}
 
-\item{schema}{Schema where the table exists.
-Can be a length 1 or 2 vector. (e.g. schema = "my_schema", schema = c("my_schema", "dbo))}
+\item{schema}{Schema where the table exists. Can be a length 1 or 2 vector.
+(e.g. schema = "my_schema", schema = c("my_schema", "dbo))}
 }
 \value{
 A dplyr reference to the newly created table

@@ -13,21 +13,25 @@ cdmFromCon(
 )
 }
 \arguments{
-\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 instance is located.}
+\item{con}{A DBI database connection to a database where an OMOP CDM v5.4
+instance is located.}
 
-\item{cdmSchema}{The schema where the OMOP CDM tables are located. Defaults to NULL.}
+\item{cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
+to NULL.}
 
-\item{cdmTables}{Which tables should be included? Supports a character vector, tidyselect selection helpers, or table groups.
+\item{cdmTables}{Which tables should be included? Supports a character
+vector, tidyselect selection helpers, or table groups.
 \itemize{
 \item{tbl_group("all")}{all CDM tables}
 \item{tbl_group("vocab")}{the CDM vocabulary tables}
 \item{tbl_group("clinical")}{the clinical CDM tables}
 }}
 
-\item{writeSchema}{An optional schema in the CDM database that the user has write access to.}
+\item{writeSchema}{An optional schema in the CDM database that the user has
+write access to.}
 
-\item{cohortTables}{A character vector listing the cohort table names to be included in the CDM object.
-Cohort tables must be in the write_schema.}
+\item{cohortTables}{A character vector listing the cohort table names to be
+included in the CDM object. Cohort tables must be in the write_schema.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

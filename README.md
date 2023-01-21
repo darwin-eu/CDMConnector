@@ -1,6 +1,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# [CDMConnector](https://odyosg.github.io/CDMConnector/)
+# [CDMConnector](https://darwin-eu.github.io/CDMConnector/)
 
 <!-- badges: start -->
 
@@ -8,7 +8,7 @@
 status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
 [![codecov.io](https://codecov.io/github/OdyOSG/CDMConnector/coverage.svg?branch=main)](https://codecov.io/github/OdyOSG/CDMConnector?branch=main)
 [![Build
-Status](https://github.com/OdyOSG/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/OdyOSG/CDMConnector/actions?query=workflow%3AR-CMD-check)
+Status](https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check)
 <!-- badges: end -->
 
 > Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
@@ -91,7 +91,7 @@ Use dplyr verbs with the table references.
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.6.0 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpjH2sR6/rvmmghtk/cdm.duckdb]
+    ## # Database: DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpcuCHv2/uudgqiyb/cdm.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -103,7 +103,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.6.0 [root@Darwin 21.6.0:R 4.2.0//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpjH2sR6/rvmmghtk/cdm.duckdb]
+    ## # Database:   DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpcuCHv2/uudgqiyb/cdm.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -124,7 +124,7 @@ Run a simple quality check on a cdm.
     cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
     validate_cdm(cdm)
 
-    ## ── CDM v5.4 validation (checking 2 tables) ─────────────────────────────────────
+    ## ── CDM v5.3 validation (checking 2 tables) ─────────────────────────────────────
     ## ✔ cdm table names
     ## ✔ all row counts > 0
 

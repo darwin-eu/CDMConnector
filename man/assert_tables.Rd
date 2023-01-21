@@ -14,17 +14,22 @@ assertTables(cdm, tables, empty.ok = FALSE, add = NULL)
 
 \item{tables}{A character vector of table names to check.}
 
-\item{empty.ok}{Should an empty table (0 rows) be considered an error? TRUE or FALSE (default)}
+\item{empty.ok}{Should an empty table (0 rows) be considered an error?
+TRUE or FALSE (default)}
 
-\item{add}{An optional AssertCollection created by \code{checkmate::makeAssertCollection()} that errors should be added to.}
+\item{add}{An optional AssertCollection created by
+\code{checkmate::makeAssertCollection()} that errors should be added to.}
 }
 \value{
 Invisibly returns the cdm object
 }
 \description{
-A cdm object is a list of references to a subset of tables in the OMOP Common Data Model.
-If you write a function that accepts a cdm object as a parameter \code{assert_tables}/\code{assertTables} will help you check
-that the tables you need are in the cdm object, have the correct columns/fields, and (optionally) are not empty.
+A cdm object is a list of references to a subset of tables in the
+OMOP Common Data Model.
+If you write a function that accepts a cdm object as a parameter
+\code{assert_tables}/\code{assertTables} will help you check that the tables you need
+are in the cdm object, have the correct columns/fields,
+and (optionally) are not empty.
 }
 \section{Functions}{
 \itemize{
@@ -33,7 +38,7 @@ that the tables you need are in the cdm object, have the correct columns/fields,
 }}
 \examples{
 \dontrun{
-# Use assertTables inside an analysis function to check that tables exist and are populated
+# Use assertTables inside a function to check that tables exist
 countDrugsByGender <- function(cdm) {
   assertTables(cdm, tables = c("person", "drug_era"), empty.ok = FALSE)
 

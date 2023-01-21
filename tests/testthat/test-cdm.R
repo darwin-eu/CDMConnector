@@ -145,8 +145,6 @@ test_that("cdm reference works on Spark", {
   expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   cdm$cdm_source
-  # debugonce(snapshot)
-  # expect_s3_class(snapshot(cdm), "cdm_snapshot") # test database has upper case names
 
   expect_true(is.null(verify_write_access(con, write_schema = "omop531results")))
 
@@ -318,7 +316,6 @@ library(dplyr, warn.conflicts = FALSE)
 
 test_that("DatabaseConnector cdm reference works on local postgres", {
   skip_if(Sys.getenv("LOCAL_POSTGRESQL_USER") == "")
-  skip("not working yet")
 
   con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
                         dbms     = "postgresql",
@@ -347,7 +344,6 @@ test_that("DatabaseConnector cdm reference works on local postgres", {
 
 test_that("DatabaseConnector cdm reference works on postgres", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
-  skip("not working yet")
 
   con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
                         dbms     = "postgresql",
@@ -377,7 +373,6 @@ test_that("DatabaseConnector cdm reference works on postgres", {
 
 test_that("DatabaseConnector cdm reference works on redshift", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
-  skip("not working yet")
 
   con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
                         dbms     = "redshift",
@@ -407,9 +402,8 @@ test_that("DatabaseConnector cdm reference works on redshift", {
 
 test_that("DatabaseConnector cdm reference works on sql server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-  skip("not working yet")
-  # skip("DatabaseConnector does not preserve logical datatypes")
-  # skip("sql server test database cdm5.dbo.person does not have birth_datetime")
+  # Note that DatabaseConnector does not preserve logical datatypes
+  # Note sql server test database cdm5.dbo.person does not have birth_datetime
 
   con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
                         dbms     = "sql server",

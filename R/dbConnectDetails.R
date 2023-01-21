@@ -9,13 +9,15 @@ setClass("dbConnectDetails")
 
 #' Save database connection information in an object
 #'
-#' `dbConnectDetails` returns an object that can be used to connect to a database
-#' with dbConnect at some future point in execution. Functions that need to create
-#' a new connection to a database with `dbConnect` can accept a `dbConnectDetails` object
-#' as an argument and use it to create a new connection.
+#' `dbConnectDetails` returns an object that can be used to connect to a
+#' database with dbConnect at some future point in execution. Functions that
+#' need to create a new connection to a database with `dbConnect` can accept a
+#' `dbConnectDetails` object as an argument and use it to create a new
+#' connection.
 #'
 #' @param drv A DBI driver (e.g. `RPostgres::Postgres()`)
-#' @param ... DBI Driver parameters needed to create a connection using DBI::dbConnect()
+#' @param ... DBI Driver parameters needed to create a connection using
+#'   DBI::dbConnect()
 #'
 #' @return A dbConnectArgs object that can be passed to dbConnect
 #' @export
@@ -52,8 +54,8 @@ dbConnectDetails <- function(drv, ...) {
 #' @import DBI
 #' @importMethodsFrom DBI dbConnect dbDisconnect
 #' @param drv An dbConnectDetails object created by `dbConnectDetails()`
-#' @return An S4 object that inherits from DBIConnection used to communicate with
-#' the database engine.
+#' @return An S4 object that inherits from DBIConnection used to communicate
+#' with the database engine.
 #' @export
 #' @examples
 #' \dontrun{

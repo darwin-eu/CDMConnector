@@ -11,12 +11,13 @@
 #' @param path The path to a folder containing Circe cohort definition json files
 #' and optionally a csv file named CohortsToCreate.csv with columns cohortId, cohortName, and jsonPath.
 #' @importFrom jsonlite read_json
-#' @importFrom tibble tibble
+#' @importFrom dplyr tibble
 #' @importFrom SqlRender render
 #' @export
 readCohortSet <- function(path) {
   if (!rlang::is_installed("CirceR")) {
-    rlang::abort("CirceR is required to use `readCohortSet`\nInstall it with `devtools::install_github('OHDSI/CirceR')`")
+    rlang::abort("CirceR is required to use `readCohortSet`\n
+                 Install it with `devtools::install_github('OHDSI/CirceR')`")
   }
 
   if (file.exists(file.path(path, "CohortsToCreate.csv"))) {
@@ -24,7 +25,7 @@ readCohortSet <- function(path) {
       dplyr::mutate(sql = NA_character_, cohort = purrr::map(.data$jsonPath, jsonlite::read_json))
   } else {
     jsonFiles <- sort(list.files(path, pattern = "\\.json$", full.names = TRUE))
-    cohortsToCreate <- tibble::tibble(
+    cohortsToCreate <- dplyr::tibble(
       cohortId = seq_along(jsonFiles),
       cohortName = tools::file_path_sans_ext(basename(jsonFiles)),
       jsonPath = jsonFiles
@@ -41,8 +42,6 @@ readCohortSet <- function(path) {
     cohortExpression <- CirceR::cohortExpressionFromJson(expressionJson = cohortJson)
     cohortSql <- CirceR::buildCohortQuery(expression = cohortExpression, options = CirceR::createGenerateOptions(generateStats = FALSE))
     cohortSql <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE) # pre-render sql to remove extraneous code
-    # cohortsToCreate$json[i] <- cohortJson # any reason to give the user json text strings?
-    # cohortsToCreate$cohort[i] <- cohortDef # TODO make this a Capr cohort object
     cohortsToCreate$sql[i] <- cohortSql
   }
 

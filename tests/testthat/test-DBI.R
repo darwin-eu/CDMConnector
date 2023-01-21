@@ -11,7 +11,7 @@ test_that("dbWriteTable works on redshift", {
 
   tablename <- "public.test"
   df1 <- data.frame(logical = TRUE, chr = "a", int = 1L)
-  # df1 <- tibble::tibble(logical = TRUE, chr = "a", int = 1L) # this gives a warning
+  # df1 <- dplyr::tibble(logical = TRUE, chr = "a", int = 1L) # this gives a warning
   DBI::dbWriteTable(con, DBI::SQL(tablename), df1)
   df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
   DBI::dbRemoveTable(con, DBI::SQL(tablename))

@@ -13,7 +13,7 @@ version(cdm)
 "5.3" or "5.4"
 }
 \description{
-Get the CDM version
+Extract the CDM version attribute from a cdm_reference object
 }
 \examples{
 \dontrun{

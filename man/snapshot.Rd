@@ -11,7 +11,8 @@ snapshot(cdm)
 }
 \value{
 A list of attributes about the cdm including selected fields from the
-cdm_source table and record counts from the person and observation_period tables
+cdm_source table and record counts from the person and observation_period
+tables
 }
 \description{
 Extract the name, version, and selected record counts from a cdm.

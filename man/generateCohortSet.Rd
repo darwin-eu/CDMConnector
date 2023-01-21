@@ -16,12 +16,15 @@ generateCohortSet(
 
 \item{cohortSet}{A cohort definition set dataframe}
 
-\item{cohortTableName}{The name of the cohort table in the cdm. Defaults to 'cohort'.}
+\item{cohortTableName}{The name of the cohort table in the cdm. Defaults to
+'cohort'.}
 
-\item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE or FALSE (default).}
+\item{overwrite}{Should the cohort table be overwritten if it already exists?
+TRUE or FALSE (default).}
 }
 \value{
-cdm reference object with the added cohort table containing generated cohorts
+cdm reference object with the added cohort table containing
+generated cohorts
 }
 \description{
 This function generates a set of cohorts in the cohort table.
