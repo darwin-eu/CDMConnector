@@ -1,10 +1,12 @@
 ## R CMD check results
 
-This is a new release. 
+This is a resubmission. 
 
-RCMD check passed on the following platforms with
+One NOTE is expected.
 
-0 errors | 0 warnings | 0 notes 
+Suggests or Enhances not in mainstream repositories: CirceR
+
+RCMD check passed on the following platforms with 0 errors, 0 warnings, and 0 notes 
 
  Github Actions runners
   - {os: macOS-latest,   r: 'release'}

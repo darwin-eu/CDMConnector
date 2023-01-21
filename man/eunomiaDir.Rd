@@ -17,7 +17,7 @@ eunomiaDir(
 data set name corresponds to the folder with the data set ZIP files}
 
 \item{cdmVersion}{The OMOP CDM version. This version will appear in the suffix of the data file,
-for example: \if{html}{\out{<datasetName>}}_\if{html}{\out{<cdmVersion>}}.zip. Default: '5.3'}
+for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'}
 
 \item{pathToData}{The path where the Eunomia data is stored on the file system., By default the
 value of the environment variable "EUNOMIA_DATA_FOLDER" is used.}

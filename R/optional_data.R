@@ -5,7 +5,7 @@
 #' @param datasetName   The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
 #'                      data set name corresponds to the folder with the data set ZIP files
 #' @param cdmVersion    The OMOP CDM version. This version will appear in the suffix of the data file,
-#'                      for example: <datasetName>_<cdmVersion>.zip. Default: '5.3'
+#'                      for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'
 #' @param pathToData    The path where the Eunomia data is stored on the file system., By default the
 #'                      value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
 #' @param overwrite     Control whether the existing archive file will be overwritten should it already
@@ -163,7 +163,7 @@ extractLoadData <- function(from, to, dbms = "sqlite", verbose = FALSE) {
 #' @param datasetName    The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
 #'                       data set name corresponds to the folder with the data set ZIP files
 #' @param cdmVersion     The OMOP CDM version. This version will appear in the suffix of the data file,
-#'                       for example: <datasetName>_<cdmVersion>.zip. Default: '5.3'
+#'                       for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'
 #' @param pathToData     The path where the Eunomia data is stored on the file system., By default the
 #'                       value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
 #' @param dbms           The database system to use. "sqlite" or "duckdb" (default)
