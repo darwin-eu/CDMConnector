@@ -1,6 +1,7 @@
 ## R CMD check results
 
-This is a resubmission. 
+This is a resubmission to address the policy violation (creating data in user's home directory)
+which occured when building vignettes.
 
 One NOTE is expected.
 
