@@ -73,9 +73,21 @@ jobs:
             install.packages("duckdb", repos = "https://packagemanager.rstudio.com/all/latest", type = "win.binary")
         shell: Rscript {0}
 
+      - name: List contents of home directory
+        run: |
+            print("Home directory content before R check")
+            print(list.files(path.expand("~")))
+        shell: Rscript {0}
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+
+     -  name: List contents of home directory after R check
+        run: |
+            print("Home directory content after R check. Should be the same as before R check.")
+            print(list.files(path.expand("~")))
+        shell: Rscript {0}
 
       - name: Test coverage
         if: runner.os == 'macOS'

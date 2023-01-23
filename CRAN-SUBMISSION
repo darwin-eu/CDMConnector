@@ -1,3 +1,5 @@
 Version: 0.4.0
-Date: 2023-01-21 02:39:00 UTC
-SHA: 6c7bd95cec9568dabe940d0e36a3f05adb3c3f44
+Date: 2023-01-21 14:55:31 UTC
+SHA: f2f5cd2432196a1996ef489451a44636ee19c8be
+
+Note: Accepted as v0.4 but immediately removed due to creation of files in uses home directory when knitting vignettes.
