@@ -1,4 +1,4 @@
-# CDMConnector 0.4.0
+# CDMConnector 0.4.1
 
 * Add `computeQuery` function for creating temp and persistent tables from dplyr queries
 * Download Eunomia from darwin-eu repository as zipped csv files
