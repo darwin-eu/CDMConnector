@@ -1,0 +1,41 @@
+on:
+  release:
+    types: [published]
+name: Mirror Release in Darwin Public Repo
+
+jobs:
+  Mirror:
+    if: github.repository == 'darwin-eu-dev/CDMConnector'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print
+        run: env | sort
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          path: 'CDMConnector'
+          ref: 'main'
+          repository: 'darwin-eu/CDMConnector'
+          token: ${{ secrets.PRIVATE_TOKEN }}
+          persist-credentials: true
+
+      - name: Push to public mirror
+        id: push
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_TOKEN }}
+        shell: bash
+        working-directory: 'CDMConnector'
+        run: |
+          git config --global user.name "release bot"
+          eval 'git pull https://$GITHUB_TOKEN@github.com/darwin-eu-dev/CDMConnector.git main'
+          git push origin main
+
+      - uses: Hs1r1us/Release-AIO@v2.0.0
+        if: steps.push.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_TOKEN }}
+        with:
+          tag_name: "${{ github.event.release.name }}"
+          body: "${{ github.event.release.body }}"
+          repo: 'darwin-eu/CDMConnector'
