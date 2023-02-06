@@ -304,6 +304,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
   withr::with_options(list(databaseConnectorIntegerAsNumeric = FALSE), {
     df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
+    names(df2) <- tolower(names(df2))
   })
 
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
