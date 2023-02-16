@@ -330,3 +330,90 @@ test_that("computeQuery works on Oracle", {
   expect_false(newTableName %in% listTables(con, tempSchema))
   DBI::dbDisconnect(con)
 })
+
+test_that("dropTable works on duckdb", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
+  cdm <- cdm_from_con(con, "main")
+
+  # create a temporary table in the remote database from a query
+  cdm$tmp_table <- cdm$concept %>%
+    dplyr::count(domain_id == "Drug") %>%
+    computeQuery("tmp_table", temporary = FALSE, schema = "main")
+
+  expect_true("tmp_table" %in% DBI::dbListTables(con))
+  expect_true("tmp_table" %in% names(cdm))
+
+  cdm <- dropTable(cdm, "tmp_table")
+
+  expect_false("tmp_table" %in% DBI::dbListTables(con))
+  expect_false("tmp_table" %in% names(cdm))
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+test_that("dropTable works on postgres", {
+  skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
+
+  con <- DBI::dbConnect(RPostgres::Postgres(),
+                        dbname   = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+                        host     = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+                        user     = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                        password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+
+  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = T)), collapse = "")
+
+  cdm <- cdm_from_con(con, "cdmv531", write_schema = "ohdsi")
+
+  # create a temporary table in the remote database from a query
+  cdm$tmp_table <- cdm$vocabulary %>%
+    dplyr::count(vocabulary_reference) %>%
+    computeQuery("tmp_table",
+                 temporary = FALSE,
+                 schema = attr(cdm, "write_schema"),
+                 overwrite = TRUE)
+
+  expect_true("tmp_table" %in% DBI::dbListTables(con))
+  expect_true("tmp_table" %in% names(cdm))
+
+  cdm <- dropTable(cdm, "tmp_table")
+
+  expect_false("tmp_table" %in% DBI::dbListTables(con))
+  expect_false("tmp_table" %in% names(cdm))
+
+  DBI::dbDisconnect(con)
+})
+
+
+test_that("dropTable works on SQL Server", {
+  skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
+
+  con <- DBI::dbConnect(odbc::odbc(),
+                        Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
+                        Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+                        Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
+                        UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
+                        PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+                        TrustServerCertificate="yes",
+                        Port     = 1433)
+
+  cdm <- cdm_from_con(con, c("cdmv54", "dbo"), write_schema = c("cdmv54", "dbo"))
+
+  # create a temporary table in the remote database from a query
+  cdm$tmp_table <- cdm$vocabulary %>%
+    dplyr::count(vocabulary_reference) %>%
+    computeQuery("tmp_table",
+                 temporary = FALSE,
+                 schema = attr(cdm, "write_schema"),
+                 overwrite = TRUE)
+
+  expect_true("tmp_table" %in% listTables(con, schema = c("cdmv54", "dbo")))
+  expect_true("tmp_table" %in% names(cdm))
+
+  cdm <- dropTable(cdm, "tmp_table")
+
+  expect_false("tmp_table" %in% DBI::dbListTables(con))
+  expect_false("tmp_table" %in% names(cdm))
+
+  DBI::dbDisconnect(con)
+})
+

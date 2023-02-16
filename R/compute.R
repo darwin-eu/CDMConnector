@@ -109,7 +109,6 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' library(SqlUtilities)
 #'
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
 #' concept <- dplyr::tbl(con, "concept")
@@ -197,6 +196,26 @@ uniqueTableName <- function() {
 #'
 #' @return A `dplyr::tbl()` reference to the newly created table.
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#'
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
+#' cdm <- cdm_from_con(con, "main")
+#'
+#' # create a temporary table in the remote database from a dplyr query
+#' drugCount <- cdm$concept %>%
+#'   dplyr::count(domain_id == "Drug") %>%
+#'   computeQuery()
+#'
+#' # create a permanent table in the remote database from a dplyr query
+#' drugCount <- cdm$concept %>%
+#'   dplyr::count(domain_id == "Drug") %>%
+#'   computeQuery("tmp_table", temporary = FALSE, schema = "main")
+#'
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
 computeQuery <- function(x,
                          name = uniqueTableName(),
                          temporary = TRUE,
@@ -238,4 +257,61 @@ computeQuery <- function(x,
   } else {
     computePermanent(x, name = name, schema = schema, overwrite = overwrite)
   }
+}
+
+#' Drop tables from write_schema of a cdm object
+#'
+#' cdm objects can have zero or more cohort tables stored in a special schema
+#' where the user has write access. This function removes tables from a cdm's
+#' write_schema
+#'
+#'
+#' @param cdm A cdm reference
+#' @param name A character vector of tables in the cdm's write_schema
+#'
+#' @return A modified cdm reference with the tables removed
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#'
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
+#' cdm <- cdm_from_con(con, "main")
+#'
+#' # create a temporary table in the remote database from a query
+#' cdm$tmp_table <- cdm$concept %>%
+#'   dplyr::count(domain_id == "Drug") %>%
+#'   computeQuery("tmp_table", temporary = FALSE, schema = "main")
+#'
+#' "tmp_table" %in% DBI::dbListTables(con)
+#' # [1] TRUE
+#' "tmp_table" %in% names(cdm)
+#' # [1] TRUE
+#'
+#' cdm <- dropTable(cdm, "tmp_table")
+#'
+#' "tmp_table" %in% DBI::dbListTables(con)
+#' # [1] FALSE
+#' "tmp_table" %in% names(cdm)
+#' # [1] FALSE
+#'
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
+dropTable <- function(cdm, name){
+
+  allTables <- CDMConnector::listTables(attr(cdm, "dbcon"),
+                                        schema = attr(cdm, "write_schema"))
+
+  for (i in seq_along(name)) {
+    # check table exists in write schema
+    tableExists <- any(stringr::str_detect(paste0(name[[i]], "\\b"), allTables))
+
+    if (tableExists == TRUE) {
+      fullName <- paste0(c(attr(cdm, "write_schema"), name[[i]]), collapse = ".")
+      DBI::dbRemoveTable(attr(cdm, "dbcon"), DBI::SQL(fullName))
+    }
+    cdm[name[[i]]] <- NULL
+  }
+  return(cdm)
 }
