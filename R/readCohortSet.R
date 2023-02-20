@@ -33,19 +33,7 @@ readCohortSet <- function(path) {
       dplyr::mutate(sql = NA_character_, cohort = purrr::map(.data$jsonPath, jsonlite::read_json))
   }
 
-  if (nrow(cohortsToCreate) == 0) return(cohortsToCreate)
-
-  for (i in 1:nrow(cohortsToCreate)) {
-    cohortJson <- readr::read_file(cohortsToCreate$jsonPath[i])
-    cohortDef <- jsonlite::read_json(cohortsToCreate$jsonPath[i]) # change to Capr::readCohort
-
-    cohortExpression <- CirceR::cohortExpressionFromJson(expressionJson = cohortJson)
-    cohortSql <- CirceR::buildCohortQuery(expression = cohortExpression, options = CirceR::createGenerateOptions(generateStats = FALSE))
-    cohortSql <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE) # pre-render sql to remove extraneous code
-    cohortsToCreate$sql[i] <- cohortSql
-  }
-
-  cohortsToCreate <- dplyr::select(cohortsToCreate, "cohortId", "cohortName", "cohort", "sql")
+  cohortsToCreate <- dplyr::select(cohortsToCreate, "cohortId", "cohortName", "cohort")
   class(cohortsToCreate) <- c("CohortSet", class(cohortsToCreate))
   return(cohortsToCreate)
 }

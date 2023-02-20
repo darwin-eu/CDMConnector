@@ -309,7 +309,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
 
-  if (!isTRUE(dplyr::all_equal(df1, df2))) {
+  if (!isTRUE(all.equal(df1, df2))) {
     msg <- paste("Write access to schema",
                  write_schema,
                  "could not be verified.")
