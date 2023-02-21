@@ -32,7 +32,8 @@ Imports:
     withr,
     lifecycle,
     jsonlite,
-    SqlRender
+    SqlRender, 
+    stringr
 Suggests: 
     covr,
     knitr,
