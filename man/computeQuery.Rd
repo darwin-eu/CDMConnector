@@ -36,3 +36,23 @@ This function is a wrapper around \code{dplyr::compute} that is tested on severa
 database systems. It is needed to handle edge cases where \code{dplyr::compute}
 does not produce correct SQL.
 }
+\examples{
+\dontrun{
+library(CDMConnector)
+
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
+cdm <- cdm_from_con(con, "main")
+
+# create a temporary table in the remote database from a dplyr query
+drugCount <- cdm$concept \%>\%
+  dplyr::count(domain_id == "Drug") \%>\%
+  computeQuery()
+
+# create a permanent table in the remote database from a dplyr query
+drugCount <- cdm$concept \%>\%
+  dplyr::count(domain_id == "Drug") \%>\%
+  computeQuery("tmp_table", temporary = FALSE, schema = "main")
+
+DBI::dbDisconnect(con, shutdown = TRUE)
+}
+}

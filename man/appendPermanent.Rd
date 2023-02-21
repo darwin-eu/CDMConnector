@@ -24,7 +24,6 @@ Run a dplyr query and add the result set to an existing
 \examples{
 \dontrun{
 library(CDMConnector)
-library(SqlUtilities)
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
 concept <- dplyr::tbl(con, "concept")
