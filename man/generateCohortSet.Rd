@@ -2,30 +2,71 @@
 % Please edit documentation in R/generate.R
 \name{generateCohortSet}
 \alias{generateCohortSet}
-\title{Generate a set of cohorts}
+\title{Generate a cohort set on a cdm object}
 \usage{
 generateCohortSet(
   cdm,
   cohortSet,
-  cohortTableName = "cohort",
-  overwrite = FALSE
+  name = "cohort",
+  computeAttrition = FALSE,
+  overwrite = TRUE
 )
 }
 \arguments{
-\item{cdm}{cdm reference object}
+\item{cdm}{A cdm reference created by CDMConnector. write_schema must be
+specified.}
 
-\item{cohortSet}{A cohort definition set dataframe}
+\item{cohortSet}{A cohortSet object created with \code{readCohortSet()}.}
 
-\item{cohortTableName}{The name of the cohort table in the cdm. Defaults to
-'cohort'.}
+\item{name}{Name of the cohort table to be created. This will also be used
+as a prefix for the cohort attribute tables.}
 
-\item{overwrite}{Should the cohort table be overwritten if it already exists?
-TRUE or FALSE (default).}
-}
-\value{
-cdm reference object with the added cohort table containing
-generated cohorts
+\item{computeAttrition}{Should attrition be computed? TRUE or FALSE.}
 }
 \description{
-This function generates a set of cohorts in the cohort table.
+A "GeneratedCohortSet" object consists of several components
+\itemize{
+\item{A remote table reference to an OHDSI cohort table with at least
+the columns: cohort_definition_id, subject_id, cohort_start_date,
+cohort_end_date. Additional columns are optional and some analytic
+packages define additional columns specific to certain analytic
+cohorts.}
+\item{A \strong{settings attribute} which points to a remote table containing
+cohort settings including the names of the cohorts.}
+\item{An \strong{attrition attribute} which points to a remote table with
+attrition information recorded during generation. This attribute is
+optional. Since calculating attrition takes additional compute it
+can be skipped resulting in a NULL attrition attribute.}
+\item{A \strong{cohortCounts attribute} which points to a remote table
+containing cohort counts}
+}
+
+Each of the three attributes are tidy tables. The implementation of this
+object is experimental and user feedback is welcome.
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
+One key design principle is that GeneratedCohortSet objects are created once
+and can persist across analysis execution but should not be modified after
+creation. While it is possible to modify a GeneratedCohortSet object doing
+so will invalidate it and it's attributes may no longer be accurate.
+}
+\examples{
+\dontrun{
+library(CDMConnector)
+con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+cdm <- cdm_from_con(con,
+                    cdm_schema = "main",
+                    cdm_tables = c(tbl_group("default")),
+                    write_schema = "main")
+
+cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
+cdm <- generateCohortSet(cdm, cohortSet, name = "cohort")
+
+print(cdm$cohort)
+
+attrition(cdm$cohort)
+settings(cdm$cohort)
+cohortCounts(cdm$cohort)
+}
 }

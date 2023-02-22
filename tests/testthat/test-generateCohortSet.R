@@ -1,8 +1,64 @@
 
-test_that("cohort generation works on duckdb", {
-  skip_if_not_installed("duckdb", "0.6")
+test_that("duckdb cohort generation", {
+  skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
   skip_if_not_installed("CirceR")
+  skip_if_not_installed("SqlRender")
+
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+
+  write_schema <- "main"
+  cdm_schema <- "main"
+
+  cdm <- cdm_from_con(con,
+                      cdm_schema = cdm_schema,
+                      cdm_tables = c(tbl_group("default")),
+                      write_schema = write_schema)
+
+  # test read cohort set with a cohortsToCreate.csv
+  withr::with_dir(inst_dir, {
+    cohortSet <- readCohortSet("cohorts1")
+  })
+  expect_equal(nrow(cohortSet), 2)
+
+  # test readCohortSet without cohortsToCreate.csv
+  cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
+  expect_equal(nrow(cohortSet), 3)
+  expect_s3_class(cohortSet, "CohortSet")
+
+  # debugonce(generateCohortSet)
+  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = FALSE)
+
+  expect_true("chrt0" %in% listTables(con, schema = write_schema))
+
+  expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
+  df <- cdm$chrt0 %>% head() %>% dplyr::collect()
+  expect_s3_class(df, "data.frame")
+  expect_true(nrow(df) > 0)
+  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
+
+  # expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
+  expect_null(attrition(cdm$chrt0))
+  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
+  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(counts, "data.frame")
+  expect_equal(nrow(counts), 3)
+
+  # drop tables
+  DBI::dbRemoveTable(con, DBI::Id(schema = "main", table = "chrt0"))
+  expect_false("chrt0" %in% listTables(con, schema = write_schema))
+
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_count"))
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_set"))
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+test_that("duckdb cohort generation with attrition", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
+  skip_if_not_installed("CirceR")
+  skip_if_not_installed("SqlRender")
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
@@ -16,30 +72,40 @@ test_that("cohort generation works on duckdb", {
 
   inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
 
-  # test read cohort set with a cohortsToCreate.csv
-  withr::with_dir(inst_dir, {
-    cohortSet <- readCohortSet("cohorts1")
-  })
-  expect_equal(nrow(cohortSet), 2)
-
-  # test readCohortSet without cohortsToCreate.csv
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
-  expect_equal(nrow(cohortSet), 2)
+  expect_equal(nrow(cohortSet), 3)
+  expect_s3_class(cohortSet, "CohortSet")
 
-  cdm <- addCohortTable(cdm, name = "cohorts", overwrite = TRUE)
-  expect_true("cohorts" %in% names(cdm))
+  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
 
-  cdm <- generateCohortSet(cdm, cohortSet, cohortTableName = "cohorts", overwrite = TRUE)
-  df <- cdm$cohorts %>% head() %>% dplyr::collect()
+  expect_true("chrt0" %in% listTables(con, schema = write_schema))
+
+  expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
+  df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
-  expect_true(all(names(df) == c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")))
+  expect_true(nrow(df) > 0)
+  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  DBI::dbRemoveTable(con, DBI::SQL("main.cohorts"))
-  expect_false("cohorts" %in% listTables(con, schema = write_schema))
+  expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
+  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
+  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(counts, "data.frame")
+  expect_equal(nrow(counts), 3)
+
+  # drop tables
+  DBI::dbRemoveTable(con, DBI::Id(schema = "main", table = "chrt0"))
+  expect_false("chrt0" %in% listTables(con, schema = write_schema))
+
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_count"))
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_set"))
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_attrition"))
+
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-test_that("cohort generation works on sql server", {
+test_that("SQL Server cohort generation with attrition", {
+  skip_if_not_installed("CirceR")
+  skip_if_not_installed("SqlRender")
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
   skip_if_not_installed("CirceR")
 
@@ -57,36 +123,45 @@ test_that("cohort generation works on sql server", {
 
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
-                      cdm_tables = c(tbl_group("default"), -visit_detail), # visit_detail is missing in sql server database
+                      cdm_tables = c(tbl_group("default"), -visit_detail),
                       write_schema = write_schema)
 
-  inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
-
-  # test read cohort set with a cohortsToCreate.csv
-  withr::with_dir(inst_dir, {
-    cohortSet <- readCohortSet("cohorts1")
-  })
-  expect_equal(nrow(cohortSet), 2)
-
-  # test readCohortSet without cohortsToCreate.csv
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
-  expect_equal(nrow(cohortSet), 2)
+  expect_equal(nrow(cohortSet), 3)
+  cohortSet <- cohortSet[3,]
+  expect_s3_class(cohortSet, "CohortSet")
 
-  cdm <- addCohortTable(cdm, name = "cohorts", overwrite = TRUE)
-  expect_true("cohorts" %in% names(cdm))
+  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
 
-  cdm <- generateCohortSet(cdm, cohortSet, cohortTableName = "cohorts", overwrite = TRUE)
-  df <- cdm$cohorts %>% head() %>% dplyr::collect()
+  expect_true("chrt0" %in% listTables(con, schema = write_schema))
+
+  expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
+  df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
-  expect_true(all(names(df) == c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")))
+  expect_true(nrow(df) > 0)
+  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  DBI::dbRemoveTable(con, DBI::Id(catalog = write_schema[1], schema = write_schema[2], table = "cohorts"))
-  expect_false("cohorts" %in% listTables(con, schema = write_schema))
+  expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
+  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
+  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(counts, "data.frame")
+  expect_equal(nrow(counts), 1)
+
+  # drop tables
+  DBI::dbRemoveTable(con, DBI::Id(catalog = write_schema[1], schema = write_schema[2], table = "chrt0"))
+  expect_false("chrt0" %in% listTables(con, schema = write_schema))
+
+  DBI::dbRemoveTable(con, DBI::Id(catalog = write_schema[1], schema = write_schema[2], table = "chrt0_count"))
+  DBI::dbRemoveTable(con, DBI::Id(catalog = write_schema[1], schema = write_schema[2], table = "chrt0_set"))
+  DBI::dbRemoveTable(con, DBI::Id(catalog = write_schema[1], schema = write_schema[2], table = "chrt0_attrition"))
+
   DBI::dbDisconnect(con)
 })
 
 
-test_that("cohort generation works on redshift", {
+test_that("Redshift cohort generation with attrition", {
+  skip_if_not_installed("CirceR")
+  skip_if_not_installed("SqlRender")
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
   skip_if_not_installed("CirceR")
 
@@ -100,28 +175,46 @@ test_that("cohort generation works on redshift", {
   write_schema <- Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA")
   cdm_schema <- Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA")
 
-  cdm <- cdmFromCon(con,
-                    cdmSchema = cdm_schema,
-                    cdmTables = tbl_group("default"),
-                    writeSchema = write_schema)
+  cdm <- cdm_from_con(con,
+                      cdm_schema = cdm_schema,
+                      cdm_tables = c(tbl_group("default")),
+                      write_schema = write_schema)
 
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
-  expect_equal(nrow(cohortSet), 2)
+  expect_equal(nrow(cohortSet), 3)
+  cohortSet <- cohortSet[3,]
+  expect_s3_class(cohortSet, "CohortSet")
 
-  cdm <- addCohortTable(cdm, name = "cohorts", overwrite = TRUE)
-  expect_true("cohorts" %in% names(cdm))
+  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
 
-  cdm <- generateCohortSet(cdm, cohortSet, cohortTableName = "cohorts", overwrite = TRUE)
-  df <- cdm$cohorts %>% head() %>% dplyr::collect()
+  expect_true("chrt0" %in% listTables(con, schema = write_schema))
+
+  expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
+  df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
-  expect_true(all(names(df) == c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")))
+  expect_true(nrow(df) > 0)
+  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "cohorts"))
-  expect_false("cohorts" %in% listTables(con, schema = write_schema))
+  expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
+  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
+  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(counts, "data.frame")
+  expect_equal(nrow(counts), nrow(cohortSet))
+
+  # drop tables
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0"))
+  expect_false("chrt0" %in% listTables(con, schema = write_schema))
+
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_count"))
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_set"))
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_attrition"))
+
   DBI::dbDisconnect(con)
 })
 
-test_that("cohort generation works on postgres", {
+test_that("Postgres cohort generation with attrition", {
+  skip_if_not_installed("CirceR")
+  skip_if_not_installed("SqlRender")
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
   skip_if_not_installed("CirceR")
 
@@ -134,55 +227,71 @@ test_that("cohort generation works on postgres", {
   write_schema <- Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")
   cdm_schema <- Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA")
 
-  cdm <- cdmFromCon(con,
-                    cdmSchema = cdm_schema,
-                    cdmTables = tbl_group("default"),
-                    writeSchema = write_schema)
+  cdm <- cdm_from_con(con,
+                      cdm_schema = cdm_schema,
+                      write_schema = write_schema)
 
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
-  expect_equal(nrow(cohortSet), 2)
+  expect_equal(nrow(cohortSet), 3)
+  cohortSet <- cohortSet[3,]
+  expect_s3_class(cohortSet, "CohortSet")
 
-  cdm <- addCohortTable(cdm, name = "cohorts", overwrite = TRUE)
-  expect_true("cohorts" %in% names(cdm))
+  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
 
-  cdm <- generateCohortSet(cdm, cohortSet, cohortTableName = "cohorts", overwrite = TRUE)
-  df <- cdm$cohorts %>% head() %>% dplyr::collect()
+  expect_true("chrt0" %in% listTables(con, schema = write_schema))
+
+  expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
+  df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
-  expect_true(all(names(df) == c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")))
+  expect_true(nrow(df) > 0)
+  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "cohorts"))
-  expect_false("cohorts" %in% listTables(con, schema = write_schema))
+  expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
+  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
+  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(counts, "data.frame")
+  expect_equal(nrow(counts), nrow(cohortSet))
+
+  # drop tables
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0"))
+  expect_false("chrt0" %in% listTables(con, schema = write_schema))
+
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_count"))
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_set"))
+  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_attrition"))
+
   DBI::dbDisconnect(con)
 })
 
-test_that("cohort generation works on spark", {
 
-  skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-  skip("Only run this test manually")
-  skip_if_not_installed("CirceR")
-
-  con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
-
-  write_schema <- "omop531results"
-  cdm_schema <- "omop531"
-
-  cdm <- cdmFromCon(con,
-                    cdmSchema = cdm_schema,
-                    cdmTables = tbl_group("default"),
-                    writeSchema = write_schema)
-
-  cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
-  expect_equal(nrow(cohortSet), 2)
-
-  cdm <- addCohortTable(cdm, name = "cohorts", overwrite = TRUE)
-  expect_true("cohorts" %in% names(cdm))
-
-  cdm <- generateCohortSet(cdm, cohortSet, cohortTableName = "cohorts", overwrite = TRUE)
-  df <- cdm$cohorts %>% head() %>% dplyr::collect()
-  expect_s3_class(df, "data.frame")
-  expect_true(all(names(df) == c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")))
-
-  DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "cohorts"))
-  expect_false("cohorts" %in% listTables(con, schema = write_schema))
-  DBI::dbDisconnect(con)
-})
+# test_that("cohort generation works on spark", {
+#
+#   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
+#   skip("Only run this test manually")
+#   skip_if_not_installed("CirceR")
+#
+#   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
+#
+#   write_schema <- "omop531results"
+#   cdm_schema <- "omop531"
+#
+#   cdm <- cdmFromCon(con,
+#                     cdmSchema = cdm_schema,
+#                     cdmTables = tbl_group("default"),
+#                     writeSchema = write_schema)
+#
+#   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
+#   expect_equal(nrow(cohortSet), 2)
+#
+#   cdm <- addCohortTable(cdm, name = "cohorts", overwrite = TRUE)
+#   expect_true("cohorts" %in% names(cdm))
+#
+#   cdm <- generateCohortSet(cdm, cohortSet, cohortTableName = "cohorts", overwrite = TRUE)
+#   df <- cdm$cohorts %>% head() %>% dplyr::collect()
+#   expect_s3_class(df, "data.frame")
+#   expect_true(all(names(df) == c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")))
+#
+#   DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "cohorts"))
+#   expect_false("cohorts" %in% listTables(con, schema = write_schema))
+#   DBI::dbDisconnect(con)
+# })

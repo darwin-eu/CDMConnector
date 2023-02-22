@@ -43,3 +43,7 @@ test_that("Oracle dplyr works", {
 
   DBI::dbDisconnect(con)
 })
+
+
+
+

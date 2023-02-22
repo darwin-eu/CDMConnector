@@ -1,0 +1,107 @@
+---
+title: "Working with cohorts"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working_with_cohorts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+## Adding a cohort
+
+First, we'll load packages and create a cdm reference. In this case we'll be using the Eunomia "GI Bleed" dataset.
+
+```{r, warning=FALSE, message=FALSE, eval=TRUE}
+library(CDMConnector)
+library(dplyr)
+
+con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+
+cdm <- CDMConnector::cdm_from_con(
+  con = con,
+  cdm_schema = "main",
+  write_schema = "main"
+)
+```
+
+We can define a cohort for GI bleeding, where we exclude anyone with a record of rheumatoid arthritis at any time.
+
+```{r, eval=FALSE}
+# devtools::install_github("OdyOSG/Capr") # Use the development version of Capr v2
+library(Capr)
+
+# create a cohort set folder for saving cohort definitions
+path <- file.path(tempdir(), "cohorts")
+dir.create(path)
+
+gibleed_cohort_definition <- cohort(
+  entry = condition(cs(descendants(192671))),
+  attrition = attrition(
+    "no RA" = withAll(
+      exactly(0,
+              condition(cs(descendants(80809))),
+              duringInterval(eventStarts(-Inf, Inf))))
+  )
+)
+
+# write json cohort definition
+writeCohort(gibleed_cohort_definition, file.path(path, "gibleed.json"))
+```
+
+```{r, echo=FALSE}
+# use internal cohort set
+gibleed_cohort_set <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))[3,]
+```
+
+Now we have our cohort definition, we can generate the cohort.
+
+```{r, eval=FALSE}
+gibleed_cohort_set <- readCohortSet(path = path)
+```
+
+```{r}
+cdm <- generateCohortSet(
+  cdm,
+  gibleed_cohort_set,
+  name = "gibleed",
+  computeAttrition = TRUE
+)
+
+```
+
+We can see that we now have our cohort instantiated in the database with a reference to it added to the cdm reference.
+```{r}
+cdm$gibleed %>% 
+  glimpse()
+```
+
+## Cohort attributes
+
+As well as the cohort itself, the cohort has a number of attributes. First, is a count of participants by cohort. We can use `cohortCount` to get these counts.
+
+```{r}
+cohortCount(cdm$gibleed)
+```
+
+We also have the attrition associated with entry into the cohort available via `cohortAttrition`.
+```{r}
+attrition(cdm$gibleed)
+```
+
+And lastly, we can also access the settings associated with the cohort using `cohortCount`.
+```{r}
+cohortSet(cdm$gibleed)
+```
+
+```{r}
+DBI::dbDisconnect(con, shutdown = TRUE)
+```
+
