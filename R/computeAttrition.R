@@ -22,6 +22,8 @@
 #' @param cohortSet Cohort set of the generated tables.
 #' @param cohortId Cohort definition id of the cohorts that we want to generate
 #' the attrition. If NULL all cohorts from cohort set will be used.
+#'
+#' @return the attrition as a data.frame
 computeAttrition <- function(cdm,
                              cohortStem,
                              cohortSet,
@@ -113,7 +115,9 @@ computeAttrition <- function(cdm,
         )
     }
     return(attrition)
-  }) %>%
+  })
+
+  attrition <- attrition %>%
     dplyr::bind_rows() %>%
     computePermanent(paste0(cohortStem, "_cohort_attrition"), schema, TRUE)
 
@@ -129,6 +133,7 @@ getInclusionName <- function(cohortSet, cohortId) {
   ) %>%
     unlist()
 }
+
 getInclusionMaskMatrix <- function(numberInclusion) {
   inclusionMaskMatrix <- dplyr::tibble(
     inclusion_rule_mask = 0:(2^numberInclusion - 1)
@@ -142,6 +147,7 @@ getInclusionMaskMatrix <- function(numberInclusion) {
   }
   return(inclusionMaskMatrix)
 }
+
 getInclusionMaskId <- function(numberInclusion) {
   inclusionMaskMatrix <- getInclusionMaskMatrix(numberInclusion)
   inclusionId <- lapply(-1:(numberInclusion - 1), function(x) {
@@ -157,6 +163,7 @@ getInclusionMaskId <- function(numberInclusion) {
     }
   })
 }
+
 readTable <- function(con, schema, tableName) {
   if (dbms(con) == "duckdb") {
     writeSchema <- glue::glue_sql_collapse(

@@ -417,3 +417,7 @@ test_that("dropTable works on SQL Server", {
   DBI::dbDisconnect(con)
 })
 
+test_that("uniqueTableName", {
+  result <- uniqueTableName()
+  expect_true(startsWith(result, "dbplyr_"))
+})

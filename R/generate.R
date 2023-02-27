@@ -71,7 +71,6 @@ generateCohortSet <- function(cdm,
                               name = "cohort",
                               computeAttrition = FALSE,
                               overwrite = TRUE) {
-
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
 
@@ -104,7 +103,6 @@ generateCohortSet <- function(cdm,
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
   checkmate::assert_true(DBI::dbIsValid(attr(cdm, "dbcon")))
-
 
   if (name != tolower(name)) {
     rlang::abort("Cohort table names must be lowercase.")
@@ -145,23 +143,12 @@ generateCohortSet <- function(cdm,
 
   # Create the cohort tables ----
 
-  # helper function that takes care of branching based on schema length
-  # catalog is needed for sql server
-  inSchema <- function(table) {
-    if (length(writeSchema) == 2) {
-      DBI::Id(catalog = writeSchema[1], schema = writeSchema[2], table = table)
-    } else {
-      stopifnot(length(writeSchema) == 1)
-      DBI::Id(schema = writeSchema, table = table)
-    }
-  }
-
   if (name %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(name))
+    DBI::dbRemoveTable(con, inSchema(name, writeSchema))
   }
 
   DBI::dbCreateTable(con,
-                     name = inSchema(name),
+                     name = inSchema(name, writeSchema),
                      fields = c(
                        cohort_definition_id = "INT",
                        subject_id = "INT",
@@ -176,43 +163,43 @@ generateCohortSet <- function(cdm,
     nm <- paste0(name, "_inclusion")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(nm))
+      DBI::dbRemoveTable(con, inSchema(nm, writeSchema))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(nm),
+                       name = inSchema(nm, writeSchema),
                        fields = c(
                          cohort_definition_id = "INT",
                          rule_sequence = "INT",
                          name = "VARCHAR(255)",
                          description = "VARCHAR(1000)")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(nm)), add = TRUE)
+    # on.exit(DBI::dbRemoveTable(con, inSchema(nm, writeSchema)), add = TRUE)
 
     nm <- paste0(name, "_inclusion_result") # used for attrition
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(nm))
+      DBI::dbRemoveTable(con, inSchema(nm, writeSchema))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(nm),
+                       name = inSchema(nm, writeSchema),
                        fields = c(
                          cohort_definition_id = "INT",
                          inclusion_rule_mask = "INT",
                          person_count = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(nm)), add = TRUE)
+    # on.exit(DBI::dbRemoveTable(con, inSchema(nm, writeSchema)), add = TRUE)
 
     nm <- paste0(name, "_inclusion_stats")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(nm))
+      DBI::dbRemoveTable(con, inSchema(nm, writeSchema))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(nm),
+                       name = inSchema(nm, writeSchema),
                        fields = c(
                          cohort_definition_id = "INT",
                          rule_sequence = "INT",
@@ -221,38 +208,38 @@ generateCohortSet <- function(cdm,
                          person_total = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(nm)), add = TRUE)
+    # on.exit(DBI::dbRemoveTable(con, inSchema(nm, writeSchema)), add = TRUE)
 
 
     nm <- paste0(name, "_summary_stats")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(nm))
+      DBI::dbRemoveTable(con, inSchema(nm, writeSchema))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(nm),
+                       name = inSchema(nm, writeSchema),
                        fields = c(
                          cohort_definition_id = "INT",
                          base_count = "INT",
                          final_count = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(nm)), add = TRUE)
+    # on.exit(DBI::dbRemoveTable(con, inSchema(nm, writeSchema)), add = TRUE)
 
     nm <- paste0(name, "_censor_stats")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(nm))
+      DBI::dbRemoveTable(con, inSchema(nm, writeSchema))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(nm),
+                       name = inSchema(nm, writeSchema),
                        fields = c(
                          cohort_definition_id = "INT",
                          lost_count = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(nm)), add = TRUE)
+    # on.exit(DBI::dbRemoveTable(con, inSchema(nm, writeSchema)), add = TRUE)
   }
 
   # Run OHDSI-SQL ----
@@ -296,12 +283,12 @@ generateCohortSet <- function(cdm,
   }
   cli::cli_progress_done()
 
-  cohort_ref <- dplyr::tbl(con, inSchema(name))
+  cohort_ref <- dplyr::tbl(con, inSchema(name, writeSchema))
 
   # Create attrition attribute ----
   if (computeAttrition) {
     # TODO add Marti's attrition code in place of this:
-    cohort_attrition_ref <- dplyr::tbl(con, inSchema(paste0(name, "_inclusion_result"))) %>%
+    cohort_attrition_ref <- dplyr::tbl(con, inSchema(paste0(name, "_inclusion_result"), writeSchema)) %>%
       computeQuery(name = paste0(name, "_attrition"),
                    temporary = FALSE,
                    schema = writeSchema)
@@ -311,11 +298,11 @@ generateCohortSet <- function(cdm,
 
   # Create cohort_set attribute -----
   DBI::dbWriteTable(con,
-                    name = inSchema(paste0(name, "_set")),
+                    name = inSchema(paste0(name, "_set"), writeSchema),
                     value = as.data.frame(cohortSet[,c("cohort_definition_id", "cohort_name")]),
                     overwrite = TRUE)
 
-  cohort_set_ref <- dplyr::tbl(con, inSchema(paste0(name, "_set")))
+  cohort_set_ref <- dplyr::tbl(con, inSchema(paste0(name, "_set"), writeSchema))
 
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
@@ -336,11 +323,11 @@ generateCohortSet <- function(cdm,
 
   # Clean up tables ----
   if (computeAttrition) {
-    DBI::dbRemoveTable(con, inSchema(paste0(name, "_inclusion")))
-    DBI::dbRemoveTable(con, inSchema(paste0(name, "_inclusion_result")))
-    DBI::dbRemoveTable(con, inSchema(paste0(name, "_inclusion_stats")))
-    DBI::dbRemoveTable(con, inSchema(paste0(name, "_summary_stats")))
-    DBI::dbRemoveTable(con, inSchema(paste0(name, "_censor_stats")))
+    DBI::dbRemoveTable(con, inSchema(paste0(name, "_inclusion"), writeSchema))
+    DBI::dbRemoveTable(con, inSchema(paste0(name, "_inclusion_result"), writeSchema))
+    DBI::dbRemoveTable(con, inSchema(paste0(name, "_inclusion_stats"), writeSchema))
+    DBI::dbRemoveTable(con, inSchema(paste0(name, "_summary_stats"), writeSchema))
+    DBI::dbRemoveTable(con, inSchema(paste0(name, "_censor_stats"), writeSchema))
   }
 
   # Create the object. Let the constructor handle getting the counts.----

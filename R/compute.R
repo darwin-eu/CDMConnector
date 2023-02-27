@@ -4,7 +4,7 @@
 #' @param name Name of the table to be created
 #' @param schema Schema to create the new table in
 #' Can be a length 1 or 2 vector.
-#' (e.g. schema = "my_schema", schema = c("my_schema", "dbo))
+#' (e.g. schema = "my_schema", schema = c("my_schema", "dbo"))
 #' @param overwrite If the table already exists in the remote database
 #' should it be overwritten? (TRUE or FALSE)
 #'
@@ -32,19 +32,7 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   checkmate::assertClass(x, "tbl_sql")
   checkmate::assertLogical(overwrite, len = 1)
 
-  if (length(schema) == 2) {
-    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema[[1]]),
-                            DBI::dbQuoteIdentifier(x$src$con, schema[[2]]),
-                            DBI::dbQuoteIdentifier(x$src$con, name),
-                            sep = ".")
-  } else if (length(schema) == 1) {
-    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema),
-                            DBI::dbQuoteIdentifier(x$src$con, name),
-                            sep = ".")
-  } else {
-    fullNameQuoted <- DBI::dbQuoteIdentifier(x$src$con, name)
-  }
-
+  fullNameQuoted <- getFullTableNameQuoted(x, name, schema)
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
   if (name %in% existingTables) {
     if (overwrite) {
@@ -101,7 +89,7 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 #' @param name Name of the table to be appended. If it does not already exist it
 #'   will be created.
 #' @param schema Schema where the table exists. Can be a length 1 or 2 vector.
-#'   (e.g. schema = "my_schema", schema = c("my_schema", "dbo))
+#'   (e.g. schema = "my_schema", schema = c("my_schema", "dbo"))
 #'
 #' @return A dplyr reference to the newly created table
 #' @export
@@ -135,19 +123,7 @@ appendPermanent <- function(x, name, schema = NULL) {
   checkmate::assertCharacter(name, len = 1)
   checkmate::assertClass(x, "tbl_sql")
 
-  if (length(schema) == 2) {
-    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema[[1]]),
-                            DBI::dbQuoteIdentifier(x$src$con, schema[[2]]),
-                            DBI::dbQuoteIdentifier(x$src$con, name),
-                            sep = ".")
-  } else if (length(schema) == 1) {
-    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(x$src$con, schema),
-                            DBI::dbQuoteIdentifier(x$src$con, name),
-                            sep = ".")
-  } else {
-    fullNameQuoted <- DBI::dbQuoteIdentifier(x$src$con, name)
-  }
-
+  fullNameQuoted <- getFullTableNameQuoted(x, name, schema)
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
   if (!(tolower(name) %in% tolower(existingTables))) {
     return(computePermanent(x = x,

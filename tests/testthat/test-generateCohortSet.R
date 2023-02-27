@@ -15,6 +15,8 @@ test_that("duckdb cohort generation", {
                       cdm_tables = c(tbl_group("default")),
                       write_schema = write_schema)
 
+  inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
+
   # test read cohort set with a cohortsToCreate.csv
   withr::with_dir(inst_dir, {
     cohortSet <- readCohortSet("cohorts1")
@@ -28,6 +30,8 @@ test_that("duckdb cohort generation", {
 
   # debugonce(generateCohortSet)
   cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = FALSE)
+  # check already exists
+  expect_error(generateCohortSet(cdm, cohortSet, name = "chrt0", overwrite = FALSE))
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
 
@@ -44,12 +48,18 @@ test_that("duckdb cohort generation", {
   expect_s3_class(counts, "data.frame")
   expect_equal(nrow(counts), 3)
 
+  # cohort table should be lowercase
+  expect_error(generateCohortSet(cdm, cohortSet, name = "MYcohorts", overwrite = TRUE))
+
   # drop tables
   DBI::dbRemoveTable(con, DBI::Id(schema = "main", table = "chrt0"))
   expect_false("chrt0" %in% listTables(con, schema = write_schema))
 
   DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_count"))
   DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_set"))
+
+  # empty data
+  expect_error(generateCohortSet(cdm, cohortSet %>% head(0), name = "cohorts", overwrite = TRUE))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -75,6 +85,9 @@ test_that("duckdb cohort generation with attrition", {
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
   expect_equal(nrow(cohortSet), 3)
   expect_s3_class(cohortSet, "CohortSet")
+
+  # test readCohortSet with non existing directory
+  expect_error(readCohortSet(system.file("cohorts99", package = "CDMConnector", mustWork = FALSE)))
 
   cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
 

@@ -85,31 +85,7 @@ cdm_from_con <-
       cdm_tables <- toupper(cdm_tables)
     }
 
-    if (is(con, "duckdb_connection")) {
-      cdm <- purrr::map(cdm_tables,
-                        ~dplyr::tbl(con, paste(c(cdm_schema, .),
-                                               collapse = ".")) %>%
-                        dplyr::rename_all(tolower))
-    } else if (is.null(cdm_schema)) {
-      cdm <-
-        purrr::map(cdm_tables,
-                   ~ dplyr::tbl(con, .) %>% dplyr::rename_all(tolower))
-    } else if (length(cdm_schema) == 1) {
-      cdm <-
-        purrr::map(
-          cdm_tables,
-          ~ dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)) %>%
-            dplyr::rename_all(tolower)
-        )
-    } else if (length(cdm_schema) == 2) {
-      cdm <-
-        purrr::map(
-          cdm_tables,
-          ~ dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1],
-                                               cdm_schema[2], .)) %>%
-            dplyr::rename_all(tolower)
-        )
-    }
+    cdm <- getCdmTables(con, cdm_tables, cdm_schema)
     names(cdm) <- tolower(cdm_tables)
 
     if (!is.null(write_schema)) {
@@ -117,32 +93,7 @@ cdm_from_con <-
     }
 
     if (!is.null(cohort_tables)) {
-      if (is(con, "duckdb_connection")) {
-        ch <-
-          purrr::map(cohort_tables,
-                     ~ dplyr::tbl(con, paste(c(
-                       write_schema, .
-                     ), collapse = ".")) %>% dplyr::rename_all(tolower))
-      } else if (is.null(write_schema)) {
-        rlang::abort("write_schema not specified.
-                     Cohort tables must be in write_schema.")
-      } else if (length(write_schema) == 1) {
-        ch <-
-          purrr::map(
-            cohort_tables,
-            ~ dplyr::tbl(con, dbplyr::in_schema(write_schema, .)) %>%
-              dplyr::rename_all(tolower)
-          )
-      } else if (length(write_schema) == 2) {
-        ch <-
-          purrr::map(
-            cohort_tables,
-            ~ dplyr::tbl(
-              con,
-              dbplyr::in_catalog(write_schema[1], write_schema[2], .)
-            ) %>% dplyr::rename_all(tolower)
-          )
-      }
+      ch <- getCdmTables(con, cohort_tables, write_schema, failNullSchema = TRUE)
       names(ch) <- cohort_tables
       cdm <- c(cdm, ch)
     }
@@ -652,4 +603,38 @@ snapshot <- function(cdm) {
 print.cdm_snapshot <- function(x, ...) {
   cli::cat_rule(x$cdm_source_name)
   purrr::walk2(names(x[-1]), x[-1], ~ cli::cat_bullet(.x, ": ", .y))
+}
+
+getCdmTables <- function(con, tables, schema, failNullSchema = FALSE) {
+  if (is(con, "duckdb_connection")) {
+    result <-
+      purrr::map(tables,
+                 ~ dplyr::tbl(con, paste(c(
+                   schema, .
+                 ), collapse = ".")) %>% dplyr::rename_all(tolower))
+  } else if (is.null(schema)) {
+    if (failNullSchema) {
+      rlang::abort("Schema not specified. Tables must be in schema.")
+    }
+    result <-
+      purrr::map(tables, ~ dplyr::tbl(con, .) %>% dplyr::rename_all(tolower))
+
+  } else if (length(schema) == 1) {
+    result <-
+      purrr::map(
+        tables,
+        ~ dplyr::tbl(con, dbplyr::in_schema(schema, .)) %>%
+          dplyr::rename_all(tolower)
+      )
+  } else if (length(schema) == 2) {
+    result <-
+      purrr::map(
+        tables,
+        ~ dplyr::tbl(
+          con,
+          dbplyr::in_catalog(schema[1], schema[2], .)
+        )  %>% dplyr::rename_all(tolower)
+      )
+  }
+  return(result)
 }

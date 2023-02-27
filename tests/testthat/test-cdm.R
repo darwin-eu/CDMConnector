@@ -288,9 +288,15 @@ test_that("stow and cdm_from_files works", {
 
   cdm <- cdm_from_con(con, cdm_tables = all_of(cdm_tables))
 
-  stow(cdm, path = save_path)
+  stow(cdm, path = save_path, format = "parquet")
+  stow(cdm, path = save_path, format = "csv")
+  stow(cdm, path = save_path, format = "feather")
 
-  expect_setequal(list.files(save_path), paste0(cdm_tables, ".parquet"))
+  expect_setequal(list.files(save_path, pattern = "*.parquet"), paste0(cdm_tables, ".parquet"))
+  expect_setequal(list.files(save_path, pattern = "*csv"), paste0(cdm_tables, ".csv"))
+  expect_setequal(list.files(save_path, pattern = "*feather"), paste0(cdm_tables, ".feather"))
+  unlink(list.files(save_path, pattern = "*csv", full.names = T))
+  unlink(list.files(save_path, pattern = "*feather", full.names = T))
 
   expect_message(cdm_from_files(save_path), NA)
   expect_warning(cdm_from_files(save_path, cdm_tables = "person"), "deprecated")
