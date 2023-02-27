@@ -84,9 +84,9 @@ generateCohortSet <- function(cdm,
     }
     dir.create(path)
     purrr::walk2(cohortSet, names(cohortSet),
-                 ~Capr::writeCohort(.x, file.path(path, .y, ".json")))
+                 ~Capr::writeCohort(.x, file.path(path, paste0(.y, ".json"))))
 
-    cohortSet <- Capr::readCohortSet(path)
+    cohortSet <- CDMConnector::readCohortSet(path)
   }
 
   # check inputs ----
