@@ -1,73 +1,71 @@
 con <- DBI::dbConnect(duckdb::duckdb())
 mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
 
+to_vector <- function(df, group_id = NULL, group_colname = 'cyl'){
+  if (group_colname %in% colnames(df)) {
+    if (is.null(group_id)) {
+      rlang::abort("argument `group_id` cannot be zero for grouped dataset")
+    }
+    df <- df %>%
+      dplyr::filter(!!as.symbol(group_colname) == group_id)
+  }
+  df <- df %>% dplyr::select(starts_with("quant") | ends_with("quant"))
+  if ('quantiles' %in% colnames(df)) {
+    df %>% dplyr::pull(quantiles)
+  } else {
+    df %>% unlist()
+  }
+}
+
 test_that("summarise-quantile works without group by", {
   df1 <- mtcars_tbl %>%
-    summarise_quantile(mpg, probs = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                      0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                       name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2),
+                       name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
-    dplyr::summarise(quantiles = quantile(mpg, c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                                   0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                                            type = 1))
+    dplyr::summarise(quantiles = quantile(mpg, round(seq(0, 1, 0.05), 2), type = 1))
 
-  a <- df1 %>% unlist()
-  b <- df2 %>% dplyr::pull()
-  expect_true(all.equal(a, b, check.attributes = FALSE))
+  expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
 })
 
 test_that("summarise-quantile works without group by (single value quantile)", {
   df1 <- mtcars_tbl %>%
-    summarise_quantile(mpg, probs = 0.05, name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = 0.05, name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
     dplyr::summarise(quantiles = quantile(mpg, 0.05, type = 1))
 
-  a <- df1 %>% unlist()
-  b <- df2 %>% dplyr::pull()
-  expect_true(all.equal(a, b, check.attributes = FALSE))
+  expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
 })
 
 
 test_that("summarise-quantile works with select", {
   df1 <- mtcars_tbl %>%
     dplyr::select(cyl, mpg) %>%
-    summarise_quantile(mpg, probs = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                      0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                       name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2),
+                       name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
-    dplyr::summarise(quantiles = quantile(mpg, c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                                          type = 1))
+    dplyr::summarise(quantiles = quantile(mpg, round(seq(0, 1, 0.05) ,2), type = 1))
 
-  a <- df1 %>% unlist()
-  b <- df2 %>% dplyr::pull()
-  expect_true(all.equal(a, b, check.attributes = FALSE))
+  expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
 })
 
 
 test_that("summarise-quantile works with mutate", {
   df1 <- mtcars_tbl %>%
     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-    summarise_quantile(mpg, probs = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                      0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                       name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
     dplyr::summarise(mean = mean(mpg, na.rm = TRUE),
-                     quantiles = quantile(mpg, c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                                          type = 1))
+                     quantiles = quantile(mpg, round(seq(0, 1, 0.05), 2), type = 1))
 
-  a <- df1 %>% dplyr::select(-mean) %>% unlist()
-  b <- df2 %>% dplyr::pull(quantiles)
-  expect_true(all.equal(a, b, check.attributes = FALSE))
+  expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
   expect_equal(df1$mean, unique(df2$mean))
 })
 
@@ -76,20 +74,14 @@ test_that("summarise-quantile works with select + mutate", {
   df1 <- mtcars_tbl %>%
     dplyr::select(cyl, mpg) %>%
     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-    summarise_quantile(mpg, probs = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                      0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                       name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
     dplyr::summarise(mean = mean(mpg, na.rm = TRUE),
-                     quantiles = quantile(mpg, c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                                          type = 1))
+                     quantiles = quantile(mpg, round(seq(0, 1, 0.05), 2), type = 1))
 
-  a <- df1 %>% dplyr::select(-mean) %>% unlist()
-  b <- df2 %>% dplyr::pull(quantiles)
-  expect_true(all.equal(a, b, check.attributes = FALSE))
+  expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
   expect_equal(df1$mean, unique(df2$mean))
 })
 
@@ -97,21 +89,15 @@ test_that("summarise-quantile works with select + mutate", {
 test_that("summarise-quantile works with group by", {
   df1 <- mtcars_tbl %>%
     dplyr::group_by(cyl) %>%
-    summarise_quantile(mpg, probs = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                      0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                       name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
     dplyr::group_by(cyl) %>%
-    dplyr::summarise(quantiles = quantile(mpg, c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                                                          type = 1), .groups = 'drop')
+    dplyr::summarise(quantiles = quantile(mpg, round(seq(0, 1, 0.05), 2), type = 1), .groups = 'drop')
 
-  for (c in unique(df1$cyl)) {
-    a <- df1 %>% dplyr::filter(cyl == c) %>% dplyr::select(-cyl) %>% unlist()
-    b <- df2 %>% dplyr::filter(cyl == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE))
+  for (n in unique(df1$cyl)) {
+    expect_true(all.equal(to_vector(df1, n), to_vector(df2, n), check.attributes = FALSE))
   }
 })
 
@@ -119,22 +105,16 @@ test_that("summarise-quantile works with select + group by", {
   df1 <- mtcars_tbl %>%
     dplyr::select(cyl, mpg) %>%
     dplyr::group_by(cyl) %>%
-    summarise_quantile(mpg, probs = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                      0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                       name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
     dplyr::select(cyl, mpg) %>%
     dplyr::group_by(cyl) %>%
-    dplyr::summarise(quantiles = quantile(mpg, c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                                          type = 1), .groups = 'drop')
+    dplyr::summarise(quantiles = quantile(mpg, round(seq(0, 1, 0.05), 2), type = 1), .groups = 'drop')
 
-  for (c in unique(df1$cyl)) {
-    a <- df1 %>% dplyr::filter(cyl == c) %>% dplyr::select(-cyl) %>% unlist()
-    b <- df2 %>% dplyr::filter(cyl == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE))
+  for (n in unique(df1$cyl)) {
+    expect_true(all.equal(to_vector(df1, n), to_vector(df2, n), check.attributes = FALSE))
   }
 })
 
@@ -146,9 +126,7 @@ test_that("summarise-quantile works in combination with aggreagate functions", {
                   n = dplyr::n(),
                   min = min(mpg, na.rm = TRUE),
                   max = max(mpg, na.rm = TRUE)) %>%
-    summarise_quantile(mpg, probs = c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                      0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                       name_suffix = "value") %>%
+    summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
@@ -157,14 +135,10 @@ test_that("summarise-quantile works in combination with aggreagate functions", {
                      n = dplyr::n(),
                      min = min(mpg, na.rm = TRUE),
                      max = max(mpg, na.rm = TRUE),
-                     quantiles = quantile(mpg, c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
-                                                 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1),
-                                          type = 1), .groups = 'drop')
+                     quantiles = quantile(mpg, round(seq(0, 1, 0.05), 2), type = 1), .groups = 'drop')
 
-  for (c in unique(df1$cyl)) {
-    a <- df1 %>% dplyr::filter(cyl == c) %>% dplyr::select(-c(cyl, mean, n, min, max)) %>% unlist()
-    b <- df2 %>% dplyr::filter(cyl == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE))
+  for (n in unique(df1$cyl)) {
+    expect_true(all.equal(to_vector(df1, n), to_vector(df2, n), check.attributes = FALSE))
   }
 })
 
@@ -174,7 +148,7 @@ test_that("summarise-quantile generates error when working in `summarise` contex
     df1 <- mtcars_tbl %>%
       dplyr::group_by(cyl) %>%
       dplyr::summarise(mean = mean(mpg, na.rm = TRUE)) %>%
-      summarise_quantile(mpg, probs = 0.05, name_suffix = "value") %>%
+      summarise_quantile(mpg, probs = 0.05, name_suffix = "quant") %>%
       dplyr::collect()
     df1
   }
@@ -185,7 +159,7 @@ test_that("summarise-quantile works with implicit (context) names", {
   df1 <- mtcars_tbl %>%
     dplyr::group_by(cyl) %>%
     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-    summarise_quantile(probs = 0.05, name_suffix = "value") %>%
+    summarise_quantile(probs = 0.05, name_suffix = "quant") %>%
     dplyr::collect()
 
   df2 <- mtcars %>%
@@ -193,10 +167,8 @@ test_that("summarise-quantile works with implicit (context) names", {
     dplyr::summarise(mean = mean(mpg, na.rm = TRUE),
                      quantiles = quantile(mpg, 0.05, type = 1))
 
-  for (c in unique(df1$cyl)) {
-    a <- df1 %>% dplyr::filter(cyl == c) %>% dplyr::select(-c(cyl, mean)) %>% unlist()
-    b <- df2 %>% dplyr::filter(cyl == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE))
+  for (n in unique(df1$cyl)) {
+    expect_true(all.equal(to_vector(df1, n), to_vector(df2, n), check.attributes = FALSE))
   }
 })
 
@@ -205,7 +177,7 @@ test_that("summarise-quantile generates error when working with conflicting name
     df1 <- mtcars_tbl %>%
       dplyr::group_by(cyl) %>%
       dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-      summarise_quantile(cyl, probs = 0.05, name_suffix = "value") %>%
+      summarise_quantile(cyl, probs = 0.05, name_suffix = "quant") %>%
       dplyr::collect()
     df1
   }
@@ -216,7 +188,7 @@ test_that("summarise-quantile generates error when no names passed", {
   f <- function(){
     df1 <- mtcars_tbl %>%
       dplyr::group_by(cyl) %>%
-      summarise_quantile(probs = 0.05, name_suffix = "value") %>%
+      summarise_quantile(probs = 0.05, name_suffix = "quant") %>%
       dplyr::collect()
     df1
   }
@@ -234,7 +206,7 @@ test_that("`summarise_quantile` works on DuckDB", {
     dplyr::filter(!is.na(days_supply)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::mutate(n = dplyr::n()) %>%
-    summarise_quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9))  %>%
+    summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
     dplyr::arrange(desc(n)) %>%
     head(100) %>%
     dplyr::collect()
@@ -246,14 +218,13 @@ test_that("`summarise_quantile` works on DuckDB", {
     dplyr::filter(drug_concept_id %in% unique(df1$drug_concept_id)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::summarise(n = dplyr::n(),
-                     quantiles = quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), type = 1, na.rm = TRUE),
+                     quantiles = quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), type = 1, na.rm = TRUE),
                      .groups = 'drop')
 
-  unique_ids <-  unique(df1$drug_concept_id)
-  for (c in unique_ids) {
-    a <- df1 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::select(-c(drug_concept_id, n)) %>% unlist()
-    b <- df2 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE), label = paste('Result for drug_concept_id ', as.character(c)))
+  unique_ids <- unique(df1$drug_concept_id)
+  for (n in unique_ids) {
+    expect_true(all.equal(to_vector(df1, n, 'drug_concept_id'), to_vector(df2, n, 'drug_concept_id'), check.attributes = FALSE),
+                label = paste('Result for drug_concept_id ', as.character(n)))
   }
 
   DBI::dbDisconnect(con)
@@ -274,7 +245,7 @@ test_that("`summarise_quantile` works on Postgres", {
     dplyr::filter(!is.na(days_supply)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::mutate(n = dplyr::n()) %>%
-    summarise_quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9))  %>%
+    summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
     dplyr::arrange(desc(n)) %>%
     head(100) %>%
     dplyr::collect()
@@ -286,30 +257,29 @@ test_that("`summarise_quantile` works on Postgres", {
     dplyr::filter(drug_concept_id %in% unique(df1$drug_concept_id)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::summarise(n = dplyr::n(),
-                     quantiles = quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), type = 1, na.rm = TRUE),
+                     quantiles = quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), type = 1, na.rm = TRUE),
                      .groups = 'drop')
 
-  unique_ids <-  unique(df1$drug_concept_id)
-  for (c in unique_ids) {
-    a <- df1 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::select(-c(drug_concept_id, n)) %>% unlist()
-    b <- df2 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE), label = paste('Result for drug_concept_id ', as.character(c)))
+  unique_ids <- unique(df1$drug_concept_id)
+  for (n in unique_ids) {
+    expect_true(all.equal(to_vector(df1, n, 'drug_concept_id'), to_vector(df2, n, 'drug_concept_id'), check.attributes = FALSE),
+                label = paste('Result for drug_concept_id ', as.character(n)))
   }
 
   DBI::dbDisconnect(con)
-  })
+})
 
 
 test_that("`summarise_quantile` works on SQL Server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
   con <- DBI::dbConnect(odbc::odbc(),
-                                 Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
-                                 Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
-                                 Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
-                                 UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                                 PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                                 TrustServerCertificate = "yes",
-                                 Port     = 1433)
+                        Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
+                        Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+                        Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
+                        UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
+                        PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+                        TrustServerCertificate = "yes",
+                        Port     = 1433)
 
   cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = "drug_exposure")
   df1 <- cdm$drug_exposure %>%
@@ -317,7 +287,7 @@ test_that("`summarise_quantile` works on SQL Server", {
     dplyr::filter(!is.na(days_supply)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::mutate(n = dplyr::n()) %>%
-    summarise_quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9))  %>%
+    summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
     dplyr::arrange(desc(n)) %>%
     head(100) %>%
     dplyr::collect()
@@ -329,14 +299,13 @@ test_that("`summarise_quantile` works on SQL Server", {
     dplyr::filter(drug_concept_id %in% unique(df1$drug_concept_id)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::summarise(n = dplyr::n(),
-              quantiles = quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), type = 1, na.rm = TRUE),
-              .groups = 'drop')
+                     quantiles = quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), type = 1, na.rm = TRUE),
+                     .groups = 'drop')
 
-  unique_ids <-  unique(df1$drug_concept_id)
-  for (c in unique_ids) {
-    a <- df1 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::select(-c(drug_concept_id, n)) %>% unlist()
-    b <- df2 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE), label = paste('Result for drug_concept_id ', as.character(c)))
+  unique_ids <- unique(df1$drug_concept_id)
+  for (n in unique_ids) {
+    expect_true(all.equal(to_vector(df1, n, 'drug_concept_id'), to_vector(df2, n, 'drug_concept_id'), check.attributes = FALSE),
+                label = paste('Result for drug_concept_id ', as.character(n)))
   }
 
   DBI::dbDisconnect(con)
@@ -358,7 +327,7 @@ test_that("`summarise_quantile` works on Redshift", {
     dplyr::filter(!is.na(days_supply)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::mutate(n = dplyr::n()) %>%
-    summarise_quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9))  %>%
+    summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
     dplyr::arrange(desc(n)) %>%
     head(100) %>%
     dplyr::collect()
@@ -370,14 +339,13 @@ test_that("`summarise_quantile` works on Redshift", {
     dplyr::filter(drug_concept_id %in% unique(df1$drug_concept_id)) %>%
     dplyr::group_by(drug_concept_id) %>%
     dplyr::summarise(n = dplyr::n(),
-                     quantiles = quantile(days_supply, probs = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), type = 1, na.rm = TRUE),
+                     quantiles = quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), type = 1, na.rm = TRUE),
                      .groups = 'drop')
 
-  unique_ids <-  unique(df1$drug_concept_id)
-  for (c in unique_ids) {
-    a <- df1 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::select(-c(drug_concept_id, n)) %>% unlist()
-    b <- df2 %>% dplyr::filter(drug_concept_id == c) %>% dplyr::pull(quantiles)
-    expect_true(all.equal(a, b, check.attributes = FALSE), label = paste('Result for drug_concept_id ', as.character(c)))
+  unique_ids <- unique(df1$drug_concept_id)
+  for (n in unique_ids) {
+    expect_true(all.equal(to_vector(df1, n, 'drug_concept_id'), to_vector(df2, n, 'drug_concept_id'), check.attributes = FALSE),
+                label = paste('Result for drug_concept_id ', as.character(n)))
   }
 
   DBI::dbDisconnect(con)
