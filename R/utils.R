@@ -70,3 +70,51 @@ getFullTableNameQuoted <- function(x, name, schema) {
   }
   return(fullNameQuoted)
 }
+
+#' Drop tables starting with a prefix
+#'
+#' @param cdm A CDM reference object
+#' @param prefix The prefix identifying tables to drop. For example,
+#' a prefix of "study_results" would lead to dropping any table starting with this
+#' (ie both "study_results" and "study_results_analysis_1" would be dropped if
+#' they exist in the write schema). Prefix will be interpreted as a regular
+#' expression.
+#'
+#' @return NULL
+#' @export
+dropTables <- function(cdm,
+                       prefix,
+                       verbose = FALSE) {
+
+  checkmate::assertClass(cdm, "cdm_reference")
+  checkmate::assertCharacter(prefix, len = 1, min.chars = 1)
+  schema <- attr(cdm, "write_schema")
+  con <- attr(cdm, "dbcon")
+
+  allTables <- CDMConnector::listTables(con, schema)
+  tablesToDrop <- stringr::str_subset(allTables, paste0("^", prefix))
+
+  for (i in seq_along(tablesToDrop)) {
+    if (verbose) {
+      message(paste0("Dropping", schema, ".", tablesToDrop[i]))
+    }
+
+    DBI::dbRemoveTable(con, inSchema(schema, tablesToDrop[i]))
+
+    if (tablesToDrop[i] %in% names(cdm)) {
+      cdm[[tablesToDrop[i]]] <- NULL
+    }
+  }
+  return(invisible(cdm))
+}
+
+# Helper function to deal with compound schemas
+inSchema <- function(schema, table) {
+  checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
+  checkmate::assertCharacter(table, len = 1)
+  if (length(schema) == 2) {
+    return(DBI::Id(catalog = schema[1], schema = schema[2], table = table))
+  } else {
+    return(DBI::Id(schema = schema, table = table))
+  }
+}

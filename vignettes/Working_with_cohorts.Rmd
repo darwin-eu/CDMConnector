@@ -35,7 +35,7 @@ cdm <- CDMConnector::cdm_from_con(
 We can define a cohort for GI bleeding, where we exclude anyone with a record of rheumatoid arthritis at any time.
 
 ```{r, eval=FALSE}
-# devtools::install_github("OdyOSG/Capr") # Use the development version of Capr v2
+# devtools::install_github("OHDSI/Capr", "v2") # Use the development version of Capr v2
 library(Capr)
 
 # create a cohort set folder for saving cohort definitions
@@ -74,7 +74,6 @@ cdm <- generateCohortSet(
   name = "gibleed",
   computeAttrition = TRUE
 )
-
 ```
 
 We can see that we now have our cohort instantiated in the database with a reference to it added to the cdm reference.

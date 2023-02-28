@@ -28,8 +28,7 @@ computeAttrition <- function(cdm,
                              cohortStem,
                              cohortSet,
                              cohortId = NULL) {
-  # Do we have to add more checks? do we want to remove them? I assume that this
-  # depends if we want to export the function or not
+
   checkmate::assertDataFrame(cohortSet, min.rows = 0, col.names = "named")
   checkmate::assertNames(
     colnames(cohortSet),
