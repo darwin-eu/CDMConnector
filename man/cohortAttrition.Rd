@@ -6,6 +6,9 @@
 \usage{
 cohortAttrition(x)
 }
+\arguments{
+\item{x}{A generatedCohortSet object}
+}
 \description{
 Return attrition table from a generated cohort set object
 }

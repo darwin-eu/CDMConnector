@@ -6,6 +6,9 @@
 \usage{
 cohortSet(x)
 }
+\arguments{
+\item{x}{A generatedCohortSet object}
+}
 \description{
 Return settings table
 }

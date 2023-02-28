@@ -33,10 +33,6 @@
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
-  rlang::inform(paste("`computePermanent` has been superseded. Use `computeQuery` instead."),
-                .frequency = "once",
-                .frequency_id = "computePermanent")
-
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
   checkmate::assertCharacter(name, len = 1)
   checkmate::assertClass(x, "tbl_sql")
