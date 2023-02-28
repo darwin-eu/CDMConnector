@@ -1,3 +1,16 @@
+# CDMConnector 0.5.0
+
+* Define `generatedCohortSet` class
+* Remove visit_detail from default cdm tables
+* Add `summarize_quantile` for cross database quantile queries
+* Move rJava, SqlRender to Suggests from Depends
+* Add vignette on cohort generation
+* Improve test coverage
+* Add cdm subset
+* Add bigquery tests
+
+Released Mar 2, 2023
+
 # CDMConnector 0.4.1
 
 * Add `computeQuery` function for creating temp and persistent tables from dplyr queries
@@ -5,7 +18,6 @@
 * Add passing tests for Oracle and Spark
 * Add `asDate` wrapper that provides correct as.Date dbplyr translations
 * Incorporate code review suggestions from @mvankessel-EMC
-
 
 Released Jan 21, 2023
 

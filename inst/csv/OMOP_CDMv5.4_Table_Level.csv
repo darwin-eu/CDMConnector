@@ -2,7 +2,7 @@ cdmTableName,schema,isRequired,conceptPrefix,group_vocab,group_all,group_clinica
 person,cdm,TRUE,NA,FALSE,TRUE,TRUE,FALSE,TRUE
 observation_period,cdm,TRUE,NA,FALSE,TRUE,TRUE,FALSE,TRUE
 visit_occurrence,cdm,FALSE,visit_,FALSE,TRUE,TRUE,FALSE,TRUE
-visit_detail,cdm,FALSE,visit_detail_,FALSE,TRUE,TRUE,FALSE,TRUE
+visit_detail,cdm,FALSE,visit_detail_,FALSE,TRUE,TRUE,FALSE,FALSE
 condition_occurrence,cdm,FALSE,condition_,FALSE,TRUE,TRUE,FALSE,TRUE
 drug_exposure,cdm,FALSE,drug_,FALSE,TRUE,TRUE,FALSE,TRUE
 procedure_occurrence,cdm,FALSE,procedure_,FALSE,TRUE,TRUE,FALSE,TRUE

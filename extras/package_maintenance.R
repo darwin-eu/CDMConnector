@@ -14,7 +14,7 @@ vocab_tables <- c("concept", "vocabulary", "domain", "concept_class", "concept_r
 
 # vocab_tables <- c("concept", "concept_relationship", "concept_synonym", "concept_ancestor")
 
-default_tables <- c("person", "observation_period", "visit_occurrence", "visit_detail",
+default_tables <- c("person", "observation_period", "visit_occurrence",
   "condition_occurrence", "drug_exposure", "procedure_occurrence",
   "measurement", "observation", "death",
   "location", "care_site", "provider", "drug_era", "dose_era",
