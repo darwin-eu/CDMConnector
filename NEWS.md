@@ -8,6 +8,7 @@
 * Improve test coverage
 * Add cdm subset
 * Add bigquery tests
+* `cdm_schema` is now required in `cdm_from_con`
 
 Released Mar 2, 2023
 

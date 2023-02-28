@@ -13,7 +13,9 @@ test_that("cdm reference works locally", {
 
   expect_true(is.character(listTables(con, schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"))))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("default"))
+  cdm <- cdm_from_con(con,
+                      cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"),
+                      cdm_tables = tbl_group("default"))
 
   expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
@@ -79,7 +81,7 @@ test_that("cdm reference works on sql server", {
   expect_null(verify_write_access(con, write_schema = c("tempdb.dbo")))
   expect_null(verify_write_access(con, write_schema = c("tempdb", "dbo")))
 
-  cohort <- dplyr::tibble(cohort_id = 1L,
+  cohort <- dplyr::tibble(cohort_definition_id = 1L,
                           subject_id = 1L:2L,
                           cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
                           cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
@@ -197,7 +199,7 @@ test_that("cdm reference works on Oracle", {
 })
 
 test_that("cdm reference works on duckdb", {
-  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(rlang::is_installed("duckdb"))
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
@@ -206,7 +208,7 @@ test_that("cdm reference works on duckdb", {
 
   expect_true(is.character(listTables(con)))
 
-  cdm <- cdm_from_con(con, cdm_tables = tbl_group("default"))
+  cdm <- cdm_from_con(con, cdm_schema = "main", cdm_tables = tbl_group("default"))
 
   expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
@@ -219,12 +221,12 @@ test_that("cdm reference works on duckdb", {
 })
 
 test_that("inclusion of cohort tables", {
-  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(rlang::is_installed("duckdb"))
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
-  cohort <- dplyr::tibble(cohort_id = 1L,
+  cohort <- dplyr::tibble(cohort_definition_id = 1L,
                           subject_id = 1L:2L,
                           cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
                           cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
@@ -238,6 +240,7 @@ test_that("inclusion of cohort tables", {
   expect_equal(listTables(con, schema = "write_schema"), "cohort")
 
   cdm <- cdm_from_con(con,
+                      cdm_schema = "main",
                       cdm_tables = c("person", "observation_period"),
                       write_schema = "write_schema",
                       cohort_tables = "cohort")
@@ -253,7 +256,7 @@ test_that("collect a cdm", {
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con)
+  cdm <- cdm_from_con(con, cdm_schema = "main")
 
   local_cdm <- collect(cdm)
 
@@ -280,13 +283,13 @@ test_that("stow and cdm_from_files works", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
   # Test tidyselect in cdm_from_con. Should not produce message about ambiguous names.
-  expect_message(cdm_from_con(con, cdm_tables = tbl_group("vocab")), NA)
-  expect_message(cdm_from_con(con, cdm_tables = matches("person|observation_period")), NA)
-  expect_message(cdm_from_con(con, cdm_tables = c(person, observation_period)), NA)
-  expect_message(cdm_from_con(con, cdm_tables = c("person", "observation_period")), NA)
-  expect_message(cdm_from_con(con, cdm_tables = all_of(cdm_tables)), NA)
+  expect_message(cdm_from_con(con, "main", cdm_tables = tbl_group("vocab")), NA)
+  expect_message(cdm_from_con(con, "main", cdm_tables = matches("person|observation_period")), NA)
+  expect_message(cdm_from_con(con, "main", cdm_tables = c(person, observation_period)), NA)
+  expect_message(cdm_from_con(con, "main", cdm_tables = c("person", "observation_period")), NA)
+  expect_message(cdm_from_con(con, "main", cdm_tables = all_of(cdm_tables)), NA)
 
-  cdm <- cdm_from_con(con, cdm_tables = all_of(cdm_tables))
+  cdm <- cdm_from_con(con, "main", cdm_tables = all_of(cdm_tables))
 
   stow(cdm, path = save_path, format = "parquet")
   stow(cdm, path = save_path, format = "csv")

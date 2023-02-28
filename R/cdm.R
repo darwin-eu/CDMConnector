@@ -21,33 +21,33 @@
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
-cdm_from_con <-
-  function(con,
-           cdm_schema = NULL,
-           cdm_tables = tbl_group("default"),
-           write_schema = NULL,
-           cohort_tables = NULL,
-           cdm_version = "5.3") {
-    checkmate::assert_class(con, "DBIConnection")
-    checkmate::assert_true(.dbIsValid(con))
-    checkmate::assert_character(
-      cdm_schema,
-      null.ok = TRUE,
-      min.len = 1,
-      max.len = 2
-    )
-    checkmate::assert_character(
-      write_schema,
-      null.ok = TRUE,
-      min.len = 1,
-      max.len = 2
-    )
-    checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
-    checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
+cdm_from_con <- function(con,
+                         cdm_schema = NULL,
+                         cdm_tables = tbl_group("default"),
+                         write_schema = NULL,
+                         cohort_tables = NULL,
+                         cdm_version = "5.3") {
 
-    # handle schema names like 'schema.dbo'
-    if (!is.null(cdm_schema) && length(cdm_schema) == 1) {
-      cdm_schema <- strsplit(cdm_schema, "\\.")[[1]]
+  checkmate::assert_class(con, "DBIConnection")
+  checkmate::assert_true(.dbIsValid(con))
+  checkmate::assert_character(
+    cdm_schema,
+    null.ok = FALSE,
+    min.len = 1,
+    max.len = 2
+  )
+  checkmate::assert_character(
+    write_schema,
+    null.ok = TRUE,
+    min.len = 1,
+    max.len = 2
+  )
+  checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
+  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
+
+  # handle schema names like 'schema.dbo'
+  if (!is.null(cdm_schema) && length(cdm_schema) == 1) {
+    cdm_schema <- strsplit(cdm_schema, "\\.")[[1]]
       checkmate::assert_character(
         cdm_schema,
         null.ok = TRUE,
@@ -74,27 +74,33 @@ cdm_from_con <-
     all_cdm_tables <-
       rlang::set_names(spec_cdm_table[[cdm_version]]$cdmTableName,
                        spec_cdm_table[[cdm_version]]$cdmTableName)
-    cdm_tables <-
-      names(tidyselect::eval_select(rlang::enquo(cdm_tables),
-                                    data = all_cdm_tables))
+
+    cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables),
+                                                data = all_cdm_tables))
 
     # Handle uppercase table names in the database
-    if (all(listTables(con, schema = cdm_schema) ==
-            toupper(listTables(con, schema = cdm_schema)))) {
-
+    dbTables <- listTables(con, schema = cdm_schema)
+    if (all(dbTables == toupper(dbTables))) {
       cdm_tables <- toupper(cdm_tables)
     }
 
-    cdm <- getCdmTables(con, cdm_tables, cdm_schema)
-    names(cdm) <- tolower(cdm_tables)
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, .)) %>%
+                      dplyr::rename_all(tolower)) %>%
+      rlang::set_names(tolower(cdm_tables))
 
     if (!is.null(write_schema)) {
       verify_write_access(con, write_schema = write_schema)
     }
 
     if (!is.null(cohort_tables)) {
-      ch <- getCdmTables(con, cohort_tables, write_schema, failNullSchema = TRUE)
-      names(ch) <- cohort_tables
+      if (is.null(write_schema)) {
+        rlang::abort("write_schema is required when using cohort_tables")
+      }
+      # TODO make these cohort table proper generatedCohortSet objects
+      ch <-  purrr::map(cohort_tables, ~dplyr::tbl(con, inSchema(write_schema, .)) %>%
+                        dplyr::rename_all(tolower)) %>%
+        rlang::set_names(tolower(cohort_tables))
+
       cdm <- c(cdm, ch)
     }
 
@@ -103,12 +109,12 @@ cdm_from_con <-
     attr(cdm, "write_schema") <- write_schema
     attr(cdm, "dbcon") <- con
     attr(cdm, "cdm_version") <- cdm_version
-    cdm
+    return(cdm)
   }
 
 detect_cdm_version <- function(con, cdm_schema = NULL) {
-  cdm_tables <-
-    c("visit_occurrence", "cdm_source", "procedure_occurrence")
+  cdm_tables <- c("visit_occurrence", "cdm_source", "procedure_occurrence")
+
   if (!all(cdm_tables %in% listTables(con, schema = cdm_schema))) {
     rlang::abort(paste0(
       "The ",
@@ -116,30 +122,36 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
       " tables are require for auto-detection of cdm version."
     ))
   }
-  if (dbms(con) == "duckdb") {
-    cdm <-
-      purrr::map(cdm_tables, ~ dplyr::tbl(con, paste(c(cdm_schema, .), collapse = ".")))
-  } else if (is.null(cdm_schema)) {
-    cdm <- purrr::map(cdm_tables, ~ dplyr::tbl(con, .))
-  } else if (length(cdm_schema) == 1) {
-    cdm <- purrr::map(cdm_tables, ~ dplyr::tbl(con, dbplyr::in_schema(cdm_schema, .)))
-  } else if (length(cdm_schema) == 2) {
-    cdm <- purrr::map(cdm_tables, ~ dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], .)))
-  }
-  names(cdm) <- cdm_tables
+
+  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, .)) %>%
+                    dplyr::rename_all(tolower)) %>%
+    rlang::set_names(tolower(cdm_tables))
 
   # Try a few different things to figure out what the cdm version is
-  visit_occurrence_names <-
-    cdm$visit_occurrence %>% head() %>% collect() %>% names() %>% tolower()
-  if ("admitting_source_concept_id" %in% visit_occurrence_names)
-    return("5.3")
-  if ("admitted_from_concept_id" %in% visit_occurrence_names)
-    return("5.4")
+  visit_occurrence_names <- cdm$visit_occurrence %>%
+    head() %>%
+    collect() %>%
+    names() %>%
+    tolower()
 
-  procedure_occurrence_names <-
-    cdm$procedure_occurrence %>% head() %>% collect() %>% names() %>% tolower()
-  if ("procedure_end_date" %in% procedure_occurrence_names)
+  if ("admitting_source_concept_id" %in% visit_occurrence_names) {
+    return("5.3")
+  }
+
+  if ("admitted_from_concept_id" %in% visit_occurrence_names) {
     return("5.4")
+  }
+
+
+  procedure_occurrence_names <- cdm$procedure_occurrence %>%
+    head() %>%
+    collect() %>%
+    names() %>%
+    tolower()
+
+  if ("procedure_end_date" %in% procedure_occurrence_names) {
+    return("5.4")
+  }
 
   cdm_version <- cdm$cdm_source %>% dplyr::pull(.data$cdm_version)
   if (isTRUE(grepl("5\\.4", cdm_version)))
@@ -603,38 +615,4 @@ snapshot <- function(cdm) {
 print.cdm_snapshot <- function(x, ...) {
   cli::cat_rule(x$cdm_source_name)
   purrr::walk2(names(x[-1]), x[-1], ~ cli::cat_bullet(.x, ": ", .y))
-}
-
-getCdmTables <- function(con, tables, schema, failNullSchema = FALSE) {
-  if (is(con, "duckdb_connection")) {
-    result <-
-      purrr::map(tables,
-                 ~ dplyr::tbl(con, paste(c(
-                   schema, .
-                 ), collapse = ".")) %>% dplyr::rename_all(tolower))
-  } else if (is.null(schema)) {
-    if (failNullSchema) {
-      rlang::abort("Schema not specified. Tables must be in schema.")
-    }
-    result <-
-      purrr::map(tables, ~ dplyr::tbl(con, .) %>% dplyr::rename_all(tolower))
-
-  } else if (length(schema) == 1) {
-    result <-
-      purrr::map(
-        tables,
-        ~ dplyr::tbl(con, dbplyr::in_schema(schema, .)) %>%
-          dplyr::rename_all(tolower)
-      )
-  } else if (length(schema) == 2) {
-    result <-
-      purrr::map(
-        tables,
-        ~ dplyr::tbl(
-          con,
-          dbplyr::in_catalog(schema[1], schema[2], .)
-        )  %>% dplyr::rename_all(tolower)
-      )
-  }
-  return(result)
 }
