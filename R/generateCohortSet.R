@@ -554,10 +554,10 @@ newGeneratedCohortSet <- function(cohort_ref,
 #' Return attrition table from a generated cohort set object
 #'
 #' @export
-attrition <- function(x) { UseMethod("attrition") }
+cohortAttrition <- function(x) { UseMethod("attrition") }
 
 #' @export
-attrition.GeneratedCohortSet <- function(x) {
+cohortAttrition.GeneratedCohortSet <- function(x) {
   attr(x, "cohort_attrition")
 }
 
@@ -611,34 +611,39 @@ computeAttrition <- function(cdm,
     cohortId <- cohortSet$cohortId
   }
   checkmate::assertNumeric(
-    cohortId, null.ok = TRUE, any.missing = FALSE, min.len = 1
+    cohortId, any.missing = FALSE, min.len = 1
   )
   checkmate::assertTRUE(all(cohortId %in% cohortSet$cohortId))
-  checkmate::assertTRUE(length(cohortId) > 0)
 
   con <- attr(cdm, "dbcon")
   inclusionResultTableName <- paste0(cohortStem, "_inclusion_result")
   schema <- attr(cdm, "write_schema")
 
   # Bring the inclusion result table to R memory
-  inclusionResult <- readTable(con, schema, inclusionResultTableName) %>%
+  inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName)) %>%
     dplyr::collect() %>%
     dplyr::mutate(inclusion_rule_mask = as.numeric(inclusion_rule_mask))
 
-  attrition <- lapply(cohortId, function(id) {
-    inclusionName <- getInclusionName(cohortSet, id)
+  attritionList <- list()
+
+  for (id in cohortId) {
+
+    inclusionName <-  purrr::map_chr(
+      cohortSet$cohort[[id]]$InclusionRules,
+      "name")
+
     numberInclusion <- length(inclusionName)
     if (numberInclusion == 0) {
       #cohortTableName <- paste0(cohortStem, "_cohort")
       cohortTableName <- cohortStem
       attrition <- dplyr::tibble(
         cohort_definition_id = id,
-        number_observations = readTable(con, schema, cohortTableName) %>%
+        number_observations = dplyr::tbl(con, inSchema(schema, cohortTableName)) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::tally() %>%
           dplyr::pull("n") %>%
           as.numeric(),
-        number_subjects = readTable(con, schema, cohortTableName) %>%
+        number_subjects = dplyr::tbl(con, inSchema(schema, cohortTableName)) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::select("subject_id") %>%
           dplyr::distinct() %>%
@@ -686,43 +691,32 @@ computeAttrition <- function(cdm,
             .data$number_subjects
         )
     }
-    return(attrition)
-  })
+    attritionList <- c(attritionList, attrition)
+  }
 
-  attrition <- attrition %>%
+  attrition <- attritionList %>%
     dplyr::bind_rows() %>%
-    computePermanent(paste0(cohortStem, "_cohort_attrition"), schema, TRUE)
+    computePermanent(paste0(cohortStem, "_cohort_attrition"),
+                     schema = schema,
+                     overwrite = TRUE)
 
   return(attrition)
 }
 
-getInclusionName <- function(cohortSet, cohortId) {
-  lapply(
-    cohortSet$cohort[[cohortId]]$InclusionRules,
-    function(x) {
-      x$name
-    }
-  ) %>%
-    unlist()
-}
+getInclusionMaskId <- function(numberInclusion) {
 
-getInclusionMaskMatrix <- function(numberInclusion) {
   inclusionMaskMatrix <- dplyr::tibble(
     inclusion_rule_mask = 0:(2^numberInclusion - 1)
   )
+
   for (k in 0:(numberInclusion - 1)) {
     inclusionMaskMatrix <- inclusionMaskMatrix %>%
-      dplyr::mutate(
-        !!paste0("inclusion_", k) :=
+      dplyr::mutate(!!paste0("inclusion_", k) :=
           rep(c(rep(0, 2^k), rep(1, 2^k)), 2^(numberInclusion - k - 1))
       )
   }
-  return(inclusionMaskMatrix)
-}
 
-getInclusionMaskId <- function(numberInclusion) {
-  inclusionMaskMatrix <- getInclusionMaskMatrix(numberInclusion)
-  inclusionId <- lapply(-1:(numberInclusion - 1), function(x) {
+  lapply(-1:(numberInclusion - 1), function(x) {
     if (x == -1) {
       return(inclusionMaskMatrix$inclusion_rule_mask)
     } else {
@@ -735,27 +729,3 @@ getInclusionMaskId <- function(numberInclusion) {
     }
   })
 }
-
-readTable <- function(con, schema, tableName) {
-  if (dbms(con) == "duckdb") {
-    writeSchema <- glue::glue_sql_collapse(
-      DBI::dbQuoteIdentifier(con, schema),
-      sep = "."
-    )
-    return(dplyr::tbl(
-      con,
-      paste(c(writeSchema, tableName), collapse = ".")
-    ))
-  } else if (length(schema) == 2) {
-    return(dplyr::tbl(
-      con,
-      dbplyr::in_catalog(schema[[1]], schema[[2]], tableName)
-    ))
-  } else if (length(schema) == 1) {
-    return(dplyr::tbl(
-      con,
-      dbplyr::in_schema(schema, tableName)
-    ))
-  }
-}
-
