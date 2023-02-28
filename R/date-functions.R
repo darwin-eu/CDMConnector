@@ -23,7 +23,6 @@
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 dateadd <- function(date, number, interval = "day") {
-  rlang::check_installed("SqlRender")
   checkmate::assertCharacter(interval, len = 1)
   checkmate::assertSubset(interval, choices = c("day", "year"))
   checkmate::assertCharacter(date, len = 1)
@@ -32,18 +31,33 @@ dateadd <- function(date, number, interval = "day") {
   }
 
   dot <- get(".", envir = parent.frame())
-  targetDialect <- CDMConnector::dbms(dot$src$con)
+  db <- CDMConnector::dbms(dot$src$con)
 
-  if (targetDialect == "oracle") {
+  if (db == "oracle") {
     date <- as.character(DBI::dbQuoteIdentifier(dot$src$con, date))
     if (is.character(number)) {
       number <- as.character(DBI::dbQuoteIdentifier(dot$src$con, number))
     }
   }
 
-  sql <- glue::glue("DATEADD({interval}, {number}, {date})")
-  sql <- SqlRender::translate(sql = as.character(sql), targetDialect = targetDialect)
-  dbplyr::sql(sql)
+  if (db %in% c("spark", "oracle") && interval == "year") {
+    # spark and oracle sql requires number of days in dateadd
+    number <- floor(number*365.25)
+  }
+
+  sql <- switch (db,
+    "redshift" = glue::glue("DATEADD({interval}, {number}, {date})"),
+    "oracle" = glue::glue("({date} + NUMTODSINTERVAL({number}, 'day'))"),
+    "postgresql" = glue::glue("({date} + {number}*INTERVAL'1 {interval}')"),
+    "sql server" = glue::glue("DATEADD({interval}, {number}, {date})"),
+    "spark" = glue::glue("date_add({date}, {number})"),
+    "duckdb" = glue::glue("({date} + {number}*INTERVAL'1 {interval}')"),
+    "sqlite" = glue::glue("CAST(STRFTIME('%s', DATETIME({date}, 'unixepoch', ({number})||' {interval}s')) AS REAL)"),
+    "bigquery" = glue::glue("DATE_ADD({date}, INTERVAL {number} {toupper(interval)})"),
+    glue::glue("DATEADD({interval}, {number}, {date})")
+  )
+
+  dbplyr::sql(as.character(sql))
 }
 
 
@@ -81,16 +95,34 @@ datediff <- function(start, end, interval = "day") {
   checkmate::assertCharacter(end, len = 1)
 
   dot <- get(".", envir = parent.frame())
-  targetDialect <- CDMConnector::dbms(dot$src$con)
+  db <- CDMConnector::dbms(dot$src$con)
 
-  if (targetDialect == "oracle") {
+  if (db == "oracle") {
     start <- as.character(DBI::dbQuoteIdentifier(dot$src$con, start))
     end <- as.character(DBI::dbQuoteIdentifier(dot$src$con, end))
   }
 
-  sql <- glue::glue("DATEDIFF({interval}, {start},  {end})")
-  sql <- SqlRender::translate(sql = as.character(sql), targetDialect = targetDialect)
-  dbplyr::sql(sql)
+  sql <- switch (db,
+                 "redshift" = glue::glue("DATEDIFF({interval}, {start}, {end})"),
+                 "oracle" = ifelse(interval == "day",
+                    glue::glue("CEIL(CAST({end} AS DATE) - CAST({start} AS DATE))"),
+                    glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
+                 "postgresql" = ifelse(interval == "day",
+                    glue::glue("(CAST({end} AS DATE) - CAST({start} AS DATE))"),
+                    glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
+                 "sql server" = glue::glue("DATEDIFF({interval}, {start}, {end})"),
+                 "spark" = ifelse(interval == "day",
+                   glue::glue("datediff({end},{start})"),
+                   glue::glue("datediff({end},{start})/365.25")),
+                 "duckdb" = glue::glue("datediff('{interval}', {start}, {end})"),
+                 "sqlite" = ifelse(interval == "day",
+                   glue::glue("(JULIANDAY(end, 'unixepoch') - JULIANDAY(start, 'unixepoch'))"),
+                   glue::glue("(STRFTIME('%Y', end, 'unixepoch') - STRFTIME('%Y', start, 'unixepoch'))")),
+                 "bigquery" = glue::glue("DATE_DIFF({start}, {end}, {toupper(interval)})"),
+                 glue::glue("DATEDIFF({interval}, {start}, {end})")
+  )
+
+  dbplyr::sql(as.character(sql))
 }
 
 #' as.Date dbplyr translation wrapper
