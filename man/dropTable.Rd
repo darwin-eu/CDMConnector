@@ -4,15 +4,17 @@
 \alias{dropTable}
 \title{Drop tables from write_schema of a cdm object}
 \usage{
-dropTable(cdm, name)
+dropTable(cdm, name, verbose = FALSE)
 }
 \arguments{
 \item{cdm}{A cdm reference}
 
 \item{name}{A character vector of tables in the cdm's write_schema}
+
+\item{verbose}{Print a message when dropping a table? TRUE or FALSE (default)}
 }
 \value{
-A modified cdm reference with the tables removed
+Invisibly returns the cdm object
 }
 \description{
 cdm objects can have zero or more cohort tables stored in a special schema

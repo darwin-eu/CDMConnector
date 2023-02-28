@@ -174,17 +174,9 @@ generateCohortSet <- function(cdm,
     cohortExpression <- CirceR::cohortExpressionFromJson(expressionJson = cohortJson)
     cohortSql <- CirceR::buildCohortQuery(expression = cohortExpression,
                                           options = CirceR::createGenerateOptions(
-                                            # cohortId = cohortSet$cohortId[i],
-                                            # cdmSchema =  glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = "."),
-                                            # targetTable = name,
-                                            # resultSchema = glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = "."),
                                             generateStats = computeAttrition))
     cohortSet$sql[i] <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE)
   }
-
-  # params <- unique(stringr::str_extract_all(cohortSet$sql, "@\\w+.\\w+")[[1]])
-  # params <- unique(stringr::str_extract_all(cohortSet$sql, "@results_database_schema.\\w+")[[1]])
-  # stopifnot(length(params) == 0)
 
   # Create the cohort tables ----
 
@@ -287,10 +279,11 @@ generateCohortSet <- function(cdm,
     # on.exit(DBI::dbRemoveTable(con, inSchema(nm, writeSchema)), add = TRUE)
   }
 
-  # Run OHDSI-SQL ----
+  # Run the OHDSI-SQL ----
 
-  cli::cli_progress_bar(total = nrow(cohortSet),
-                        format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
+  cli::cli_progress_bar(
+    total = nrow(cohortSet),
+    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
 
   cdm_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = ".")
   write_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
@@ -315,10 +308,7 @@ generateCohortSet <- function(cdm,
 
     stopifnot(length(unique(stringr::str_extract_all(sql, "@\\w+"))[[1]]) == 0)
 
-    sql <- SqlRender::translate(sql,
-        targetDialect = CDMConnector::dbms(con),
-        tempEmulationSchema = getOption("sqlRenderTempEmulationSchema")
-      ) %>%
+    sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(con)) %>%
       SqlRender::splitSql()
 
     DBI::dbWithTransaction(con,
@@ -332,11 +322,8 @@ generateCohortSet <- function(cdm,
 
   # Create attrition attribute ----
   if (computeAttrition) {
-    # TODO add Marti's attrition code in place of this:
     cohort_attrition_ref <- dplyr::tbl(con, inSchema(paste0(name, "_inclusion_result"), writeSchema)) %>%
-      computeQuery(name = paste0(name, "_attrition"),
-                   temporary = FALSE,
-                   schema = writeSchema)
+      computeAttrition(cohortStem = name, cohortSet = cohortSet)
   } else {
     cohort_attrition_ref <- NULL
   }
@@ -503,17 +490,9 @@ newGeneratedCohortSet <- function(cohort_ref,
   checkmate::assertClass(cohort_attrition_ref, classes = c("tbl_sql"), null.ok = TRUE)
   checkmate::assertClass(cohort_count_ref, classes = c("tbl_sql"), null.ok = TRUE)
 
-  # checkmate::assertNames(dplyr::collect(head(cohort_ref)), # another approach
   checkmate::assertSubset(c("cohort_definition_id", "subject_id",
                             "cohort_start_date", "cohort_end_date"),
                           choices = names(cohort_ref))
-
-  # TODO automatically get the cohort table stem
-  # stem <- as.character(cohort_ref[[2]]$x) # this might have changed in dplyr update
-
-  # TODO check that name of cohort_ref table (available in ident_q)
-  # is a prefix for the other tables. We also need this prefix to create
-  # the cohort_count table.
 
   if (!is.null(cohort_set_ref)) {
     checkmate::assertSubset(c("cohort_definition_id", "cohort_name"),
@@ -696,7 +675,7 @@ computeAttrition <- function(cdm,
 
   attrition <- attritionList %>%
     dplyr::bind_rows() %>%
-    computePermanent(paste0(cohortStem, "_cohort_attrition"),
+    computePermanent(paste0(cohortStem, "_attrition"),
                      schema = schema,
                      overwrite = TRUE)
 

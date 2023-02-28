@@ -22,7 +22,11 @@ should it be overwritten? (TRUE or FALSE)}
 A dplyr reference to the newly created table
 }
 \description{
-Run a dplyr query and store the result in a permanent table
+This function has been superceded by \code{computeQuery} which should be used
+instead of \code{computePermanent}.
+}
+\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 }
 \examples{
 \dontrun{

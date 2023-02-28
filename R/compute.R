@@ -3,6 +3,8 @@
 #' This function has been superceded by `computeQuery` which should be used
 #' instead of `computePermanent`.
 #'
+#' `r lifecycle::badge("superseded")`
+#'
 #' @param x A dplyr query
 #' @param name Name of the table to be created
 #' @param schema Schema to create the new table in
@@ -14,7 +16,6 @@
 #' @return A dplyr reference to the newly created table
 #' @export
 #'
-#' `r lifecycle::badge("superseded")`
 #'
 #' @examples
 #' \dontrun{
