@@ -333,7 +333,7 @@ test_that("computeQuery works on Oracle", {
 
 test_that("dropTable works on duckdb", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
-  cdm <- cdm_from_con(con, "main")
+  cdm <- cdm_from_con(con, "main", write_schema = "main")
 
   # create a temporary table in the remote database from a query
   cdm$tmp_table <- cdm$concept %>%

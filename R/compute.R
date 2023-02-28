@@ -1,5 +1,8 @@
 #' Run a dplyr query and store the result in a permanent table
 #'
+#' This function has been superceded by `computeQuery` which should be used
+#' instead of `computePermanent`.
+#'
 #' @param x A dplyr query
 #' @param name Name of the table to be created
 #' @param schema Schema to create the new table in
@@ -10,6 +13,8 @@
 #'
 #' @return A dplyr reference to the newly created table
 #' @export
+#'
+#' `r lifecycle::badge("superseded")`
 #'
 #' @examples
 #' \dontrun{
@@ -27,6 +32,10 @@
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
+  rlang::inform(paste("`computePermanent` has been superseded. Use `computeQuery` instead."),
+                .frequency = "once",
+                .frequency_id = "computePermanent")
+
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
   checkmate::assertCharacter(name, len = 1)
   checkmate::assertClass(x, "tbl_sql")
@@ -244,8 +253,9 @@ computeQuery <- function(x,
 #'
 #' @param cdm A cdm reference
 #' @param name A character vector of tables in the cdm's write_schema
+#' @param verbose Print a message when dropping a table? TRUE or FALSE (default)
 #'
-#' @return A modified cdm reference with the tables removed
+#' @return Invisibly returns the cdm object
 #' @export
 #'
 #' @examples
@@ -274,20 +284,98 @@ computeQuery <- function(x,
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-dropTable <- function(cdm, name){
+dropTable <- function(cdm, name, verbose = FALSE) {
 
-  allTables <- CDMConnector::listTables(attr(cdm, "dbcon"),
-                                        schema = attr(cdm, "write_schema"))
+  checkmate::assertClass(cdm, "cdm_reference")
+  checkmate::assertCharacter(name, min.chars = 1, min.len = 1,  max.len = 1e5)
+  schema <- attr(cdm, "write_schema")
+  checkmate::assertCharacter(schema, min.chars = 1, min.len = 1, max.len = 2)
+  con <- attr(cdm, "dbcon")
+  checkmate::assertTRUE(DBI::dbIsValid(con))
+
+  allTables <- CDMConnector::listTables(con, schema = schema)
 
   for (i in seq_along(name)) {
-    # check table exists in write schema
-    tableExists <- any(stringr::str_detect(paste0(name[[i]], "\\b"), allTables))
 
-    if (tableExists == TRUE) {
-      fullName <- paste0(c(attr(cdm, "write_schema"), name[[i]]), collapse = ".")
-      DBI::dbRemoveTable(attr(cdm, "dbcon"), DBI::SQL(fullName))
+    if (name[i] %in% allTables) {
+      if (verbose) {
+        message(paste0("Dropping", schema, ".", name[i]))
+      }
+      DBI::dbRemoveTable(con, inSchema(schema, name[i]))
     }
-    cdm[name[[i]]] <- NULL
+
+    if (name[i] %in% names(cdm)) {
+      cdm[[name[i]]] <- NULL
+    }
   }
-  return(cdm)
+
+  return(invisible(cdm))
 }
+
+#' Drop tables starting with a prefix/stem
+#'
+#' @param cdm A CDM reference object
+#' @param stem The prefix/stem identifying tables to drop. For example,
+#' a stem of "study_results" would lead to dropping any table starting with this
+#' (ie both "study_results" and "study_results_analysis_1" would be dropped if
+#' they exist in the write schema). Prefix will be interpreted as a regular
+#' expression.
+#' @param verbose Print a message when dropping a table? TRUE or FALSE (default)
+#'
+#' @return Invisibly returns the cdm object
+#' @export
+dropStemTables <- function(cdm, stem, verbose = FALSE) {
+
+  checkmate::assertClass(cdm, "cdm_reference")
+  checkmate::assertCharacter(stem, len = 1, min.chars = 1)
+  schema <- attr(cdm, "write_schema")
+  checkmate::assertCharacter(schema, min.chars = 1, min.len = 1, max.len = 2)
+  con <- attr(cdm, "dbcon")
+  checkmate::assertTRUE(DBI::dbIsValid(con))
+
+  allTables <- CDMConnector::listTables(con, schema)
+  tablesToDrop <- stringr::str_subset(allTables, paste0("^", stem))
+
+  cdm <- dropTable(cdm, tablesToDrop, verbose)
+  return(invisible(cdm))
+}
+
+#' Get the full table name consisting of the schema and table name.
+#'
+#' @param x A dplyr query
+#' @param name Name of the table to be created.
+#' @param schema Schema to create the new table in
+#' Can be a length 1 or 2 vector.
+#' (e.g. schema = "my_schema", schema = c("my_schema", "dbo"))
+#'
+#' @return the full table name
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' cdm <- cdm_from_con(con)
+#' schema <- c("my_schema", "dbo")
+#' name <- "myTable"
+#' getFullTableNameQuoted(cdm$person, name, schema)
+#' }
+getFullTableNameQuoted <- function(x, name, schema) {
+  checkmate::assertClass(x, "tbl_sql")
+  checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
+  checkmate::assertCharacter(name, len = 1)
+
+  connection <- x$src$con
+  if (length(schema) == 2) {
+    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(connection, schema[[1]]),
+                            DBI::dbQuoteIdentifier(connection, schema[[2]]),
+                            DBI::dbQuoteIdentifier(connection, name),
+                            sep = ".")
+  } else if (length(schema) == 1) {
+    fullNameQuoted <- paste(DBI::dbQuoteIdentifier(connection, schema),
+                            DBI::dbQuoteIdentifier(connection, name),
+                            sep = ".")
+  } else {
+    fullNameQuoted <- DBI::dbQuoteIdentifier(connection, name)
+  }
+  return(fullNameQuoted)
+}
+
