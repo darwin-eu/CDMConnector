@@ -8,12 +8,12 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-library(CDMConnector)
 
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = eunomia_is_available()
+  # eval = CDMConnector::eunomia_is_available()
+  eval = FALSE
 )
 
 ```
