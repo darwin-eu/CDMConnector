@@ -3,7 +3,7 @@
 \name{summarise_quantile}
 \alias{summarise_quantile}
 \alias{summarize_quantile}
-\title{Generic multiple-database approach for quantiles estimation}
+\title{Quantile calculation using dbplyr}
 \usage{
 summarise_quantile(.data, x = NULL, probs, name_suffix = "value")
 

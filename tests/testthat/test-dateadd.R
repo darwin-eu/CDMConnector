@@ -239,7 +239,7 @@ test_that("Date functions work on Redshift", {
 test_that("Date functions work on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-  skip("only run test manually")
+  skip("manual test")
 
   con <- DBI::dbConnect(odbc::odbc(), "Databricks", bigint = "numeric")
 

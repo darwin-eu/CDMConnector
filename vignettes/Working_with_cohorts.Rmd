@@ -92,7 +92,7 @@ cohortCount(cdm$gibleed)
 
 We also have the attrition associated with entry into the cohort available via `cohortAttrition`.
 ```{r}
-attrition(cdm$gibleed)
+cohortAttrition(cdm$gibleed)
 ```
 
 And lastly, we can also access the settings associated with the cohort using `cohortCount`.

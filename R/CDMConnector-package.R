@@ -6,3 +6,5 @@
 #' @importFrom utils head
 "_PACKAGE"
 NULL
+
+utils::globalVariables(".") # so we can use `.` in dplyr pipelines.

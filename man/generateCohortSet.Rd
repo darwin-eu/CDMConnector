@@ -9,7 +9,7 @@ generateCohortSet(
   cohortSet,
   name = "cohort",
   computeAttrition = FALSE,
-  overwrite = TRUE
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -21,7 +21,10 @@ specified.}
 \item{name}{Name of the cohort table to be created. This will also be used
 as a prefix for the cohort attribute tables.}
 
-\item{computeAttrition}{Should attrition be computed? TRUE or FALSE.}
+\item{computeAttrition}{Should attrition be computed? TRUE or FALSE (default)}
+
+\item{overwrite}{Should the cohort table be overwritten if it already
+exists? TRUE or FALSE (default)}
 }
 \description{
 A "GeneratedCohortSet" object consists of several components

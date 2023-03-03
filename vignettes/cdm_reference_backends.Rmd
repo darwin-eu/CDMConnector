@@ -43,7 +43,7 @@ library(ggplot2)
 
 ```{r, message=FALSE, warning=FALSE}
 db <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(db, cdm_tables = c("person", "condition_occurrence"))
+cdm <- cdm_from_con(db, cdm_schema = "main", cdm_tables = c("person", "condition_occurrence"))
 
 # first filter to only those with condition_concept_id "4035415"
 cdm$condition_occurrence %>% tally()

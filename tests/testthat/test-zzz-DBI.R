@@ -15,6 +15,6 @@ test_that("dbWriteTable works on redshift", {
   DBI::dbWriteTable(con, DBI::SQL(tablename), df1)
   df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
-  expect_true(dplyr::all_equal(df1, df2))
+  expect_true(all.equal(df1, df2))
   DBI::dbDisconnect(con)
 })

@@ -206,7 +206,7 @@ test_that("computeQuery works on Redshift", {
 test_that("computeQuery works on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-  skip("Only run this test manually. Spark server needs to be online.")
+  skip("manual test")
 
   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
 

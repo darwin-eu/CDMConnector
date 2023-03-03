@@ -136,7 +136,7 @@ test_that("cdm reference works on redshift", {
 test_that("cdm reference works on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-  skip("Only run this test manually")
+  skip("manual test")
 
   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks", bigint = "numeric")
 
@@ -318,6 +318,15 @@ test_that("stow and cdm_from_files works", {
 })
 
 
+test_that("autodetect cdm version works", {
+  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_tables = tbl_group("default"), cdm_version = "auto")
+  expect_true(version(cdm) == c("5.3"))
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
 ## Using DatabaseConnector DBI driver -----
 
 library(testthat)
@@ -325,6 +334,7 @@ library(dplyr, warn.conflicts = FALSE)
 
 test_that("DatabaseConnector cdm reference works on local postgres", {
   skip_if(Sys.getenv("LOCAL_POSTGRESQL_USER") == "")
+  skip("manual test")
 
   con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
                         dbms     = "postgresql",
@@ -353,6 +363,7 @@ test_that("DatabaseConnector cdm reference works on local postgres", {
 
 test_that("DatabaseConnector cdm reference works on postgres", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
+  skip("manual test")
 
   con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
                         dbms     = "postgresql",
@@ -382,6 +393,7 @@ test_that("DatabaseConnector cdm reference works on postgres", {
 
 test_that("DatabaseConnector cdm reference works on redshift", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
+  skip("manual test")
 
   con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
                         dbms     = "redshift",
@@ -411,6 +423,7 @@ test_that("DatabaseConnector cdm reference works on redshift", {
 
 test_that("DatabaseConnector cdm reference works on sql server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
+  skip("manual test")
   # Note that DatabaseConnector does not preserve logical datatypes
   # Note sql server test database cdm5.dbo.person does not have birth_datetime
 
@@ -440,11 +453,4 @@ test_that("DatabaseConnector cdm reference works on sql server", {
   DBI::dbDisconnect(con)
 })
 
-test_that("autodetect cdm version works", {
-  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
-  skip_if_not(eunomia_is_available())
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_tables = tbl_group("default"), cdm_version = "auto")
-  expect_true(version(cdm) == c("5.3"))
-  DBI::dbDisconnect(con, shutdown = TRUE)
-})
+

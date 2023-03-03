@@ -30,6 +30,11 @@ cdm_from_con <- function(con,
 
   checkmate::assert_class(con, "DBIConnection")
   checkmate::assert_true(.dbIsValid(con))
+
+  if (dbms(con) %in% c("duckdb", "sqlite") && is.null(cdm_schema)) {
+    cdm_schema = "main"
+  }
+
   checkmate::assert_character(
     cdm_schema,
     null.ok = FALSE,

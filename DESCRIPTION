@@ -31,7 +31,8 @@ Imports:
     withr,
     lifecycle,
     jsonlite,
-    stringr
+    stringr,
+    fs
 Suggests: 
     arrow,
     SqlRender, 

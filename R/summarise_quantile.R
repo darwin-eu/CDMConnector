@@ -1,4 +1,4 @@
-#' Generic multiple-database approach for quantiles estimation
+#' Quantile calculation using dbplyr
 #'
 #' @description
 #' This function provides DBMS independent syntax for quantiles estimation.
@@ -21,6 +21,8 @@
 #' @param name_suffix character; is appended to numerical quantile value as a column name part.
 #' @return
 #' An object of the same type as '.data'
+#'
+#' @importFrom rlang %||%
 #' @export
 #'
 #' @examples
@@ -37,11 +39,10 @@
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value"){
+summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
+  checkmate::assertClass(.data, "tbl_sql")
+  checkmate::assert_double(probs, min.len = 1, lower = 0, upper = 1)
   checkmate::assert_character(name_suffix, null.ok = TRUE)
-  checkmate::assert_double(probs)
-  checkmate::assert_true(all(probs >= 0))
-  checkmate::assert_true(all(probs <= 1))
 
   selection_context <- .data$lazy_query$select_operation
 
@@ -58,22 +59,23 @@ summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value"){
       dplyr::filter(unlist(purrr::map(.data$expr, rlang::is_quosure)))
     if (nrow(vars_context) > 0) {
       vars_context <- vars_context %>%
-        dplyr::mutate(x_var = purrr::map(purrr::map(.data$expr, rlang::get_expr), ~ if (length(.x) >= 2) .x[[2]] else NULL))
+        # dplyr::mutate(x_var = purrr::map(purrr::map(.data$expr, rlang::get_expr), ~ if (length(.x) >= 2) {.x[[2]]} else {NULL}))
+        dplyr::mutate(x_var = purrr::map(.data$expr, ~if(length(rlang::get_expr(.x)) >= 2) {.x[[2]]} else {NULL}))
       x_context <- unique(vars_context$x_var)[[1]]
     }
   }
 
   if (!is.null(x_context) && !is.null(x_arg) && x_context != x_arg) {
-      msg = paste0("Confilicting quantile variables: `", x_context, "` (from context) and `", x_arg, "` (passed argument)")
+      msg <- paste0("Confilicting quantile variables: `", x_context, "` (from context) and `", x_arg, "` (passed argument)")
       rlang::abort(msg)
-      }
+  }
 
   if (is.null(x_context) & is.null(x_arg)) {
     msg = "Quantile variable is not specified"
     rlang::abort(msg)
   }
 
-  x <- if (is.null(x_context)) x_arg else x_context
+  x <- x_context %||% x_arg
 
   group_by_vars <- .data$lazy_query$group_vars
   group_1 <- rlang::syms(c(group_by_vars, x))

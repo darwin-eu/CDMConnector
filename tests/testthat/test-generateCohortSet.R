@@ -292,7 +292,7 @@ test_that("Postgres cohort generation with attrition", {
 # test_that("cohort generation works on spark", {
 #
 #   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-#   skip("Only run this test manually")
+#   skip("manual test")
 #   skip_if_not_installed("CirceR")
 #
 #   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks")
@@ -320,3 +320,12 @@ test_that("Postgres cohort generation with attrition", {
 #   expect_false("cohorts" %in% listTables(con, schema = write_schema))
 #   DBI::dbDisconnect(con)
 # })
+
+
+# Test readCohortSet ----
+
+test_that("ReadCohortSet gives informative error when pointed to a file", {
+  path <- system.file("cohorts1", "deepVeinThrombosis01.json", package = "CDMConnector", mustWork = TRUE)
+  expect_error(readCohortSet(path), "not a directory")
+})
+

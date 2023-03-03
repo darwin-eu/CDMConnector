@@ -35,13 +35,13 @@ test_that(".dbIsValid", {
 })
 
 test_that("inSchema", {
-  result <- inSchema(table = "myTable", writeSchema = c("main"))
+  result <- inSchema(schema = "main", table = "myTable")
   expect_equal(as.character(class(result)), "Id")
   tableSchemaNames <- as.character(attr(result, "name"))
   expect_equal(tableSchemaNames[1], "main")
   expect_equal(tableSchemaNames[2], "myTable")
 
-  result <- inSchema(table = "myTable", writeSchema = c("main", "dbo"))
+  result <- inSchema(schema = c("main", "dbo"), table = "myTable")
   expect_equal(as.character(class(result)), "Id")
   tableSchemaNames <- as.character(attr(result, "name"))
   expect_equal(tableSchemaNames[1], "main")

@@ -29,6 +29,10 @@
 readCohortSet <- function(path) {
   checkmate::checkCharacter(path, len = 1, min.chars = 1)
 
+  if (!fs::is_dir(path)) {
+    rlang::abort(glue::glue("{path} is not a directory!"))
+  }
+
   if (!dir.exists(path)) {
     rlang::abort(glue::glue("The directory {path} does not exist!"))
   }
@@ -37,7 +41,7 @@ readCohortSet <- function(path) {
     cohortsToCreate <- readr::read_csv(file.path(path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
       dplyr::mutate(cohort = purrr::map(.data$jsonPath, jsonlite::read_json)) %>%
       dplyr::mutate(json = purrr::map(.data$jsonPath, readr::read_file)) %>%
-      dplyr::mutate(cohort_definition_id = cohortId, cohort_name = cohortName)
+      dplyr::mutate(cohort_definition_id = .data$cohortId, cohort_name = .data$cohortName)
   } else {
     jsonFiles <- sort(list.files(path, pattern = "\\.json$", full.names = TRUE))
     cohortsToCreate <- dplyr::tibble(
@@ -90,7 +94,9 @@ readCohortSet <- function(path) {
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables.
 #' @param cohortSet A cohortSet object created with `readCohortSet()`.
-#' @param computeAttrition Should attrition be computed? TRUE or FALSE.
+#' @param computeAttrition Should attrition be computed? TRUE or FALSE (default)
+#' @param overwrite Should the cohort table be overwritten if it already
+#' exists? TRUE or FALSE (default)
 #' @export
 #' @examples
 #' \dontrun{
@@ -114,24 +120,9 @@ generateCohortSet <- function(cdm,
                               cohortSet,
                               name = "cohort",
                               computeAttrition = FALSE,
-                              overwrite = TRUE) {
+                              overwrite = FALSE) {
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
-
-  # undocumented feature to handle lists of Capr v2 cohorts
-  if (is.list(cohortSet) && is(cohortSet[[1]], "Cohort")) {
-    rlang::check_installed("Capr", version = "2")
-    checkmate::assertNamed(cohortSet)
-    path <- file.path(tempdir(), "tempCohortFolder")
-    if (dir.exists(path)) {
-      unlink(path)
-    }
-    dir.create(path)
-    purrr::walk2(cohortSet, names(cohortSet),
-                 ~Capr::writeCohort(.x, file.path(path, paste0(.y, ".json"))))
-
-    cohortSet <- CDMConnector::readCohortSet(path)
-  }
 
   # check inputs ----
   checkmate::assertClass(cdm, "cdm_reference")
@@ -157,7 +148,7 @@ generateCohortSet <- function(cdm,
 
   existingTables <- CDMConnector::listTables(con, writeSchema)
 
-  if ((name %in% existingTables) && (!overwrite)) {
+  if ((name %in% existingTables) && isFALSE(overwrite)) {
     rlang::abort(glue::glue("The cohort table {name} already exists.
                             \nSpecify overwrite = TRUE to overwrite it."))
   }
@@ -167,7 +158,7 @@ generateCohortSet <- function(cdm,
 
   cohortSet$sql <- character(nrow(cohortSet))
 
-  for (i in 1:nrow(cohortSet)) {
+  for (i in seq_len(nrow(cohortSet))) {
     # cohortJson <- as.character(jsonlite::toJSON(cohortSet$cohort[[i]], auto_unbox = TRUE))
     cohortJson <- cohortSet$json[[i]]
     cohortExpression <- CirceR::cohortExpressionFromJson(expressionJson = cohortJson)
@@ -187,7 +178,7 @@ generateCohortSet <- function(cdm,
                      name = inSchema(writeSchema, name),
                      fields = c(
                        cohort_definition_id = "INT",
-                       subject_id = "INT",
+                       subject_id = "BIGINT",
                        cohort_start_date = "DATE",
                        cohort_end_date = "DATE"
                      ))
@@ -339,12 +330,12 @@ generateCohortSet <- function(cdm,
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
     dplyr::ungroup() %>%
-    dplyr::group_by(cohort_definition_id) %>%
+    dplyr::group_by(.data$cohort_definition_id) %>%
     dplyr::summarise(cohort_entries = dplyr::n(),
                      cohort_subjects = dplyr::n_distinct(.data$subject_id)) %>%
-    dplyr::left_join(cohort_set_ref, ., by = "cohort_definition_id") %>%
-    dplyr::mutate(cohort_entries = dplyr::coalesce(cohort_entries, 0L),
-                  cohort_subjects = dplyr::coalesce(cohort_entries, 0L)) %>%
+    {dplyr::left_join(cohort_set_ref, ., by = "cohort_definition_id")} %>%
+    dplyr::mutate(cohort_entries  = dplyr::coalesce(.data$cohort_entries, 0L),
+                  cohort_subjects = dplyr::coalesce(.data$cohort_entries, 0L)) %>%
     dplyr::select("cohort_definition_id",
                   "cohort_entries",
                   "cohort_subjects") %>%
@@ -579,6 +570,7 @@ cohortCount.GeneratedCohortSet <- function(x) {
 #' @param cohortId Cohort definition id of the cohorts that we want to generate
 #' the attrition. If NULL all cohorts from cohort set will be used.
 #'
+#' @importFrom rlang :=
 #' @return the attrition as a data.frame
 computeAttritionTable <- function(cdm,
                                   cohortStem,
@@ -607,7 +599,7 @@ computeAttritionTable <- function(cdm,
   # Bring the inclusion result table to R memory
   inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName)) %>%
     dplyr::collect() %>%
-    dplyr::mutate(inclusion_rule_mask = as.numeric(inclusion_rule_mask))
+    dplyr::mutate(inclusion_rule_mask = as.numeric(.data$inclusion_rule_mask))
 
   attritionList <- list()
 
@@ -674,8 +666,8 @@ computeAttritionTable <- function(cdm,
             dplyr::lag(.data$number_subjects, 1, order_by = .data$reason_id) -
             .data$number_subjects
         ) %>%
-        dplyr::mutate(excluded_observations = dplyr::coalesce(excluded_observations, 0),
-                      excluded_subjects = dplyr::coalesce(excluded_subjects, 0))
+        dplyr::mutate(excluded_observations = dplyr::coalesce(.data$excluded_observations, 0),
+                      excluded_subjects = dplyr::coalesce(.data$excluded_subjects, 0))
     }
     attritionList[[i]] <- attrition
   }
