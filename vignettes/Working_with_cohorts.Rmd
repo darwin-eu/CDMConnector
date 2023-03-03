@@ -8,12 +8,14 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+library(CDMConnector)
+
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = eunomia_is_available()
 )
 
-Sys.setenv(EUNOMIA_DATA_FOLDER = tempdir())
 ```
 
 
@@ -21,7 +23,7 @@ Sys.setenv(EUNOMIA_DATA_FOLDER = tempdir())
 
 First, we'll load packages and create a cdm reference. In this case we'll be using the Eunomia "GI Bleed" dataset.
 
-```{r, warning=FALSE, message=FALSE, eval=TRUE}
+```{r, warning=FALSE, message=FALSE}
 library(CDMConnector)
 library(dplyr)
 
