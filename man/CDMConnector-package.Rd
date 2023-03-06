@@ -11,5 +11,12 @@ Provides tools for working with observational health data in the Observational M
 \author{
 \strong{Maintainer}: Adam Black \email{black@ohdsi.org} (\href{https://orcid.org/0000-0001-5576-8701}{ORCID})
 
+Authors:
+\itemize{
+  \item Artem Gorbachev \email{artem.gorbachev@odysseusinc.com}
+  \item Edward Burn \email{edward.burn@ndorms.ox.ac.uk}
+  \item Marti Catala Sabate \email{marti.catalasabate@ndorms.ox.ac.uk}
+}
+
 }
 \keyword{internal}

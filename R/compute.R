@@ -337,24 +337,15 @@ dropStemTables <- function(cdm, stem, verbose = FALSE) {
   return(invisible(cdm))
 }
 
-#' Get the full table name consisting of the schema and table name.
-#'
-#' @param x A dplyr query
-#' @param name Name of the table to be created.
-#' @param schema Schema to create the new table in
-#' Can be a length 1 or 2 vector.
-#' (e.g. schema = "my_schema", schema = c("my_schema", "dbo"))
-#'
-#' @return the full table name
-#' @examples
-#' \dontrun{
-#' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' cdm <- cdm_from_con(con)
-#' schema <- c("my_schema", "dbo")
-#' name <- "myTable"
-#' getFullTableNameQuoted(cdm$person, name, schema)
-#' }
+# Get the full table name consisting of the schema and table name.
+#
+# @param x A dplyr query
+# @param name Name of the table to be created.
+# @param schema Schema to create the new table in
+# Can be a length 1 or 2 vector.
+# (e.g. schema = "my_schema", schema = c("my_schema", "dbo"))
+#
+# @return the full table name
 getFullTableNameQuoted <- function(x, name, schema) {
   checkmate::assertClass(x, "tbl_sql")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)

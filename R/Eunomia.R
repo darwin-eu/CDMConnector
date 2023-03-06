@@ -269,7 +269,7 @@ eunomia_dir <- function(exdir = NULL) {
   return(path)
 }
 
-#' Has the eunomia dataset been cached?
+#' Has the Eunomia dataset been cached?
 #'
 #' @param datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
 #' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".

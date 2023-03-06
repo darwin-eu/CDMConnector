@@ -2,7 +2,7 @@
 % Please edit documentation in R/Eunomia.R
 \name{eunomia_is_available}
 \alias{eunomia_is_available}
-\title{Has the eunomia dataset been cached?}
+\title{Has the Eunomia dataset been cached?}
 \usage{
 eunomia_is_available(datasetName = "GiBleed", cdmVersion = "5.3")
 }
@@ -15,5 +15,5 @@ eunomia_is_available(datasetName = "GiBleed", cdmVersion = "5.3")
 TRUE if the eunomia example dataset is available and FASLE otherwise
 }
 \description{
-Has the eunomia dataset been cached?
+Has the Eunomia dataset been cached?
 }

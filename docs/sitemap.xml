@@ -4,22 +4,25 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/CONTRIBUTING.html</loc>
+  </url>
+  <url>
     <loc>/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>/articles/DBI_connection_examples.html</loc>
+    <loc>/articles/a01_getting-started.html</loc>
   </url>
   <url>
-    <loc>/articles/SQL.html</loc>
+    <loc>/articles/a02_Working_with_cohorts.html</loc>
   </url>
   <url>
-    <loc>/articles/cdm_reference_backends.html</loc>
+    <loc>/articles/a03_dbplyr.html</loc>
   </url>
   <url>
-    <loc>/articles/dbplyr.html</loc>
+    <loc>/articles/a04_DBI_connection_examples.html</loc>
   </url>
   <url>
-    <loc>/articles/getting-started.html</loc>
+    <loc>/articles/a05_cdm_reference_backends.html</loc>
   </url>
   <url>
     <loc>/articles/index.html</loc>
@@ -37,9 +40,6 @@
     <loc>/reference/CDMConnector-package.html</loc>
   </url>
   <url>
-    <loc>/reference/addCohortTable.html</loc>
-  </url>
-  <url>
     <loc>/reference/appendPermanent.html</loc>
   </url>
   <url>
@@ -52,10 +52,22 @@
     <loc>/reference/assert_write_schema.html</loc>
   </url>
   <url>
+    <loc>/reference/cdmFlatten.html</loc>
+  </url>
+  <url>
     <loc>/reference/cdmFromCon.html</loc>
   </url>
   <url>
     <loc>/reference/cdmFromFiles.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cdmSample.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cdmSubset.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cdmSubsetCohort.html</loc>
   </url>
   <url>
     <loc>/reference/cdm_from_con.html</loc>
@@ -64,7 +76,19 @@
     <loc>/reference/cdm_from_files.html</loc>
   </url>
   <url>
+    <loc>/reference/cohortAttrition.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cohortCount.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cohortSet.html</loc>
+  </url>
+  <url>
     <loc>/reference/collect.cdm_reference.html</loc>
+  </url>
+  <url>
+    <loc>/reference/computeAttritionTable.html</loc>
   </url>
   <url>
     <loc>/reference/computePermanent.html</loc>
@@ -91,13 +115,16 @@
     <loc>/reference/dbms.html</loc>
   </url>
   <url>
-    <loc>/reference/delete_all_optional_data.html</loc>
-  </url>
-  <url>
     <loc>/reference/downloadEunomiaData.html</loc>
   </url>
   <url>
     <loc>/reference/download_optional_data.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dropStemTables.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dropTable.html</loc>
   </url>
   <url>
     <loc>/reference/eunomiaDir.html</loc>
@@ -115,7 +142,7 @@
     <loc>/reference/generateCohortSet.html</loc>
   </url>
   <url>
-    <loc>/reference/get_optional_data_filepath.html</loc>
+    <loc>/reference/getFullTableNameQuoted.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>
@@ -124,7 +151,7 @@
     <loc>/reference/listTables.html</loc>
   </url>
   <url>
-    <loc>/reference/list_optional_data.html</loc>
+    <loc>/reference/newGeneratedCohortSet.html</loc>
   </url>
   <url>
     <loc>/reference/pipe.html</loc>
@@ -140,6 +167,9 @@
   </url>
   <url>
     <loc>/reference/stow.html</loc>
+  </url>
+  <url>
+    <loc>/reference/summarise_quantile.html</loc>
   </url>
   <url>
     <loc>/reference/tbl_group.html</loc>

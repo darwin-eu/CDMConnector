@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -50,19 +50,19 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/DBI_connection_examples.html">DBI connection examples</a>
+      <a href="../articles/a01_getting-started.html">Getting Started</a>
     </li>
     <li>
-      <a href="../articles/SQL.html">Using SQL from R</a>
+      <a href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
     </li>
     <li>
-      <a href="../articles/cdm_reference_backends.html">CDM reference backends</a>
+      <a href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
-      <a href="../articles/dbplyr.html">CDMConnector and dbplyr</a>
+      <a href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     </li>
     <li>
-      <a href="../articles/getting-started.html">Getting Started</a>
+      <a href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
     </li>
   </ul>
 </li>
@@ -87,7 +87,7 @@
             
       
       
-      <div class="hidden name"><code>dbplyr.Rmd</code></div>
+      <div class="hidden name"><code>a03_dbplyr.Rmd</code></div>
 
     </div>
 
@@ -114,7 +114,7 @@ installed using ´install.packages()´</p>
 <span><span class="va">cdm</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, cdm_source, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength</span></span></code></pre></div>
+<span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, cdm_source, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength</span></span></code></pre></div>
 <p>This cdm object is now what we´ll use going forward. It provides a
 reference to the OMOP CDM tables. We can see that these tables are still
 in the database, but now we have a reference to each of the ones we
@@ -133,7 +133,7 @@ to make the histogram.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year_of_birth</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>bins <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></code></pre></div>
-<p><img src="dbplyr_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p><img src="a03_dbplyr_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <p>If we wanted to make a boxplot for length of observation periods we
 could do the computation on the database side, bring in the new variable
 into memory, and use ggplot to produce the boxplot</p>
@@ -145,7 +145,7 @@ into memory, and use ggplot to produce the boxplot</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">observation_period</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="dbplyr_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="a03_dbplyr_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="behind-the-scenes">Behind the scenes<a class="anchor" aria-label="anchor" href="#behind-the-scenes"></a>
@@ -205,7 +205,7 @@ duckdb</p>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Adam Black.</p>
+<p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate.</p>
 </div>
 
 <div class="pkgdown">

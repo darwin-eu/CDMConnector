@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -32,19 +32,19 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/DBI_connection_examples.html">DBI connection examples</a>
+      <a href="../articles/a01_getting-started.html">Getting Started</a>
     </li>
     <li>
-      <a href="../articles/SQL.html">Using SQL from R</a>
+      <a href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
     </li>
     <li>
-      <a href="../articles/cdm_reference_backends.html">CDM reference backends</a>
+      <a href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
-      <a href="../articles/dbplyr.html">CDMConnector and dbplyr</a>
+      <a href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     </li>
     <li>
-      <a href="../articles/getting-started.html">Getting Started</a>
+      <a href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
     </li>
   </ul></li>
 <li>
@@ -67,10 +67,6 @@
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="addCohortTable.html">addCohortTable()</a></code> </p>
-        </td>
-        <td><p>Add a cohort table to a cdm object</p></td>
-      </tr><tr><td>
           <p><code><a href="appendPermanent.html">appendPermanent()</a></code> </p>
         </td>
         <td><p>Run a dplyr query and add the result set to an existing</p></td>
@@ -87,6 +83,10 @@
         </td>
         <td><p>Assert that cdm has a writable schema</p></td>
       </tr><tr><td>
+          <p><code><a href="cdmFlatten.html">cdmFlatten()</a></code> </p>
+        </td>
+        <td><p>Flatten a cdm into a single observation table</p></td>
+      </tr><tr><td>
           <p><code><a href="cdmFromCon.html">cdmFromCon()</a></code> </p>
         </td>
         <td><p>Create a CDM reference object from a database connection</p></td>
@@ -95,6 +95,18 @@
         </td>
         <td><p>Create a CDM reference from a folder containing parquet, csv, or feather
 files</p></td>
+      </tr><tr><td>
+          <p><code><a href="cdmSample.html">cdmSample()</a></code> </p>
+        </td>
+        <td><p>Subset a cdm object to a random sample of individuals</p></td>
+      </tr><tr><td>
+          <p><code><a href="cdmSubset.html">cdmSubset()</a></code> </p>
+        </td>
+        <td><p>Subset a cdm object to a set of persons</p></td>
+      </tr><tr><td>
+          <p><code><a href="cdmSubsetCohort.html">cdmSubsetCohort()</a></code> </p>
+        </td>
+        <td><p>Subset a cdm to the individuals in one or more cohorts</p></td>
       </tr><tr><td>
           <p><code><a href="cdm_from_con.html">cdm_from_con()</a></code> </p>
         </td>
@@ -105,9 +117,25 @@ files</p></td>
         <td><p>Create a CDM reference from a folder containing parquet, csv, or feather
 files</p></td>
       </tr><tr><td>
+          <p><code><a href="cohortAttrition.html">cohortAttrition()</a></code> </p>
+        </td>
+        <td><p>Return attrition table from a generated cohort set object</p></td>
+      </tr><tr><td>
+          <p><code><a href="cohortCount.html">cohortCount()</a></code> </p>
+        </td>
+        <td><p>Return cohortCounts table</p></td>
+      </tr><tr><td>
+          <p><code><a href="cohortSet.html">cohortSet()</a></code> </p>
+        </td>
+        <td><p>Return settings table</p></td>
+      </tr><tr><td>
           <p><code><a href="collect.cdm_reference.html">collect(<i>&lt;cdm_reference&gt;</i>)</a></code> </p>
         </td>
         <td><p>Bring a remote CDM reference into R</p></td>
+      </tr><tr><td>
+          <p><code><a href="computeAttritionTable.html">computeAttritionTable()</a></code> </p>
+        </td>
+        <td><p>Compute the attrition for a set of cohorts</p></td>
       </tr><tr><td>
           <p><code><a href="computePermanent.html">computePermanent()</a></code> </p>
         </td>
@@ -146,6 +174,14 @@ connection</p></td>
         </td>
         <td><p>Download the example Eunomia CDM dataset</p></td>
       </tr><tr><td>
+          <p><code><a href="dropStemTables.html">dropStemTables()</a></code> </p>
+        </td>
+        <td><p>Drop tables starting with a prefix/stem</p></td>
+      </tr><tr><td>
+          <p><code><a href="dropTable.html">dropTable()</a></code> </p>
+        </td>
+        <td><p>Drop tables from write_schema of a cdm object</p></td>
+      </tr><tr><td>
           <p><code><a href="eunomiaDir.html">eunomiaDir()</a></code> </p>
         </td>
         <td><p>Create a copy of a Eunomia dataset</p></td>
@@ -156,7 +192,7 @@ connection</p></td>
       </tr><tr><td>
           <p><code><a href="eunomia_is_available.html">eunomia_is_available()</a></code> </p>
         </td>
-        <td><p>Has the eunomia dataset been cached?</p></td>
+        <td><p>Has the Eunomia dataset been cached?</p></td>
       </tr><tr><td>
           <p><code><a href="extractLoadData.html">extractLoadData()</a></code> </p>
         </td>
@@ -164,11 +200,15 @@ connection</p></td>
       </tr><tr><td>
           <p><code><a href="generateCohortSet.html">generateCohortSet()</a></code> </p>
         </td>
-        <td><p>Generate a set of cohorts</p></td>
+        <td><p>Generate a cohort set on a cdm object</p></td>
       </tr><tr><td>
           <p><code><a href="listTables.html">listTables()</a></code> </p>
         </td>
         <td><p>List tables in a schema</p></td>
+      </tr><tr><td>
+          <p><code><a href="newGeneratedCohortSet.html">newGeneratedCohortSet()</a></code> </p>
+        </td>
+        <td><p>Constructor for generatedCohortSet objects</p></td>
       </tr><tr><td>
           <p><code><a href="print.cdm_reference.html">print(<i>&lt;cdm_reference&gt;</i>)</a></code> </p>
         </td>
@@ -185,6 +225,10 @@ connection</p></td>
           <p><code><a href="stow.html">stow()</a></code> </p>
         </td>
         <td><p>Collect a list of lazy queries and save the results as files</p></td>
+      </tr><tr><td>
+          <p><code><a href="summarise_quantile.html">summarise_quantile()</a></code> <code><a href="summarise_quantile.html">summarize_quantile()</a></code> </p>
+        </td>
+        <td><p>Quantile calculation using dbplyr</p></td>
       </tr><tr><td>
           <p><code><a href="tbl_group.html">tbl_group()</a></code> </p>
         </td>
@@ -206,7 +250,7 @@ connection</p></td>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Adam Black.</p>
+  <p></p><p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate.</p>
 </div>
 
 <div class="pkgdown">

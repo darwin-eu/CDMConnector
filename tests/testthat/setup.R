@@ -6,4 +6,3 @@ withr::local_envvar(
 
 tryCatch(downloadEunomiaData(), error = function(e) NA)
 
-options(rmarkdown.html_vignette.check_title = FALSE)

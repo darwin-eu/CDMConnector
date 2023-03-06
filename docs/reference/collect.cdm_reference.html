@@ -18,7 +18,7 @@ the result as a list of dataframes."><!-- mathjax --><script src="https://cdnjs.
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">CDMConnector</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -33,19 +33,19 @@ the result as a list of dataframes."><!-- mathjax --><script src="https://cdnjs.
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/DBI_connection_examples.html">DBI connection examples</a>
+      <a href="../articles/a01_getting-started.html">Getting Started</a>
     </li>
     <li>
-      <a href="../articles/SQL.html">Using SQL from R</a>
+      <a href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
     </li>
     <li>
-      <a href="../articles/cdm_reference_backends.html">CDM reference backends</a>
+      <a href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     </li>
     <li>
-      <a href="../articles/dbplyr.html">CDMConnector and dbplyr</a>
+      <a href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     </li>
     <li>
-      <a href="../articles/getting-started.html">Getting Started</a>
+      <a href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
     </li>
   </ul></li>
 <li>
@@ -72,7 +72,7 @@ the result as a list of dataframes.</p>
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for cdm_reference</span></span>
-<span><span class="fu">collect</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -97,7 +97,7 @@ the result as a list of dataframes.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, dbdir <span class="op">=</span> <span class="fu"><a href="eunomia_dir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">vocab</span> <span class="op">&lt;-</span> <span class="fu"><a href="cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"concept"</span>, <span class="st">"concept_ancestor"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">local_vocab</span> <span class="op">&lt;-</span> <span class="fu">collect</span><span class="op">(</span><span class="va">vocab</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">local_vocab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="va">vocab</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
@@ -110,7 +110,7 @@ the result as a list of dataframes.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Adam Black.</p>
+  <p></p><p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate.</p>
 </div>
 
 <div class="pkgdown">

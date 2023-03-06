@@ -2,10 +2,10 @@ pandoc: 2.19.2
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
-  DBI_connection_examples: DBI_connection_examples.html
-  SQL: SQL.html
-  cdm_reference_backends: cdm_reference_backends.html
-  dbplyr: dbplyr.html
-  getting-started: getting-started.html
-last_built: 2023-01-24T22:35Z
+  a01_getting-started: a01_getting-started.html
+  a02_Working_with_cohorts: a02_Working_with_cohorts.html
+  a03_dbplyr: a03_dbplyr.html
+  a04_DBI_connection_examples: a04_DBI_connection_examples.html
+  a05_cdm_reference_backends: a05_cdm_reference_backends.html
+last_built: 2023-03-06T21:46Z
 
