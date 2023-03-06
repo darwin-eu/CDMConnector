@@ -60,7 +60,7 @@ summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
     if (nrow(vars_context) > 0) {
       vars_context <- vars_context %>%
         # dplyr::mutate(x_var = purrr::map(purrr::map(.data$expr, rlang::get_expr), ~ if (length(.x) >= 2) {.x[[2]]} else {NULL}))
-        dplyr::mutate(x_var = purrr::map(.data$expr, ~if(length(rlang::get_expr(.x)) >= 2) {.x[[2]]} else {NULL}))
+        dplyr::mutate(x_var = purrr::map(.data$expr, ~if(length(rlang::get_expr(.x)) >= 2) {rlang::get_expr(.x)[[2]]} else {NULL}))
       x_context <- unique(vars_context$x_var)[[1]]
     }
   }
