@@ -11,9 +11,7 @@ vignette: >
 
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  # eval = CDMConnector::eunomia_is_available()
-  eval = FALSE
+  comment = "#>"
 )
 
 ```
@@ -91,17 +89,20 @@ cdm$gibleed %>%
 As well as the cohort itself, the cohort has a number of attributes. First, is a count of participants by cohort. We can use `cohortCount` to get these counts.
 
 ```{r}
-cohortCount(cdm$gibleed)
+cohortCount(cdm$gibleed) %>% 
+  glimpse()
 ```
 
 We also have the attrition associated with entry into the cohort available via `cohortAttrition`.
 ```{r}
-cohortAttrition(cdm$gibleed)
+cohortAttrition(cdm$gibleed) %>% 
+  glimpse()
 ```
 
 And lastly, we can also access the settings associated with the cohort using `cohortCount`.
 ```{r}
-cohortSet(cdm$gibleed)
+cohortSet(cdm$gibleed) %>% 
+  glimpse()
 ```
 
 ```{r}
