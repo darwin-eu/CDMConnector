@@ -614,7 +614,7 @@ computeAttritionTable <- function(cdm,
       cohortTableName <- cohortStem
       attrition <- dplyr::tibble(
         cohort_definition_id = id,
-        number_observations = dplyr::tbl(con, inSchema(schema, cohortTableName)) %>%
+        number_records = dplyr::tbl(con, inSchema(schema, cohortTableName)) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::tally() %>%
           dplyr::pull("n") %>%
@@ -627,18 +627,18 @@ computeAttritionTable <- function(cdm,
           dplyr::pull("n") %>%
           as.numeric(),
         reason_id = 1,
-        reason = "Qualifying initial events",
-        excluded_observations = 0,
+        reason = "Qualifying initial records",
+        excluded_records = 0,
         excluded_subjects = 0
       )
     } else {
       inclusionMaskId <- getInclusionMaskId(numberInclusion)
-      inclusionName <- c("Qualifying initial events", inclusionName)
+      inclusionName <- c("Qualifying initial records", inclusionName)
       attrition <- list()
       for (k in 1:(numberInclusion + 1)) {
         attrition[[k]] <- dplyr::tibble(
           cohort_definition_id = id,
-          number_observations = inclusionResult %>%
+          number_records = inclusionResult %>%
             dplyr::filter(.data$mode_id == 0) %>%
             dplyr::filter(.data$inclusion_rule_mask %in% inclusionMaskId[[k]]) %>%
             dplyr::pull("person_count") %>%
@@ -657,16 +657,16 @@ computeAttritionTable <- function(cdm,
       attrition <- attrition %>%
         dplyr::bind_rows() %>%
         dplyr::mutate(
-          excluded_observations =
-            dplyr::lag(.data$number_observations, 1, order_by = .data$reason_id) -
-            .data$number_observations
+          excluded_records =
+            dplyr::lag(.data$number_records, 1, order_by = .data$reason_id) -
+            .data$number_records
         ) %>%
         dplyr::mutate(
           excluded_subjects =
             dplyr::lag(.data$number_subjects, 1, order_by = .data$reason_id) -
             .data$number_subjects
         ) %>%
-        dplyr::mutate(excluded_observations = dplyr::coalesce(.data$excluded_observations, 0),
+        dplyr::mutate(excluded_records = dplyr::coalesce(.data$excluded_records, 0),
                       excluded_subjects = dplyr::coalesce(.data$excluded_subjects, 0))
     }
     attritionList[[i]] <- attrition
