@@ -19,13 +19,29 @@ knitr::opts_chunk$set(
 )
 ```
 
-The CDMConnector package provides tools for working OMOP Common Data Model (CDM) tables in a pipe friendly syntax. CDM table references are stored in a single compound object along with CDM specific metadata.
+## Creating a reference to the OMOP CDM
 
-The main function provided by the package is `cdm_from_con` which creates a CDM connection object that can be used with dplyr verbs. In the examples that we will use a [duckdb](https://duckdb.org/) database which is embedded in the CDMConnector package.
+The CDMConnector package provides tools for working with OMOP Common Data Model (CDM) tables using familiar [dplyr](https://dplyr.tidyverse.org) syntax. After connecting to a database containing  data mapped to the OMOP CDM, we can use `cdm_from_con` from CDMConnector to create a CDM reference. This CDM reference is a single object that contains table references along with specific metadata.
+
+For this example, we’ll use the Eunomia data contained in a [duckdb](https://duckdb.org/) database. First, if you haven't previously done so, we need to download the data. And once downloaded, add the path to our Renviron.
+
+```{r, message=FALSE, warning=FALSE}
+library(CDMConnector)
+library(dplyr)
+```
+
+```{r, eval=FALSE}
+downloadEunomiaData(
+  pathToData = here::here(), # change to the location you want to save the data
+  overwrite = TRUE
+)
+# once downloaded, save path to your Renviron: EUNOMIA_DATA_FOLDER="......"
+# (and then restart R)
+```
+
+With the Eunomia data now downloaded, we can connect to the database and create our reference.
 
 ```{r}
-library(CDMConnector)
-
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 cdm <- cdm_from_con(con, cdm_schema = "main")
 cdm
@@ -34,50 +50,28 @@ cdm
 Individual CDM table references can be accessed using `$` and piped to dplyr verbs.
 
 ```{r}
-library(dplyr, warn.conflicts = FALSE)
 cdm$person %>% 
-  count()
-
-cdm$drug_exposure %>% 
-  left_join(cdm$concept, by = c("drug_concept_id" = "concept_id")) %>% 
-  count(drug = concept_name, sort = TRUE)
+  glimpse()
 ```
 
-To send SQL to the CDM use the connection object. The cdm reference also contains the connection as an attribute that can be accessed with the `dbcon` function.
+## Selecting a subset of CDM tables
+
+If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_tables` argument of `cdm_from_con` supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
 
 ```{r}
-DBI::dbGetQuery(con, "select count(*) as person_count from main.person")
-
-# get the connection from a cdm object using the function `remote_con` from dbplyr
-DBI::dbGetQuery(dbplyr::remote_con(cdm$person), "select count(*) as person_count from main.person")
-```
-
-To create SQL that can be executed across multiple database platforms the SqlRender package can be used.
-
-```{r, eval=FALSE}
-sql <- SqlRender::translate("select count(*) as person_count from main.person",
-                            targetDialect = dbms(con))
-DBI::dbGetQuery(con, sql)
-```
-
-# Select a subset of CDM tables
-
-If you do not need references to all tables you can easily select only a subset of tables to include in the cdm reference. The `select` argument of `cdm_from_con` supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
-
-```{r}
+cdm_from_con(con, cdm_tables = c("person", "observation_period")) # character vector
 cdm_from_con(con, cdm_tables = starts_with("concept")) # tables that start with 'concept'
 cdm_from_con(con, cdm_tables = contains("era")) # tables that contain the substring 'era'
-cdm_from_con(con, cdm_tables = tbl_group("vocab")) # pre-defined groups
-cdm_from_con(con, cdm_tables = c("person", "observation_period")) # character vector
-cdm_from_con(con, cdm_tables = c(person, observation_period)) # bare names
 cdm_from_con(con, cdm_tables = matches("person|period")) # regular expression
-
-# If you are using a variable to hold selections then use the `all_of` selection helper
-tables_to_include <- c("person", "observation_period")
-cdm_from_con(con, cdm_tables = all_of(tables_to_include))
 ```
 
-`tbl_group` supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
+Predefined sets of tables can also be selected using `tbl_group` which supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
+
+```{r}
+# pre-defined groups
+cdm_from_con(con, cdm_tables = tbl_group("clinical")) 
+cdm_from_con(con, cdm_tables = tbl_group("vocab")) 
+```
 
 The default set of CDM tables included in a CDM object is:
 
@@ -85,10 +79,9 @@ The default set of CDM tables included in a CDM object is:
 tbl_group("default")
 ```
 
-# Include cohort tables
+## Including existing cohort tables in the CDM reference
 
-It is common to use one or more cohort tables along with the CDM. A cohort table has the following structure and can be created by CDMConnector or SQL or another package.
-
+It is common to use one or more cohort tables along with the CDM. We can include existing cohort tables by specifying the schema in which they reside and their name like so:
 ```{r, echo=FALSE}
 cohort <- tibble(cohort_id = 1L,
                  subject_id = 1L:2L,
@@ -101,11 +94,7 @@ DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", table_name = "cohort"), 
 
 ```
 
-Creation of cohort tables is outside of the scope of the CDMConnector package. Cohort tables need to be a separate schema from the CDM tables where the user has both read and write access. Once the cohort table is created in the database it can be added to the cdm object as follows.
-
 ```{r}
-listTables(con, schema = "write_schema")
-
 cdm <- cdm_from_con(con, 
                     cdm_tables = c("person", "observation_period"), 
                     write_schema = "write_schema",
@@ -114,13 +103,15 @@ cdm <- cdm_from_con(con,
 cdm$cohort
 ```
 
-# Extracting data
+## Extracting data
 
 There are two ways to extract subsets of the CDM.
 
 -   `collect` pulls data into R
 
 -   `stow` saves the cdm subset to a set of files on disk in either parquet, feather, or csv format
+
+Note, in either case, you should think carefully about the data you are extracting and make sure to only get the data that you require (and will fit into memory!)
 
 ```{r}
 local_cdm <- cdm %>% 
@@ -140,112 +131,10 @@ cdm %>%
 list.files(save_path)
 ```
 
-# Create a CDM reference from files
-
-`stow` saves the cdm object as a set of files. `cdm_from_files` read the files back into R as a cdm_reference object. The tables can be stored as R dataframes or Arrow Tables. In both cases cdm tables can be manipulated with `dplyr` verbs.
-
-```{r}
-cdm <- cdm_from_files(save_path)
-
-class(cdm$cohort)
-
-cdm$cohort %>% 
-  tally() %>% 
-  pull(n)
-
-cdm <- cdm_from_files(save_path, 
-                      as_data_frame = FALSE)
-
-class(cdm$cohort)
-
-cdm$cohort %>% 
-  nrow()
-```
-
-# Closing connections
+## Closing connections
 
 Close the database connection with `dbDisconnect`. After the connection is closed the cdm object can no longer be used.
 
 ```{r, error=TRUE}
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```
-
-# Delaying connections
-
-Sometimes you may need to delay the creation of a cdm connection or create and close many connections during execution. CDMConnector provides the ability to store connection information that can be passed to `dbConnect` to create a connection. The typical use case is to create a new connection inside a function and then close the connection before the function exits.
-
-```{r}
-connection_details <- dbConnectDetails(duckdb::duckdb(), dbdir = eunomia_dir())
-
-self_contained_query <- function(connection_details) {
-  # create a new connection
-  con <- DBI::dbConnect(connection_details)
-  # close the connection before exiting 
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
-  # use the connection
-  DBI::dbGetQuery(con, "select count(*) as n from main.person")
-}
-
-self_contained_query(connection_details)
-```
-
-
-# Programming with cdm objects
-
-Since cdm object can include any subset of cdm tables it is important for functions that take cdm objects as input to check
-that the expected tables exists. The `assert_tables` function provides a checkmate style function that tests if the 
-expected tables exist, have the correct columns, and (optionally) are not empty. It can also be used with 
-checkmate assert collections.
-
-```{r, error=TRUE}
-
-library(checkmate)
-
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-
-
-assertTables(cdm_from_con(con, cdm_tables = "drug_era"), tables = c("person"))
-
-# add missing table error to collection
-err <- checkmate::makeAssertCollection()
-assertTables(cdm_from_con(con, cdm_tables = "drug_era"), tables = c("person"), add = err)
-err$getMessages()
-
-```
-
-`assert_tables` can be used in functions that accept `cdm_reference` objects as a parameter.
-
-```{r, error=TRUE}
-countDrugsByGender <- function(cdm) {
-  assertTables(cdm, tables = c("person", "drug_era"), empty.ok = FALSE)
-
-  cdm$person %>%
-    dplyr::inner_join(cdm$drug_era, by = "person_id") %>%
-    dplyr::count(.data$gender_concept_id, .data$drug_concept_id) %>%
-    dplyr::collect()
-}
-
-countDrugsByGender(cdm_from_con(con, cdm_tables = "person"))
-
-DBI::dbExecute(con, "delete from drug_era")
-countDrugsByGender(cdm_from_con(con))
-
-DBI::dbDisconnect(con, shutdown = TRUE)
-```
-
-# Code style
-
-Camel case aliases are provided for many functions to fit both `snake_case` and `camelCase` programming styles.
-
-# Supported DBI drivers
-
-The `cdm_from_con` function should work with any DBI driver backend implementation. However the package is tested using the following driver backends.
-
--   [RPostgres](https://rpostgres.r-dbi.org/) for Postgres and Redshift
-
--   [odbc](https://github.com/r-dbi/odbc) for Microsoft SQL Server, Apache Spark, Oracle
-
--   [duckdb](https://duckdb.org/docs/api/r)
-
-    ::: {style="margin-bottom:3cm;"}
-    :::
