@@ -102,7 +102,7 @@ test_that("duckdb cohort generation with attrition", {
   attrition_df <- dplyr::collect(cohortAttrition(cdm$chrt0))
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
-  expect_true("excluded_observations" %in% names(attrition_df))
+  expect_true("excluded_records" %in% names(attrition_df))
   expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
   counts <- dplyr::collect(cohortCount(cdm$chrt0))
   expect_s3_class(counts, "data.frame")
