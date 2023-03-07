@@ -23,22 +23,24 @@ test_that("duckdb subsetting", {
   cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
   expect_true(nrow(cohortSet) == 1)
 
-  cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
+  if (rlang::is_installed("CirceR")) {
+    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
 
-  class(cdm$gibleed)
-  cdm4 <- cdmSubsetCohort(cdm, "gibleed")
+    class(cdm$gibleed)
+    cdm4 <- cdmSubsetCohort(cdm, "gibleed")
 
-  expect_lt(
-    length(dplyr::pull(cdm4$person, "person_id")),
-    length(dplyr::pull(cdm$person,  "person_id"))
-  )
+    expect_lt(
+      length(dplyr::pull(cdm4$person, "person_id")),
+      length(dplyr::pull(cdm$person,  "person_id"))
+    )
 
-  expect_lt(
-    cdm4$condition_occurrence %>% distinct(.data$person_id) %>% tally() %>% pull(.data$n),
-    cdm$condition_occurrence  %>% distinct(.data$person_id) %>% tally() %>% pull(.data$n)
-  )
+    expect_lt(
+      cdm4$condition_occurrence %>% distinct(.data$person_id) %>% tally() %>% pull(.data$n),
+      cdm$condition_occurrence  %>% distinct(.data$person_id) %>% tally() %>% pull(.data$n)
+    )
+  }
 
-  df <- cdmFlatten(cdm4) %>% dplyr::collect()
+  df <- cdmFlatten(cdm3) %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
 
   DBI::dbDisconnect(con, shutdown = TRUE)
@@ -74,19 +76,18 @@ test_that("local postgres subsetting", {
 
   expect_setequal(personId2, personId3)
 
-  path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
-  cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
-  expect_true(nrow(cohortSet) == 1)
-
-  cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed", overwrite = TRUE)
-  expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
-
-  cdm4 <- cdmSubsetCohort(cdm, "gibleed")
-
-  expect_lt(
-    length(dplyr::pull(cdm4$person, "person_id")),
-    length(dplyr::pull(cdm$person,  "person_id"))
-  )
+  if (rlang::is_installed("CirceR")) {
+    path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
+    cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
+    expect_true(nrow(cohortSet) == 1)
+    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed", overwrite = TRUE)
+    expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
+    cdm4 <- cdmSubsetCohort(cdm, "gibleed")
+    expect_lt(
+      length(dplyr::pull(cdm4$person, "person_id")),
+      length(dplyr::pull(cdm$person,  "person_id"))
+    )
+  }
 
   df <- cdmFlatten(cdm3) %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
@@ -125,19 +126,18 @@ test_that("postgres subsetting", {
 
   expect_setequal(personId2, personId3)
 
-  path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
-  cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
-  expect_true(nrow(cohortSet) == 1)
-
-  cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
-  expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
-
-  cdm4 <- cdmSubsetCohort(cdm, "gibleed")
-
-  expect_lt(
-    length(dplyr::pull(cdm4$person, "person_id")),
-    length(dplyr::pull(cdm$person,  "person_id"))
-  )
+  if (rlang::is_installed("CirceR")) {
+    path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
+    cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
+    expect_true(nrow(cohortSet) == 1)
+    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
+    expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
+    cdm4 <- cdmSubsetCohort(cdm, "gibleed")
+    expect_lt(
+      length(dplyr::pull(cdm4$person, "person_id")),
+      length(dplyr::pull(cdm$person,  "person_id"))
+    )
+  }
 
   df <- cdmFlatten(cdm3) %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
@@ -182,20 +182,18 @@ test_that("sql server subsetting", {
 
   expect_setequal(personId2, personId3)
 
-  path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
-  cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
-  expect_true(nrow(cohortSet) == 1)
-
-  cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
-  expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
-
-  cdm4 <- cdmSubsetCohort(cdm, "gibleed")
-
-  expect_lt(
-    length(dplyr::pull(cdm4$person, "person_id")),
-    length(dplyr::pull(cdm$person,  "person_id"))
-  )
-
+  if (rlang::is_installed("CirceR")) {
+    path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
+    cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
+    expect_true(nrow(cohortSet) == 1)
+    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
+    expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
+    cdm4 <- cdmSubsetCohort(cdm, "gibleed")
+    expect_lt(
+      length(dplyr::pull(cdm4$person, "person_id")),
+      length(dplyr::pull(cdm$person,  "person_id"))
+    )
+  }
   df <- cdmFlatten(cdm3) %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
 
