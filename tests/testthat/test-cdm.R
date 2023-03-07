@@ -486,4 +486,15 @@ test_that("DatabaseConnector cdm reference works on sql server", {
   DBI::dbDisconnect(con)
 })
 
+test_that("cdmName works", {
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, "main")
+  expect_equal(cdmName(cdm), "Synthea synthetic health database")
+
+  cdm <- cdm_from_con(con, "main", cdm_name = "Example CDM")
+  expect_equal(cdmName(cdm), "Example CDM")
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
 
