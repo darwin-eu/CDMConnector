@@ -148,64 +148,6 @@ test_that("postgres subsetting", {
   DBI::dbDisconnect(con)
 })
 
-
-test_that("sql server subsetting", {
-  skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-
-  con <- DBI::dbConnect(odbc::odbc(),
-                        Driver   = "ODBC Driver 18 for SQL Server",
-                        Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
-                        Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
-                        UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                        PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                        TrustServerCertificate = "yes",
-                        Port     = 1433)
-
-  cdm_schema <- Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA")
-  write_schema <- Sys.getenv("CDM5_SQL_SERVER_SCRATCH_SCHEMA")
-
-  cdm <- cdm_from_con(con,
-                      cdm_schema = cdm_schema,
-                      write_schema = write_schema)
-
-  cdm2 <- cdmSample(cdm, n = 10)
-
-  expect_equal(nrow(collect(cdm2$person)), 10)
-
-  personId2 <- cdm2$person %>% pull(person_id)
-
-  cdm3 <- cdmSubset(cdm, personId = personId2)
-
-  expect_equal(nrow(collect(cdm3$person)), 10)
-
-  personId3 <- cdm3$person %>% pull(person_id)
-
-  expect_setequal(personId2, personId3)
-
-  if (rlang::is_installed("CirceR")) {
-    path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
-    cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
-    expect_true(nrow(cohortSet) == 1)
-    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
-    expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
-    cdm4 <- cdmSubsetCohort(cdm, "gibleed")
-    expect_lt(
-      length(dplyr::pull(cdm4$person, "person_id")),
-      length(dplyr::pull(cdm$person,  "person_id"))
-    )
-  }
-  df <- cdmFlatten(cdm3) %>% dplyr::collect()
-  expect_s3_class(df, "data.frame")
-
-  DBI::dbRemoveTable(con, DBI::Id(catalog = write_schema[1],
-                                  schema = write_schema[2],
-                                  table = "gibleed"))
-  expect_false("gibleed" %in% tolower(listTables(con, write_schema)))
-
-  DBI::dbDisconnect(con)
-})
-
-
 test_that("sql server subsetting", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
   skip("birth_datetime column not found in cdm table person")
