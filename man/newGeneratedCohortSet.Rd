@@ -2,7 +2,7 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{newGeneratedCohortSet}
 \alias{newGeneratedCohortSet}
-\title{Constructor for generatedCohortSet objects}
+\title{Low level constructor for GeneratedCohortSet objects for package developers}
 \usage{
 newGeneratedCohortSet(
   cohort_ref,

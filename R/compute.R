@@ -3,7 +3,7 @@
 #' This function has been superceded by `computeQuery` which should be used
 #' instead of `computePermanent`.
 #'
-#' `r lifecycle::badge("superseded")`
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param x A dplyr query
 #' @param name Name of the table to be created
@@ -15,24 +15,13 @@
 #'
 #' @return A dplyr reference to the newly created table
 #' @export
-#'
-#'
-#' @examples
-#' \dontrun{
-#' library(CDMConnector)
-#'
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
-#' concept <- dplyr::tbl(con, "concept")
-#'
-#' rxnorm_count <- concept %>%
-#'   dplyr::filter(domain_id == "Drug") %>%
-#'   dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) %>%
-#'   dplyr::count(isRxnorm) %>%
-#'   computePermanent("rxnorm_count")
-#'
-#' DBI::dbDisconnect(con, shutdown = TRUE)
-#' }
 computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
+  lifecycle::deprecate_warn("0.5.0", "computePermanent()", "computeQuery()")
+  .computePermanent(x, name, schema, overwrite)
+}
+
+.computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
+
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
   checkmate::assertCharacter(name, len = 1)
   checkmate::assertClass(x, "tbl_sql")
@@ -76,7 +65,7 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 
   DBI::dbExecute(x$src$con, sql)
 
-  if (is(x$src$con, "duckdb_connection")) {
+  if (methods::is(x$src$con, "duckdb_connection")) {
     ref <- dplyr::tbl(x$src$con, paste(c(schema, name), collapse = "."))
   } else if (length(schema) == 2) {
     ref <- dplyr::tbl(x$src$con,
@@ -112,7 +101,7 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 #'   dplyr::filter(domain_id == "Drug") %>%
 #'   dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) %>%
 #'   dplyr::count(domain_id, isRxnorm) %>%
-#'   computePermanent("rxnorm_count")
+#'   computeQu("rxnorm_count")
 #'
 #' # append to an existing table
 #' rxnorm_count <- concept %>%
@@ -210,7 +199,7 @@ computeQuery <- function(x,
   con <- x$src$con
 
   if (temporary) {
-    if (is(con, "OraConnection") || is(con, "Oracle")) {
+    if (methods::is(con, "OraConnection") || methods::is(con, "Oracle")) {
       # https://github.com/tidyverse/dbplyr/issues/621#issuecomment-1362229669
       name <- paste0("ORA$PTT_", name)
       sql <- dbplyr::build_sql(
@@ -223,7 +212,7 @@ computeQuery <- function(x,
       )
       DBI::dbExecute(con, sql)
       return(dplyr::tbl(con, name))
-    } else if (is(con, "Spark SQL")) {
+    } else if (methods::is(con, "Spark SQL")) {
       sql <- dbplyr::build_sql(
         "CREATE ", if (overwrite) dbplyr::sql("OR REPLACE "),
         "TEMPORARY VIEW \n",
@@ -237,7 +226,7 @@ computeQuery <- function(x,
       return(dplyr::compute(x, name = name, temporary = temporary, ...))
     }
   } else {
-    computePermanent(x, name = name, schema = schema, overwrite = overwrite)
+    .computePermanent(x, name = name, schema = schema, overwrite = overwrite)
   }
 }
 
@@ -249,10 +238,14 @@ computeQuery <- function(x,
 #'
 #'
 #' @param cdm A cdm reference
-#' @param name A character vector of tables in the cdm's write_schema
+#' @param name A character vector of tables in the cdm's write_schema or
+#' a [tidyselect](https://tidyselect.r-lib.org/reference/language.html)
+#' specification of tables to drop.
+#' (e.g. `starts_with("temp")`, `matches("study01")`, etc.)
 #' @param verbose Print a message when dropping a table? TRUE or FALSE (default)
 #'
-#' @return Invisibly returns the cdm object
+#' @return Returns the cdm object with selected tables removed
+#' @importFrom tidyselect starts_with ends_with matches
 #' @export
 #'
 #' @examples
@@ -260,80 +253,58 @@ computeQuery <- function(x,
 #' library(CDMConnector)
 #'
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 #'
-#' # create a temporary table in the remote database from a query
+#' # create two temporary tables in the remote database from a query with a common prefix
 #' cdm$tmp_table <- cdm$concept %>%
 #'   dplyr::count(domain_id == "Drug") %>%
 #'   computeQuery("tmp_table", temporary = FALSE, schema = "main")
 #'
-#' "tmp_table" %in% DBI::dbListTables(con)
-#' # [1] TRUE
-#' "tmp_table" %in% names(cdm)
-#' # [1] TRUE
+#' cdm$tmp_table2 <- cdm$concept %>%
+#'   dplyr::count(domain_id == "Condition") %>%
+#'   computeQuery("tmp_table2", temporary = FALSE, schema = "main")
 #'
-#' cdm <- dropTable(cdm, "tmp_table")
+#' stringr::str_subset(DBI::dbListTables(con), "tmp")
+#' #> [1] "tmp_table"  "tmp_table2"
+#' stringr::str_subset(names(cdm), "tmp")
+#' #> [1] "tmp_table"  "tmp_table2"
 #'
-#' "tmp_table" %in% DBI::dbListTables(con)
-#' # [1] FALSE
-#' "tmp_table" %in% names(cdm)
-#' # [1] FALSE
+#' # drop tables with a common prefix
+#' cdm <- dropTable(cdm, name = dplyr::starts_with("tmp"))
+#'
+#' stringr::str_subset(DBI::dbListTables(con), "tmp")
+#' #> character(0)
+#' stringr::str_subset(names(cdm), "tmp")
+#' #> character(0)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 dropTable <- function(cdm, name, verbose = FALSE) {
 
   checkmate::assertClass(cdm, "cdm_reference")
-  checkmate::assertCharacter(name, min.chars = 1, min.len = 1,  max.len = 1e5)
+  assert_write_schema(cdm)
   schema <- attr(cdm, "write_schema")
-  checkmate::assertCharacter(schema, min.chars = 1, min.len = 1, max.len = 2)
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
   allTables <- CDMConnector::listTables(con, schema = schema)
+  names(allTables) <- allTables
+  toDrop <- names(tidyselect::eval_select(rlang::enquo(name), data = allTables))
 
-  for (i in seq_along(name)) {
+  for (i in seq_along(toDrop)) {
 
-    if (name[i] %in% allTables) {
+    if (toDrop[i] %in% allTables) {
       if (verbose) {
-        message(paste0("Dropping", schema, ".", name[i]))
+        message(paste0("Dropping", schema, ".", toDrop[i]))
       }
-      DBI::dbRemoveTable(con, inSchema(schema, name[i]))
+      DBI::dbRemoveTable(con, inSchema(schema, toDrop[i]))
     }
 
-    if (name[i] %in% names(cdm)) {
-      cdm[[name[i]]] <- NULL
+    if (toDrop[i] %in% names(cdm)) {
+      cdm[[toDrop[i]]] <- NULL
     }
   }
 
-  return(invisible(cdm))
-}
-
-#' Drop tables starting with a prefix/stem
-#'
-#' @param cdm A CDM reference object
-#' @param stem The prefix/stem identifying tables to drop. For example,
-#' a stem of "study_results" would lead to dropping any table starting with this
-#' (ie both "study_results" and "study_results_analysis_1" would be dropped if
-#' they exist in the write schema). Prefix will be interpreted as a regular
-#' expression.
-#' @param verbose Print a message when dropping a table? TRUE or FALSE (default)
-#'
-#' @return Invisibly returns the cdm object
-#' @export
-dropStemTables <- function(cdm, stem, verbose = FALSE) {
-
-  checkmate::assertClass(cdm, "cdm_reference")
-  checkmate::assertCharacter(stem, len = 1, min.chars = 1)
-  schema <- attr(cdm, "write_schema")
-  checkmate::assertCharacter(schema, min.chars = 1, min.len = 1, max.len = 2)
-  con <- attr(cdm, "dbcon")
-  checkmate::assertTRUE(DBI::dbIsValid(con))
-
-  allTables <- CDMConnector::listTables(con, schema)
-  tablesToDrop <- stringr::str_subset(allTables, paste0("^", stem))
-
-  cdm <- dropTable(cdm, tablesToDrop, verbose)
   return(invisible(cdm))
 }
 

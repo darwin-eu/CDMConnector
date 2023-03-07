@@ -26,21 +26,5 @@ This function has been superceded by \code{computeQuery} which should be used
 instead of \code{computePermanent}.
 }
 \details{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
-}
-\examples{
-\dontrun{
-library(CDMConnector)
-
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
-concept <- dplyr::tbl(con, "concept")
-
-rxnorm_count <- concept \%>\%
-  dplyr::filter(domain_id == "Drug") \%>\%
-  dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) \%>\%
-  dplyr::count(isRxnorm) \%>\%
-  computePermanent("rxnorm_count")
-
-DBI::dbDisconnect(con, shutdown = TRUE)
-}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

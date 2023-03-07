@@ -15,7 +15,7 @@ NULL
 
 # Workaround for Oracle since ROracle does not define dbIsValid
 .dbIsValid <- function(dbObj, ...) {
-  if (is(dbObj, "OraConnection")) {
+  if (methods::is(dbObj, "OraConnection")) {
     is.character(DBI::dbListTables(dbObj))
   } else {
     DBI::dbIsValid(dbObj, ...)

@@ -336,7 +336,6 @@ test_that("stow and cdm_from_files works", {
   unlink(list.files(save_path, pattern = "*feather", full.names = T))
 
   expect_message(cdm_from_files(save_path), NA)
-  expect_warning(cdm_from_files(save_path, cdm_tables = "person"), "deprecated")
 
   local_cdm <- cdm_from_files(save_path)
   expect_s3_class(local_cdm, "cdm_reference")

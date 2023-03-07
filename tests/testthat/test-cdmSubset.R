@@ -7,15 +7,15 @@ test_that("duckdb subsetting", {
 
   cdm2 <- cdmSample(cdm, n = 10)
 
-  expect_equal(nrow(collect(cdm2$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
 
-  personId2 <- cdm2$person %>% pull(person_id)
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
 
   cdm3 <- cdmSubset(cdm, personId = personId2)
 
-  expect_equal(nrow(collect(cdm3$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
 
-  personId3 <- cdm3$person %>% pull(person_id)
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
 
   expect_setequal(personId2, personId3)
 
@@ -35,8 +35,8 @@ test_that("duckdb subsetting", {
     )
 
     expect_lt(
-      cdm4$condition_occurrence %>% distinct(.data$person_id) %>% tally() %>% pull(.data$n),
-      cdm$condition_occurrence  %>% distinct(.data$person_id) %>% tally() %>% pull(.data$n)
+      cdm4$condition_occurrence %>% distinct(.data$person_id) %>% tally() %>% dplyr::pull(.data$n),
+      cdm$condition_occurrence  %>% distinct(.data$person_id) %>% tally() %>% dplyr::pull(.data$n)
     )
   }
 
@@ -64,15 +64,15 @@ test_that("local postgres subsetting", {
 
   cdm2 <- cdmSample(cdm, n = 10)
 
-  expect_equal(nrow(collect(cdm2$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
 
-  personId2 <- cdm2$person %>% pull(person_id)
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
 
   cdm3 <- cdmSubset(cdm, personId = personId2)
 
-  expect_equal(nrow(collect(cdm3$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
 
-  personId3 <- cdm3$person %>% pull(person_id)
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
 
   expect_setequal(personId2, personId3)
 
@@ -114,15 +114,15 @@ test_that("postgres subsetting", {
 
   cdm2 <- cdmSample(cdm, n = 10)
 
-  expect_equal(nrow(collect(cdm2$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
 
-  personId2 <- cdm2$person %>% pull(person_id)
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
 
   cdm3 <- cdmSubset(cdm, personId = personId2)
 
-  expect_equal(nrow(collect(cdm3$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
 
-  personId3 <- cdm3$person %>% pull(person_id)
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
 
   expect_setequal(personId2, personId3)
 
@@ -150,7 +150,7 @@ test_that("postgres subsetting", {
 
 test_that("sql server subsetting", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-  skip("birth_datetime column not found in cdm table person")
+  # skip("birth_datetime column not found in cdm table person")
 
   con <- DBI::dbConnect(odbc::odbc(),
                         Driver   = "ODBC Driver 18 for SQL Server",
@@ -176,15 +176,15 @@ test_that("sql server subsetting", {
 
   cdm2 <- cdmSample(cdm, n = 10)
 
-  expect_equal(nrow(collect(cdm2$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
 
-  personId2 <- cdm2$person %>% pull(person_id)
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
 
   cdm3 <- cdmSubset(cdm, personId = personId2)
 
-  expect_equal(nrow(collect(cdm3$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
 
-  personId3 <- cdm3$person %>% pull(person_id)
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
 
   expect_setequal(personId2, personId3)
 
@@ -231,15 +231,15 @@ test_that("redshift subsetting", {
 
   cdm2 <- cdmSample(cdm, n = 10)
 
-  expect_equal(nrow(collect(cdm2$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
 
-  personId2 <- cdm2$person %>% pull(person_id)
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
 
   cdm3 <- cdmSubset(cdm, personId = personId2)
 
-  expect_equal(nrow(collect(cdm3$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
 
-  personId3 <- cdm3$person %>% pull(person_id)
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
 
   expect_setequal(personId2, personId3)
 
@@ -267,7 +267,7 @@ test_that("oracle subsetting", {
   skip_on_ci()
   skip_on_cran()
   skip_if_not("OracleODBC-19" %in% odbc::odbcListDataSources()$name)
-  skip("birth_datetime column not found in cdm table person")
+  # skip("birth_datetime column not found in cdm table person")
 
   con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
 
@@ -280,15 +280,15 @@ test_that("oracle subsetting", {
 
   cdm2 <- cdmSample(cdm, n = 10)
 
-  expect_equal(nrow(collect(cdm2$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
 
-  personId2 <- cdm2$person %>% pull(person_id)
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
 
   cdm3 <- cdmSubset(cdm, personId = personId2)
 
-  expect_equal(nrow(collect(cdm3$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
 
-  personId3 <- cdm3$person %>% pull(person_id)
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
 
   expect_setequal(personId2, personId3)
 
@@ -327,15 +327,15 @@ test_that("spark subsetting", {
 
   cdm2 <- cdmSample(cdm, n = 10)
 
-  expect_equal(nrow(collect(cdm2$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
 
-  personId2 <- cdm2$person %>% pull(person_id)
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
 
   cdm3 <- cdmSubset(cdm, personId = personId2)
 
-  expect_equal(nrow(collect(cdm3$person)), 10)
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
 
-  personId3 <- cdm3$person %>% pull(person_id)
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
 
   expect_setequal(personId2, personId3)
 

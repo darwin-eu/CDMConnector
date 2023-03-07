@@ -33,7 +33,7 @@ rxnorm_count <- concept \%>\%
   dplyr::filter(domain_id == "Drug") \%>\%
   dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) \%>\%
   dplyr::count(domain_id, isRxnorm) \%>\%
-  computePermanent("rxnorm_count")
+  computeQu("rxnorm_count")
 
 # append to an existing table
 rxnorm_count <- concept \%>\%

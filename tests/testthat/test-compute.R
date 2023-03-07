@@ -21,7 +21,6 @@ test_that("computeQuery works on duckdb", {
   expect_true("rxnorm_count" %in% DBI::dbListTables(con))
 
   x <- computeQuery(q, "rxnorm_count", temporary = FALSE, schema = "main", overwrite = TRUE)
-  expect_error(computePermanent(q, "rxnorm_count"))
   expect_true(nrow(dplyr::collect(x)) == 2)
   expect_true("rxnorm_count" %in% DBI::dbListTables(con))
 
@@ -347,6 +346,33 @@ test_that("dropTable works on duckdb", {
 
   expect_false("tmp_table" %in% DBI::dbListTables(con))
   expect_false("tmp_table" %in% names(cdm))
+
+
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+test_that("dropTable works with tidyselect", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+  # create two temporary tables in the remote database from a query with a common prefix
+  cdm$tmp_table <- cdm$concept %>%
+    dplyr::count(domain_id == "Drug") %>%
+    computeQuery("tmp_table", temporary = FALSE, schema = "main")
+
+  cdm$tmp_table2 <- cdm$concept %>%
+    dplyr::count(domain_id == "Condition") %>%
+    computeQuery("tmp_table2", temporary = FALSE, schema = "main")
+
+  expect_length(stringr::str_subset(DBI::dbListTables(con), "tmp"), 2)
+  expect_length(stringr::str_subset(names(cdm), "tmp"), 2)
+
+  # drop tables with a common prefix
+  cdm <- dropTable(cdm, name = dplyr::starts_with("tmp"))
+
+  expect_length(stringr::str_subset(DBI::dbListTables(con), "tmp"), 1)
+  expect_length(stringr::str_subset(names(cdm), "tmp"), 1)
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })

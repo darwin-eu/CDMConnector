@@ -9,12 +9,15 @@ dropTable(cdm, name, verbose = FALSE)
 \arguments{
 \item{cdm}{A cdm reference}
 
-\item{name}{A character vector of tables in the cdm's write_schema}
+\item{name}{A character vector of tables in the cdm's write_schema or
+a \href{https://tidyselect.r-lib.org/reference/language.html}{tidyselect}
+specification of tables to drop.
+(e.g. \code{starts_with("temp")}, \code{matches("study01")}, etc.)}
 
 \item{verbose}{Print a message when dropping a table? TRUE or FALSE (default)}
 }
 \value{
-Invisibly returns the cdm object
+Returns the cdm object with selected tables removed
 }
 \description{
 cdm objects can have zero or more cohort tables stored in a special schema
@@ -26,24 +29,29 @@ write_schema
 library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
-cdm <- cdm_from_con(con, "main")
+cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 
-# create a temporary table in the remote database from a query
+# create two temporary tables in the remote database from a query with a common prefix
 cdm$tmp_table <- cdm$concept \%>\%
   dplyr::count(domain_id == "Drug") \%>\%
   computeQuery("tmp_table", temporary = FALSE, schema = "main")
 
-"tmp_table" \%in\% DBI::dbListTables(con)
-# [1] TRUE
-"tmp_table" \%in\% names(cdm)
-# [1] TRUE
+cdm$tmp_table2 <- cdm$concept \%>\%
+  dplyr::count(domain_id == "Condition") \%>\%
+  computeQuery("tmp_table2", temporary = FALSE, schema = "main")
 
-cdm <- dropTable(cdm, "tmp_table")
+stringr::str_subset(DBI::dbListTables(con), "tmp")
+#> [1] "tmp_table"  "tmp_table2"
+stringr::str_subset(names(cdm), "tmp")
+#> [1] "tmp_table"  "tmp_table2"
 
-"tmp_table" \%in\% DBI::dbListTables(con)
-# [1] FALSE
-"tmp_table" \%in\% names(cdm)
-# [1] FALSE
+# drop tables with a common prefix
+cdm <- dropTable(cdm, name = dplyr::starts_with("tmp"))
+
+stringr::str_subset(DBI::dbListTables(con), "tmp")
+#> character(0)
+stringr::str_subset(names(cdm), "tmp")
+#> character(0)
 
 DBI::dbDisconnect(con, shutdown = TRUE)
 }

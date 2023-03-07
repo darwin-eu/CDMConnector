@@ -2,7 +2,7 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{cohortAttrition}
 \alias{cohortAttrition}
-\title{Return attrition table from a generated cohort set object}
+\title{Get attrition table from a GeneratedCohortSet object}
 \usage{
 cohortAttrition(x)
 }
@@ -10,5 +10,5 @@ cohortAttrition(x)
 \item{x}{A generatedCohortSet object}
 }
 \description{
-Return attrition table from a generated cohort set object
+Get attrition table from a GeneratedCohortSet object
 }

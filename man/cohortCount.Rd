@@ -2,7 +2,7 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{cohortCount}
 \alias{cohortCount}
-\title{Return cohortCounts table}
+\title{Get cohort counts from a GeneratedCohortSet object}
 \usage{
 cohortCount(x)
 }
@@ -10,5 +10,5 @@ cohortCount(x)
 \item{x}{A generatedCohortSet object}
 }
 \description{
-Return cohortCounts table
+Get cohort counts from a GeneratedCohortSet object
 }

@@ -363,7 +363,7 @@ generateCohortSet <- function(cdm,
   return(cdm)
 }
 
-#' Constructor for generatedCohortSet objects
+#' Low level constructor for GeneratedCohortSet objects for package developers
 #'
 #' This constructor function is to be used by analytic package developers to
 #' create `generatedCohortSet` objects. Users should never need to call this
@@ -521,7 +521,7 @@ newGeneratedCohortSet <- function(cohort_ref,
   return(cohort_ref)
 }
 
-#' Return attrition table from a generated cohort set object
+#' Get attrition table from a GeneratedCohortSet object
 #'
 #' @param x A generatedCohortSet object
 #'
@@ -533,7 +533,7 @@ cohortAttrition.GeneratedCohortSet <- function(x) {
   attr(x, "cohort_attrition")
 }
 
-#' Return settings table
+#' Get cohort settings from a GeneratedCohortSet object
 #'
 #' @param x A generatedCohortSet object
 #'
@@ -545,7 +545,7 @@ cohortSet.GeneratedCohortSet <- function(x) {
   attr(x, "cohort_set")
 }
 
-#' Return cohortCounts table
+#' Get cohort counts from a GeneratedCohortSet object
 #'
 #' @param x A generatedCohortSet object
 #'
@@ -558,20 +558,20 @@ cohortCount.GeneratedCohortSet <- function(x) {
 }
 
 
-#' Compute the attrition for a set of cohorts
-#'
-#' @description This function computes the attrition for a set of cohorts. It
-#' uses the inclusion_result table so the cohort should be previously generated
-#' using stats = TRUE.
-#'
-#' @param cdm A cdm reference created by CDMConnector.
-#' @param cohortStem Stem for the cohort tables.
-#' @param cohortSet Cohort set of the generated tables.
-#' @param cohortId Cohort definition id of the cohorts that we want to generate
-#' the attrition. If NULL all cohorts from cohort set will be used.
-#'
-#' @importFrom rlang :=
-#' @return the attrition as a data.frame
+# Compute the attrition for a set of cohorts (internal function)
+#
+# @description This function computes the attrition for a set of cohorts. It
+# uses the inclusion_result table so the cohort should be previously generated
+# using stats = TRUE.
+#
+# @param cdm A cdm reference created by CDMConnector.
+# @param cohortStem Stem for the cohort tables.
+# @param cohortSet Cohort set of the generated tables.
+# @param cohortId Cohort definition id of the cohorts that we want to generate
+# the attrition. If NULL all cohorts from cohort set will be used.
+#
+# @importFrom rlang :=
+# @return the attrition as a data.frame
 computeAttritionTable <- function(cdm,
                                   cohortStem,
                                   cohortSet,

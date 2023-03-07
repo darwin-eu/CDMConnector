@@ -1,0 +1,32 @@
+template:
+  bootstrap: 5
+  bootswatch: zephyr
+  bslib:
+    primary: "#123293"
+
+reference:
+- subtitle: CDM Object
+  desc: Create or transform a CDM reference object. These accept and return cdm objects.
+- contents:
+  - matches("^cdm|stow|print.cdm_reference|snapshot|tbl_group|validate_cdm|validateCdm|collect.cdm_reference|assert_write_schema|assert_tables|version|dropTable|dropStemTables")
+- subtitle: Cohort Generation
+  desc: Create and use `GeneratedCohortSet` objects
+- contents:
+  - matches("generateCohortSet|^cohort|readCohortSet|newGeneratedCohortSet")
+- subtitle: dbplyr workarounds
+  desc: Functions that can be used in cross database dplyr pipelines
+- contents:
+  - matches("computeQuery|appendPermanent|datediff|dateadd|_quantile$|asDate")
+- subtitle: DBI connection
+  desc: Functions that accept DBI connections and are useful in cross database DBI code
+- contents:
+  - matches("dbms|dropTable|dropStemTables|listTables|dbConnect")
+- subtitle: Eunomia example CDM
+  desc: Easily create and use example file based duckdb CDMs
+- contents:
+  - matches("eunomia|downloadEunomiaData")
+- subtitle: Deprecated
+  desc: Functions that will be removed in a future release
+- contents:
+  - matches("computePermanent")
+

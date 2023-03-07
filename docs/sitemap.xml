@@ -88,9 +88,6 @@
     <loc>/reference/collect.cdm_reference.html</loc>
   </url>
   <url>
-    <loc>/reference/computeAttritionTable.html</loc>
-  </url>
-  <url>
     <loc>/reference/computePermanent.html</loc>
   </url>
   <url>
@@ -140,9 +137,6 @@
   </url>
   <url>
     <loc>/reference/generateCohortSet.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getFullTableNameQuoted.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>

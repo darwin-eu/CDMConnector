@@ -197,7 +197,7 @@ test_that("summarise-quantile generates error when no names passed", {
   expect_error(f())
 })
 
-DBI::dbDisconnect(con)
+DBI::dbDisconnect(con, shutdown = TRUE)
 
 
 test_that("`summarise_quantile` works on DuckDB", {
@@ -229,11 +229,11 @@ test_that("`summarise_quantile` works on DuckDB", {
                 label = paste('Result for drug_concept_id ', as.character(n)))
   }
 
-  DBI::dbDisconnect(con)
+  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 
-test_that("`summarise_quantile` works on Postgres", {
+test_that("summarise_quantile works on Postgres", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
   con <- DBI::dbConnect(RPostgres::Postgres(),
                         dbname =   Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
@@ -272,7 +272,7 @@ test_that("`summarise_quantile` works on Postgres", {
 })
 
 
-test_that("`summarise_quantile` works on SQL Server", {
+test_that("summarise_quantile works on SQL Server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
   con <- DBI::dbConnect(odbc::odbc(),
                         Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
@@ -356,7 +356,7 @@ test_that("`summarise_quantile` works on Redshift", {
 
 
 # Test dbplyr quantile translation -----
-
+# The following test show what syntax works and does not work on each platform
 
 test_that("quantile translation works on postgres", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")

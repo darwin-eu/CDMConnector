@@ -1,16 +1,22 @@
 # CDMConnector 0.5.0
 
 * Define `generatedCohortSet` class
-* Remove visit_detail from default cdm tables
 * Add `summarize_quantile` for cross database quantile queries
-* Move rJava, SqlRender to Suggests from Depends
+* Add `GeneratedCohortSet` object, constructor, and attribute accessor functions
 * Add vignette on cohort generation
+* Add `cdmSubset`, `cdmSubsetCohort`, `cdmSample` for subsetting a cdm
+* Add `cdmFlatten` for transforming a cdm into a single flat table of observations
 * Improve test coverage
-* Add cdm subset
-* Add bigquery tests
-* `cdm_schema` is now required in `cdm_from_con`
+* Make Java dependency optional
+* `cdm_schema` is now required in `cdm_from_con` except for duckdb connections
+* Remove visit_detail from default cdm tables
+* Deprecate `computePermanent`
+* Improve package website
 
-Released Mar 2, 2023
+Substantial contributions by @edward-burn, @catalamarti, @Tsemharb who are now
+package co-authors.
+
+Released Mar 8, 2023
 
 # CDMConnector 0.4.1
 

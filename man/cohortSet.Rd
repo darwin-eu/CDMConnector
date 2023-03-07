@@ -2,7 +2,7 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{cohortSet}
 \alias{cohortSet}
-\title{Return settings table}
+\title{Get cohort settings from a GeneratedCohortSet object}
 \usage{
 cohortSet(x)
 }
@@ -10,5 +10,5 @@ cohortSet(x)
 \item{x}{A generatedCohortSet object}
 }
 \description{
-Return settings table
+Get cohort settings from a GeneratedCohortSet object
 }

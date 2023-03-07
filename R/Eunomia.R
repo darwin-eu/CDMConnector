@@ -68,25 +68,16 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
   }
 }
 
-#' Download the example Eunomia CDM dataset
-#'
-#' This function is deprecated. Use downloadEunomiaData instead.
-#' @export
-download_optional_data <- function() {
-  rlang::inform("download_optional_data is deprecated. Use downloadEunomiaData() instead.")
-  downloadEunomiaData()
-}
-
-#' Extract the Eunomia data files and load into a SQLite or duckdb database
-#'
-#' Extract files from a .ZIP file and creates a SQLite or duckdb OMOP CDM database that is then stored in the
-#' same directory as the .ZIP file.
-#'
-#' @param from The path to the .ZIP file that contains the csv CDM source files
-#' @param to The path to the .sqlite or .duckdb file that will be created
-#' @param dbms The file based database system to use: 'sqlite' (default) or 'duckdb'
-#' @param verbose Print progress notes? TRUE or FALSE
-#' @importFrom tools file_ext
+# Extract the Eunomia data files and load into a SQLite or duckdb database
+#
+# Extract files from a .ZIP file and creates a SQLite or duckdb OMOP CDM database that is then stored in the
+# same directory as the .ZIP file.
+#
+# @param from The path to the .ZIP file that contains the csv CDM source files
+# @param to The path to the .sqlite or .duckdb file that will be created
+# @param dbms The file based database system to use: 'sqlite' (default) or 'duckdb'
+# @param verbose Print progress notes? TRUE or FALSE
+# @importFrom tools file_ext
 extractLoadData <- function(from, to, dbms = "sqlite", verbose = FALSE) {
   stopifnot(dbms == "sqlite" || dbms == "duckdb", is.logical(verbose), length(verbose) == 1)
   stopifnot(is.character(from), length(from) == 1, nchar(from) > 0)

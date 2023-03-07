@@ -13,3 +13,4 @@ LICENSE
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
 ^testData$
+^_pkgdown\.yml$

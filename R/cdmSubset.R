@@ -341,8 +341,8 @@ cdmFlatten <- function(cdm,
   if ("condition" %in% domain) {
     assert_tables(cdm, "condition_occurrence")
     queryList[["condition"]] <- cdm$condition_occurrence %>%
-      dplyr::select(
-        person_id,
+      dplyr::transmute(
+        person_id = .data$person_id,
         observation_concept_id = .data$condition_concept_id,
         start_date = .data$condition_start_date,
         end_date = .data$condition_end_date,
@@ -354,12 +354,12 @@ cdmFlatten <- function(cdm,
   if ("drug" %in% domain) {
     assert_tables(cdm, "drug_exposure")
     queryList[["drug"]] <- cdm$drug_exposure %>%
-      dplyr::select(
-        person_id,
-        observation_concept_id = drug_concept_id,
-        start_date = drug_exposure_start_date,
-        end_date = drug_exposure_end_date,
-        type_concept_id = drug_type_concept_id) %>%
+      dplyr::transmute(
+        person_id = .data$person_id,
+        observation_concept_id = .data$drug_concept_id,
+        start_date = .data$drug_exposure_start_date,
+        end_date = .data$drug_exposure_end_date,
+        type_concept_id = .data$drug_type_concept_id) %>%
       dplyr::distinct() %>%
       dplyr::mutate(domain = "drug")
   }
@@ -367,12 +367,12 @@ cdmFlatten <- function(cdm,
   if ("procedure" %in% domain) {
     assert_tables(cdm, "procedure_occurrence")
     queryList[["procedure"]] <- cdm$procedure_occurrence %>%
-      dplyr::select(
-        person_id,
-        observation_concept_id = procedure_concept_id,
-        start_date = procedure_date,
-        end_date = procedure_date,
-        type_concept_id = procedure_type_concept_id) %>%
+      dplyr::transmute(
+        person_id = .data$person_id,
+        observation_concept_id = .data$procedure_concept_id,
+        start_date = .data$procedure_date,
+        end_date = .data$procedure_date,
+        type_concept_id = .data$procedure_type_concept_id) %>%
       dplyr::distinct() %>%
       dplyr::mutate(domain = "procedure")
   }
@@ -380,12 +380,12 @@ cdmFlatten <- function(cdm,
   if ("measurement" %in% domain) {
     assert_tables(cdm, "measurement")
     queryList[["measurement"]] <- cdm$measurement %>%
-      dplyr::select(
-        person_id,
-        observation_concept_id = measurement_concept_id,
-        start_date = measurement_date,
-        end_date = measurement_date,
-        type_concept_id = measurement_type_concept_id) %>%
+      dplyr::transmute(
+        person_id = .data$person_id,
+        observation_concept_id = .data$measurement_concept_id,
+        start_date = .data$measurement_date,
+        end_date = .data$measurement_date,
+        type_concept_id = .data$measurement_type_concept_id) %>%
       dplyr::distinct() %>%
       dplyr:: mutate(domain = "measurement")
   }
@@ -393,12 +393,12 @@ cdmFlatten <- function(cdm,
   if ("visit" %in% domain) {
     assert_tables(cdm, "visit")
     queryList[["visit"]] <- cdm$visit_occurrence %>%
-      dplyr::select(
-        person_id,
-        observation_concept_id = visit_concept_id,
-        start_date = visit_start_date,
-        end_date = visit_end_date,
-        type_concept_id = visit_type_concept_id) %>%
+      dplyr::transmute(
+        person_id = .data$person_id,
+        observation_concept_id = .data$visit_concept_id,
+        start_date = .data$visit_start_date,
+        end_date = .data$visit_end_date,
+        type_concept_id = .data$visit_type_concept_id) %>%
       dplyr::distinct() %>%
       dplyr::mutate(domain = "visit")
   }
@@ -406,12 +406,12 @@ cdmFlatten <- function(cdm,
   if ("death" %in% domain) {
     assert_tables(cdm, "death")
     queryList[["death"]] <- cdm$death %>%
-      dplyr::select(
-        person_id,
-        observation_concept_id = cause_concept_id,
-        start_date = death_date,
-        end_date = death_date,
-        type_concept_id = death_type_concept_id) %>%
+      dplyr::transmute(
+        person_id = .data$person_id,
+        observation_concept_id = .data$cause_concept_id,
+        start_date = .data$death_date,
+        end_date = .data$death_date,
+        type_concept_id = .data$death_type_concept_id) %>%
       dplyr::distinct() %>%
       dplyr::mutate(domain = "death")
   }
@@ -419,12 +419,12 @@ cdmFlatten <- function(cdm,
   if ("observation" %in% domain) {
     assert_tables(cdm, "observation")
     queryList[["death"]] <- cdm$observation %>%
-      dplyr::select(
-        person_id,
-        observation_concept_id =  observation_concept_id,
-        start_date =  observation_date,
-        end_date = observation_date,
-        type_concept_id = observation_type_concept_id) %>%
+      dplyr::transmute(
+        person_id = .data$person_id,
+        observation_concept_id =  .data$observation_concept_id,
+        start_date =  .data$observation_date,
+        end_date = .data$observation_date,
+        type_concept_id = .data$observation_type_concept_id) %>%
       dplyr::distinct() %>%
       dplyr::mutate(domain = "observation")
   }

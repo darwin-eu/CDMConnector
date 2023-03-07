@@ -2,6 +2,7 @@
 % Please edit documentation in R/cdm.R
 \name{cdm_from_con}
 \alias{cdm_from_con}
+\alias{cdmFromCon}
 \title{Create a CDM reference object from a database connection}
 \usage{
 cdm_from_con(
@@ -10,12 +11,22 @@ cdm_from_con(
   cdm_tables = tbl_group("default"),
   write_schema = NULL,
   cohort_tables = NULL,
-  cdm_version = "5.3"
+  cdm_version = "5.3",
+  cdm_name = NULL
+)
+
+cdmFromCon(
+  con,
+  cdmSchema = NULL,
+  cdmTables = tbl_group("default"),
+  writeSchema = NULL,
+  cohortTables = NULL,
+  cdmName = NULL
 )
 }
 \arguments{
-\item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or
-v5.3 instance is located.}
+\item{con}{A DBI database connection to a database where an OMOP CDM v5.4
+instance is located.}
 
 \item{cdm_schema}{The schema where the OMOP CDM tables are located. Defaults
 to NULL.}
@@ -37,10 +48,37 @@ included in the CDM object.}
 \item{cdm_version}{The version of the OMOP CDM: "5.3" (default), "5.4",
 "auto". "auto" attempts to automatically determine the cdm version using
 heuristics. Cohort tables must be in the write_schema.}
+
+\item{cdm_name}{The name of the CDM. If NULL (default) the cdm_source_name
+.  field in the CDM_SOURCE table will be used.}
+
+\item{cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
+to NULL.}
+
+\item{cdmTables}{Which tables should be included? Supports a character
+vector, tidyselect selection helpers, or table groups.
+\itemize{
+\item{tbl_group("all")}{all CDM tables}
+\item{tbl_group("vocab")}{the CDM vocabulary tables}
+\item{tbl_group("clinical")}{the clinical CDM tables}
+}}
+
+\item{writeSchema}{An optional schema in the CDM database that the user has
+write access to.}
+
+\item{cohortTables}{A character vector listing the cohort table names to be
+included in the CDM object. Cohort tables must be in the write_schema.}
+
+\item{cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
+.  field in the CDM_SOURCE table will be used.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables
+
+A list of dplyr database table references pointing to CDM tables
 }
 \description{
+Create a CDM reference object from a database connection
+
 Create a CDM reference object from a database connection
 }
