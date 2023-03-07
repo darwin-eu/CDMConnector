@@ -433,11 +433,11 @@ cdmFlatten <- function(cdm,
     assert_tables(cdm, "concept")
     out <- queryList %>%
       purrr::reduce(dplyr::union) %>%
-      dplyr::left_join(dplyr::select(cdm$concept,
+      dplyr::left_join(dplyr::transmute(cdm$concept,
                        observation_concept_id = .data$concept_id,
                        observation_concept_name = .data$concept_name),
                 by = "observation_concept_id") %>%
-      dplyr::left_join(dplyr::select(cdm$concept,
+      dplyr::left_join(dplyr::transmute(cdm$concept,
                        type_concept_id = .data$concept_id,
                        type_concept_name = .data$concept_name),
                 by = "type_concept_id") %>%

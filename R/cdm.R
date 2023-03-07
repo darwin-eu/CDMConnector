@@ -79,13 +79,22 @@ cdm_from_con <- function(con,
       cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
     }
 
-   if (is.null(cdm_name)) {
-     cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source")) %>%
-       head() %>%
-       dplyr::collect()
+   nms <- listTables(con, schema = cdm_schema)
+   if (is.null(cdm_name) && "cdm_source" %in% tolower(nms)) {
 
-      cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[[1]],
-                                  cdm_source$cdm_source_abbreviation[[1]])
+     if ("cdm_source" %in% nms) {
+       cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source"))
+     } else if ("CDM_SOURCE" %in% nms) {
+       cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "CDM_SOURCE"))
+     }
+
+     cdm_source <- cdm_source %>%
+         head() %>%
+         dplyr::collect() %>%
+         dplyr::rename_all(tolower)
+
+     cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[[1]],
+                                 cdm_source$cdm_source_abbreviation[[1]])
    }
 
     # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html

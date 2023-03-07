@@ -1,7 +1,6 @@
 ## R CMD check results
 
-This is a resubmission to address the policy violation (creating data in user's home directory)
-which occured when building vignettes.
+This is a new release.
 
 One NOTE is expected.
 
