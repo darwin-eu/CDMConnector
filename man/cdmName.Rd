@@ -21,6 +21,11 @@ library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 cdm <- cdm_from_con(con, "main")
 cdmName(cdm)
+#> [1] "Synthea synthetic health database"
+
+cdm <- cdm_from_con(con, "main", cdm_name = "Example CDM")
+cdmName(cdm)
+#> [1] "Example CDM"
 
 DBI::dbDisconnect(con, shutdown = TRUE)
 }

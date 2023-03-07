@@ -118,7 +118,7 @@ cdmSubsetCohort <- function(cdm,
 
   n_subjects_person_table <- subjects %>%
     dplyr::inner_join(cdm$person, by = c("subject_id" = "person_id")) %>%
-    distinct(.data$subject_id) %>%
+    dplyr::distinct(.data$subject_id) %>%
     dplyr::tally() %>%
     dplyr::pull("n")
 
