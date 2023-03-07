@@ -4,9 +4,9 @@ Version: 0.5.0
 Authors@R: c(
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
-      person("Artem", "Gorbachev", , "artem.gorbachev@odysseusinc.com", role = "aut"),
-      person("Edward", "Burn", , "edward.burn@ndorms.ox.ac.uk", role = "aut"),
-      person("Marti", "Catala Sabate", , "marti.catalasabate@ndorms.ox.ac.uk", role = "aut")
+    person("Artem", "Gorbachev", , "artem.gorbachev@odysseusinc.com", role = "aut"),
+    person("Edward", "Burn", , "edward.burn@ndorms.ox.ac.uk", role = "aut"),
+    person("Marti", "Catala Sabate", , "marti.catalasabate@ndorms.ox.ac.uk", role = "aut")
   )
 Description: Provides tools for working with observational health data in the 
   Observational Medical Outcomes Partnership (OMOP) Common Data Model format with a pipe friendly syntax.

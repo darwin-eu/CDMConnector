@@ -49,6 +49,13 @@ listTables <- function(con, schema = NULL) {
   } else if (is(con, "OraConnection")) {
     checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
     DBI::dbListTables(con, schema = schema)
+  } else if (is(con, "BigQueryConnection")) {
+    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
+
+    DBI::dbGetQuery(con,
+                    glue::glue("SELECT table_name
+                                FROM `{schema}`.INFORMATION_SCHEMA.TABLES
+                                WHERE table_schema = '{schema}'"))[[1]]
   } else {
     rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
   }
