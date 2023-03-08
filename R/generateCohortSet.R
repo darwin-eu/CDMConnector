@@ -486,8 +486,8 @@ newGeneratedCohortSet <- function(cohort_ref,
                           choices = names(cohort_ref))
 
   if (!is.null(cohort_set_ref)) {
-    checkmate::assertSubset(c("cohort_definition_id", "cohort_name"),
-                            choices = names(cohort_set_ref))
+    stopifnot(colnames(cohort_set_ref)[1] == "cohort_definition_id",
+              colnames(cohort_set_ref)[2] == "cohort_name")
 
     # primary key check
     one <- cohort_set_ref %>%
