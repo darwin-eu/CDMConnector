@@ -244,6 +244,8 @@ test_that("quantile translation works on duckdb", {
 
 
 test_that("Oracle inSchema works", {
+  skip_if_not("OracleODBC-19" %in% odbc::odbcListDrivers())
+
   con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
   cdm_schema <- Sys.getenv("CDM5_ORACLE_CDM_SCHEMA")
 
