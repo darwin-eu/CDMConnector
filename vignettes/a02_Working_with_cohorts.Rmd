@@ -14,6 +14,13 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+library(CDMConnector)
+library(dplyr, warn.conflicts = FALSE)
+
+if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") Sys.setenv("EUNOMIA_DATA_FOLDER" = file.path(tempdir(), "eunomia"))
+if (!dir.exists(Sys.getenv("EUNOMIA_DATA_FOLDER"))) dir.create(Sys.getenv("EUNOMIA_DATA_FOLDER"))
+if (!eunomia_is_available()) downloadEunomiaData()
+
 ```
 
 
@@ -59,7 +66,7 @@ writeCohort(gibleed_cohort_definition, file.path(path, "gibleed.json"))
 ```
 
 ```{r, echo=FALSE}
-# use internal cohort set
+# use internal cohort set 
 gibleed_cohort_set <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))[3,]
 ```
 
@@ -69,7 +76,8 @@ Now we have our cohort definition, we can generate the cohort.
 gibleed_cohort_set <- readCohortSet(path = path)
 ```
 
-```{r}
+```{r, eval=FALSE}
+# requires CirceR optional dependency
 cdm <- generateCohortSet(
   cdm,
   gibleed_cohort_set,
@@ -78,30 +86,74 @@ cdm <- generateCohortSet(
 )
 ```
 
+```{r, echo=FALSE, eval=FALSE}
+# save data in package. Only do this when editing vignette.
+cdm$gibleed %>% 
+  collect() %>% 
+  readr::write_rds(here::here("inst", "rds", "gibleed.rds"))
+
+cdm$gibleed %>% 
+  cohortCount() %>% 
+  collect() %>% 
+  readr::write_rds(here::here("inst", "rds", "gibleed_count.rds"))
+
+cdm$gibleed %>% 
+  cohortAttrition() %>% 
+  collect() %>% 
+  readr::write_rds(here::here("inst", "rds", "gibleed_attrition.rds"))
+
+cdm$gibleed %>% 
+  cohortSet() %>% 
+  collect() %>% 
+  readr::write_rds(here::here("inst", "rds", "gibleed_set.rds"))
+
+```
+
+
 We can see that we now have our cohort instantiated in the database with a reference to it added to the cdm reference.
-```{r}
+```{r, eval=FALSE}
 cdm$gibleed %>% 
   glimpse()
 ```
+```{r, echo=FALSE}
+readr::read_rds(system.file("rds", "gibleed.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
+  glimpse()
+```
+
+
 
 ## Cohort attributes
 
 As well as the cohort itself, the cohort has a number of attributes. First, is a count of participants by cohort. We can use `cohortCount` to get these counts.
 
-```{r}
+```{r, eval=FALSE}
 cohortCount(cdm$gibleed) %>% 
   glimpse()
 ```
 
+```{r, echo=FALSE}
+readr::read_rds(system.file("rds", "gibleed_count.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
+  glimpse()
+```
+
 We also have the attrition associated with entry into the cohort available via `cohortAttrition`.
-```{r}
+```{r, eval=FALSE}
 cohortAttrition(cdm$gibleed) %>% 
+  glimpse()
+```
+```{r, echo=FALSE}
+readr::read_rds(system.file("rds", "gibleed_attrition.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
   glimpse()
 ```
 
 And lastly, we can also access the settings associated with the cohort using `cohortCount`.
-```{r}
+```{r, eval=FALSE}
 cohortSet(cdm$gibleed) %>% 
+  glimpse()
+```
+
+```{r, echo=FALSE}
+readr::read_rds(system.file("rds", "gibleed_set.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
   glimpse()
 ```
 

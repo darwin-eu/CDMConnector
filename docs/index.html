@@ -120,24 +120,24 @@
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="do">## # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, cdm_source, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength</span></span></code></pre></div>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Tables: person, observation_period, visit_occurrence, condition_occurrence, drug_exposure, procedure_occurrence, measurement, observation, death, location, care_site, provider, drug_era, dose_era, condition_era, cdm_source, concept, vocabulary, concept_relationship, concept_synonym, concept_ancestor, drug_strength</span></span></code></pre></div>
 <p>A <code>cdm_reference</code> is a named list of table references:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr, <span class="at">warn.conflicts =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(cdm)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "person"               "observation_period"   "visit_occurrence"    </span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  [4] "visit_detail"         "condition_occurrence" "drug_exposure"       </span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="do">##  [7] "procedure_occurrence" "measurement"          "observation"         </span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [10] "death"                "location"             "care_site"           </span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [13] "provider"             "drug_era"             "dose_era"            </span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [16] "condition_era"        "cdm_source"           "concept"             </span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [19] "vocabulary"           "concept_relationship" "concept_synonym"     </span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## [22] "concept_ancestor"     "drug_strength"</span></span></code></pre></div>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  [4] "condition_occurrence" "drug_exposure"        "procedure_occurrence"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="do">##  [7] "measurement"          "observation"          "death"               </span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [10] "location"             "care_site"            "provider"            </span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [13] "drug_era"             "dose_era"             "condition_era"       </span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [16] "cdm_source"           "concept"              "vocabulary"          </span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [19] "concept_relationship" "concept_synonym"      "concept_ancestor"    </span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## [22] "drug_strength"</span></span></code></pre></div>
 <p>Use dplyr verbs with the table references.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tally</span>(cdm<span class="sc">$</span>person)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">## # Source:   SQL [1 x 1]</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpcuCHv2/uudgqiyb/cdm.duckdb]</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp54RXOJ/rbwvlnnh]</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="do">##       n</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
@@ -147,7 +147,7 @@
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(<span class="at">top_conditions =</span> concept_name, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpcuCHv2/uudgqiyb/cdm.duckdb]</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp54RXOJ/rbwvlnnh]</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
@@ -167,7 +167,7 @@
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">validate_cdm</span>(cdm)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">## ── CDM v5.3 validation (checking 2 tables) ─────────────────────────────────────</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## ✔ cdm table names</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## ✔ cdm field names are correct</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="do">## ✔ all row counts &gt; 0</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -178,7 +178,7 @@
 <li>
 <a href="https://rpostgres.r-dbi.org/reference/postgres" class="external-link">RPostgres</a> on Postgres and Redshift</li>
 <li>
-<a href="https://solutions.posit.co/connections/db/r-packages/odbc/" class="external-link">odbc</a> on Microsoft SQL Server</li>
+<a href="https://solutions.posit.co/connections/db/r-packages/odbc/" class="external-link">odbc</a> on Microsoft SQL Server and Databricks/Spark</li>
 <li><a href="https://duckdb.org/docs/api/r" class="external-link">duckdb</a></li>
 </ul>
 </div>
@@ -232,7 +232,7 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://CRAN.R-project.org/package=CDMConnector" class="external-link"><img src="https://www.r-pkg.org/badges/version/CDMConnector" alt="CRAN status"></a></li>
-<li><a href="https://codecov.io/github/OdyOSG/CDMConnector?branch=main" class="external-link"><img src="https://codecov.io/github/OdyOSG/CDMConnector/coverage.svg?branch=main" alt="codecov.io"></a></li>
+<li><a href="https://codecov.io/gh/OdyOSG/CDMConnector?branch=main" class="external-link"><img src="https://codecov.io/gh/OdyOSG/CDMConnector/coverage.svg?branch=main" alt="codecov.io"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg" alt="Build Status"></a></li>
 </ul>
 </div>

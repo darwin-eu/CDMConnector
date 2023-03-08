@@ -111,20 +111,20 @@ include in the output table? TRUE (default) or FALSE</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">all_observations</span></span></span>
 <span class="r-in"><span><span class="co">#&gt; # A tibble: 213 × 8</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;    person_id observation_…¹ start_date end_date   type_…² domain obser…³ type_…⁴</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;    person_id observation_.  start_date end_date   type_.  domain obser.  type_.</span></span></span>
 <span class="r-in"><span><span class="co">#&gt;        &lt;dbl&gt;          &lt;dbl&gt; &lt;date&gt;     &lt;date&gt;       &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  1         2       40213201 1986-09-09 1986-09-09  5.81e5 drug   pneumo… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  2        18        4116491 1997-11-09 1998-01-09  3.20e4 condi… Escher… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  3        18       40213227 2017-01-04 2017-01-04  5.81e5 drug   tetanu… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  4        42        4156265 1974-06-13 1974-06-27  3.20e4 condi… Facial… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  5        18       40213160 1966-02-23 1966-02-23  5.81e5 drug   poliov… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  6        42        4198190 1933-10-29 1933-10-29  3.80e7 proce… Append… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  7         2        4109685 1952-07-13 1952-07-27  3.20e4 condi… Lacera… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  8        18       40213260 2017-01-04 2017-01-04  5.81e5 drug   zoster… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt;  9        42        4151422 1985-02-03 1985-02-03  3.80e7 proce… Sputum… &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt; 10         2        4163872 1993-03-29 1993-03-29  3.80e7 proce… Plain … &lt;NA&gt;</span></span></span>
-<span class="r-in"><span><span class="co">#&gt; # … with 203 more rows, and abbreviated variable names ¹observation_concept_id,</span></span></span>
-<span class="r-in"><span><span class="co">#&gt; #   ²type_concept_id, ³observation_concept_name, ⁴type_concept_name</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  1         2       40213201 1986-09-09 1986-09-09  5.81e5 drug   pneumo  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  2        18        4116491 1997-11-09 1998-01-09  3.20e4 condi  Escher  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  3        18       40213227 2017-01-04 2017-01-04  5.81e5 drug   tetanu  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  4        42        4156265 1974-06-13 1974-06-27  3.20e4 condi  Facial  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  5        18       40213160 1966-02-23 1966-02-23  5.81e5 drug   poliov  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  6        42        4198190 1933-10-29 1933-10-29  3.80e7 proce  Append  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  7         2        4109685 1952-07-13 1952-07-27  3.20e4 condi  Lacera  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  8        18       40213260 2017-01-04 2017-01-04  5.81e5 drug   zoster  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt;  9        42        4151422 1985-02-03 1985-02-03  3.80e7 proce  Sputum  &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; 10         2        4163872 1993-03-29 1993-03-29  3.80e7 proce  Plain   &lt;NA&gt;</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; # ... with 203 more rows, and abbreviated variable names observation_concept_id,</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; #   type_concept_id, observation_concept_name, type_concept_name</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>

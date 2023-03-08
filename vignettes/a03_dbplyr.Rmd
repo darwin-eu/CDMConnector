@@ -9,7 +9,7 @@ vignette: >
 
 ```{r, include = FALSE}
 library(CDMConnector)
-if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") Sys.setenv("EUNOMIA_DATA_FOLDER" = tempdir())
+if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") Sys.setenv("EUNOMIA_DATA_FOLDER" = file.path(tempdir(), "eunomia"))
 if (!dir.exists(Sys.getenv("EUNOMIA_DATA_FOLDER"))) dir.create(Sys.getenv("EUNOMIA_DATA_FOLDER"))
 if (!eunomia_is_available()) downloadEunomiaData()
 
@@ -94,7 +94,7 @@ cdm$person %>%
 
 
 ```{r}
-DBI::dbDisconnect(con, disconnect = TRUE)
+DBI::dbDisconnect(con, shutdown = TRUE)
 ```
 
 <div style="margin-bottom:3cm;"></div>
