@@ -23,12 +23,19 @@ NULL
 }
 
 # Helper function to deal with compound schemas
-inSchema <- function(schema, table) {
+inSchema <- function(schema, table, dbms = NULL) {
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
   checkmate::assertCharacter(table, len = 1)
-  if (length(schema) == 2) {
-    return(DBI::Id(catalog = schema[1], schema = schema[2], table = table))
+  checkmate::assertCharacter(dbms, len = 1, null.ok = TRUE)
+
+  if (!is.null(dbms) && (dbms %in% c("oracle"))) {
+    # some dbms need in_schema, others DBI::Id
+    switch(length(schema),
+           dbplyr::in_schema(schema = schema, table = table),
+           dbplyr::in_catalog(catalog = schema[1], schema = schema[2], table = table))
   } else {
-    return(DBI::Id(schema = schema, table = table))
+    switch(length(schema),
+           DBI::Id(schema = schema, table = table),
+           DBI::Id(catalog = schema[1], schema = schema[2], table = table))
   }
 }

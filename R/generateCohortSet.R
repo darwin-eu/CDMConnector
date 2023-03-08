@@ -597,7 +597,7 @@ computeAttritionTable <- function(cdm,
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, min.chars = 1)
 
   # Bring the inclusion result table to R memory
-  inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName)) %>%
+  inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName, dbms(con))) %>%
     dplyr::collect() %>%
     dplyr::mutate(inclusion_rule_mask = as.numeric(.data$inclusion_rule_mask))
 
@@ -614,12 +614,12 @@ computeAttritionTable <- function(cdm,
       cohortTableName <- cohortStem
       attrition <- dplyr::tibble(
         cohort_definition_id = id,
-        number_records = dplyr::tbl(con, inSchema(schema, cohortTableName)) %>%
+        number_records = dplyr::tbl(con, inSchema(schema, cohortTableName, dbms(con))) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::tally() %>%
           dplyr::pull("n") %>%
           as.numeric(),
-        number_subjects = dplyr::tbl(con, inSchema(schema, cohortTableName)) %>%
+        number_subjects = dplyr::tbl(con, inSchema(schema, cohortTableName, dbms(con))) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::select("subject_id") %>%
           dplyr::distinct() %>%
@@ -680,7 +680,7 @@ computeAttritionTable <- function(cdm,
                     name = inSchema(schema, paste0(cohortStem, "_attrition")),
                     value = attrition)
 
-  dplyr::tbl(con, inSchema(schema, paste0(cohortStem, "_attrition")))
+  dplyr::tbl(con, inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con)))
 }
 
 getInclusionMaskId <- function(numberInclusion) {

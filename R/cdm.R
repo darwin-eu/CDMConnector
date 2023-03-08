@@ -65,37 +65,39 @@ cdm_from_con <- function(con,
       )
     }
 
-    if (!is.null(write_schema) && length(write_schema) == 1) {
-      write_schema <- strsplit(write_schema, "\\.")[[1]]
-      checkmate::assert_character(
-        write_schema,
-        null.ok = TRUE,
-        min.len = 1,
-        max.len = 2
-      )
+  if (!is.null(write_schema) && length(write_schema) == 1) {
+    write_schema <- strsplit(write_schema, "\\.")[[1]]
+    checkmate::assert_character(
+      write_schema,
+      null.ok = TRUE,
+      min.len = 1,
+      max.len = 2
+    )
+  }
+
+  if (cdm_version == "auto") {
+    cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
+  }
+
+  # Try to get the cdm name if not supplied
+  dbTables <- listTables(con, schema = cdm_schema)
+  if (is.null(cdm_name) && "cdm_source" %in% tolower(dbTables)) {
+    if ("cdm_source" %in% dbTables) {
+      cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source", dbms(con)))
+    } else if ("CDM_SOURCE" %in% dbTables) {
+      cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "CDM_SOURCE", dbms(con)))
     }
 
-    if (cdm_version == "auto") {
-      cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
-    }
+    cdm_source <- cdm_source %>%
+      head() %>%
+      dplyr::collect() %>%
+      dplyr::rename_all(tolower)
 
-   nms <- listTables(con, schema = cdm_schema)
-   if (is.null(cdm_name) && "cdm_source" %in% tolower(nms)) {
-
-     if ("cdm_source" %in% nms) {
-       cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source"))
-     } else if ("CDM_SOURCE" %in% nms) {
-       cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "CDM_SOURCE"))
-     }
-
-     cdm_source <- cdm_source %>%
-         head() %>%
-         dplyr::collect() %>%
-         dplyr::rename_all(tolower)
-
-     cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[[1]],
-                                 cdm_source$cdm_source_abbreviation[[1]])
-   }
+    cdm_name <- c(cdm_source$cdm_source_name,
+                  cdm_source$cdm_source_abbreviation) %>%
+      unlist() %>%
+      dplyr::coalesce()
+  }
 
     # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
     all_cdm_tables <-
@@ -106,12 +108,11 @@ cdm_from_con <- function(con,
                                                 data = all_cdm_tables))
 
     # Handle uppercase table names in the database
-    dbTables <- listTables(con, schema = cdm_schema)
     if (all(dbTables == toupper(dbTables))) {
       cdm_tables <- toupper(cdm_tables)
     }
 
-    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, .)) %>%
+    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
                       dplyr::rename_all(tolower)) %>%
       rlang::set_names(tolower(cdm_tables))
 
@@ -119,18 +120,62 @@ cdm_from_con <- function(con,
       verify_write_access(con, write_schema = write_schema)
     }
 
+    # Add existing GeneratedCohortSet objects to cdm object
     if (!is.null(cohort_tables)) {
       if (is.null(write_schema)) {
         rlang::abort("write_schema is required when using cohort_tables")
       }
-      # TODO make these cohort table proper generatedCohortSet objects
-      ch <-  purrr::map(cohort_tables, ~dplyr::tbl(con, inSchema(write_schema, .)) %>%
-                        dplyr::rename_all(tolower)) %>%
-        rlang::set_names(tolower(cohort_tables))
 
-      cdm <- c(cdm, ch)
+      for (i in seq_along(cohort_tables)) {
+
+        cohort_ref <- dplyr::tbl(con, inSchema(write_schema, cohort_tables[i], dbms(con))) %>%
+          dplyr::rename_all(tolower)
+
+        # Optional attribute tables {cohort}_set, {chohort}_inclusion, {cohort}_count
+        nm <- paste0(cohort_tables[i], "_set")
+        if (nm %in% dbTables) {
+          cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else if (nm %in% toupper(dbTables)) {
+          cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else {
+          cohort_set_ref <- NULL
+        }
+
+        nm <- paste0(cohort_tables[i], "_inclusion")
+        if (nm %in% dbTables) {
+          cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else if (nm %in% toupper(dbTables)) {
+          cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else {
+          cohort_attrition_ref <- NULL
+        }
+
+        nm <- paste0(cohort_tables[i], "_count")
+        if (nm %in% dbTables) {
+          cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else if (nm %in% toupper(dbTables)) {
+          cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else {
+          cohort_count_ref <- NULL
+        }
+
+
+        cdm[[cohort_tables[i]]] <- newGeneratedCohortSet(cohort_ref = cohort_ref,
+                                                         cohort_attrition_ref = cohort_attrition_ref,
+                                                         cohort_set_ref = cohort_set_ref,
+                                                         cohort_count_ref = cohort_count_ref)
+      }
     }
 
+
+
+    # TODO cdm_reference constructor
     class(cdm) <- "cdm_reference"
     attr(cdm, "cdm_schema") <- cdm_schema
     attr(cdm, "write_schema") <- write_schema
@@ -151,7 +196,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
     ))
   }
 
-  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, .)) %>%
+  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
                     dplyr::rename_all(tolower)) %>%
     rlang::set_names(tolower(cdm_tables))
 
@@ -272,22 +317,21 @@ cdmName <- function(cdm) {
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @rdname cdm_from_con
 #' @export
-cdmFromCon <-
-  function(con,
-           cdmSchema = NULL,
-           cdmTables = tbl_group("default"),
-           writeSchema = NULL,
-           cohortTables = NULL,
-           cdmName = NULL) {
-    cdm_from_con(
-      con = con,
-      cdm_schema = cdmSchema,
-      cdm_tables = {{cdmTables}},
-      write_schema = writeSchema,
-      cohort_tables = cohortTables,
-      cdm_name = cdmName
-    )
-  }
+cdmFromCon <- function(con,
+                       cdmSchema = NULL,
+                       cdmTables = tbl_group("default"),
+                       writeSchema = NULL,
+                       cohortTables = NULL,
+                       cdmName = NULL) {
+  cdm_from_con(
+    con = con,
+    cdm_schema = cdmSchema,
+    cdm_tables = {{cdmTables}},
+    write_schema = writeSchema,
+    cohort_tables = cohortTables,
+    cdm_name = cdmName
+  )
+}
 
 #' Print a CDM reference object
 #'

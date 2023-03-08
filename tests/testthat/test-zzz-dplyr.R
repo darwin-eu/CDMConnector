@@ -158,9 +158,12 @@ test_that("quantile translation works on Oracle", {
   skip_if_not("OracleODBC-19" %in% odbc::odbcListDataSources()$name)
   skip("manual test")
 
+  cdm_schema <- Sys.getenv("CDM5_ORACLE_CDM_SCHEMA")
   con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
 
-  cdm <- cdm_from_con(con, cdm_schema = "CDMV5", cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con,
+                      cdm_schema = cdm_schema,
+                      cdm_tables = c("person", "drug_exposure"))
 
   df <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
@@ -239,5 +242,24 @@ test_that("quantile translation works on duckdb", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
+
+test_that("Oracle inSchema works", {
+  con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
+  cdm_schema <- Sys.getenv("CDM5_ORACLE_CDM_SCHEMA")
+
+  person <- dplyr::tbl(con, inSchema(cdm_schema, "PERSON", dbms(con))) %>%
+    dplyr::rename_all(tolower)
+
+  observation_period <- dplyr::tbl(con, inSchema(cdm_schema, "OBSERVATION_PERIOD", dbms(con))) %>%
+    dplyr::rename_all(tolower)
+
+  df <- dplyr::inner_join(person, observation_period, by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
+  DBI::dbDisconnect(con)
+})
 
 

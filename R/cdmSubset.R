@@ -186,17 +186,18 @@ cdmSample <- function(cdm,
 
   # take a random sample from the person table
   personSample <- cdm[["person"]] %>%
-    dplyr::distinct(.data$person_id) %>%
+    dplyr::select("person_id") %>%
+    dplyr::distinct() %>%
     dplyr::slice_sample(n = n) %>%
     computeQuery()
 
   for (i in seq_along(cdm)) {
     if ("person_id" %in% colnames(cdm[[i]])) {
       cdm[[i]] <- cdm[[i]] %>%
-        dplyr::semi_join(personSample, by = "person_id")
+        dplyr::inner_join(personSample, by = "person_id")
     } else if ("subject_id" %in% colnames(cdm[[i]])) {
       cdm[[i]] <- cdm[[i]] %>%
-        dplyr::semi_join(personSample, by = c("subject_id" = "person_id"))
+        dplyr::inner_join(personSample, by = c("subject_id" = "person_id"))
     }
   }
 

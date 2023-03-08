@@ -1,9 +1,9 @@
 library(testthat)
 library(dplyr, warn.conflicts = FALSE)
 
-### Using DBI drivers ------
+### CDM object DBI drivers ------
 
-test_that("cdm reference works locally", {
+test_that("local postgres cdm_reference", {
   skip_if(Sys.getenv("LOCAL_POSTGRESQL_USER") == "")
   con <- DBI::dbConnect(RPostgres::Postgres(),
                         dbname = Sys.getenv("LOCAL_POSTGRESQL_DBNAME"),
@@ -28,10 +28,18 @@ test_that("cdm reference works locally", {
 
   expect_equal(dbms(cdm), "postgresql")
 
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
   DBI::dbDisconnect(con)
 })
 
-test_that("cdm reference works on postgres", {
+test_that("postgres cdm_reference", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
   con <- DBI::dbConnect(RPostgres::Postgres(),
                         dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
@@ -51,11 +59,19 @@ test_that("cdm reference works on postgres", {
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
   DBI::dbDisconnect(con)
 })
 
 
-test_that("cdm reference works on sql server", {
+test_that("sql server cdm_reference", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
 
   con <- DBI::dbConnect(odbc::odbc(),
@@ -70,9 +86,9 @@ test_that("cdm reference works on sql server", {
   expect_true(is.character(listTables(con, schema = c("CDMV5", "dbo"))))
   expect_true(is.character(listTables(con, schema = c("dbo"))))
 
-  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = tbl_group("vocab"))
+  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = c(tbl_group("default")))
 
-  expect_error(assert_tables(cdm, "person"))
+  expect_error(assert_tables(cdm, "visit_detail"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
 
   expect_true("concept" %in% names(cdm))
@@ -86,13 +102,18 @@ test_that("cdm reference works on sql server", {
                           cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
                           cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
 
-  DBI::dbWriteTable(con, DBI::Id(catalog = "tempdb", schema = "dbo", table = "cohort"), cohort, overwrite = TRUE)
+  DBI::dbWriteTable(con,
+                    DBI::Id(catalog = "tempdb", schema = "dbo", table = "cohort"),
+                    cohort,
+                    overwrite = TRUE)
 
   cdm <- cdm_from_con(con,
                       cdm_schema = c("CDMV5", "dbo"),
-                      cdm_tables = tbl_group("vocab"),
+                      cdm_tables = tbl_group("default"),
                       write_schema = c("tempdb", "dbo"),
                       cohort_tables = "cohort")
+
+  expect_s3_class(cdm$cohort, "GeneratedCohortSet")
 
   expect_equal(collect(cdm$cohort), cohort)
 
@@ -102,10 +123,18 @@ test_that("cdm reference works on sql server", {
 
   expect_equal(dbms(cdm), "sql server")
 
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
   DBI::dbDisconnect(con)
 })
 
-test_that("cdm reference works on redshift", {
+test_that("redshift cdm_reference", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
 
   con <- DBI::dbConnect(RPostgres::Redshift(),
@@ -130,10 +159,18 @@ test_that("cdm reference works on redshift", {
 
   expect_equal(dbms(con), "redshift")
 
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
   DBI::dbDisconnect(con)
 })
 
-test_that("cdm reference works on Spark", {
+test_that("spark cdm_reference", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
   skip("manual test")
@@ -155,10 +192,18 @@ test_that("cdm reference works on Spark", {
 
   expect_equal(dbms(cdm), "spark")
 
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
   DBI::dbDisconnect(con)
 })
 
-test_that("cdm reference works on Oracle", {
+test_that("oracle cdm_reference", {
 
   skip_on_ci()
   skip_on_cran()
@@ -182,7 +227,7 @@ test_that("cdm reference works on Oracle", {
   expect_true(is.character(listTables(con, schema = cdmSchema)))
 
   # Oracle test cdm v5.3 is missing visit_detail
-  cdm <- cdm_from_con(con, cdm_schema = cdmSchema, cdm_tables = c(tbl_group("default"), -visit_detail))
+  cdm <- cdm_from_con(con, cdm_schema = cdmSchema, cdm_tables = tbl_group("default"))
 
   expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
@@ -195,10 +240,19 @@ test_that("cdm reference works on Oracle", {
 
   expect_equal(dbms(cdm), "oracle")
 
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
   DBI::dbDisconnect(con)
 })
 
 # test_that("cdm reference works on bigquery", {
+#  # need to get tbl(., in_schema) working
 #
 #   bigrquery::bq_auth(path = Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH"))
 #
@@ -232,7 +286,7 @@ test_that("cdm reference works on Oracle", {
 #   DBI::dbDisconnect(con)
 # })
 
-test_that("cdm reference works on duckdb", {
+test_that("duckdb cdm_reference", {
   skip_if_not(rlang::is_installed("duckdb"))
   skip_if_not(eunomia_is_available())
 
@@ -251,10 +305,20 @@ test_that("cdm reference works on duckdb", {
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
+  expect_equal(dbms(cdm), "duckdb")
+
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-test_that("inclusion of cohort tables", {
+test_that("duckdb inclusion of cohort tables", {
   skip_if_not(rlang::is_installed("duckdb"))
   skip_if_not(eunomia_is_available())
 
@@ -285,7 +349,7 @@ test_that("inclusion of cohort tables", {
 
 })
 
-test_that("collect a cdm", {
+test_that("duckdb collect a cdm", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
   skip_if_not(eunomia_is_available())
 
@@ -307,7 +371,7 @@ test_that("collect a cdm", {
 })
 
 
-test_that("stow and cdm_from_files works", {
+test_that("duckdb stow and cdm_from_files works", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
   skip_if_not(eunomia_is_available())
 
@@ -350,17 +414,7 @@ test_that("stow and cdm_from_files works", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-
-test_that("autodetect cdm version works", {
-  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
-  skip_if_not(eunomia_is_available())
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_tables = tbl_group("default"), cdm_version = "auto")
-  expect_true(version(cdm) == c("5.3"))
-  DBI::dbDisconnect(con, shutdown = TRUE)
-})
-
-## Using DatabaseConnector DBI driver -----
+## CDM Object DatabaseConnector driver -----
 
 library(testthat)
 library(dplyr, warn.conflicts = FALSE)
@@ -486,6 +540,7 @@ test_that("DatabaseConnector cdm reference works on sql server", {
   DBI::dbDisconnect(con)
 })
 
+# CDM utility functions -----
 test_that("cdmName works", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main")
@@ -496,5 +551,15 @@ test_that("cdmName works", {
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
+
+test_that("autodetect cdm version works", {
+  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(eunomia_is_available())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_tables = tbl_group("default"), cdm_version = "auto")
+  expect_true(version(cdm) == c("5.3"))
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
 
 
