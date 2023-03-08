@@ -64,7 +64,8 @@ Create a CDM reference object from a database connection"><!-- mathjax --><scrip
 <span>  cdm_tables <span class="op">=</span> <span class="fu"><a href="tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span>,</span>
 <span>  write_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cohort_tables <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cdm_version <span class="op">=</span> <span class="st">"5.3"</span></span>
+<span>  cdm_version <span class="op">=</span> <span class="st">"5.3"</span>,</span>
+<span>  cdm_name <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">cdmFromCon</span><span class="op">(</span></span>
@@ -72,7 +73,8 @@ Create a CDM reference object from a database connection"><!-- mathjax --><scrip
 <span>  cdmSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdmTables <span class="op">=</span> <span class="fu"><a href="tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span>,</span>
 <span>  writeSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cohortTables <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cohortTables <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cdmName <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -112,6 +114,11 @@ included in the CDM object.</p></dd>
 heuristics. Cohort tables must be in the write_schema.</p></dd>
 
 
+<dt>cdm_name</dt>
+<dd><p>The name of the CDM. If NULL (default) the cdm_source_name
+.  field in the CDM_SOURCE table will be used.</p></dd>
+
+
 <dt>cdmSchema</dt>
 <dd><p>The schema where the OMOP CDM tables are located. Defaults
 to NULL.</p></dd>
@@ -133,6 +140,11 @@ write access to.</p></dd>
 <dt>cohortTables</dt>
 <dd><p>A character vector listing the cohort table names to be
 included in the CDM object. Cohort tables must be in the write_schema.</p></dd>
+
+
+<dt>cdmName</dt>
+<dd><p>The name of the CDM. If NULL (default) the cdm_source_name
+.  field in the CDM_SOURCE table will be used.</p></dd>
 
 </dl></div>
     <div class="section level2">

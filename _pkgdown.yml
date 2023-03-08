@@ -20,7 +20,7 @@ reference:
 - subtitle: DBI connection
   desc: Functions that accept DBI connections and are useful in cross database DBI code
 - contents:
-  - matches("dbms|dropTable|dropStemTables|listTables|dbConnect")
+  - matches("dbms|listTables|dbConnect")
 - subtitle: Eunomia example CDM
   desc: Easily create and use example file based duckdb CDMs
 - contents:

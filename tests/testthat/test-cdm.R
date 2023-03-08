@@ -51,9 +51,9 @@ test_that("postgres cdm_reference", {
 
   expect_null(verify_write_access(con, Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("vocab"))
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), cdm_tables = tbl_group("default"))
 
-  expect_error(assert_tables(cdm, "person"))
+  expect_error(assert_tables(cdm, "visit_detail"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
 
   expect_true("concept" %in% names(cdm))

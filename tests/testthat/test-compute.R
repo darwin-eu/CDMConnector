@@ -371,8 +371,8 @@ test_that("dropTable works with tidyselect", {
   # drop tables with a common prefix
   cdm <- dropTable(cdm, name = dplyr::starts_with("tmp"))
 
-  expect_length(stringr::str_subset(DBI::dbListTables(con), "tmp"), 1)
-  expect_length(stringr::str_subset(names(cdm), "tmp"), 1)
+  expect_length(stringr::str_subset(DBI::dbListTables(con), "tmp"), 0)
+  expect_length(stringr::str_subset(names(cdm), "tmp"), 0)
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })

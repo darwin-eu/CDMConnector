@@ -214,7 +214,7 @@ assert_write_schema <- function(cdm, add = NULL) {
     rlang::abort("Local cdm objects do not have a write schema.")
   }
   write_schema <- attr(cdm, "write_schema")
-  checkmate::assert_character(write_schema, len = 1, min.chars = 1, add = add)
+  checkmate::assert_character(write_schema, min.len = 1, max.len = 2, min.chars = 1, add = add)
   verify_write_access(attr(cdm, "dbcon"),
                       write_schema = write_schema,
                       add = add)

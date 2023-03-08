@@ -81,7 +81,7 @@ cdm_from_con <- function(con,
 
   # Try to get the cdm name if not supplied
   dbTables <- listTables(con, schema = cdm_schema)
-  if (is.null(cdm_name) && "cdm_source" %in% tolower(dbTables)) {
+  if (is.null(cdm_name) && ("cdm_source" %in% tolower(dbTables))) {
     if ("cdm_source" %in% dbTables) {
       cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source", dbms(con)))
     } else if ("CDM_SOURCE" %in% dbTables) {
@@ -93,10 +93,8 @@ cdm_from_con <- function(con,
       dplyr::collect() %>%
       dplyr::rename_all(tolower)
 
-    cdm_name <- c(cdm_source$cdm_source_name,
-                  cdm_source$cdm_source_abbreviation) %>%
-      unlist() %>%
-      dplyr::coalesce()
+    cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[1],
+                                cdm_source$cdm_source_abbreviation[1])
   }
 
     # tidyselect: https://tidyselect.r-lib.org/articles/tidyselect.html
@@ -361,6 +359,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   checkmate::assert_class(add, "AssertCollection", null.ok = TRUE)
   checkmate::assert_true(.dbIsValid(con))
 
+  # TODO quote SQL names
   write_schema <- paste(write_schema, collapse = ".")
   tablename <-
     paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
