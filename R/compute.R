@@ -295,7 +295,7 @@ dropTable <- function(cdm, name, verbose = FALSE) {
 
     if (toDrop[i] %in% allTables) {
       if (verbose) {
-        message(paste0("Dropping", schema, ".", toDrop[i]))
+        message(paste0("Dropping: ", schema, ".", toDrop[i]))
       }
       DBI::dbRemoveTable(con, inSchema(schema, toDrop[i]))
     }
