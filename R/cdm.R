@@ -118,6 +118,7 @@ cdm_from_con <- function(con,
       verify_write_access(con, write_schema = write_schema)
     }
 
+    dbTablesWrite <- listTables(con, schema = write_schema)
     # Add existing GeneratedCohortSet objects to cdm object
     if (!is.null(cohort_tables)) {
       if (is.null(write_schema)) {
@@ -129,23 +130,23 @@ cdm_from_con <- function(con,
         cohort_ref <- dplyr::tbl(con, inSchema(write_schema, cohort_tables[i], dbms(con))) %>%
           dplyr::rename_all(tolower)
 
-        # Optional attribute tables {cohort}_set, {chohort}_inclusion, {cohort}_count
+        # Optional attribute tables {cohort}_set, {chohort}_attrition, {cohort}_count
         nm <- paste0(cohort_tables[i], "_set")
-        if (nm %in% dbTables) {
+        if (nm %in% dbTablesWrite) {
           cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
             dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(dbTables)) {
+        } else if (nm %in% toupper(dbTablesWrite)) {
           cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
             dplyr::rename_all(tolower)
         } else {
           cohort_set_ref <- NULL
         }
 
-        nm <- paste0(cohort_tables[i], "_inclusion")
-        if (nm %in% dbTables) {
+        nm <- paste0(cohort_tables[i], "_attrition")
+        if (nm %in% dbTablesWrite) {
           cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
             dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(dbTables)) {
+        } else if (nm %in% toupper(dbTablesWrite)) {
           cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
             dplyr::rename_all(tolower)
         } else {
@@ -153,10 +154,10 @@ cdm_from_con <- function(con,
         }
 
         nm <- paste0(cohort_tables[i], "_count")
-        if (nm %in% dbTables) {
+        if (nm %in% dbTablesWrite) {
           cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
             dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(dbTables)) {
+        } else if (nm %in% toupper(dbTablesWrite)) {
           cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
             dplyr::rename_all(tolower)
         } else {
