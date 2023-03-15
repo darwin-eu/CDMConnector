@@ -301,9 +301,7 @@ generateCohortSet <- function(cdm,
     sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(con)) %>%
       SqlRender::splitSql()
 
-    DBI::dbWithTransaction(con,
-      purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
-    )
+    purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
     cli::cli_progress_update()
   }
   cli::cli_progress_done()
