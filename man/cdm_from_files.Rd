@@ -16,21 +16,13 @@ cdmFromFiles(path, format = "auto", asDataFrame = TRUE)
 \item{format}{What is the file format to be read in? Must be "auto"
 (default), "parquet", "csv", "feather".}
 
-\item{as_data_frame}{TRUE (default) will read files into R as dataframes.
-FALSE will read files into R as Arrow Datasets.}
-
-\item{asDataFrame}{TRUE (default) will read files into R as dataframes.
+\item{as_data_frame, asDataFrame}{TRUE (default) will read files into R as dataframes.
 FALSE will read files into R as Arrow Datasets.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables
-
-A list of dplyr database table references pointing to CDM tables
 }
 \description{
-Create a CDM reference from a folder containing parquet, csv, or feather
-files
-
 Create a CDM reference from a folder containing parquet, csv, or feather
 files
 }

@@ -32,7 +32,7 @@ validate_cdm <- function(cdm) {
 }
 
 #' @export
-#' @describeIn validate_cdm camelCase alias
+#' @rdname validate_cdm
 validateCdm <- validate_cdm
 
 validate_cdm_colnames <- function(cdm) {
@@ -191,9 +191,11 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
   invisible(cdm)
 }
 
+
 #' @export
-#' @describeIn assert_tables camelCase alias
+#' @rdname assert_tables
 assertTables <- assert_tables
+
 
 #' Assert that cdm has a writable schema
 #'
@@ -221,6 +223,7 @@ assert_write_schema <- function(cdm, add = NULL) {
   invisible(cdm)
 }
 
+
+#' @rdname assert_write_schema
 #' @export
-#' @describeIn assert_write_schema camelCase alias
 assertWriteSchema <- assert_write_schema

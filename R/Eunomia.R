@@ -2,11 +2,11 @@
 #'
 #' Download the Eunomia data files from https://github.com/darwin-eu/EunomiaDatasets
 #'
-#' @param datasetName   The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
+#' @param dataset_name,datasetName   The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
 #'                      data set name corresponds to the folder with the data set ZIP files
-#' @param cdmVersion    The OMOP CDM version. This version will appear in the suffix of the data file,
+#' @param cdm_version,cdmVersion    The OMOP CDM version. This version will appear in the suffix of the data file,
 #'                      for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'
-#' @param pathToData    The path where the Eunomia data is stored on the file system., By default the
+#' @param path_to_data,pathToData    The path where the Eunomia data is stored on the file system., By default the
 #'                      value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
 #' @param overwrite     Control whether the existing archive file will be overwritten should it already
 #'                      exist.
@@ -67,6 +67,20 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
     invisible(pathToData)
   }
 }
+
+
+#' @rdname downloadEunomiaData
+#' @export
+download_eunomia_data <- function(dataset_name = "GiBleed",
+                                  cdm_version = "5.3",
+                                  path_to_data = Sys.getenv("EUNOMIA_DATA_FOLDER"),
+                                  overwrite = FALSE) {
+  downloadEunomiaData(datasetName = dataset_name,
+                      cdmVersion = cdm_version,
+                      pathToData = path_to_data,
+                      overwrite = overwrite)
+}
+
 
 # Extract the Eunomia data files and load into a SQLite or duckdb database
 #
@@ -262,22 +276,32 @@ eunomia_dir <- function(exdir = NULL) {
 
 #' Has the Eunomia dataset been cached?
 #'
-#' @param datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
-#' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
+#' @param dataset_name,datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
+#' @param cdm_version,cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
 #'
 #' @return TRUE if the eunomia example dataset is available and FASLE otherwise
 #' @export
-eunomia_is_available <- function(datasetName = "GiBleed",
-                                 cdmVersion = "5.3") {
+eunomia_is_available <- function(dataset_name = "GiBleed",
+                                 cdm_version = "5.3") {
 
   if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {
     rlang::abort("Set the environment variable EUNOMIA_DATA_FOLDER to the eunomia cache location")
   }
 
-  stopifnot(is.character(cdmVersion), length(cdmVersion) == 1, cdmVersion %in% c("5.3", "5.4"))
+  stopifnot(is.character(cdm_version), length(cdm_version) == 1, cdm_version %in% c("5.3", "5.4"))
 
   # check for zip archive of csv source files
-  archiveName <- paste0(datasetName, "_", cdmVersion, ".zip")
+  archiveName <- paste0(dataset_name, "_", cdm_version, ".zip")
   archiveLocation <- file.path(Sys.getenv("EUNOMIA_DATA_FOLDER"), archiveName)
   return(file.exists(archiveLocation))
 }
+
+
+#' @rdname eunomia_is_available
+#' @export
+eunomiaIsAvailable <- function(datasetName = "GiBleed",
+                               cdmVersion = "5.3") {
+  eunomia_is_available(dataset_name = datasetName,
+                       cdm_version = cdmVersion)
+}
+

@@ -2,9 +2,12 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{cohortCount}
 \alias{cohortCount}
+\alias{cohort_count}
 \title{Get cohort counts from a GeneratedCohortSet object}
 \usage{
 cohortCount(x)
+
+cohort_count(x)
 }
 \arguments{
 \item{x}{A generatedCohortSet object}

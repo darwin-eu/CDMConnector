@@ -2,23 +2,23 @@
 #'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
 #'   v5.3 instance is located.
-#' @param cdm_schema The schema where the OMOP CDM tables are located. Defaults
+#' @param cdm_schema,cdmSchema The schema where the OMOP CDM tables are located. Defaults
 #'   to NULL.
-#' @param write_schema An optional schema in the CDM database that the user has
+#' @param write_schema,writeSchema An optional schema in the CDM database that the user has
 #'   write access to.
-#' @param cdm_tables Which tables should be included? Supports a character
+#' @param cdm_tables,cdmTables Which tables should be included? Supports a character
 #'   vector, tidyselect selection helpers, or table groups.
 #' \itemize{
 #'   \item{tbl_group("all")}{all CDM tables}
 #'   \item{tbl_group("vocab")}{the CDM vocabulary tables}
 #'   \item{tbl_group("clinical")}{the clinical CDM tables}
 #' }
-#' @param cohort_tables A character vector listing the cohort table names to be
+#' @param cohort_tables,cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
-#' @param cdm_version The version of the OMOP CDM: "5.3" (default), "5.4",
+#' @param cdm_version,cdmVersion The version of the OMOP CDM: "5.3" (default), "5.4",
 #'   "auto". "auto" attempts to automatically determine the cdm version using
 #'   heuristics. Cohort tables must be in the write_schema.
-#' @param cdm_name The name of the CDM. If NULL (default) the cdm_source_name
+#' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
 #'.  field in the CDM_SOURCE table will be used.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
@@ -165,10 +165,11 @@ cdm_from_con <- function(con,
         }
 
 
-        cdm[[cohort_tables[i]]] <- newGeneratedCohortSet(cohort_ref = cohort_ref,
-                                                         cohort_attrition_ref = cohort_attrition_ref,
-                                                         cohort_set_ref = cohort_set_ref,
-                                                         cohort_count_ref = cohort_count_ref)
+        cdm[[cohort_tables[i]]] <- new_generated_cohort_set(
+          cohort_ref = cohort_ref,
+          cohort_attrition_ref = cohort_attrition_ref,
+          cohort_set_ref = cohort_set_ref,
+          cohort_count_ref = cohort_count_ref)
       }
     }
 
@@ -293,27 +294,12 @@ cdmName <- function(cdm) {
   return(attr(cdm, "cdm_name"))
 }
 
-#' Create a CDM reference object from a database connection
-#'
-#' @param con A DBI database connection to a database where an OMOP CDM v5.4
-#'   instance is located.
-#' @param cdmSchema The schema where the OMOP CDM tables are located. Defaults
-#'   to NULL.
-#' @param writeSchema An optional schema in the CDM database that the user has
-#'   write access to.
-#' @param cdmTables Which tables should be included? Supports a character
-#'   vector, tidyselect selection helpers, or table groups.
-#' \itemize{
-#'   \item{tbl_group("all")}{all CDM tables}
-#'   \item{tbl_group("vocab")}{the CDM vocabulary tables}
-#'   \item{tbl_group("clinical")}{the clinical CDM tables}
-#' }
-#' @param cohortTables A character vector listing the cohort table names to be
-#'   included in the CDM object. Cohort tables must be in the write_schema.
-#' @param cdmName The name of the CDM. If NULL (default) the cdm_source_name
-#'.  field in the CDM_SOURCE table will be used.
-#' @return A list of dplyr database table references pointing to CDM tables
-#' @importFrom dplyr all_of matches starts_with ends_with contains
+
+#' @rdname cdmName
+#' @export
+cdm_name <- cdmName
+
+
 #' @rdname cdm_from_con
 #' @export
 cdmFromCon <- function(con,
@@ -321,6 +307,7 @@ cdmFromCon <- function(con,
                        cdmTables = tbl_group("default"),
                        writeSchema = NULL,
                        cohortTables = NULL,
+                       cdmVersion = "5.3",
                        cdmName = NULL) {
   cdm_from_con(
     con = con,
@@ -328,9 +315,11 @@ cdmFromCon <- function(con,
     cdm_tables = {{cdmTables}},
     write_schema = writeSchema,
     cohort_tables = cohortTables,
+    cdm_version = cdmVersion,
     cdm_name = cdmName
   )
 }
+
 
 #' Print a CDM reference object
 #'
@@ -396,7 +385,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #' The OMOP CDM tables are grouped together and the `tbl_group` function allows
 #' users to easily create a CDM reference including one or more table groups.
 #'
-#' \figure{cdm54.png}{CDM 5.4}
+#' {\figure{cdm54.png}{options: width="100\%" alt="CDM 5.4"}}
 #'
 #' The "default" table group is meant to capture the most commonly used set
 #' of CDM tables. Currently the "default" group is: person,
@@ -433,6 +422,10 @@ tbl_group <- function(group) {
     unlist() %>%
     unique()
 }
+
+#' @export
+#' @rdname tbl_group
+tblGroup <- tbl_group
 
 #' Get the database management system (dbms) from a cdm_reference or DBI
 #' connection
@@ -533,7 +526,7 @@ stow <- function(cdm, path, format = "parquet") {
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
 #' @param format What is the file format to be read in? Must be "auto"
 #'   (default), "parquet", "csv", "feather".
-#' @param as_data_frame TRUE (default) will read files into R as dataframes.
+#' @param as_data_frame,asDataFrame TRUE (default) will read files into R as dataframes.
 #'   FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
@@ -591,27 +584,17 @@ cdm_from_files <-
     cdm
   }
 
-#' Create a CDM reference from a folder containing parquet, csv, or feather
-#' files
-#'
-#' @param path A folder where an OMOP CDM v5.4 instance is located.
-#' @param format What is the file format to be read in? Must be "auto"
-#'   (default), "parquet", "csv", "feather".
-#' @param asDataFrame TRUE (default) will read files into R as dataframes.
-#'   FALSE will read files into R as Arrow Datasets.
-#' @return A list of dplyr database table references pointing to CDM tables
+
 #' @rdname cdm_from_files
 #' @export
-cdmFromFiles <-
-  function(path,
-           format = "auto",
-           asDataFrame = TRUE) {
-    cdm_from_files(
-      path = path,
-      format = format,
-      as_data_frame = asDataFrame
-    )
-  }
+cdmFromFiles <- function(path,
+                         format = "auto",
+                         asDataFrame = TRUE) {
+  cdm_from_files(path = path,
+                 format = format,
+                 as_data_frame = asDataFrame)
+}
+
 
 #' Bring a remote CDM reference into R
 #'

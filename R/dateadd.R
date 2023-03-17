@@ -170,3 +170,8 @@ asDate <- function(x) {
     return(rlang::expr(as.Date(!!x_quo)))
   }
 }
+
+
+#' @rdname asDate
+#' @export
+as_date <- asDate

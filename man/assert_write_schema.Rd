@@ -24,8 +24,3 @@ write access. assert_write_schema checks that the cdm contains the
 "write_schema" attribute and tests that local dataframes can be written
 to tables in this schema.
 }
-\section{Functions}{
-\itemize{
-\item \code{assertWriteSchema()}: camelCase alias
-
-}}

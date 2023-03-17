@@ -26,8 +26,8 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' @param cdm A cdm_reference object
-#' @param cohortTable Then name of a cohort table in the cdm reference
-#' @param cohortId IDs of the cohorts that we want to subset from the cohort
+#' @param cohortTable,cohort_table The name of a cohort table in the cdm reference
+#' @param cohortId,cohort_id IDs of the cohorts that we want to subset from the cohort
 #' table. If NULL (default) all cohorts in cohort table are considered.
 #' @param verbose Should subset messages be printed? TRUE or FALSE (default)
 #'
@@ -139,6 +139,19 @@ cdmSubsetCohort <- function(cdm,
   return(cdm)
 }
 
+#' @rdname cdmSubsetCohort
+#' @export
+cdm_subset_cohort <- function(cdm,
+                              cohort_table = "cohort",
+                              cohort_id = NULL,
+                              verbose = FALSE) {
+  cdmSubsetCohort(cdm = cdm,
+                  cohortTable = cohort_table,
+                  cohortId = cohort_id,
+                  verbose = verbose)
+}
+
+
 #' Subset a cdm object to a random sample of individuals
 #'
 #' `cdmSample` takes a cdm object and returns a new cdm that includes only a
@@ -206,6 +219,12 @@ cdmSample <- function(cdm,
   return(cdm)
 }
 
+
+#' @rdname cdmSample
+#' @export
+cdm_sample <- cdmSample
+
+
 #' Subset a cdm object to a set of persons
 #'
 #' `cdmSubset` takes a cdm object and a list of person IDs as input. It
@@ -216,7 +235,7 @@ cdmSample <- function(cdm,
 #' `r lifecycle::badge("experimental")`
 #'
 #' @param cdm A cdm_reference object
-#' @param personId A numeric vector of person IDs to include in the cdm
+#' @param person_id,personId A numeric vector of person IDs to include in the cdm
 #'
 #' @return A modified cdm_reference object where all clinical tables are lazy
 #' queries pointing to subset
@@ -271,6 +290,15 @@ cdmSubset <- function(cdm,
 }
 
 
+#' @rdname cdmSubset
+#' @export
+cdm_subset <- function(cdm,
+                       person_id){
+  cdmSubset(cdm = cdm,
+            personId = person_id)
+}
+
+
 #' Flatten a cdm into a single observation table
 #'
 #' This experimental function transforms the OMOP CDM into a single observation
@@ -282,7 +310,7 @@ cdmSubset <- function(cdm,
 #' @param cdm A cdm_reference object
 #' @param domain Domains to include. Must be a subset of "condition", "drug",
 #' "procedure", "measurement", "visit", "death", "observation".
-#' @param includeConceptName Should concept_name and type_concept_name be
+#' @param include_concept_name,includeConceptName Should concept_name and type_concept_name be
 #' include in the output table? TRUE (default) or FALSE
 #'
 #' @return A lazy query that when evaluated will result in a single cdm table
@@ -453,6 +481,17 @@ cdmFlatten <- function(cdm,
 
   # collect?
   return(out)
+}
+
+
+#' @rdname cdmFlatten
+#' @export
+cdm_flatten <- function(cdm,
+                        domain = c("condition", "drug", "procedure"),
+                        include_concept_name = TRUE){
+  cdmFlatten(cdm = cdm,
+             domain = domain,
+             includeConceptName = include_concept_name)
 }
 
 

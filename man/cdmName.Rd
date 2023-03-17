@@ -2,9 +2,12 @@
 % Please edit documentation in R/cdm.R
 \name{cdmName}
 \alias{cdmName}
+\alias{cdm_name}
 \title{Get the CDM name}
 \usage{
 cdmName(cdm)
+
+cdm_name(cdm)
 }
 \arguments{
 \item{cdm}{A cdm object}

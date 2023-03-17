@@ -78,6 +78,12 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   return(ref)
 }
 
+
+#' @rdname computePermanent
+#' @export
+compute_permanent <- computePermanent
+
+
 #' Run a dplyr query and add the result set to an existing
 #'
 #' @param x A dplyr query
@@ -143,6 +149,12 @@ appendPermanent <- function(x, name, schema = NULL) {
   }
   return(ref)
 }
+
+
+#' @rdname appendPermanent
+#' @export
+append_permanent <- appendPermanent
+
 
 uniqueTableName <- function() {
   i <- getOption("dbplyr_table_name", 0) + 1
@@ -230,6 +242,12 @@ computeQuery <- function(x,
   }
 }
 
+
+#' @rdname computeQuery
+#' @export
+compute_query <- computeQuery
+
+
 #' Drop tables from write_schema of a cdm object
 #'
 #' cdm objects can have zero or more cohort tables stored in a special schema
@@ -307,6 +325,10 @@ dropTable <- function(cdm, name, verbose = FALSE) {
 
   return(invisible(cdm))
 }
+
+#' @rdname dropTable
+#' @export
+drop_table <- dropTable
 
 # Get the full table name consisting of the schema and table name.
 #

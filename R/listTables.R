@@ -15,7 +15,7 @@
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 #' listTables(con, schema = "main")
 #' }
-listTables <- function(con, schema = NULL) {
+list_tables <- function(con, schema = NULL) {
   checkmate::assert_character(schema, null.ok = TRUE, min.len = 1, max.len = 2, min.chars = 1)
   if (is.null(schema)) return(DBI::dbListTables(con))
   withr::local_options(list(arrow.pull_as_vector = TRUE))
@@ -61,3 +61,6 @@ listTables <- function(con, schema = NULL) {
   }
 }
 
+#' @rdname list_tables
+#' @export
+listTables <- list_tables

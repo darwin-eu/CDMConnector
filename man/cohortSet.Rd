@@ -2,9 +2,12 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{cohortSet}
 \alias{cohortSet}
+\alias{cohort_set}
 \title{Get cohort settings from a GeneratedCohortSet object}
 \usage{
 cohortSet(x)
+
+cohort_set(x)
 }
 \arguments{
 \item{x}{A generatedCohortSet object}

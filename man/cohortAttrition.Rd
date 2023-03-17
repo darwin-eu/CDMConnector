@@ -2,9 +2,12 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{cohortAttrition}
 \alias{cohortAttrition}
+\alias{cohort_attrition}
 \title{Get attrition table from a GeneratedCohortSet object}
 \usage{
 cohortAttrition(x)
+
+cohort_attrition(x)
 }
 \arguments{
 \item{x}{A generatedCohortSet object}
