@@ -650,9 +650,9 @@ NULL
 #'
 #' @param cdm A cdm object
 #'
-#' @return A list of attributes about the cdm including selected fields from the
-#'   cdm_source table and record counts from the person and observation_period
-#'   tables
+#' @return A named list of attributes about the cdm including selected fields
+#' from the cdm_source table and record counts from the person and
+#' observation_period tables
 #' @export
 #'
 #' @examples
@@ -700,9 +700,14 @@ snapshot <- function(cdm) {
       "observation_period_cnt"
     ) %>%
     as.list() %>%
+    c(list(cdm_schema = attr(cdm, "cdm_schema"),
+           write_schema = attr(cdm, "write_schema"),
+           cdm_name = attr(cdm, "cdm_name"))) %>%
     magrittr::set_class("cdm_snapshot")
+
 }
 
+#' @export
 print.cdm_snapshot <- function(x, ...) {
   cli::cat_rule(x$cdm_source_name)
   purrr::walk2(names(x[-1]), x[-1], ~ cli::cat_bullet(.x, ": ", .y))
