@@ -665,11 +665,8 @@ NULL
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 snapshot <- function(cdm) {
-  assert_tables(cdm,
-                tables = c("cdm_source",
-                           "person",
-                           "observation_period",
-                           "vocabulary"))
+  assert_tables(cdm, tables = c("cdm_source", "vocabulary"), empty.ok = TRUE)
+  assert_tables(cdm, tables = c("person", "observation_period"))
 
   person_cnt <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
 
@@ -681,9 +678,22 @@ snapshot <- function(cdm) {
     dplyr::filter(.data$vocabulary_id == "None") %>%
     dplyr::pull(.data$vocabulary_version)
 
+  if (length(vocab_version) == 0) {
+    vocab_version <- NA_character_
+  }
+
   cdm_source_name <- cdm$cdm_source %>% dplyr::pull(.data$cdm_source_name)
 
-  dplyr::collect(cdm$cdm_source) %>%
+  cdm_source <- dplyr::collect(cdm$cdm_source)
+  if (nrow(cdm_source) == 0) {
+    cdm_source <- dplyr::tibble(vocabulary_version = vocab_version,
+                                cdm_source_name = "",
+                                cdm_holder = "",
+                                cdm_release_date = "",
+                                cdm_version = attr(cdm, "cdm_version"))
+  }
+
+  cdm_source %>%
     dplyr::mutate(vocabulary_version = dplyr::coalesce(.env$vocab_version,
                                                        .data$vocabulary_version)) %>%
     dplyr::mutate(
