@@ -7,7 +7,6 @@
 
 Released on March 20, 2023
 
-
 # CDMConnector 0.5.0
 
 * Define `generatedCohortSet` class
