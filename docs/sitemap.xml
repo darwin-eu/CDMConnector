@@ -148,7 +148,13 @@
     <loc>/reference/listTables.html</loc>
   </url>
   <url>
+    <loc>/reference/list_tables.html</loc>
+  </url>
+  <url>
     <loc>/reference/newGeneratedCohortSet.html</loc>
+  </url>
+  <url>
+    <loc>/reference/new_generated_cohort_set.html</loc>
   </url>
   <url>
     <loc>/reference/pipe.html</loc>
@@ -158,6 +164,9 @@
   </url>
   <url>
     <loc>/reference/readCohortSet.html</loc>
+  </url>
+  <url>
+    <loc>/reference/read_cohort_set.html</loc>
   </url>
   <url>
     <loc>/reference/snapshot.html</loc>
