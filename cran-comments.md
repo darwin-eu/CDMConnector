@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a resubmission of a new release.
+This is a new patch release.
 
 One NOTE is expected.
 
