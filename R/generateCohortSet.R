@@ -26,7 +26,7 @@
 #' @importFrom jsonlite read_json
 #' @importFrom dplyr tibble
 #' @export
-readCohortSet <- function(path) {
+read_cohort_set <- function(path) {
   checkmate::checkCharacter(path, len = 1, min.chars = 1)
 
   if (!fs::is_dir(path)) {
@@ -57,6 +57,10 @@ readCohortSet <- function(path) {
   return(cohortsToCreate)
 }
 
+
+#' @export
+#' @rdname read_cohort_set
+readCohortSet <- read_cohort_set
 
 
 #' Generate a cohort set on a cdm object
@@ -93,8 +97,8 @@ readCohortSet <- function(path) {
 #'   specified.
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables.
-#' @param cohortSet A cohortSet object created with `readCohortSet()`.
-#' @param computeAttrition Should attrition be computed? TRUE or FALSE (default)
+#' @param cohort_set,cohortSet A cohortSet object created with `readCohortSet()`.
+#' @param compute_attrition,computeAttrition Should attrition be computed? TRUE or FALSE (default)
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE or FALSE (default)
 #' @export
@@ -348,7 +352,7 @@ generateCohortSet <- function(cdm,
   }
 
   # Create the object. Let the constructor handle getting the counts.----
-  cdm[[name]] <- newGeneratedCohortSet(
+  cdm[[name]] <- new_generated_cohort_set(
     cohort_ref = cohort_ref,
     cohort_set_ref = cohort_set_ref,
     cohort_attrition_ref = cohort_attrition_ref,
@@ -356,6 +360,23 @@ generateCohortSet <- function(cdm,
 
   return(cdm)
 }
+
+
+#' @rdname generateCohortSet
+#' @export
+generate_cohort_set <- function(cdm,
+                                cohort_set,
+                                name = "cohort",
+                                compute_attrition = FALSE,
+                                overwrite = FALSE) {
+  generateCohortSet(cdm = cdm,
+                    cohortSet = cohort_set,
+                    name = name,
+                    computeAttrition = compute_attrition,
+                    overwrite = overwrite)
+
+}
+
 
 #' Low level constructor for GeneratedCohortSet objects for package developers
 #'
@@ -409,19 +430,19 @@ generateCohortSet <- function(cdm,
 #' cohort_count are: cohort_definition_id, number_records,
 #' number_subjects.
 #'
-#' @param cohort_ref A `tbl_sql` object that points to a remote cohort table
+#' @param cohort_ref,cohortRef A `tbl_sql` object that points to a remote cohort table
 #' with the following first four columns: cohort_definition_id,
 #' subject_id, cohort_start_date, cohort_end_date. Additional columns are
 #' optional.
-#' @param cohort_set_ref A `tbl_sql` object that points to a remote table
+#' @param cohort_set_ref,cohortSetRef A `tbl_sql` object that points to a remote table
 #' with the following first two columns: cohort_definition_id, cohort_name.
 #' Additional columns are optional. cohort_definition_id should be a primary
 #' key on this table and uniquely identify rows.
-#' @param cohort_attrition_ref A `tbl_sql` object that points to an attrition
+#' @param cohort_attrition_ref,cohortAttritionRef A `tbl_sql` object that points to an attrition
 #' table in a remote database with the first column being cohort_definition_id.
-#' @param cohort_count_ref A `tbl_sql` object that points to a cohort_count
-#' table in a remote database with columns cohort_definition_id, number_records,
-#' number_subjects.
+#' @param cohort_count_ref,cohortCountRef A `tbl_sql` object that points to a cohort_count
+#' table in a remote database with columns cohort_definition_id, cohort_entries,
+#' cohort_subjects.
 #'
 #' @return A `generatedCohortSet` object that is a `tbl_sql` reference
 #' to a cohort table in the write_schema of an OMOP CDM
@@ -454,7 +475,7 @@ generateCohortSet <- function(cdm,
 #'    cohort_count_ref <- dplyr::tbl(con, paste0(name, "_count"))
 #'
 #'    # create the generated cohort set object using the constructor
-#'    generatedCohortSet <- newGeneratedCohortSet(
+#'    generatedCohortSet <- new_generated_cohort_set(
 #'       cohort_ref,
 #'       cohort_set_ref = cohort_set_ref,
 #'       cohort_attrition_ref = cohort_attrition_ref,
@@ -465,10 +486,10 @@ generateCohortSet <- function(cdm,
 #'    return(cdm)
 #'  }
 #' }
-newGeneratedCohortSet <- function(cohort_ref,
-                                  cohort_set_ref = NULL,
-                                  cohort_attrition_ref = NULL,
-                                  cohort_count_ref = NULL) {
+new_generated_cohort_set <- function(cohort_ref,
+                                     cohort_set_ref = NULL,
+                                     cohort_attrition_ref = NULL,
+                                     cohort_count_ref = NULL) {
 
   checkmate::assertClass(cohort_ref, classes = c("tbl_sql"), null.ok = FALSE)
   checkmate::assertClass(cohort_set_ref, classes = c("tbl_sql"), null.ok = TRUE)
@@ -515,12 +536,33 @@ newGeneratedCohortSet <- function(cohort_ref,
   return(cohort_ref)
 }
 
+
+#' @rdname new_generated_cohort_set
+#' @export
+newGeneratedCohortSet <- function(cohortRef,
+                                  cohortSetRef = NULL,
+                                  cohortAttritionRef = NULL,
+                                  cohortCountRef = NULL) {
+  new_generated_cohort_set(cohort_ref = cohortRef,
+                           cohort_set_ref = cohortSetRef,
+                           cohort_attrition_ref = cohortAttritionRef,
+                           cohort_count_ref = cohortCountRef
+                           )
+}
+
+
 #' Get attrition table from a GeneratedCohortSet object
 #'
 #' @param x A generatedCohortSet object
 #'
 #' @export
 cohortAttrition <- function(x) { UseMethod("cohortAttrition") }
+
+
+#' @rdname cohortAttrition
+#' @export
+cohort_attrition <- cohortAttrition
+
 
 #' @export
 cohortAttrition.GeneratedCohortSet <- function(x) {
@@ -534,6 +576,12 @@ cohortAttrition.GeneratedCohortSet <- function(x) {
 #' @export
 cohortSet <- function(x) { UseMethod("cohortSet") }
 
+
+#' @rdname cohortSet
+#' @export
+cohort_set <- cohortSet
+
+
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
   attr(x, "cohort_set")
@@ -545,6 +593,12 @@ cohortSet.GeneratedCohortSet <- function(x) {
 #'
 #' @export
 cohortCount <- function(x) { UseMethod("cohortCount") }
+
+
+#' @rdname cohortCount
+#' @export
+cohort_count <- cohortCount
+
 
 #' @export
 cohortCount.GeneratedCohortSet <- function(x) {

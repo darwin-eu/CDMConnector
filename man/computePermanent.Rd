@@ -2,9 +2,12 @@
 % Please edit documentation in R/compute.R
 \name{computePermanent}
 \alias{computePermanent}
+\alias{compute_permanent}
 \title{Run a dplyr query and store the result in a permanent table}
 \usage{
 computePermanent(x, name, schema = NULL, overwrite = FALSE)
+
+compute_permanent(x, name, schema = NULL, overwrite = FALSE)
 }
 \arguments{
 \item{x}{A dplyr query}

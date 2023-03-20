@@ -2,6 +2,7 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{generateCohortSet}
 \alias{generateCohortSet}
+\alias{generate_cohort_set}
 \title{Generate a cohort set on a cdm object}
 \usage{
 generateCohortSet(
@@ -11,20 +12,28 @@ generateCohortSet(
   computeAttrition = FALSE,
   overwrite = FALSE
 )
+
+generate_cohort_set(
+  cdm,
+  cohort_set,
+  name = "cohort",
+  compute_attrition = FALSE,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{cdm}{A cdm reference created by CDMConnector. write_schema must be
 specified.}
 
-\item{cohortSet}{A cohortSet object created with \code{readCohortSet()}.}
-
 \item{name}{Name of the cohort table to be created. This will also be used
 as a prefix for the cohort attribute tables.}
 
-\item{computeAttrition}{Should attrition be computed? TRUE or FALSE (default)}
-
 \item{overwrite}{Should the cohort table be overwritten if it already
 exists? TRUE or FALSE (default)}
+
+\item{cohort_set, cohortSet}{A cohortSet object created with \code{readCohortSet()}.}
+
+\item{compute_attrition, computeAttrition}{Should attrition be computed? TRUE or FALSE (default)}
 }
 \description{
 A "GeneratedCohortSet" object consists of several components

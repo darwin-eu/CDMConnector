@@ -2,12 +2,19 @@
 % Please edit documentation in R/cdmSubset.R
 \name{cdmFlatten}
 \alias{cdmFlatten}
+\alias{cdm_flatten}
 \title{Flatten a cdm into a single observation table}
 \usage{
 cdmFlatten(
   cdm,
   domain = c("condition", "drug", "procedure"),
   includeConceptName = TRUE
+)
+
+cdm_flatten(
+  cdm,
+  domain = c("condition", "drug", "procedure"),
+  include_concept_name = TRUE
 )
 }
 \arguments{
@@ -16,7 +23,7 @@ cdmFlatten(
 \item{domain}{Domains to include. Must be a subset of "condition", "drug",
 "procedure", "measurement", "visit", "death", "observation".}
 
-\item{includeConceptName}{Should concept_name and type_concept_name be
+\item{include_concept_name, includeConceptName}{Should concept_name and type_concept_name be
 include in the output table? TRUE (default) or FALSE}
 }
 \value{

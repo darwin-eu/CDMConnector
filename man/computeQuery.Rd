@@ -2,9 +2,19 @@
 % Please edit documentation in R/compute.R
 \name{computeQuery}
 \alias{computeQuery}
+\alias{compute_query}
 \title{Execute dplyr query and save result in remote database}
 \usage{
 computeQuery(
+  x,
+  name = uniqueTableName(),
+  temporary = TRUE,
+  schema = NULL,
+  overwrite = FALSE,
+  ...
+)
+
+compute_query(
   x,
   name = uniqueTableName(),
   temporary = TRUE,

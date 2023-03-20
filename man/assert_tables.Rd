@@ -31,11 +31,6 @@ If you write a function that accepts a cdm object as a parameter
 are in the cdm object, have the correct columns/fields,
 and (optionally) are not empty.
 }
-\section{Functions}{
-\itemize{
-\item \code{assertTables()}: camelCase alias
-
-}}
 \examples{
 \dontrun{
 # Use assertTables inside a function to check that tables exist

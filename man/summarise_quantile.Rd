@@ -3,11 +3,17 @@
 \name{summarise_quantile}
 \alias{summarise_quantile}
 \alias{summarize_quantile}
+\alias{summariseQuantile}
+\alias{summarizeQuantile}
 \title{Quantile calculation using dbplyr}
 \usage{
 summarise_quantile(.data, x = NULL, probs, name_suffix = "value")
 
 summarize_quantile(.data, x = NULL, probs, name_suffix = "value")
+
+summariseQuantile(.data, x = NULL, probs, nameSuffix = "value")
+
+summarizeQuantile(.data, x = NULL, probs, nameSuffix = "value")
 }
 \arguments{
 \item{.data}{lazy data frame backed by a database query.}
@@ -16,7 +22,7 @@ summarize_quantile(.data, x = NULL, probs, name_suffix = "value")
 
 \item{probs}{numeric vector of probabilities with values in [0,1].}
 
-\item{name_suffix}{character; is appended to numerical quantile value as a column name part.}
+\item{name_suffix, nameSuffix}{character; is appended to numerical quantile value as a column name part.}
 }
 \value{
 An object of the same type as '.data'
@@ -26,7 +32,7 @@ This function provides DBMS independent syntax for quantiles estimation.
 Can be used by itself or in combination with \code{mutate()}
 when calculating other aggregate metrics (min, max, mean).
 
-\code{summarise_quantile()} and \code{summarize_quantile()} are synonyms.
+\code{summarise_quantile()}, \code{summarize_quantile()}, \code{summariseQuantile()} and \code{summarizeQuantile()} are synonyms.
 }
 \details{
 Implemented quantiles estimation algorithm returns values analogous to

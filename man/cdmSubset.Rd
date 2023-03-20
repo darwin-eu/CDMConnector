@@ -2,14 +2,17 @@
 % Please edit documentation in R/cdmSubset.R
 \name{cdmSubset}
 \alias{cdmSubset}
+\alias{cdm_subset}
 \title{Subset a cdm object to a set of persons}
 \usage{
 cdmSubset(cdm, personId)
+
+cdm_subset(cdm, person_id)
 }
 \arguments{
 \item{cdm}{A cdm_reference object}
 
-\item{personId}{A numeric vector of person IDs to include in the cdm}
+\item{person_id, personId}{A numeric vector of person IDs to include in the cdm}
 }
 \value{
 A modified cdm_reference object where all clinical tables are lazy

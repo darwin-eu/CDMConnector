@@ -2,9 +2,12 @@
 % Please edit documentation in R/dateadd.R
 \name{asDate}
 \alias{asDate}
+\alias{as_date}
 \title{as.Date dbplyr translation wrapper}
 \usage{
 asDate(x)
+
+as_date(x)
 }
 \arguments{
 \item{x}{an R expression}

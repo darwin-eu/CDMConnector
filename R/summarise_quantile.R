@@ -5,7 +5,7 @@
 #' Can be used by itself or in combination with `mutate()`
 #' when calculating other aggregate metrics (min, max, mean).
 #'
-#' `summarise_quantile()` and `summarize_quantile()` are synonyms.
+#' `summarise_quantile()`, `summarize_quantile()`, `summariseQuantile()` and `summarizeQuantile()` are synonyms.
 #'
 #' @details
 #' Implemented quantiles estimation algorithm returns values analogous to
@@ -18,7 +18,7 @@
 #' @param .data lazy data frame backed by a database query.
 #' @param x column name whose sample quantiles are wanted.
 #' @param probs numeric vector of probabilities with values in \[0,1\].
-#' @param name_suffix character; is appended to numerical quantile value as a column name part.
+#' @param name_suffix,nameSuffix character; is appended to numerical quantile value as a column name part.
 #' @return
 #' An object of the same type as '.data'
 #'
@@ -111,6 +111,19 @@ summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
 summarize_quantile <- summarise_quantile
 
 
+#' @rdname summarise_quantile
+#' @export
+summariseQuantile <- function(.data,
+                              x = NULL,
+                              probs,
+                              nameSuffix = "value") {
+  summarise_quantile(.data = .data,
+                     x = x,
+                     probs = probs,
+                     name_suffix = nameSuffix)
+}
 
 
-
+#' @rdname summarise_quantile
+#' @export
+summarizeQuantile <- summariseQuantile

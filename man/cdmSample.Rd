@@ -2,9 +2,12 @@
 % Please edit documentation in R/cdmSubset.R
 \name{cdmSample}
 \alias{cdmSample}
+\alias{cdm_sample}
 \title{Subset a cdm object to a random sample of individuals}
 \usage{
 cdmSample(cdm, n = 1000)
+
+cdm_sample(cdm, n = 1000)
 }
 \arguments{
 \item{cdm}{A cdm_reference object}

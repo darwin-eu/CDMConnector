@@ -2,9 +2,12 @@
 % Please edit documentation in R/compute.R
 \name{dropTable}
 \alias{dropTable}
+\alias{drop_table}
 \title{Drop tables from write_schema of a cdm object}
 \usage{
 dropTable(cdm, name, verbose = FALSE)
+
+drop_table(cdm, name, verbose = FALSE)
 }
 \arguments{
 \item{cdm}{A cdm reference}

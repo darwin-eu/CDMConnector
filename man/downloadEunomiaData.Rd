@@ -2,6 +2,7 @@
 % Please edit documentation in R/Eunomia.R
 \name{downloadEunomiaData}
 \alias{downloadEunomiaData}
+\alias{download_eunomia_data}
 \title{Download Eunomia data files}
 \usage{
 downloadEunomiaData(
@@ -10,19 +11,26 @@ downloadEunomiaData(
   pathToData = Sys.getenv("EUNOMIA_DATA_FOLDER"),
   overwrite = FALSE
 )
+
+download_eunomia_data(
+  dataset_name = "GiBleed",
+  cdm_version = "5.3",
+  path_to_data = Sys.getenv("EUNOMIA_DATA_FOLDER"),
+  overwrite = FALSE
+)
 }
 \arguments{
-\item{datasetName}{The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
-data set name corresponds to the folder with the data set ZIP files}
-
-\item{cdmVersion}{The OMOP CDM version. This version will appear in the suffix of the data file,
-for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'}
-
-\item{pathToData}{The path where the Eunomia data is stored on the file system., By default the
-value of the environment variable "EUNOMIA_DATA_FOLDER" is used.}
-
 \item{overwrite}{Control whether the existing archive file will be overwritten should it already
 exist.}
+
+\item{dataset_name, datasetName}{The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
+data set name corresponds to the folder with the data set ZIP files}
+
+\item{cdm_version, cdmVersion}{The OMOP CDM version. This version will appear in the suffix of the data file,
+for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'}
+
+\item{path_to_data, pathToData}{The path where the Eunomia data is stored on the file system., By default the
+value of the environment variable "EUNOMIA_DATA_FOLDER" is used.}
 }
 \value{
 Invisibly returns the destination if the download was successful.
