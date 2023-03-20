@@ -570,7 +570,6 @@ test_that("snapshot works when cdm_source or vocabulary tables are empty", {
 
   DBI::dbExecute(con, "delete from main.cdm_source")
 
-  debugonce(snapshot)
   expect_s3_class(snapshot(cdm), "cdm_snapshot")
 
   DBI::dbExecute(con, "delete from main.vocabulary")

@@ -26,8 +26,8 @@ key on this table and uniquely identify rows.}
 table in a remote database with the first column being cohort_definition_id.}
 
 \item{cohort_count_ref}{A \code{tbl_sql} object that points to a cohort_count
-table in a remote database with columns cohort_definition_id, cohort_entries,
-cohort_subjects.}
+table in a remote database with columns cohort_definition_id, number_records,
+number_subjects.}
 }
 \value{
 A \code{generatedCohortSet} object that is a \code{tbl_sql} reference
@@ -82,8 +82,8 @@ cohort_count is a option attribute table that records the number of records
 and the number of unique persons in each cohort in a \code{generatedCohortSet}.
 It is derived metadata that can be re-derived as long as cohort_set,
 the complete list of cohorts in the set, is available. Column names of
-cohort_count are: cohort_definition_id, cohort_entries,
-cohort_subjects.
+cohort_count are: cohort_definition_id, number_records,
+number_subjects.
 }
 }
 \examples{

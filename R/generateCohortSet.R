@@ -201,7 +201,6 @@ generateCohortSet <- function(cdm,
                          name = "VARCHAR(255)",
                          description = "VARCHAR(1000)")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
     nm <- paste0(name, "_inclusion_result") # used for attrition
 
@@ -217,7 +216,6 @@ generateCohortSet <- function(cdm,
                          person_count = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
     nm <- paste0(name, "_inclusion_stats")
 
@@ -235,7 +233,6 @@ generateCohortSet <- function(cdm,
                          person_total = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
 
     nm <- paste0(name, "_summary_stats")
@@ -252,7 +249,6 @@ generateCohortSet <- function(cdm,
                          final_count = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
     nm <- paste0(name, "_censor_stats")
 
@@ -266,7 +262,6 @@ generateCohortSet <- function(cdm,
                          cohort_definition_id = "INT",
                          lost_count = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
   }
 
   # Run the OHDSI-SQL ----
@@ -329,14 +324,14 @@ generateCohortSet <- function(cdm,
   cohort_count_ref <- cohort_ref %>%
     dplyr::ungroup() %>%
     dplyr::group_by(.data$cohort_definition_id) %>%
-    dplyr::summarise(cohort_entries = dplyr::n(),
-                     cohort_subjects = dplyr::n_distinct(.data$subject_id)) %>%
+    dplyr::summarise(number_records = dplyr::n(),
+                     number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
     {dplyr::left_join(cohort_set_ref, ., by = "cohort_definition_id")} %>%
-    dplyr::mutate(cohort_entries  = dplyr::coalesce(.data$cohort_entries, 0L),
-                  cohort_subjects = dplyr::coalesce(.data$cohort_entries, 0L)) %>%
+    dplyr::mutate(number_records  = dplyr::coalesce(.data$number_records, 0L),
+                  number_subjects = dplyr::coalesce(.data$number_subjects, 0L)) %>%
     dplyr::select("cohort_definition_id",
-                  "cohort_entries",
-                  "cohort_subjects") %>%
+                  "number_records",
+                  "number_subjects") %>%
     computeQuery(name = paste0(name, "_count"),
                  schema = attr(cdm, "write_schema"),
                  temporary = FALSE,
@@ -410,8 +405,8 @@ generateCohortSet <- function(cdm,
 #' and the number of unique persons in each cohort in a `generatedCohortSet`.
 #' It is derived metadata that can be re-derived as long as cohort_set,
 #' the complete list of cohorts in the set, is available. Column names of
-#' cohort_count are: cohort_definition_id, cohort_entries,
-#' cohort_subjects.
+#' cohort_count are: cohort_definition_id, number_records,
+#' number_subjects.
 #'
 #' @param cohort_ref A `tbl_sql` object that points to a remote cohort table
 #' with the following first four columns: cohort_definition_id,
@@ -424,8 +419,8 @@ generateCohortSet <- function(cdm,
 #' @param cohort_attrition_ref A `tbl_sql` object that points to an attrition
 #' table in a remote database with the first column being cohort_definition_id.
 #' @param cohort_count_ref A `tbl_sql` object that points to a cohort_count
-#' table in a remote database with columns cohort_definition_id, cohort_entries,
-#' cohort_subjects.
+#' table in a remote database with columns cohort_definition_id, number_records,
+#' number_subjects.
 #'
 #' @return A `generatedCohortSet` object that is a `tbl_sql` reference
 #' to a cohort table in the write_schema of an OMOP CDM
@@ -505,8 +500,8 @@ newGeneratedCohortSet <- function(cohort_ref,
 
   if (!is.null(cohort_count_ref)) {
     checkmate::assertSubset(c("cohort_definition_id",
-                              "cohort_entries",
-                              "cohort_subjects"),
+                              "number_records",
+                              "number_subjects"),
                             choices = names(cohort_count_ref))
   }
 
