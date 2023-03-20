@@ -110,7 +110,7 @@ cohort_subjects.
    cohort_ref <- dplyr::tbl(con, name)
    cohort_set <- dplyr::tbl(con, paste0(name, "_set"))
    cohort_attrition_ref <- dplyr::tbl(con, paste0(name, "_attrition"))
-   cohort_count_ref <- dplyr::tbl(con, paste0(name, "count"))
+   cohort_count_ref <- dplyr::tbl(con, paste0(name, "_count"))
 
    # create the generated cohort set object using the constructor
    generatedCohortSet <- newGeneratedCohortSet(
