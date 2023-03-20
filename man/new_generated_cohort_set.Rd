@@ -33,15 +33,9 @@ key on this table and uniquely identify rows.}
 \item{cohort_attrition_ref, cohortAttritionRef}{A \code{tbl_sql} object that points to an attrition
 table in a remote database with the first column being cohort_definition_id.}
 
-<<<<<<< HEAD:man/newGeneratedCohortSet.Rd
-\item{cohort_count_ref}{A \code{tbl_sql} object that points to a cohort_count
-table in a remote database with columns cohort_definition_id, number_records,
-number_subjects.}
-=======
 \item{cohort_count_ref, cohortCountRef}{A \code{tbl_sql} object that points to a cohort_count
 table in a remote database with columns cohort_definition_id, cohort_entries,
 cohort_subjects.}
->>>>>>> 9dcc165c81c8c9a78a048e84bdf184b8640020dc:man/new_generated_cohort_set.Rd
 }
 \value{
 A \code{generatedCohortSet} object that is a \code{tbl_sql} reference
