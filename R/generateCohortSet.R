@@ -205,7 +205,6 @@ generateCohortSet <- function(cdm,
                          name = "VARCHAR(255)",
                          description = "VARCHAR(1000)")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
     nm <- paste0(name, "_inclusion_result") # used for attrition
 
@@ -221,7 +220,6 @@ generateCohortSet <- function(cdm,
                          person_count = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
     nm <- paste0(name, "_inclusion_stats")
 
@@ -239,7 +237,6 @@ generateCohortSet <- function(cdm,
                          person_total = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
 
     nm <- paste0(name, "_summary_stats")
@@ -256,7 +253,6 @@ generateCohortSet <- function(cdm,
                          final_count = "INT",
                          mode_id = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
 
     nm <- paste0(name, "_censor_stats")
 
@@ -270,7 +266,6 @@ generateCohortSet <- function(cdm,
                          cohort_definition_id = "INT",
                          lost_count = "INT")
     )
-    # on.exit(DBI::dbRemoveTable(con, inSchema(writeSchema, nm)), add = TRUE)
   }
 
   # Run the OHDSI-SQL ----
@@ -316,7 +311,8 @@ generateCohortSet <- function(cdm,
   if (computeAttrition) {
     cohort_attrition_ref <- computeAttritionTable(cdm,
                                                   cohortStem = name,
-                                                  cohortSet = cohortSet)
+                                                  cohortSet = cohortSet,
+                                                  overwrite = overwrite)
   } else {
     cohort_attrition_ref <- NULL
   }
@@ -333,21 +329,21 @@ generateCohortSet <- function(cdm,
   cohort_count_ref <- cohort_ref %>%
     dplyr::ungroup() %>%
     dplyr::group_by(.data$cohort_definition_id) %>%
-    dplyr::summarise(cohort_entries = dplyr::n(),
-                     cohort_subjects = dplyr::n_distinct(.data$subject_id)) %>%
+    dplyr::summarise(number_records = dplyr::n(),
+                     number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
     {dplyr::left_join(cohort_set_ref, ., by = "cohort_definition_id")} %>%
-    dplyr::mutate(cohort_entries  = dplyr::coalesce(.data$cohort_entries, 0L),
-                  cohort_subjects = dplyr::coalesce(.data$cohort_entries, 0L)) %>%
+    dplyr::mutate(number_records  = dplyr::coalesce(.data$number_records, 0L),
+                  number_subjects = dplyr::coalesce(.data$number_subjects, 0L)) %>%
     dplyr::select("cohort_definition_id",
-                  "cohort_entries",
-                  "cohort_subjects") %>%
+                  "number_records",
+                  "number_subjects") %>%
     computeQuery(name = paste0(name, "_count"),
                  schema = attr(cdm, "write_schema"),
                  temporary = FALSE,
                  overwrite = TRUE)
 
-  # Clean up tables ----
-  if (computeAttrition) {
+  # Clean up tables ---- TODO decide how to handle this
+  if (FALSE) {
     DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion")))
     DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion_result")))
     DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion_stats")))
@@ -431,8 +427,8 @@ generate_cohort_set <- function(cdm,
 #' and the number of unique persons in each cohort in a `generatedCohortSet`.
 #' It is derived metadata that can be re-derived as long as cohort_set,
 #' the complete list of cohorts in the set, is available. Column names of
-#' cohort_count are: cohort_definition_id, cohort_entries,
-#' cohort_subjects.
+#' cohort_count are: cohort_definition_id, number_records,
+#' number_subjects.
 #'
 #' @param cohort_ref,cohortRef A `tbl_sql` object that points to a remote cohort table
 #' with the following first four columns: cohort_definition_id,
@@ -526,8 +522,8 @@ new_generated_cohort_set <- function(cohort_ref,
 
   if (!is.null(cohort_count_ref)) {
     checkmate::assertSubset(c("cohort_definition_id",
-                              "cohort_entries",
-                              "cohort_subjects"),
+                              "number_records",
+                              "number_subjects"),
                             choices = names(cohort_count_ref))
   }
 
@@ -621,16 +617,19 @@ cohortCount.GeneratedCohortSet <- function(x) {
 # @param cohortSet Cohort set of the generated tables.
 # @param cohortId Cohort definition id of the cohorts that we want to generate
 # the attrition. If NULL all cohorts from cohort set will be used.
+# @param overwrite Should the attrition table be overwritten if it already exists? TRUE or FALSE
 #
 # @importFrom rlang :=
 # @return the attrition as a data.frame
 computeAttritionTable <- function(cdm,
                                   cohortStem,
                                   cohortSet,
-                                  cohortId = NULL) { #browser()
+                                  cohortId = NULL,
+                                  overwrite = FALSE) {
 
   checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertCharacter(cohortStem, len = 1, min.chars = 1)
+  checkmate::assertLogical(overwrite, len = 1)
   checkmate::assertDataFrame(cohortSet, min.rows = 0, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
     must.include = c("cohort_definition_id", "cohort")
@@ -647,6 +646,14 @@ computeAttritionTable <- function(cdm,
   inclusionResultTableName <- paste0(cohortStem, "_inclusion_result")
   schema <- attr(cdm, "write_schema")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, min.chars = 1)
+
+  if (paste0(cohortStem, "_attrition") %in% listTables(con, schema = schema)) {
+    if (overwrite) {
+      DBI::dbRemoveTable(con, inSchema(schema, paste0(cohortStem, "_attrition")))
+    } else {
+      rlang::abort(paste0(cohortStem, "_attrition already exists in the database. Set overwrite = TRUE."))
+    }
+  }
 
   # Bring the inclusion result table to R memory
   inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName, dbms(con))) %>%

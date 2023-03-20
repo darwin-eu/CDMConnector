@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,7 +97,7 @@ we’ll be using the Eunomia “GI Bleed” dataset.</p>
 a record of rheumatoid arthritis at any time.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># devtools::install_github("OHDSI/Capr", "v2") # Use the development version of Capr v2</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ohdsi.github.io/Capr" class="external-link">Capr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ohdsi.github.io/Capr/" class="external-link">Capr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># create a cohort set folder for saving cohort definitions</span></span>
 <span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"cohorts"</span><span class="op">)</span></span>
@@ -117,7 +117,7 @@ a record of rheumatoid arthritis at any time.</p>
 <span><span class="fu"><a href="https://ohdsi.github.io/Capr/reference/writeCohort.html" class="external-link">writeCohort</a></span><span class="op">(</span><span class="va">gibleed_cohort_definition</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"gibleed.json"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Now we have our cohort definition, we can generate the cohort.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gibleed_cohort_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readCohortSet.html">readCohortSet</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">gibleed_cohort_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_cohort_set.html">readCohortSet</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># requires CirceR optional dependency</span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generateCohortSet</a></span><span class="op">(</span></span>

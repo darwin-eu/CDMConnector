@@ -90,8 +90,8 @@ cohort_count is a option attribute table that records the number of records
 and the number of unique persons in each cohort in a \code{generatedCohortSet}.
 It is derived metadata that can be re-derived as long as cohort_set,
 the complete list of cohorts in the set, is available. Column names of
-cohort_count are: cohort_definition_id, cohort_entries,
-cohort_subjects.
+cohort_count are: cohort_definition_id, number_records,
+number_subjects.
 }
 }
 \examples{

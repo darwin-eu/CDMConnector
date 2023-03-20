@@ -20,6 +20,7 @@ test_that("local postgres cdm_reference", {
   expect_error(assert_tables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "cdm_snapshot")
+  expect_true(nchar(snapshot(cdm)$cdm_schema) > 0)
 
   expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
 
@@ -556,10 +557,22 @@ test_that("autodetect cdm version works", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
   skip_if_not(eunomia_is_available())
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_tables = tbl_group("default"), cdm_version = "auto")
+  cdm <- cdm_from_con(con, cdm_schema = "main", cdm_version = "auto")
   expect_true(version(cdm) == c("5.3"))
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 
+test_that("snapshot works when cdm_source or vocabulary tables are empty", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con, "main")
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
 
+  DBI::dbExecute(con, "delete from main.cdm_source")
+
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
+  DBI::dbExecute(con, "delete from main.vocabulary")
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
+})

@@ -54,7 +54,7 @@ so will invalidate it and it's attributes may no longer be accurate."><!-- mathj
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -124,6 +124,14 @@ so will invalidate it and it's attributes may no longer be accurate.</p>
 <span>  name <span class="op">=</span> <span class="st">"cohort"</span>,</span>
 <span>  computeAttrition <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">generate_cohort_set</span><span class="op">(</span></span>
+<span>  <span class="va">cdm</span>,</span>
+<span>  <span class="va">cohort_set</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"cohort"</span>,</span>
+<span>  compute_attrition <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -134,22 +142,22 @@ so will invalidate it and it's attributes may no longer be accurate.</p>
 specified.</p></dd>
 
 
-<dt>cohortSet</dt>
-<dd><p>A cohortSet object created with <code><a href="readCohortSet.html">readCohortSet()</a></code>.</p></dd>
-
-
 <dt>name</dt>
 <dd><p>Name of the cohort table to be created. This will also be used
 as a prefix for the cohort attribute tables.</p></dd>
 
 
-<dt>computeAttrition</dt>
-<dd><p>Should attrition be computed? TRUE or FALSE (default)</p></dd>
-
-
 <dt>overwrite</dt>
 <dd><p>Should the cohort table be overwritten if it already
 exists? TRUE or FALSE (default)</p></dd>
+
+
+<dt>cohort_set, cohortSet</dt>
+<dd><p>A cohortSet object created with <code><a href="read_cohort_set.html">readCohortSet()</a></code>.</p></dd>
+
+
+<dt>compute_attrition, computeAttrition</dt>
+<dd><p>Should attrition be computed? TRUE or FALSE (default)</p></dd>
 
 </dl></div>
 
@@ -163,7 +171,7 @@ exists? TRUE or FALSE (default)</p></dd>
 <span class="r-in"><span>                    cdm_tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                    write_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">cohortSet</span> <span class="op">&lt;-</span> <span class="fu"><a href="readCohortSet.html">readCohortSet</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts2"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cohortSet</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_cohort_set.html">readCohortSet</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts2"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">generateCohortSet</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet</span>, name <span class="op">=</span> <span class="st">"cohort"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span></span>

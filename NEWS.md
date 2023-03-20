@@ -1,3 +1,9 @@
+# CDMConnector 0.5.1
+
+* Add both camelCase and snake_case versions of all functions
+* Add cdm object attributes to `cdm_snapshot` output
+
+
 # CDMConnector 0.5.0
 
 * Define `generatedCohortSet` class
