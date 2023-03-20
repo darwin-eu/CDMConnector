@@ -1,8 +1,11 @@
 # CDMConnector 0.5.1
 
-* Add both camelCase and snake_case versions of all functions
+* Add both camelCase and snake_case versions of all functions (@Tsemharb)
 * Add cdm object attributes to `cdm_snapshot` output
+* use `number_records` and `number_subjects` in cohort counts table
+* Minor bug fixes
 
+Released on March 20, 2023
 
 # CDMConnector 0.5.0
 
