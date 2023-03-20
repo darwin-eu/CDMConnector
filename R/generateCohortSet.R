@@ -342,8 +342,8 @@ generateCohortSet <- function(cdm,
                  temporary = FALSE,
                  overwrite = TRUE)
 
-  # Clean up tables ----
-  if (computeAttrition) {
+  # Clean up tables ---- TODO decide how to handle this
+  if (FALSE) {
     DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion")))
     DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion_result")))
     DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion_stats")))
