@@ -307,7 +307,8 @@ generateCohortSet <- function(cdm,
   if (computeAttrition) {
     cohort_attrition_ref <- computeAttritionTable(cdm,
                                                   cohortStem = name,
-                                                  cohortSet = cohortSet)
+                                                  cohortSet = cohortSet,
+                                                  overwrite = overwrite)
   } else {
     cohort_attrition_ref <- NULL
   }
@@ -562,16 +563,19 @@ cohortCount.GeneratedCohortSet <- function(x) {
 # @param cohortSet Cohort set of the generated tables.
 # @param cohortId Cohort definition id of the cohorts that we want to generate
 # the attrition. If NULL all cohorts from cohort set will be used.
+# @param overwrite Should the attrition table be overwritten if it already exists? TRUE or FALSE
 #
 # @importFrom rlang :=
 # @return the attrition as a data.frame
 computeAttritionTable <- function(cdm,
                                   cohortStem,
                                   cohortSet,
-                                  cohortId = NULL) { #browser()
+                                  cohortId = NULL,
+                                  overwrite = FALSE) {
 
   checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertCharacter(cohortStem, len = 1, min.chars = 1)
+  checkmate::assertLogical(overwrite, len = 1)
   checkmate::assertDataFrame(cohortSet, min.rows = 0, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
     must.include = c("cohort_definition_id", "cohort")
@@ -588,6 +592,14 @@ computeAttritionTable <- function(cdm,
   inclusionResultTableName <- paste0(cohortStem, "_inclusion_result")
   schema <- attr(cdm, "write_schema")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, min.chars = 1)
+
+  if (paste0(cohortStem, "_attrition") %in% listTables(con, schema = schema)) {
+    if (overwrite) {
+      DBI::dbRemoveTable(con, inSchema(schema, paste0(cohortStem, "_attrition")))
+    } else {
+      rlang::abort(paste0(cohortStem, "_attrition already exists in the database. Set overwrite = TRUE."))
+    }
+  }
 
   # Bring the inclusion result table to R memory
   inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName, dbms(con))) %>%

@@ -116,6 +116,13 @@ test_that("duckdb cohort generation with attrition", {
   expect_s3_class(cohortCount(cdm2$chrt0), "tbl_dbi")
   expect_s3_class(cohortSet(cdm2$chrt0), "tbl_dbi")
 
+  # try overwrite=TRUE
+  cdm2 <- generateCohortSet(cdm2,
+                            cohortSet,
+                            name = "chrt0",
+                            computeAttrition = TRUE,
+                            overwrite = TRUE)
+
   # drop tables
   dropTable(cdm, name = dplyr::starts_with("chrt0"))
   expect_false(any(stringr::str_detect(listTables(con, schema = write_schema), "^chrt0")))
