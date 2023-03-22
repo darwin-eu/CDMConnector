@@ -8,9 +8,9 @@ test_that("listTables gives error with bad input", {
 
 
 test_that("listTables works with duckdb schemas", {
+  skip_if_not_installed("duckdb")
 
   con <- DBI::dbConnect(duckdb::duckdb())
-
   DBI::dbWriteTable(con, "cars", cars)
 
   expect_equal(listTables(con), "cars")

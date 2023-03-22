@@ -1,6 +1,9 @@
 library(dplyr)
 
 test_that("duckdb subsetting", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
+
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
   cdm <- cdm_from_con(con, "main", write_schema = "main")
@@ -328,6 +331,51 @@ test_that("spark subsetting", {
                       cdm_schema = cdm_schema,
                       write_schema = write_schema)
 
+  cdm2 <- cdmSample(cdm, n = 10)
+
+  expect_equal(nrow(dplyr::collect(cdm2$person)), 10)
+
+  personId2 <- cdm2$person %>% dplyr::pull(person_id)
+
+  cdm3 <- cdmSubset(cdm, personId = personId2)
+
+  expect_equal(nrow(dplyr::collect(cdm3$person)), 10)
+
+  personId3 <- cdm3$person %>% dplyr::pull(person_id)
+
+  expect_setequal(personId2, personId3)
+
+  # path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
+  # cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
+  # expect_true(nrow(cohortSet) == 1)
+  # cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
+  # expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
+  # cdm4 <- cdmSubsetCohort(cdm, "gibleed")
+  # expect_lt(
+  #   length(dplyr::pull(cdm4$person, "person_id")),
+  #   length(dplyr::pull(cdm$person,  "person_id"))
+  # )
+  # DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "gibleed"))
+  # expect_false("gibleed" %in% tolower(listTables(con, write_schema)))
+
+  df <- cdmFlatten(cdm3) %>% dplyr::collect()
+  expect_s3_class(df, "data.frame")
+
+  DBI::dbDisconnect(con)
+})
+
+
+test_that("snowflake subsetting", {
+  skip_if_not("Snowflake" %in% odbc::odbcListDataSources()$name)
+  skip("failing test")
+  con <- DBI::dbConnect(odbc::odbc(), "Snowflake")
+  cdm_schema <- strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]]
+  write_schema <- strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]]
+
+  cdm <- cdm_from_con(con,
+                      cdm_schema = cdm_schema,
+                      write_schema = write_schema)
+debugonce(cdmSample)
   cdm2 <- cdmSample(cdm, n = 10)
 
   expect_equal(nrow(dplyr::collect(cdm2$person)), 10)

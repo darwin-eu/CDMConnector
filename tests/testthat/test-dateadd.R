@@ -1,5 +1,8 @@
 
 test_that("Date functions work on duckdb", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
+
   con <- DBI::dbConnect(duckdb::duckdb())
   date_tbl <- dplyr::copy_to(con, data.frame(date1 = as.Date("1999-01-01")), name = "tmpdate", overwrite = TRUE, temporary = TRUE)
 
