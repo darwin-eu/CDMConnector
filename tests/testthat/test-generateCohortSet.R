@@ -89,7 +89,11 @@ test_that("duckdb cohort generation with attrition", {
   # test readCohortSet with non existing directory
   expect_error(readCohortSet(system.file("cohorts99", package = "CDMConnector", mustWork = FALSE)))
 
-  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
+  cdm <- generateCohortSet(cdm,
+                           cohortSet,
+                           name = "chrt0",
+                           computeAttrition = TRUE,
+                           overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
 
@@ -163,7 +167,11 @@ test_that("SQL Server cohort generation with attrition", {
   cohortSet <- cohortSet[3,]
   expect_s3_class(cohortSet, "CohortSet")
 
-  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
+  cdm <- generateCohortSet(cdm,
+                           cohortSet,
+                           name = "chrt0",
+                           computeAttrition = TRUE,
+                           overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
 
@@ -220,7 +228,11 @@ test_that("Redshift cohort generation with attrition", {
   cohortSet <- cohortSet[3,]
   expect_s3_class(cohortSet, "CohortSet")
 
-  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
+  cdm <- generateCohortSet(cdm,
+                           cohortSet,
+                           name = "chrt0",
+                           computeAttrition = TRUE,
+                           overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
 
@@ -274,7 +286,11 @@ test_that("Postgres cohort generation with attrition", {
   cohortSet <- cohortSet[3,]
   expect_s3_class(cohortSet, "CohortSet")
 
-  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = TRUE)
+  cdm <- generateCohortSet(cdm,
+                           cohortSet,
+                           name = "chrt0",
+                           computeAttrition = TRUE,
+                           overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
 
