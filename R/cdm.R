@@ -467,7 +467,8 @@ dbms.DBIConnection <- function(con) {
     "duckdb_connection" = "duckdb",
     "Spark SQL" = "spark",
     "OraConnection" = "oracle",
-    "Oracle" = "oracle"
+    "Oracle" = "oracle",
+    "Snowflake" = "snowflake"
     # add mappings from various connection classes to dbms here
   )
 
@@ -703,5 +704,8 @@ snapshot <- function(cdm) {
 #' @export
 print.cdm_snapshot <- function(x, ...) {
   cli::cat_rule(x$cdm_source_name)
+  if (length(x$cdm_schema) > 1) {
+    x$cdm_schema <- paste0(x$cdm_schema, collapse = ".")
+  }
   purrr::walk2(names(x[-1]), x[-1], ~ cli::cat_bullet(.x, ": ", .y))
 }
