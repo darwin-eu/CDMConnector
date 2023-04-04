@@ -1,3 +1,7 @@
+# Development version
+
+* generate Capr cohorts with `generateCohortSet`
+
 # CDMConnector 0.5.1
 
 * Add both camelCase and snake_case versions of all functions (@Tsemharb)

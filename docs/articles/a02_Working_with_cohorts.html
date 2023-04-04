@@ -96,12 +96,8 @@ we’ll be using the Eunomia “GI Bleed” dataset.</p>
 <p>We can define a cohort for GI bleeding, where we exclude anyone with
 a record of rheumatoid arthritis at any time.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># devtools::install_github("OHDSI/Capr", "v2") # Use the development version of Capr v2</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ohdsi.github.io/Capr/" class="external-link">Capr</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># create a cohort set folder for saving cohort definitions</span></span>
-<span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"cohorts"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># devtools::install_github("OHDSI/Capr")</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ohdsi.github.io/Capr" class="external-link">Capr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">gibleed_cohort_definition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ohdsi.github.io/Capr/reference/cohort.html" class="external-link">cohort</a></span><span class="op">(</span></span>
 <span>  entry <span class="op">=</span> <span class="fu"><a href="https://ohdsi.github.io/Capr/reference/condition.html" class="external-link">condition</a></span><span class="op">(</span><span class="fu"><a href="https://ohdsi.github.io/Capr/reference/cs.html" class="external-link">cs</a></span><span class="op">(</span><span class="fu"><a href="https://ohdsi.github.io/Capr/reference/cs.html" class="external-link">descendants</a></span><span class="op">(</span><span class="fl">192671</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -113,30 +109,24 @@ a record of rheumatoid arthritis at any time.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># write json cohort definition</span></span>
-<span><span class="fu"><a href="https://ohdsi.github.io/Capr/reference/writeCohort.html" class="external-link">writeCohort</a></span><span class="op">(</span><span class="va">gibleed_cohort_definition</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"gibleed.json"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Now we have our cohort definition, we can generate the cohort.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gibleed_cohort_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_cohort_set.html">readCohortSet</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># requires CirceR optional dependency</span></span>
+<span><span class="co"># requires CirceR optional dependency</span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generateCohortSet</a></span><span class="op">(</span></span>
 <span>  <span class="va">cdm</span>,</span>
-<span>  <span class="va">gibleed_cohort_set</span>,</span>
+<span>  cohortSet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>gibleed <span class="op">=</span> <span class="va">gibleed_cohort_definition</span><span class="op">)</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"gibleed"</span>,</span>
 <span>  computeAttrition <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>We can see that we now have our cohort instantiated in the database
 with a reference to it added to the cdm reference.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt; Rows: 237</span></span>
+<pre><code><span><span class="co">#&gt; Rows: 476</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3…</span></span>
-<span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 3, 32, 80, 133, 187, 188, 202, 260, 264, 273, 285…</span></span>
-<span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 1958-01-29, 1987-06-09, 1974-10-27, 2019-04-05, …</span></span>
-<span><span class="co">#&gt; $ cohort_end_date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2018-10-29, 2014-12-24, 2019-04-15, 2019-04-06, …</span></span></code></pre>
+<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</span></span>
+<span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 35, 80, 99, 115, 116, 133, 160, 163, 164, 187, 18…</span></span>
+<span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 1997-07-25, 1974-10-27, 2000-03-11, 2001-04-15, …</span></span>
+<span><span class="co">#&gt; $ cohort_end_date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2018-12-25, 2019-04-15, 2019-04-27, 2019-05-05, …</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="cohort-attributes">Cohort attributes<a class="anchor" aria-label="anchor" href="#cohort-attributes"></a>
@@ -144,38 +134,38 @@ with a reference to it added to the cdm reference.</p>
 <p>As well as the cohort itself, the cohort has a number of attributes.
 First, is a count of participants by cohort. We can use
 <code>cohortCount</code> to get these counts.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cohortCount.html">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; Rows: 1</span></span>
 <span><span class="co">#&gt; Columns: 3</span></span>
-<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 3</span></span>
-<span><span class="co">#&gt; $ cohort_entries       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 237</span></span>
-<span><span class="co">#&gt; $ cohort_subjects      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 237</span></span></code></pre>
+<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1</span></span>
+<span><span class="co">#&gt; $ number_records       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 476</span></span>
+<span><span class="co">#&gt; $ number_subjects      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 476</span></span></code></pre>
 <p>We also have the attrition associated with entry into the cohort
 available via <code>cohortAttrition</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cohortAttrition.html">cohortAttrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; Rows: 1</span></span>
 <span><span class="co">#&gt; Columns: 7</span></span>
-<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 3</span></span>
-<span><span class="co">#&gt; $ number_records       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 237</span></span>
-<span><span class="co">#&gt; $ number_subjects      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 237</span></span>
+<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1</span></span>
+<span><span class="co">#&gt; $ number_records       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 476</span></span>
+<span><span class="co">#&gt; $ number_subjects      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 476</span></span>
 <span><span class="co">#&gt; $ reason_id            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1</span></span>
 <span><span class="co">#&gt; $ reason               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Qualifying initial records"</span></span>
 <span><span class="co">#&gt; $ excluded_records     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0</span></span>
 <span><span class="co">#&gt; $ excluded_subjects    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0</span></span></code></pre>
 <p>And lastly, we can also access the settings associated with the
 cohort using <code>cohortCount</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cohortSet.html">cohortSet</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; Rows: 1</span></span>
 <span><span class="co">#&gt; Columns: 2</span></span>
-<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 3</span></span>
-<span><span class="co">#&gt; $ cohort_name          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "GIBleed_male"</span></span></code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1</span></span>
+<span><span class="co">#&gt; $ cohort_name          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "gibleed"</span></span></code></pre>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
