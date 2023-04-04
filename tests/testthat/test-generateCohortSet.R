@@ -361,3 +361,36 @@ test_that("ReadCohortSet gives informative error when pointed to a file", {
   expect_error(readCohortSet(path), "not a directory")
 })
 
+test_that("Generation from Capr Cohorts", {
+  skip_if_not(eunomia_is_available())
+  skip_if_not_installed("Capr")
+  library(Capr)
+
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- CDMConnector::cdm_from_con(
+    con = con,
+    cdm_schema = "main",
+    write_schema = "main"
+  )
+
+  gibleed_cohort_definition <- cohort(
+    entry = condition(cs(descendants(192671))),
+    attrition = attrition(
+      "no RA" = withAll(
+        exactly(0,
+                condition(cs(descendants(80809))),
+                duringInterval(eventStarts(-Inf, Inf))))
+    )
+  )
+
+  cdm <- generateCohortSet(
+    cdm,
+    list(gibleed = gibleed_cohort_definition),
+    name = "gibleed",
+    computeAttrition = TRUE,
+    overwrite = TRUE
+  )
+
+  expect_gt(nrow(dplyr::collect(cdm$gibleed)), 10)
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})

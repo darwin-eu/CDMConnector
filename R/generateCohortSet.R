@@ -48,8 +48,8 @@ read_cohort_set <- function(path) {
       cohort_definition_id = seq_along(jsonFiles),
       cohort_name = tools::file_path_sans_ext(basename(jsonFiles)),
       json_path = jsonFiles) %>%
-      dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
-      dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
+    dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
+    dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
   }
 
   cohortsToCreate <- dplyr::select(cohortsToCreate, "cohort_definition_id", "cohort_name", "cohort", "json")
@@ -135,9 +135,30 @@ generateCohortSet <- function(cdm,
                               min.len = 1,
                               max.len = 2,
                               null.ok = FALSE)
+
+  if (!is.data.frame(cohortSet)) {
+    if (!is.list(cohortSet)) {
+      rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
+    }
+
+    checkmate::assertList(cohortSet,
+                          types = "Cohort",
+                          min.len = 1,
+                          names = "strict",
+                          any.missing = FALSE)
+
+    cohortSet <- dplyr::tibble(
+      cohort_definition_id = seq_along(cohortSet),
+      cohort_name = names(cohortSet),
+      cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)), #TODO implement as.list in Capr
+      json = purrr::map_chr(cohortSet, generics::compile)
+    )
+    class(cohortSet) <- c("CohortSet", class(cohortSet))
+  }
+
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
-                         must.include = c("cohort_definition_id", "cohort_name", "cohort"))
+                         must.include = c("cohort_definition_id", "cohort_name", "cohort", "json"))
   checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE)
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
@@ -272,7 +293,9 @@ generateCohortSet <- function(cdm,
 
   cli::cli_progress_bar(
     total = nrow(cohortSet),
-    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
+    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}",
+    clear = FALSE)
+  cli::cli_progress_update(set = 0, force = TRUE, total = nrow(cohortSet))
 
   cdm_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = ".")
   write_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
