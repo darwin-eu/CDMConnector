@@ -44,12 +44,8 @@ cdm <- CDMConnector::cdm_from_con(
 We can define a cohort for GI bleeding, where we exclude anyone with a record of rheumatoid arthritis at any time.
 
 ```{r, eval=FALSE}
-# devtools::install_github("OHDSI/Capr", "v2") # Use the development version of Capr v2
+# devtools::install_github("OHDSI/Capr")
 library(Capr)
-
-# create a cohort set folder for saving cohort definitions
-path <- file.path(tempdir(), "cohorts")
-dir.create(path)
 
 gibleed_cohort_definition <- cohort(
   entry = condition(cs(descendants(192671))),
@@ -61,26 +57,10 @@ gibleed_cohort_definition <- cohort(
   )
 )
 
-# write json cohort definition
-writeCohort(gibleed_cohort_definition, file.path(path, "gibleed.json"))
-```
-
-```{r, echo=FALSE}
-# use internal cohort set 
-gibleed_cohort_set <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))[3,]
-```
-
-Now we have our cohort definition, we can generate the cohort.
-
-```{r, eval=FALSE}
-gibleed_cohort_set <- readCohortSet(path = path)
-```
-
-```{r, eval=FALSE}
 # requires CirceR optional dependency
 cdm <- generateCohortSet(
   cdm,
-  gibleed_cohort_set,
+  cohortSet = list(gibleed = gibleed_cohort_definition),
   name = "gibleed",
   computeAttrition = TRUE
 )
