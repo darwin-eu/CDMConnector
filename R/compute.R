@@ -155,7 +155,10 @@ appendPermanent <- function(x, name, schema = NULL) {
 #' @export
 append_permanent <- appendPermanent
 
-
+#' Create a unique table name for temp tables
+#'
+#' @return A string that can be used as a dbplyr temp table name
+#' @export
 uniqueTableName <- function() {
   i <- getOption("dbplyr_table_name", 0) + 1
   options(dbplyr_table_name = i)
