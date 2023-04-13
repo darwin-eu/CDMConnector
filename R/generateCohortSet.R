@@ -293,9 +293,8 @@ generateCohortSet <- function(cdm,
 
   cli::cli_progress_bar(
     total = nrow(cohortSet),
-    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}",
-    clear = FALSE)
-  cli::cli_progress_update(set = 0, force = TRUE, total = nrow(cohortSet))
+    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
+  cli::cli_progress_update(set = 0)
 
   cdm_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = ".")
   write_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
@@ -320,13 +319,23 @@ generateCohortSet <- function(cdm,
 
     stopifnot(length(unique(stringr::str_extract_all(sql, "@\\w+"))[[1]]) == 0)
 
-    sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(con)) %>%
+    if (dbms(con) == "spark") {
+      # remove comments from SQL which are causing an issue on spark
+      # --([^\n])*?\n => match strings starting with -- followed by anything except a newline
+      sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
+    }
+
+    tempEmulationSchema <- getOption("sqlRenderTempEmulationSchema") %||% write_schema
+
+    sql <- SqlRender::translate(sql,
+                                targetDialect = CDMConnector::dbms(con),
+                                tempEmulationSchema = tempEmulationSchema) %>%
       SqlRender::splitSql()
 
     purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
-    cli::cli_progress_update()
+    cli::cli_progress_update(set = i)
   }
-  cli::cli_progress_done()
+
 
   cohort_ref <- dplyr::tbl(con, inSchema(writeSchema, name))
 
@@ -341,6 +350,10 @@ generateCohortSet <- function(cdm,
   }
 
   # Create cohort_set attribute -----
+  if (paste0(name, "_set") %in% existingTables) {
+    DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_set")))
+  }
+
   DBI::dbWriteTable(con,
                     name = inSchema(writeSchema, paste0(name, "_set")),
                     value = as.data.frame(cohortSet[,c("cohort_definition_id", "cohort_name")]),
@@ -381,6 +394,7 @@ generateCohortSet <- function(cdm,
     cohort_attrition_ref = cohort_attrition_ref,
     cohort_count_ref = cohort_count_ref)
 
+  cli::cli_progress_done()
   return(cdm)
 }
 
@@ -589,7 +603,7 @@ cohort_attrition <- cohortAttrition
 
 #' @export
 cohortAttrition.GeneratedCohortSet <- function(x) {
-  attr(x, "cohort_attrition")
+  dplyr::collect(attr(x, "cohort_attrition"))
 }
 
 #' Get cohort settings from a GeneratedCohortSet object
@@ -607,7 +621,7 @@ cohort_set <- cohortSet
 
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
-  attr(x, "cohort_set")
+  dplyr::collect(attr(x, "cohort_set"))
 }
 
 #' Get cohort counts from a GeneratedCohortSet object
@@ -625,7 +639,7 @@ cohort_count <- cohortCount
 
 #' @export
 cohortCount.GeneratedCohortSet <- function(x) {
-  attr(x, "cohort_count")
+  dplyr::collect(attr(x, "cohort_count"))
 }
 
 
