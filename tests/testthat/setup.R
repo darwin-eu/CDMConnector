@@ -4,5 +4,5 @@ withr::local_envvar(
   EUNOMIA_DATA_FOLDER = tempfile()
 )
 
-tryCatch(downloadEunomiaData(), error = function(e) NA)
+tryCatch(downloadEunomiaData(overwrite = TRUE), error = function(e) NA)
 

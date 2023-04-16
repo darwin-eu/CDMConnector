@@ -1,5 +1,5 @@
 
-
+skip_if_not_installed("duckdb")
 con <- DBI::dbConnect(duckdb::duckdb())
 mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
 
@@ -19,7 +19,12 @@ to_vector <- function(df, group_id = NULL, group_colname = 'cyl') {
   }
 }
 
-test_that("summarise-quantile works without group by", {
+test_that("summarise-quantile works ", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
+  # summarise-quantile works without group by
   df1 <- mtcars_tbl %>%
     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2),
                        name_suffix = "quant") %>%
@@ -29,9 +34,8 @@ test_that("summarise-quantile works without group by", {
     dplyr::reframe(quantiles = quantile(mpg, round(seq(0, 1, 0.05), 2), type = 1))
 
   expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
-})
 
-test_that("summarise-quantile works without group by (single value quantile)", {
+  # summarise-quantile works without group by (single value quantile)"
   df1 <- mtcars_tbl %>%
     summarise_quantile(mpg, probs = 0.05, name_suffix = "quant") %>%
     dplyr::collect()
@@ -40,10 +44,9 @@ test_that("summarise-quantile works without group by (single value quantile)", {
     dplyr::summarise(quantiles = quantile(mpg, 0.05, type = 1))
 
   expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
-})
 
 
-test_that("summarise-quantile works with select", {
+  # summarise-quantile works with select
   df1 <- mtcars_tbl %>%
     dplyr::select(cyl, mpg) %>%
     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2),
@@ -54,10 +57,8 @@ test_that("summarise-quantile works with select", {
     dplyr::reframe(quantiles = quantile(mpg, round(seq(0, 1, 0.05) ,2), type = 1))
 
   expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
-})
 
-
-test_that("summarise-quantile works with mutate", {
+  # summarise-quantile works with mutate
   df1 <- mtcars_tbl %>%
     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
@@ -69,10 +70,9 @@ test_that("summarise-quantile works with mutate", {
 
   expect_true(all.equal(to_vector(df1), to_vector(df2), check.attributes = FALSE))
   expect_equal(df1$mean, unique(df2$mean))
-})
 
 
-test_that("summarise-quantile works with select + mutate", {
+  # summarise-quantile works with select + mutate", {
   df1 <- mtcars_tbl %>%
     dplyr::select(cyl, mpg) %>%
     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
@@ -200,7 +200,10 @@ test_that("summarise-quantile generates error when no names passed", {
 DBI::dbDisconnect(con, shutdown = TRUE)
 
 
-test_that("`summarise_quantile` works on DuckDB", {
+test_that("summarise_quantile works on DuckDB", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
+
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   cdm <- cdm_from_con(con, cdm_schema = "main", cdm_tables = "drug_exposure")
   df1 <- cdm$drug_exposure %>%

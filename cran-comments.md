@@ -1,9 +1,8 @@
 ## R CMD check results
 
-This is a new patch release.
+This is a re-submission of a patch release.
 
-One NOTE is expected.
-
+One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: CirceR
 
 RCMD check passed on the following platforms with 0 errors, 0 warnings, and 0 notes 

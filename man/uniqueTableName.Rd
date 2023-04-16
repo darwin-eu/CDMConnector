@@ -3,15 +3,15 @@
 \name{uniqueTableName}
 \alias{uniqueTableName}
 \alias{unique_table_name}
-\title{Return a unique temp table name}
+\title{Create a unique table name for temp tables}
 \usage{
 uniqueTableName()
 
 unique_table_name()
 }
 \value{
-A string to be used for a temp table name
+A string that can be used as a dbplyr temp table name
 }
 \description{
-Return a unique temp table name
+Create a unique table name for temp tables
 }

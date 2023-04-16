@@ -135,6 +135,41 @@ test_that("sql server cdm_reference", {
   DBI::dbDisconnect(con)
 })
 
+test_that("snowflake cdm_reference", {
+  skip_if_not("Snowflake" %in% odbc::odbcListDataSources()$name)
+
+  cdm_schema <- Sys.getenv("SNOWFLAKE_CDM_SCHEMA")
+  write_schema <- Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA")
+  con <- DBI::dbConnect(odbc::odbc(), "Snowflake")
+
+  expect_null(verify_write_access(con, write_schema))
+
+  expect_true(is.character(listTables(con, schema = cdm_schema)))
+
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
+
+  expect_error(assert_tables(cdm, "cost"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+
+  expect_true("concept" %in% names(cdm))
+  expect_s3_class(collect(head(cdm$concept)), "data.frame")
+
+  expect_equal(dbms(con), "snowflake")
+
+  df <- dplyr::inner_join(cdm$person,
+                          cdm$observation_period,
+                          by = "person_id") %>%
+    head(2) %>%
+    dplyr::collect()
+
+  expect_s3_class(df, "data.frame")
+
+  md <- snapshot(cdm)
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
+  DBI::dbDisconnect(con)
+})
+
 test_that("redshift cdm_reference", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
 
@@ -170,6 +205,7 @@ test_that("redshift cdm_reference", {
 
   DBI::dbDisconnect(con)
 })
+
 
 test_that("spark cdm_reference", {
 
@@ -541,8 +577,45 @@ test_that("DatabaseConnector cdm reference works on sql server", {
   DBI::dbDisconnect(con)
 })
 
+test_that("DatabaseConnector cdm reference works on snowflakc", {
+  skip_if(Sys.getenv("SNOWFLAKE_USER") == "")
+  skip("failing test")
+  skip("manual test")
+
+  cdm_schema <- Sys.getenv("SNOWFLAKE_CDM_SCHEMA")
+  write_schema <- Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA")
+
+  con <- DBI::dbConnect(DatabaseConnector::DatabaseConnectorDriver(),
+                        dbms = "snowflake",
+                        connectionString = Sys.getenv("SNOWFLAKE_CONNECTION_STRING"),
+                        user = Sys.getenv("SNOWFLAKE_USER"),
+                        password = Sys.getenv("SNOWFLAKE_PASSWORD"))
+
+  cdm_schema <- strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]]
+  expect_true(is.character(listTables(con, schema = cdm_schema)))
+
+  # error here
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, cdm_tables =  c("cdm_source", "person", "observation_period", "vocabulary"))
+
+  expect_error(assert_tables(cdm, "cost"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  # expect_s3_class(snapshot(cdm), "cdm_snapshot")
+  # df <- DBI::dbGetQuery(con, "select * from cdmv5.dbo.person")
+
+  expect_true(is.null(verify_write_access(con, write_schema = Sys.getenv("CDM5_SQL_SERVER_SCRATCH_SCHEMA"))))
+
+  expect_true("person" %in% names(cdm))
+  expect_s3_class(collect(head(cdm$person)), "data.frame")
+
+  expect_equal(dbms(cdm), "sql server")
+
+  DBI::dbDisconnect(con)
+})
+
 # CDM utility functions -----
 test_that("cdmName works", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main")
   expect_equal(cdmName(cdm), "Synthea synthetic health database")
@@ -561,7 +634,6 @@ test_that("autodetect cdm version works", {
   expect_true(version(cdm) == c("5.3"))
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
-
 
 test_that("snapshot works when cdm_source or vocabulary tables are empty", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())

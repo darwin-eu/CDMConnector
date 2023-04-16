@@ -202,6 +202,68 @@ test_that("computeQuery works on Redshift", {
   DBI::dbDisconnect(con)
 })
 
+test_that("computeQuery works on Snowflake", {
+
+  skip_if_not("Snowflake" %in% odbc::odbcListDataSources()$name)
+  skip("failing test")
+
+  con <- DBI::dbConnect(odbc::odbc(), "Snowflake")
+  cdm_schema <- strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]]
+  write_schema <- strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]]
+
+  newTableName <- paste0(c("temptable", sample(1:9, 7, replace = TRUE)), collapse = "")
+
+  vocab <- dplyr::tbl(con, DBI::Id(catalog = "OMOP_SYNTHETIC_DATASET", schema = "CDM53", table = "vocabulary"))
+  vocab <- dplyr::tbl(con, DBI::SQL("OMOP_SYNTHETIC_DATASET.CDM53.vocabulary"))
+  vocab <- dplyr::tbl(con, DBI::SQL("OMOP_SYNTHETIC_DATASET.CDM53.VOCABULARY"))
+  listTables(con, c("OMOP_SYNTHETIC_DATASET", "CDM53"))
+  vocab <- dplyr::tbl(con, inSchema(cdm_schema, "vocabulary"))
+
+  # tables <- DBI::dbGetQuery(con, "select * from information_schema.tables")
+  # dplyr:tibble(tables) %>% dplyr::distinct(table_schema)
+
+  tempSchema <- "public"
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    dplyr::compute()
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+  expect_true(newTableName %in% CDMConnector::listTables(con, tempSchema))
+
+  expect_error({vocab %>%
+      dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+      computeQuery(newTableName, schema = tempSchema, temporary = FALSE)}, "already exists")
+
+  expect_error({x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    computeQuery(newTableName, schema = tempSchema, temporary = FALSE, overwrite = TRUE)}, NA)
+
+  expect_true(nrow(dplyr::collect(x)) == 2)
+
+  x <- vocab %>%
+    dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
+    appendPermanent(newTableName, schema = tempSchema)
+
+  expect_true(nrow(dplyr::collect(x)) == 3)
+
+  DBI::dbRemoveTable(con, DBI::SQL(paste0(c(tempSchema, newTableName), collapse = ".")))
+  expect_false(newTableName %in% CDMConnector::listTables(con, tempSchema))
+  DBI::dbDisconnect(con)
+})
+
 test_that("computeQuery works on Spark", {
 
   skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
@@ -331,6 +393,9 @@ test_that("computeQuery works on Oracle", {
 })
 
 test_that("dropTable works on duckdb", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
+
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
   cdm <- cdm_from_con(con, "main", write_schema = "main")
 
@@ -353,6 +418,9 @@ test_that("dropTable works on duckdb", {
 })
 
 test_that("dropTable works with tidyselect", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
+
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
   cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 
