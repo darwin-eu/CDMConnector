@@ -332,6 +332,10 @@ generateCohortSet <- function(cdm,
                                 tempEmulationSchema = tempEmulationSchema) %>%
       SqlRender::splitSql()
 
+    if (dbms(con) == "duckdb") {
+      sql <- gsub("'-1 \\* 0 day'", "'0 day'", sql)
+    }
+
     purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
     cli::cli_progress_update(set = i)
   }
