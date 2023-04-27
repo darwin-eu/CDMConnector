@@ -20,6 +20,9 @@
 #'   heuristics. Cohort tables must be in the write_schema.
 #' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
 #'.  field in the CDM_SOURCE table will be used.
+#' @param write_prefix,writePrefix A prefix that should be used with all tables
+#' written to the "write_schema". This prefix allows for the creation of a
+#' namespace within a database schema.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
@@ -29,7 +32,8 @@ cdm_from_con <- function(con,
                          write_schema = NULL,
                          cohort_tables = NULL,
                          cdm_version = "5.3",
-                         cdm_name = NULL) {
+                         cdm_name = NULL,
+                         write_prefix = NULL) {
 
   checkmate::assert_class(con, "DBIConnection")
   checkmate::assert_true(.dbIsValid(con))
@@ -53,6 +57,7 @@ cdm_from_con <- function(con,
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
   checkmate::assert_character(cdm_name, null.ok = TRUE)
+  checkmate::assert_character(write_prefix, null.ok = TRUE, len = 1, min.chars = 1, pattern = "[_a-z]+")
 
   # handle schema names like 'schema.dbo'
   if (!is.null(cdm_schema) && length(cdm_schema) == 1) {
@@ -174,11 +179,11 @@ cdm_from_con <- function(con,
     }
 
 
-
     # TODO cdm_reference constructor
     class(cdm) <- "cdm_reference"
     attr(cdm, "cdm_schema") <- cdm_schema
     attr(cdm, "write_schema") <- write_schema
+    attr(cdm, "write_prefix") <- write_prefix
     attr(cdm, "dbcon") <- con
     attr(cdm, "cdm_version") <- cdm_version
     attr(cdm, "cdm_name") <- cdm_name
@@ -308,7 +313,8 @@ cdmFromCon <- function(con,
                        writeSchema = NULL,
                        cohortTables = NULL,
                        cdmVersion = "5.3",
-                       cdmName = NULL) {
+                       cdmName = NULL,
+                       writePrefix = NULL) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,
@@ -316,7 +322,8 @@ cdmFromCon <- function(con,
     write_schema = writeSchema,
     cohort_tables = cohortTables,
     cdm_version = cdmVersion,
-    cdm_name = cdmName
+    cdm_name = cdmName,
+    write_prefix = writePrefix
   )
 }
 
@@ -482,7 +489,7 @@ dbms.DBIConnection <- function(con) {
 #'
 #' @param cdm A cdm object
 #' @param path A folder to save the cdm object to
-#' @param format The file format to use: "parquet", "csv", "feather".
+#' @param format The file format to use: "parquet", "csv", "feather", "duckdb".
 #'
 #' @return Invisibly returns the cdm input
 #' @export
@@ -496,7 +503,7 @@ dbms.DBIConnection <- function(con) {
 #' }
 stow <- function(cdm, path, format = "parquet") {
   checkmate::assert_class(cdm, "cdm_reference")
-  checkmate::assert_choice(format, c("parquet", "csv", "feather"))
+  checkmate::assert_choice(format, c("parquet", "csv", "feather", "duckdb"))
   path <- path.expand(path)
   checkmate::assert_true(file.exists(path))
 
@@ -517,6 +524,12 @@ stow <- function(cdm, path, format = "parquet") {
       names(cdm),
       ~ arrow::write_feather(dplyr::collect(.x), file.path(path, paste0(.y, ".feather")))
     ),
+    duckdb = {
+      rlang::check_installed("duckdb")
+      con <- DBI::dbConnect(duckdb::duckdb(), dbdir = file.path(path, "cdm.duckdb"))
+      purrr::walk2(cdm, names(cdm), ~DBI::dbWriteTable(con, name = dplyr::collect(.x), value = .y))
+      DBI::dbDisconnect(con, shutdown = TRUE)
+    }
   )
   invisible(cdm)
 }
@@ -582,6 +595,7 @@ cdm_from_files <-
     attr(cdm, "write_schema") <- NULL
     attr(cdm, "dbcon") <- NULL
     attr(cdm, "cdm_version") <- NULL
+    attr(cdm, "write_prefix") <- NULL
     cdm
   }
 

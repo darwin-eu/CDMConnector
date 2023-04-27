@@ -98,10 +98,12 @@ readCohortSet <- read_cohort_set
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables.
 #' @param cohort_set,cohortSet A cohortSet object created with `readCohortSet()`.
-#' @param compute_attrition,computeAttrition Should attrition be computed? TRUE or FALSE (default)
+#' @param compute_attrition,computeAttrition `r lifecycle::badge("deprecated")`
+#' Attrition is always computed.
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE or FALSE (default)
 #' @export
+#' @importFrom lifecycle deprecated
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
@@ -123,8 +125,9 @@ readCohortSet <- read_cohort_set
 generateCohortSet <- function(cdm,
                               cohortSet,
                               name = "cohort",
-                              computeAttrition = FALSE,
-                              overwrite = FALSE) {
+                              computeAttrition = deprecated(),
+                              overwrite = FALSE,
+                              temporary = FALSE) {
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
 
@@ -162,7 +165,16 @@ generateCohortSet <- function(cdm,
   checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE)
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
+  checkmate::assertLogical(temporary, len = 1)
   checkmate::assert_true(DBI::dbIsValid(attr(cdm, "dbcon")))
+
+  if (lifecycle::is_present(computeAttrition)) {
+    lifecycle::deprecate_warn(
+      when = "0.6.0",
+      what = "compute attrition",
+      details = "Cohort attrition will always be computed as of v0.6."
+    )
+  }
 
   if (name != tolower(name)) {
     rlang::abort("Cohort table names must be lowercase.")
@@ -172,6 +184,8 @@ generateCohortSet <- function(cdm,
   con <- attr(cdm, "dbcon")
 
   existingTables <- CDMConnector::listTables(con, writeSchema)
+  nameWithoutPrefix <- name
+  name <- paste0(attr(cdm, "write_prefix", exact = TRUE), name)
 
   if ((name %in% existingTables) && isFALSE(overwrite)) {
     rlang::abort(glue::glue("The cohort table {name} already exists.
@@ -189,8 +203,9 @@ generateCohortSet <- function(cdm,
     cohortExpression <- CirceR::cohortExpressionFromJson(expressionJson = cohortJson)
     cohortSql <- CirceR::buildCohortQuery(expression = cohortExpression,
                                           options = CirceR::createGenerateOptions(
-                                            generateStats = computeAttrition))
-    cohortSet$sql[i] <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE)
+                                          generateStats = TRUE))
+    # cohortSet$sql[i] <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE)
+    cohortSet$sql[i] <- cohortSql
   }
 
   # Create the cohort tables ----
@@ -331,14 +346,10 @@ generateCohortSet <- function(cdm,
   cohort_ref <- dplyr::tbl(con, inSchema(writeSchema, name))
 
   # Create attrition attribute ----
-  if (computeAttrition) {
-    cohort_attrition_ref <- computeAttritionTable(cdm,
-                                                  cohortStem = name,
-                                                  cohortSet = cohortSet,
-                                                  overwrite = overwrite)
-  } else {
-    cohort_attrition_ref <- NULL
-  }
+  cohort_attrition_ref <- computeAttritionTable(cdm,
+                                                cohortStem = name,
+                                                cohortSet = cohortSet,
+                                                overwrite = overwrite)
 
   # Create cohort_set attribute -----
   DBI::dbWriteTable(con,
@@ -347,6 +358,21 @@ generateCohortSet <- function(cdm,
                     overwrite = TRUE)
 
   cohort_set_ref <- dplyr::tbl(con, inSchema(writeSchema, paste0(name, "_set")))
+
+  # TODO test that dbWriteTable can create temp tables on all platforms
+  if (temporary) {
+    cohort_set_ref <- computeQuery(cohort_set_ref,
+                                   temporary = TRUE,
+                                   overwrite = TRUE)
+
+    cohort_attrition_ref <- computeQuery(cohort_attrition_ref,
+                                         temporary = TRUE,
+                                         overwrite = TRUE)
+
+    cohort_ref <- computeQuery(cohort_ref,
+                               temporary = TRUE,
+                               overwrite = TRUE)
+  }
 
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
@@ -362,7 +388,7 @@ generateCohortSet <- function(cdm,
                   "number_subjects") %>%
     computeQuery(name = paste0(name, "_count"),
                  schema = attr(cdm, "write_schema"),
-                 temporary = FALSE,
+                 temporary = temporary,
                  overwrite = TRUE)
 
   # Clean up tables ---- TODO decide how to handle this
@@ -375,7 +401,7 @@ generateCohortSet <- function(cdm,
   }
 
   # Create the object. Let the constructor handle getting the counts.----
-  cdm[[name]] <- new_generated_cohort_set(
+  cdm[[nameWithoutPrefix]] <- new_generated_cohort_set(
     cohort_ref = cohort_ref,
     cohort_set_ref = cohort_set_ref,
     cohort_attrition_ref = cohort_attrition_ref,
@@ -569,8 +595,7 @@ newGeneratedCohortSet <- function(cohortRef,
   new_generated_cohort_set(cohort_ref = cohortRef,
                            cohort_set_ref = cohortSetRef,
                            cohort_attrition_ref = cohortAttritionRef,
-                           cohort_count_ref = cohortCountRef
-                           )
+                           cohort_count_ref = cohortCountRef)
 }
 
 
