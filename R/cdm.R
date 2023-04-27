@@ -723,3 +723,19 @@ print.cdm_snapshot <- function(x, ...) {
   }
   purrr::walk2(names(x[-1]), x[-1], ~ cli::cat_bullet(.x, ": ", .y))
 }
+
+#' Disconnect the connection of the cdm object
+#'
+#' @param cdm cdm reference
+#'
+#' @export
+cdmDisconnect <- function(cdm) {
+  if (!("cdm_reference" %in% class(cdm))) {
+    cli::cli_abort("cdm should be a cdm_reference")
+  }
+  DBI::dbDisconnect(attr(cdm, "dbcon"), shutdown = TRUE)
+}
+
+#' @rdname cdmDisconnect
+#' @export
+cdm_disconnect <- cdmDisconnect
