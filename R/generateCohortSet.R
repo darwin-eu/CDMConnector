@@ -614,8 +614,17 @@ cohort_attrition <- cohortAttrition
 
 #' @export
 cohortAttrition.GeneratedCohortSet <- function(x) {
-  attr(x, "cohort_attrition")
+  if (is.null(attr(x, "cohort_attrition"))) {
+    return(NULL)
+  }
+
+  attr(x, "cohort_attrition") %>%
+    if(!is.null(attr(x, "cohort_set"))) {
+      dplyr::left_join(attr(x, "cohort_set"), by = "cohort_definition_id")
+    } else {.} %>%
+    dplyr::collect()
 }
+
 
 #' Get cohort settings from a GeneratedCohortSet object
 #'
@@ -632,7 +641,11 @@ cohort_set <- cohortSet
 
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
-  attr(x, "cohort_set")
+  if (is.null(attr(x, "cohort_set"))) {
+    return(NULL)
+  }
+
+  dplyr::collect(attr(x, "cohort_set"))
 }
 
 #' Get cohort counts from a GeneratedCohortSet object
@@ -650,7 +663,15 @@ cohort_count <- cohortCount
 
 #' @export
 cohortCount.GeneratedCohortSet <- function(x) {
-  attr(x, "cohort_count")
+  if (is.null(attr(x, "cohort_count"))) {
+    return(NULL)
+  }
+
+  attr(x, "cohort_count") %>%
+    if (!is.null(attr(x, "cohort_set"))) {
+      dplyr::left_join(attr(x, "cohort_set"), by = "cohort_definition_id")
+    } else {.} %>%
+    dplyr::collect()
 }
 
 

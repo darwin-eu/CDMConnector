@@ -288,40 +288,40 @@ test_that("oracle cdm_reference", {
   DBI::dbDisconnect(con)
 })
 
-# test_that("cdm reference works on bigquery", {
-#  # need to get tbl(., in_schema) working
-#
-#   bigrquery::bq_auth(path = Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH"))
-#
-#   cdm_schema <- Sys.getenv("BIGQUERY_CDM_SCHEMA")
-#   write_schema <- Sys.getenv("BIGQUERY_SCRATCH_SCHEMA")
-#
-#   con <- DBI::dbConnect(
-#     bigrquery::bigquery(),
-#     project = Sys.getenv("BIGQUERY_PROJECT_ID"),
-#     dataset = cdm_schema
-#   )
-#
-#   expect_true(is.character(listTables(con, schema = cdm_schema)))
-#   expect_true(is.character(listTables(con, schema = write_schema)))
-#
-#   debugonce(cdm_from_con)
-#   cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
-#
-#   expect_error(assert_tables(cdm, "cost"))
-#   expect_true(version(cdm) %in% c("5.3", "5.4"))
-#   expect_s3_class(snapshot(cdm), "cdm_snapshot")
-#
-#   expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
-#
-#   expect_true("concept" %in% names(cdm))
-#   expect_s3_class(collect(head(cdm$concept)), "data.frame")
-#
-#   expect_equal(dbms(cdm), "postgresql")
-#
-#
-#   DBI::dbDisconnect(con)
-# })
+test_that("cdm reference works on bigquery", {
+ # need to get tbl(., in_schema) working
+  skip("failing test")
+  bigrquery::bq_auth(path = Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH"))
+
+  cdm_schema <- Sys.getenv("BIGQUERY_CDM_SCHEMA")
+  write_schema <- Sys.getenv("BIGQUERY_SCRATCH_SCHEMA")
+
+  con <- DBI::dbConnect(
+    bigrquery::bigquery(),
+    project = Sys.getenv("BIGQUERY_PROJECT_ID"),
+    dataset = cdm_schema
+  )
+
+  expect_true(is.character(listTables(con, schema = cdm_schema)))
+  expect_true(is.character(listTables(con, schema = write_schema)))
+
+  debugonce(cdm_from_con)
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
+
+  expect_error(assert_tables(cdm, "cost"))
+  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_s3_class(snapshot(cdm), "cdm_snapshot")
+
+  expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
+
+  expect_true("concept" %in% names(cdm))
+  expect_s3_class(collect(head(cdm$concept)), "data.frame")
+
+  expect_equal(dbms(cdm), "postgresql")
+
+
+  DBI::dbDisconnect(con)
+})
 
 test_that("duckdb cdm_reference", {
   skip_if_not(rlang::is_installed("duckdb"))
@@ -577,7 +577,7 @@ test_that("DatabaseConnector cdm reference works on sql server", {
   DBI::dbDisconnect(con)
 })
 
-test_that("DatabaseConnector cdm reference works on snowflakc", {
+test_that("DatabaseConnector cdm reference works on snowflake", {
   skip_if(Sys.getenv("SNOWFLAKE_USER") == "")
   skip("failing test")
   skip("manual test")
