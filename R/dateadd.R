@@ -88,7 +88,6 @@ dateadd <- function(date, number, interval = "day") {
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 datediff <- function(start, end, interval = "day") {
-  rlang::check_installed("SqlRender")
   checkmate::assertCharacter(interval, len = 1)
   checkmate::assertSubset(interval, choices = c("day", "year"))
   checkmate::assertCharacter(start, len = 1)
@@ -103,24 +102,25 @@ datediff <- function(start, end, interval = "day") {
   }
 
   sql <- switch (db,
-                 "redshift" = glue::glue("DATEDIFF({interval}, {start}, {end})"),
-                 "oracle" = ifelse(interval == "day",
-                    glue::glue("CEIL(CAST({end} AS DATE) - CAST({start} AS DATE))"),
-                    glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
-                 "postgresql" = ifelse(interval == "day",
-                    glue::glue("(CAST({end} AS DATE) - CAST({start} AS DATE))"),
-                    glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
-                 "sql server" = glue::glue("DATEDIFF({interval}, {start}, {end})"),
-                 "spark" = ifelse(interval == "day",
-                   glue::glue("datediff({end},{start})"),
-                   glue::glue("datediff({end},{start})/365.25")),
-                 "duckdb" = glue::glue("datediff('{interval}', {start}, {end})"),
-                 "sqlite" = ifelse(interval == "day",
-                   glue::glue("(JULIANDAY(end, 'unixepoch') - JULIANDAY(start, 'unixepoch'))"),
-                   glue::glue("(STRFTIME('%Y', end, 'unixepoch') - STRFTIME('%Y', start, 'unixepoch'))")),
-                 "bigquery" = glue::glue("DATE_DIFF({start}, {end}, {toupper(interval)})"),
-                 glue::glue("DATEDIFF({interval}, {start}, {end})")
+                 "redshift" = glue::glue("DATEDIFF(day, {start}, {end})"),
+                 "oracle" = glue::glue("CEIL(CAST({end} AS DATE) - CAST({start} AS DATE))"),
+                    # glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
+                 "postgresql" = glue::glue("(CAST({end} AS DATE) - CAST({start} AS DATE))"),
+                    # glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
+                 "sql server" = glue::glue("DATEDIFF(day, {start}, {end})"),
+                 "spark" = glue::glue("datediff({end},{start})"),
+                   # glue::glue("datediff({end},{start})/365.25")),
+                 "duckdb" = glue::glue("datediff('day', {start}, {end})"),
+                 "sqlite" = glue::glue("(JULIANDAY(end, 'unixepoch') - JULIANDAY(start, 'unixepoch'))"),
+                   # glue::glue("(STRFTIME('%Y', end, 'unixepoch') - STRFTIME('%Y', start, 'unixepoch'))")),
+                 "bigquery" = glue::glue("DATE_DIFF({start}, {end}, DAY)"),
+                 "snowflake" = glue::glue("DATEDIFF(day, {start}, {end})"),
+                 glue::glue("DATEDIFF(day, {start}, {end})")
   )
+
+  if (interval == "year") {
+    sql <- glue::glue("({sql}/365.25)")
+  }
 
   dbplyr::sql(as.character(sql))
 }
