@@ -92,7 +92,6 @@ test_that("Date functions work on duckdb", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-
 test_that("Date functions work on Postgres", {
   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
   con <- DBI::dbConnect(RPostgres::Postgres(),
@@ -149,7 +148,6 @@ test_that("Date functions work on Postgres", {
 
   DBI::dbDisconnect(con)
 })
-
 
 test_that("Date functions work on SQL Server", {
   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
@@ -214,7 +212,6 @@ test_that("Date functions work on SQL Server", {
 
   DBI::dbDisconnect(con)
 })
-
 
 test_that("Date functions work on Redshift", {
   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
@@ -338,7 +335,6 @@ test_that("Date functions work on Spark", {
   DBI::dbDisconnect(con)
 })
 
-
 test_that("Date functions work on Oracle", {
   skip_if_not("OracleODBC-19" %in% odbc::odbcListDataSources()$name)
 
@@ -409,3 +405,35 @@ test_that("Date functions work on Oracle", {
   DBI::dbDisconnect(con)
 })
 
+test_that("test year, month, day functionality", {
+  con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  date_tbl <- dplyr::copy_to(con,
+                             data.frame(
+                               birth_date = as.Date("1993-04-19"),
+                               date1 = as.Date("2023-04-17"),
+                               date2 = as.Date("2023-04-22")
+                              ),
+                             name = "tmp",
+                             temporary = TRUE)
+  df <- date_tbl %>%
+    dplyr::mutate(year = !!extract("birth_date", "year")) %>%
+    dplyr::mutate(month = !!extract("birth_date", "month")) %>%
+    dplyr::mutate(day = !!extract("birth_date", "day")) %>%
+    dplyr::mutate(days1 = !!datediff("birth_date", "date1", "day")) %>%
+    dplyr::mutate(month1 = !!datediff("birth_date", "date1", "month")) %>%
+    dplyr::mutate(year1 = !!datediff("birth_date", "date1", "year")) %>%
+    dplyr::mutate(days2 = !!datediff("birth_date", "date2", "day")) %>%
+    dplyr::mutate(month2 = !!datediff("birth_date", "date2", "month")) %>%
+    dplyr::mutate(year2 = !!datediff("birth_date", "date2", "year")) %>%
+    dplyr::collect()
+  expect_true(df$year == 1993)
+  expect_true(df$month == 4)
+  expect_true(df$day == 19)
+  expect_true(df$days1 == 10955)
+  expect_true(df$month1 == 359)
+  expect_true(df$year1 == 29)
+  expect_true(df$days2 == 10960)
+  expect_true(df$month2 == 360)
+  expect_true(df$year2 == 30)
+  DBI::dbDisconnect(con)
+})

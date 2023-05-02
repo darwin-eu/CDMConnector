@@ -46,15 +46,15 @@ dateadd <- function(date, number, interval = "day") {
   }
 
   sql <- switch (db,
-    "redshift" = glue::glue("DATEADD({interval}, {number}, {date})"),
-    "oracle" = glue::glue("({date} + NUMTODSINTERVAL({number}, 'day'))"),
-    "postgresql" = glue::glue("({date} + {number}*INTERVAL'1 {interval}')"),
-    "sql server" = glue::glue("DATEADD({interval}, {number}, {date})"),
-    "spark" = glue::glue("date_add({date}, {number})"),
-    "duckdb" = glue::glue("({date} + {number}*INTERVAL'1 {interval}')"),
-    "sqlite" = glue::glue("CAST(STRFTIME('%s', DATETIME({date}, 'unixepoch', ({number})||' {interval}s')) AS REAL)"),
-    "bigquery" = glue::glue("DATE_ADD({date}, INTERVAL {number} {toupper(interval)})"),
-    glue::glue("DATEADD({interval}, {number}, {date})")
+                 "redshift" = glue::glue("DATEADD({interval}, {number}, {date})"),
+                 "oracle" = glue::glue("({date} + NUMTODSINTERVAL({number}, 'day'))"),
+                 "postgresql" = glue::glue("({date} + {number}*INTERVAL'1 {interval}')"),
+                 "sql server" = glue::glue("DATEADD({interval}, {number}, {date})"),
+                 "spark" = glue::glue("date_add({date}, {number})"),
+                 "duckdb" = glue::glue("({date} + {number}*INTERVAL'1 {interval}')"),
+                 "sqlite" = glue::glue("CAST(STRFTIME('%s', DATETIME({date}, 'unixepoch', ({number})||' {interval}s')) AS REAL)"),
+                 "bigquery" = glue::glue("DATE_ADD({date}, INTERVAL {number} {toupper(interval)})"),
+                 glue::glue("DATEADD({interval}, {number}, {date})")
   )
 
   dbplyr::sql(as.character(sql))
@@ -89,7 +89,7 @@ dateadd <- function(date, number, interval = "day") {
 #' }
 datediff <- function(start, end, interval = "day") {
   checkmate::assertCharacter(interval, len = 1)
-  checkmate::assertSubset(interval, choices = c("day", "year"))
+  checkmate::assertSubset(interval, choices = c("day", "month", "year"))
   checkmate::assertCharacter(start, len = 1)
   checkmate::assertCharacter(end, len = 1)
 
@@ -101,25 +101,37 @@ datediff <- function(start, end, interval = "day") {
     end <- as.character(DBI::dbQuoteIdentifier(dot$src$con, end))
   }
 
-  sql <- switch (db,
-                 "redshift" = glue::glue("DATEDIFF(day, {start}, {end})"),
-                 "oracle" = glue::glue("CEIL(CAST({end} AS DATE) - CAST({start} AS DATE))"),
-                    # glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
-                 "postgresql" = glue::glue("(CAST({end} AS DATE) - CAST({start} AS DATE))"),
-                    # glue::glue("(EXTRACT(YEAR FROM CAST({end} AS DATE)) - EXTRACT(YEAR FROM CAST({start} AS DATE)))")),
-                 "sql server" = glue::glue("DATEDIFF(day, {start}, {end})"),
-                 "spark" = glue::glue("datediff({end},{start})"),
-                   # glue::glue("datediff({end},{start})/365.25")),
-                 "duckdb" = glue::glue("datediff('day', {start}, {end})"),
-                 "sqlite" = glue::glue("(JULIANDAY(end, 'unixepoch') - JULIANDAY(start, 'unixepoch'))"),
-                   # glue::glue("(STRFTIME('%Y', end, 'unixepoch') - STRFTIME('%Y', start, 'unixepoch'))")),
-                 "bigquery" = glue::glue("DATE_DIFF({start}, {end}, DAY)"),
-                 "snowflake" = glue::glue("DATEDIFF(day, {start}, {end})"),
-                 glue::glue("DATEDIFF(day, {start}, {end})")
-  )
+  if (interval == "day") {
+    sql <- switch (
+      db,
+      "redshift" = glue::glue("DATEDIFF(day, {start}, {end})"),
+      "oracle" = glue::glue("CEIL(CAST({end} AS DATE) - CAST({start} AS DATE))"),
+      "postgresql" = glue::glue("(CAST({end} AS DATE) - CAST({start} AS DATE))"),
+      "sql server" = glue::glue("DATEDIFF(day, {start}, {end})"),
+      "spark" = glue::glue("datediff({end},{start})"),
+      "duckdb" = glue::glue("datediff('day', {start}, {end})"),
+      "sqlite" = glue::glue("(JULIANDAY(end, 'unixepoch') - JULIANDAY(start, 'unixepoch'))"),
+      "bigquery" = glue::glue("DATE_DIFF({start}, {end}, DAY)")
+    )
+  } else {
+    dayStart <- extract(start, "day", db)
+    monthStart <- extract(start, "month", db)
+    yearStart <- extract(start, "year", db)
+    dayEnd <- extract(end, "day", db)
+    monthEnd <- extract(end, "month", db)
+    yearEnd <- extract(end, "year", db)
+    if (interval == "month") {
+      sql <- glue::glue(
+        "(({yearEnd} * 1200 + {monthEnd} * 100 + {dayEnd} -
+      ({yearStart} * 1200 + {monthStart} * 100 + {dayStart})) / 100)"
+      )
+    } else {
+      sql <- glue::glue(
+        "(({yearEnd} * 10000 + {monthEnd} * 100 + {dayEnd} -
+      ({yearStart} * 10000 + {monthStart} * 100 + {dayStart})) / 10000)"
+      )
+    }
 
-  if (interval == "year") {
-    sql <- glue::glue("({sql}/365.25)")
   }
 
   dbplyr::sql(as.character(sql))
@@ -175,3 +187,59 @@ asDate <- function(x) {
 #' @rdname asDate
 #' @export
 as_date <- asDate
+
+#' Extract the day, month or year of a date in sql.
+#'
+#' @param date Character variable that points to a date column.
+#' @param value Value to extract. It can be "year", "month", or "day".
+#' @param dms Database manager system, if NULL it is auto detected.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+#' date_tbl <- dplyr::copy_to(con,
+#'                            data.frame(birth_date = as.Date("1993-04-19")),
+#'                            name = "tmp",
+#'                            temporary = TRUE)
+#' df <- date_tbl %>%
+#'   dplyr::mutate(year = !!extract("birth_date", "year")) %>%
+#'   dplyr::mutate(month = !!extract("birth_date", "month")) %>%
+#'   dplyr::mutate(day = !!extract("birth_date", "day")) %>%
+#'   dplyr::collect()
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
+extract <- function(date, value = "year", dms = NULL) {
+  checkmate::assertCharacter(date, len = 1)
+  checkmate::assertChoice(value, c("year", "month", "day"))
+  checkmate::assertChoice(
+    dms,
+    c(
+      "redshift", "oracle", "postgresql", "sql server", "spark", "duckdb",
+      "sqlite", "bigquery"
+    ),
+    null.ok = TRUE
+  )
+  if (is.null(dms)) {
+    dot <- get(".", envir = parent.frame())
+    db <- CDMConnector::dbms(dot$src$con)
+  } else {
+    db <- dms
+  }
+  sql <- switch (
+    db,
+    "redshift" = "EXTRACT({toupper(value)}) FROM {date})",
+    "oracle" = "EXTRACT({toupper(value)} FROM {date})",
+    "postgresql" = "EXTRACT({toupper(value)} FROM {date})",
+    "sql server" = "{toupper(value)}({date})",
+    "spark" = "{toupper(value)}({date})",
+    "duckdb" = "date_part('{value}', {date})",
+    "sqlite" = ifelse(
+      value == "year",
+      "CAST(STRFTIME('%Y', {date}, 'unixepoch') AS INT)",
+      "CAST(STRFTIME('%{substr(value, 1, 1)}', {date}, 'unixepoch') AS INT)"
+    ),
+    "bigquery" = "EXTRACT({toupper(value)} from {date})"
+  )
+  dbplyr::sql(as.character(glue::glue(sql)))
+}
