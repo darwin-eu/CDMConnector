@@ -48,8 +48,8 @@ read_cohort_set <- function(path) {
       cohort_definition_id = seq_along(jsonFiles),
       cohort_name = tools::file_path_sans_ext(basename(jsonFiles)),
       json_path = jsonFiles) %>%
-    dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
-    dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
+      dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
+      dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
   }
 
   cohortsToCreate <- dplyr::select(cohortsToCreate, "cohort_definition_id", "cohort_name", "cohort", "json")
@@ -98,13 +98,10 @@ readCohortSet <- read_cohort_set
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables.
 #' @param cohort_set,cohortSet A cohortSet object created with `readCohortSet()`.
-#' @param compute_attrition,computeAttrition `r lifecycle::badge("deprecated")`
-#' Attrition is always computed.
+#' @param compute_attrition,computeAttrition Should attrition be computed? TRUE or FALSE (default)
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE or FALSE (default)
-#' @param temporary Should only temporary tables be used for cohort generation? TRUE or FALSE (default)
 #' @export
-#' @importFrom lifecycle deprecated
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
@@ -126,9 +123,8 @@ readCohortSet <- read_cohort_set
 generateCohortSet <- function(cdm,
                               cohortSet,
                               name = "cohort",
-                              computeAttrition = deprecated(),
-                              overwrite = FALSE,
-                              temporary = FALSE) {
+                              computeAttrition = FALSE,
+                              overwrite = FALSE) {
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
 
@@ -139,43 +135,13 @@ generateCohortSet <- function(cdm,
                               min.len = 1,
                               max.len = 2,
                               null.ok = FALSE)
-
-  if (!is.data.frame(cohortSet)) {
-    if (!is.list(cohortSet)) {
-      rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
-    }
-
-    checkmate::assertList(cohortSet,
-                          types = "Cohort",
-                          min.len = 1,
-                          names = "strict",
-                          any.missing = FALSE)
-
-    cohortSet <- dplyr::tibble(
-      cohort_definition_id = seq_along(cohortSet),
-      cohort_name = names(cohortSet),
-      cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)), #TODO implement as.list in Capr
-      json = purrr::map_chr(cohortSet, generics::compile)
-    )
-    class(cohortSet) <- c("CohortSet", class(cohortSet))
-  }
-
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
-                         must.include = c("cohort_definition_id", "cohort_name", "cohort", "json"))
-  checkmate::assertCharacter(name, len = 1, min.chars = 1)
+                         must.include = c("cohort_definition_id", "cohort_name", "cohort"))
+  checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE)
+  checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
-  checkmate::assertLogical(temporary, len = 1)
   checkmate::assert_true(DBI::dbIsValid(attr(cdm, "dbcon")))
-  assertWriteSchema(cdm)
-
-  if (lifecycle::is_present(computeAttrition)) {
-    lifecycle::deprecate_warn(
-      when = "0.6.0",
-      what = "generateCohortSet(computeAttrition)",
-      details = "Cohort attrition will always be computed as of v0.6."
-    )
-  }
 
   if (name != tolower(name)) {
     rlang::abort("Cohort table names must be lowercase.")
@@ -183,27 +149,27 @@ generateCohortSet <- function(cdm,
 
   writeSchema <- attr(cdm, "write_schema")
   con <- attr(cdm, "dbcon")
-  nameWithoutPrefix <- name
-  name <- paste0(attr(cdm, "write_prefix", exact = TRUE), name)
 
-  if (!is.null(writeSchema)) {
-    existingTables <- CDMConnector::listTables(con, writeSchema)
+  existingTables <- CDMConnector::listTables(con, writeSchema)
 
-    if ((name %in% existingTables) && isFALSE(overwrite)) {
-      rlang::abort(glue::glue("The cohort table {name} already exists.
-                              \nSpecify overwrite = TRUE to overwrite it."))
-    }
+  if ((name %in% existingTables) && isFALSE(overwrite)) {
+    rlang::abort(glue::glue("The cohort table {name} already exists.
+                            \nSpecify overwrite = TRUE to overwrite it."))
   }
+
 
   # Create the OHDSI-SQL for each cohort ----
 
-  cohortSet$sql <- character(length = nrow(cohortSet))
+  cohortSet$sql <- character(nrow(cohortSet))
 
   for (i in seq_len(nrow(cohortSet))) {
+    # cohortJson <- as.character(jsonlite::toJSON(cohortSet$cohort[[i]], auto_unbox = TRUE))
     cohortJson <- cohortSet$json[[i]]
-    cohortSql <- CirceR::buildCohortQuery(expression = CirceR::cohortExpressionFromJson(cohortJson),
-                                          options = CirceR::createGenerateOptions(generateStats = TRUE))
-    cohortSet$sql[i] <- cohortSql
+    cohortExpression <- CirceR::cohortExpressionFromJson(expressionJson = cohortJson)
+    cohortSql <- CirceR::buildCohortQuery(expression = cohortExpression,
+                                          options = CirceR::createGenerateOptions(
+                                            generateStats = computeAttrition))
+    cohortSet$sql[i] <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE)
   }
 
   # Create the cohort tables ----
@@ -218,94 +184,95 @@ generateCohortSet <- function(cdm,
                        cohort_definition_id = "INT",
                        subject_id = "BIGINT",
                        cohort_start_date = "DATE",
-                       cohort_end_date = "DATE"))
+                       cohort_end_date = "DATE"
+                     ))
 
   stopifnot(name %in% listTables(con, writeSchema))
 
+  if (computeAttrition) {
 
-  nm <- paste0(name, "_inclusion")
+    nm <- paste0(name, "_inclusion")
 
-  if (nm %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+    if (nm %in% existingTables) {
+      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+    }
+
+    DBI::dbCreateTable(con,
+                       name = inSchema(writeSchema, nm),
+                       fields = c(
+                         cohort_definition_id = "INT",
+                         rule_sequence = "INT",
+                         name = "VARCHAR(255)",
+                         description = "VARCHAR(1000)")
+    )
+
+    nm <- paste0(name, "_inclusion_result") # used for attrition
+
+    if (nm %in% existingTables) {
+      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+    }
+
+    DBI::dbCreateTable(con,
+                       name = inSchema(writeSchema, nm),
+                       fields = c(
+                         cohort_definition_id = "INT",
+                         inclusion_rule_mask = "INT",
+                         person_count = "INT",
+                         mode_id = "INT")
+    )
+
+    nm <- paste0(name, "_inclusion_stats")
+
+    if (nm %in% existingTables) {
+      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+    }
+
+    DBI::dbCreateTable(con,
+                       name = inSchema(writeSchema, nm),
+                       fields = c(
+                         cohort_definition_id = "INT",
+                         rule_sequence = "INT",
+                         person_count = "INT",
+                         gain_count = "INT",
+                         person_total = "INT",
+                         mode_id = "INT")
+    )
+
+
+    nm <- paste0(name, "_summary_stats")
+
+    if (nm %in% existingTables) {
+      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+    }
+
+    DBI::dbCreateTable(con,
+                       name = inSchema(writeSchema, nm),
+                       fields = c(
+                         cohort_definition_id = "INT",
+                         base_count = "INT",
+                         final_count = "INT",
+                         mode_id = "INT")
+    )
+
+    nm <- paste0(name, "_censor_stats")
+
+    if (nm %in% existingTables) {
+      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+    }
+
+    DBI::dbCreateTable(con,
+                       name = inSchema(writeSchema, nm),
+                       fields = c(
+                         cohort_definition_id = "INT",
+                         lost_count = "INT")
+    )
   }
-
-  DBI::dbCreateTable(con,
-                     name = inSchema(writeSchema, nm),
-                     fields = c(
-                       cohort_definition_id = "INT",
-                       rule_sequence = "INT",
-                       name = "VARCHAR(255)",
-                       description = "VARCHAR(1000)")
-  )
-
-  nm <- paste0(name, "_inclusion_result") # used for attrition
-
-  if (nm %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-  }
-
-  DBI::dbCreateTable(con,
-                     name = inSchema(writeSchema, nm),
-                     fields = c(
-                       cohort_definition_id = "INT",
-                       inclusion_rule_mask = "INT",
-                       person_count = "INT",
-                       mode_id = "INT")
-  )
-
-  nm <- paste0(name, "_inclusion_stats")
-
-  if (nm %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-  }
-
-  DBI::dbCreateTable(con,
-                     name = inSchema(writeSchema, nm),
-                     fields = c(
-                       cohort_definition_id = "INT",
-                       rule_sequence = "INT",
-                       person_count = "INT",
-                       gain_count = "INT",
-                       person_total = "INT",
-                       mode_id = "INT")
-  )
-
-
-  nm <- paste0(name, "_summary_stats")
-
-  if (nm %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-  }
-
-  DBI::dbCreateTable(con,
-                     name = inSchema(writeSchema, nm),
-                     fields = c(
-                       cohort_definition_id = "INT",
-                       base_count = "INT",
-                       final_count = "INT",
-                       mode_id = "INT")
-  )
-
-  nm <- paste0(name, "_censor_stats")
-
-  if (nm %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-  }
-
-  DBI::dbCreateTable(con,
-                     name = inSchema(writeSchema, nm),
-                     fields = c(
-                       cohort_definition_id = "INT",
-                       lost_count = "INT")
-  )
 
   # Run the OHDSI-SQL ----
 
   cli::cli_progress_bar(
     total = nrow(cohortSet),
-    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}",
-    clear = FALSE)
-  cli::cli_progress_update(set = 0, force = TRUE, total = nrow(cohortSet))
+    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
 
   cdm_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = ".")
   write_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
@@ -331,31 +298,9 @@ generateCohortSet <- function(cdm,
     stopifnot(length(unique(stringr::str_extract_all(sql, "@\\w+"))[[1]]) == 0)
 
     sql <- SqlRender::translate(sql, targetDialect = CDMConnector::dbms(con)) %>%
-      SqlRender::splitSql
+      SqlRender::splitSql()
 
     purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
-
-  #   browser()
-  # DBI::dbRemoveTable(con, "Codesets")
-  # DBI::dbRemoveTable(con, "qualified_events")
-  # DBI::dbRemoveTable(con, "Inclusion_0")
-  # DBI::dbRemoveTable(con, "Inclusion_1")
-  # DBI::dbRemoveTable(con, "inclusion_events")
-  # DBI::dbRemoveTable(con, "included_events")
-  # DBI::dbRemoveTable(con, "cohort_rows")
-  #   purrr::walk(sql[1:18], ~DBI::dbExecute(con, .x, immediate = TRUE))
-  #   purrr::walk(sql[19], ~DBI::dbExecute(con, .x, immediate = TRUE))
-  #   cat(sql[19])
-  #   DBI::dbExecute(con, sql[19])
-  #   purrr::walk(sql[20], ~DBI::dbExecute(con, .x, immediate = TRUE))
-
-    # sql0 <- "SELECT
-    # person_id, observation_period_end_date
-    # , (observation_period_end_date + INTERVAL'0 day')  as end_date
-    # from main.observation_period"
-    # DBI::dbGetQuery(con, sql0)
-
-
     cli::cli_progress_update()
   }
   cli::cli_progress_done()
@@ -363,10 +308,14 @@ generateCohortSet <- function(cdm,
   cohort_ref <- dplyr::tbl(con, inSchema(writeSchema, name))
 
   # Create attrition attribute ----
-  cohort_attrition_ref <- computeAttritionTable(cdm,
-                                                cohortStem = name,
-                                                cohortSet = cohortSet,
-                                                overwrite = overwrite)
+  if (computeAttrition) {
+    cohort_attrition_ref <- computeAttritionTable(cdm,
+                                                  cohortStem = name,
+                                                  cohortSet = cohortSet,
+                                                  overwrite = overwrite)
+  } else {
+    cohort_attrition_ref <- NULL
+  }
 
   # Create cohort_set attribute -----
   DBI::dbWriteTable(con,
@@ -375,21 +324,6 @@ generateCohortSet <- function(cdm,
                     overwrite = TRUE)
 
   cohort_set_ref <- dplyr::tbl(con, inSchema(writeSchema, paste0(name, "_set")))
-
-  # TODO test that dbWriteTable can create temp tables on all platforms
-  if (temporary) {
-    cohort_set_ref <- computeQuery(cohort_set_ref,
-                                   temporary = TRUE,
-                                   overwrite = TRUE)
-
-    cohort_attrition_ref <- computeQuery(cohort_attrition_ref,
-                                         temporary = TRUE,
-                                         overwrite = TRUE)
-
-    cohort_ref <- computeQuery(cohort_ref,
-                               temporary = TRUE,
-                               overwrite = TRUE)
-  }
 
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
@@ -405,7 +339,7 @@ generateCohortSet <- function(cdm,
                   "number_subjects") %>%
     computeQuery(name = paste0(name, "_count"),
                  schema = attr(cdm, "write_schema"),
-                 temporary = temporary,
+                 temporary = FALSE,
                  overwrite = TRUE)
 
   # Clean up tables ---- TODO decide how to handle this
@@ -418,7 +352,7 @@ generateCohortSet <- function(cdm,
   }
 
   # Create the object. Let the constructor handle getting the counts.----
-  cdm[[nameWithoutPrefix]] <- new_generated_cohort_set(
+  cdm[[name]] <- new_generated_cohort_set(
     cohort_ref = cohort_ref,
     cohort_set_ref = cohort_set_ref,
     cohort_attrition_ref = cohort_attrition_ref,
@@ -612,7 +546,8 @@ newGeneratedCohortSet <- function(cohortRef,
   new_generated_cohort_set(cohort_ref = cohortRef,
                            cohort_set_ref = cohortSetRef,
                            cohort_attrition_ref = cohortAttritionRef,
-                           cohort_count_ref = cohortCountRef)
+                           cohort_count_ref = cohortCountRef
+                           )
 }
 
 
@@ -631,17 +566,8 @@ cohort_attrition <- cohortAttrition
 
 #' @export
 cohortAttrition.GeneratedCohortSet <- function(x) {
-  if (is.null(attr(x, "cohort_attrition"))) {
-    return(NULL)
-  }
-
-  attr(x, "cohort_attrition") %>%
-    if(!is.null(attr(x, "cohort_set"))) {
-      dplyr::left_join(attr(x, "cohort_set"), by = "cohort_definition_id")
-    } else {.} %>%
-    dplyr::collect()
+  attr(x, "cohort_attrition")
 }
-
 
 #' Get cohort settings from a GeneratedCohortSet object
 #'
@@ -658,11 +584,7 @@ cohort_set <- cohortSet
 
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
-  if (is.null(attr(x, "cohort_set"))) {
-    return(NULL)
-  }
-
-  dplyr::collect(attr(x, "cohort_set"))
+  attr(x, "cohort_set")
 }
 
 #' Get cohort counts from a GeneratedCohortSet object
@@ -680,15 +602,7 @@ cohort_count <- cohortCount
 
 #' @export
 cohortCount.GeneratedCohortSet <- function(x) {
-  if (is.null(attr(x, "cohort_count"))) {
-    return(NULL)
-  }
-
-  attr(x, "cohort_count") %>%
-    if (!is.null(attr(x, "cohort_set"))) {
-      dplyr::left_join(attr(x, "cohort_set"), by = "cohort_definition_id")
-    } else {.} %>%
-    dplyr::collect()
+  attr(x, "cohort_count")
 }
 
 
