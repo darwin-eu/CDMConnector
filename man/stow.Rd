@@ -11,7 +11,7 @@ stow(cdm, path, format = "parquet")
 
 \item{path}{A folder to save the cdm object to}
 
-\item{format}{The file format to use: "parquet", "csv", "feather".}
+\item{format}{The file format to use: "parquet", "csv", "feather", "duckdb".}
 }
 \value{
 Invisibly returns the cdm input

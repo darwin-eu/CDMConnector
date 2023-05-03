@@ -114,12 +114,12 @@ datediff <- function(start, end, interval = "day") {
       "bigquery" = glue::glue("DATE_DIFF({start}, {end}, DAY)")
     )
   } else {
-    dayStart <- extract(start, "day", db)
-    monthStart <- extract(start, "month", db)
-    yearStart <- extract(start, "year", db)
-    dayEnd <- extract(end, "day", db)
-    monthEnd <- extract(end, "month", db)
-    yearEnd <- extract(end, "year", db)
+    dayStart   <- datepart(start, "day", db)
+    monthStart <- datepart(start, "month", db)
+    yearStart  <- datepart(start, "year", db)
+    dayEnd.    <- datepart(end, "day", db)
+    monthEnd   <- datepart(end, "month", db)
+    yearEnd    <- datepart(end, "year", db)
     if (interval == "month") {
       sql <- glue::glue(
         "(({yearEnd} * 1200 + {monthEnd} * 100 + {dayEnd} -
@@ -191,7 +191,7 @@ as_date <- asDate
 #' Extract the day, month or year of a date in sql.
 #'
 #' @param date Character variable that points to a date column.
-#' @param value Value to extract. It can be "year", "month", or "day".
+#' @param interval Value to extract. It can be "year", "month", or "day".
 #' @param dms Database manager system, if NULL it is auto detected.
 #'
 #' @export
@@ -203,13 +203,13 @@ as_date <- asDate
 #'                            name = "tmp",
 #'                            temporary = TRUE)
 #' df <- date_tbl %>%
-#'   dplyr::mutate(year = !!extract("birth_date", "year")) %>%
-#'   dplyr::mutate(month = !!extract("birth_date", "month")) %>%
-#'   dplyr::mutate(day = !!extract("birth_date", "day")) %>%
+#'   dplyr::mutate(year = !!datepart("birth_date", "year")) %>%
+#'   dplyr::mutate(month = !!datepart("birth_date", "month")) %>%
+#'   dplyr::mutate(day = !!datepart("birth_date", "day")) %>%
 #'   dplyr::collect()
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-extract <- function(date, value = "year", dms = NULL) {
+datepart <- function(date, interval = "year", dms = NULL) {
   checkmate::assertCharacter(date, len = 1)
   checkmate::assertChoice(value, c("year", "month", "day"))
   checkmate::assertChoice(
