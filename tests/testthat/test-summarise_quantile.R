@@ -1,8 +1,4 @@
 
-skip_if_not_installed("duckdb")
-con <- DBI::dbConnect(duckdb::duckdb())
-mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
-
 to_vector <- function(df, group_id = NULL, group_colname = 'cyl') {
   if (group_colname %in% colnames(df)) {
     if (is.null(group_id)) {
@@ -22,6 +18,7 @@ to_vector <- function(df, group_id = NULL, group_colname = 'cyl') {
 test_that("summarise-quantile works ", {
   skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
   mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
 
   # summarise-quantile works without group by
@@ -89,6 +86,11 @@ test_that("summarise-quantile works ", {
 
 
 test_that("summarise-quantile works with group by", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
   df1 <- mtcars_tbl %>%
     dplyr::group_by(cyl) %>%
     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
@@ -104,6 +106,11 @@ test_that("summarise-quantile works with group by", {
 })
 
 test_that("summarise-quantile works with select + group by", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
   df1 <- mtcars_tbl %>%
     dplyr::select(cyl, mpg) %>%
     dplyr::group_by(cyl) %>%
@@ -122,6 +129,11 @@ test_that("summarise-quantile works with select + group by", {
 
 
 test_that("summarise-quantile works in combination with aggreagate functions", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
   df1 <- mtcars_tbl %>%
     dplyr::group_by(cyl) %>%
     dplyr::mutate(mean = mean(mpg, na.rm = TRUE),
@@ -146,6 +158,11 @@ test_that("summarise-quantile works in combination with aggreagate functions", {
 
 
 test_that("summarise-quantile generates error when working in `summarise` context", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
   f <- function(){
     df1 <- mtcars_tbl %>%
       dplyr::group_by(cyl) %>%
@@ -158,6 +175,11 @@ test_that("summarise-quantile generates error when working in `summarise` contex
 })
 
 test_that("summarise-quantile works with implicit (context) names", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
   df1 <- mtcars_tbl %>%
     dplyr::group_by(cyl) %>%
     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
@@ -175,6 +197,11 @@ test_that("summarise-quantile works with implicit (context) names", {
 })
 
 test_that("summarise-quantile generates error when working with conflicting names", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
   f <- function(){
     df1 <- mtcars_tbl %>%
       dplyr::group_by(cyl) %>%
@@ -187,6 +214,11 @@ test_that("summarise-quantile generates error when working with conflicting name
 })
 
 test_that("summarise-quantile generates error when no names passed", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, temporary = TRUE)
+
   f <- function(){
     df1 <- mtcars_tbl %>%
       dplyr::group_by(cyl) %>%
@@ -197,14 +229,14 @@ test_that("summarise-quantile generates error when no names passed", {
   expect_error(f())
 })
 
-DBI::dbDisconnect(con, shutdown = TRUE)
-
 
 test_that("summarise_quantile works on DuckDB", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
   cdm <- cdm_from_con(con, cdm_schema = "main", cdm_tables = "drug_exposure")
   df1 <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
@@ -231,8 +263,6 @@ test_that("summarise_quantile works on DuckDB", {
     expect_true(all.equal(to_vector(df1, n, 'drug_concept_id'), to_vector(df2, n, 'drug_concept_id'), check.attributes = FALSE),
                 label = paste('Result for drug_concept_id ', as.character(n)))
   }
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 

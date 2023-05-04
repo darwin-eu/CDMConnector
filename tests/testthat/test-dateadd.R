@@ -4,6 +4,7 @@ test_that("Date functions work on duckdb", {
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
   date_df <- dplyr::tibble(
     date1 = as.Date(c("2000-12-01", "2000-12-01", "2000-12-01", "2000-12-01")),
@@ -58,7 +59,7 @@ test_that("Date functions work on duckdb", {
 
   expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
 
-  DBI::dbDisconnect(con, shutdown = TRUE)
+
 })
 
 test_that("Date functions work on Postgres", {
@@ -197,6 +198,7 @@ test_that("Date functions work on Redshift", {
     dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "year")) %>%
     dplyr::mutate(dif_years = !!datediff("date1", "date2", interval = "year")) %>%
     dplyr::mutate(dif_days = !!datediff("date1", "date2", interval = "day")) %>%
+    # dbplyr::sql_render()
     dplyr::collect()
 
   expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::years(1), 1)
@@ -376,6 +378,8 @@ test_that("Date functions work on Oracle", {
 
 test_that("test year, month, day functionality", {
   con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
   date_tbl <- dplyr::copy_to(con,
                              data.frame(
                                birth_date = as.Date("1993-04-19"),
@@ -404,5 +408,5 @@ test_that("test year, month, day functionality", {
   expect_true(df$days2 == 10960)
   expect_true(df$month2 == 360)
   expect_true(df$year2 == 30)
-  DBI::dbDisconnect(con)
+
 })

@@ -637,6 +637,7 @@ test_that("autodetect cdm version works", {
 
 test_that("snapshot works when cdm_source or vocabulary tables are empty", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
   cdm <- cdm_from_con(con, "main")
   expect_s3_class(snapshot(cdm), "cdm_snapshot")
 
@@ -646,5 +647,4 @@ test_that("snapshot works when cdm_source or vocabulary tables are empty", {
 
   DBI::dbExecute(con, "delete from main.vocabulary")
   expect_s3_class(snapshot(cdm), "cdm_snapshot")
-
 })

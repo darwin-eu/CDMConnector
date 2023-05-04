@@ -30,7 +30,7 @@ test_that("duckdb cohort generation", {
 
   # debugonce(generateCohortSet)
   cdm <- generateCohortSet(cdm,
-                           cohortSet[1,],
+                           cohortSet,
                            name = "chrt0",
                            overwrite = TRUE)
   # check already exists
@@ -45,7 +45,8 @@ test_that("duckdb cohort generation", {
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
   # expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
-  expect_null(cohortAttrition(cdm$chrt0))
+  expect_true(all(c("cohort_set", "cohort_count", "cohort_attrition") %in% names(attributes(cdm$chrt0))))
+  expect_s3_class(cohortAttrition(cdm$chrt0), "data.frame")
   expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
   counts <- dplyr::collect(cohortCount(cdm$chrt0))
   expect_s3_class(counts, "data.frame")
@@ -95,6 +96,7 @@ test_that("duckdb cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
+                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -105,7 +107,7 @@ test_that("duckdb cohort generation with attrition", {
   expect_true(nrow(df) > 0)
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  attrition_df <- dplyr::collect(cohortAttrition(cdm$chrt0))
+  attrition_df <- cohortAttrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
@@ -118,20 +120,22 @@ test_that("duckdb cohort generation with attrition", {
   cdm2 <- cdm_from_con(con, "main", write_schema = "main", cohort_tables = "chrt0")
 
   expect_s3_class(cdm2$chrt0, "GeneratedCohortSet")
-  expect_s3_class(cohortAttrition(cdm2$chrt0), "tbl_dbi")
-  expect_s3_class(cohortCount(cdm2$chrt0), "tbl_dbi")
-  expect_s3_class(cohortSet(cdm2$chrt0), "tbl_dbi")
+  expect_true(all(c("cohort_set", "cohort_count", "cohort_attrition") %in% names(attributes(cdm2$chrt0))))
+  expect_s3_class(cohortAttrition(cdm2$chrt0), "data.frame")
+  expect_s3_class(cohortCount(cdm2$chrt0), "data.frame")
+  expect_s3_class(cohortSet(cdm2$chrt0), "data.frame")
 
   # try overwrite=TRUE
   cdm2 <- generateCohortSet(cdm2,
                             cohortSet,
                             name = "chrt0",
+                            computeAttrition = TRUE,
                             overwrite = TRUE)
 
   expect_s3_class(cdm2$chrt0, "GeneratedCohortSet")
-  expect_s3_class(cohortAttrition(cdm2$chrt0), "tbl_dbi")
-  expect_s3_class(cohortCount(cdm2$chrt0), "tbl_dbi")
-  expect_s3_class(cohortSet(cdm2$chrt0), "tbl_dbi")
+  expect_s3_class(cohortAttrition(cdm2$chrt0), "data.frame")
+  expect_s3_class(cohortCount(cdm2$chrt0), "data.frame")
+  expect_s3_class(cohortSet(cdm2$chrt0), "data.frame")
 
   # drop tables
   dropTable(cdm, name = dplyr::starts_with("chrt0"))
@@ -171,6 +175,7 @@ test_that("SQL Server cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
+                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -181,12 +186,12 @@ test_that("SQL Server cohort generation with attrition", {
   expect_true(nrow(df) > 0)
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  attrition_df <- dplyr::collect(cohortAttrition(cdm$chrt0))
+  attrition_df <- cohortAttrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
-  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
-  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(cohortSet(cdm$chrt0), "data.frame")
+  counts <- cohortCount(cdm$chrt0)
   expect_s3_class(counts, "data.frame")
   expect_equal(nrow(counts), 1)
 
@@ -231,6 +236,7 @@ test_that("Redshift cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
+                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -241,12 +247,12 @@ test_that("Redshift cohort generation with attrition", {
   expect_true(nrow(df) > 0)
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  attrition_df <- dplyr::collect(cohortAttrition(cdm$chrt0))
+  attrition_df <- cohortAttrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
-  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
-  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(cohortSet(cdm$chrt0), "data.frame")
+  counts <- cohortCount(cdm$chrt0)
   expect_s3_class(counts, "data.frame")
   expect_equal(nrow(counts), nrow(cohortSet))
 
@@ -288,6 +294,7 @@ test_that("Postgres cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
+                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -298,12 +305,12 @@ test_that("Postgres cohort generation with attrition", {
   expect_true(nrow(df) > 0)
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
 
-  attrition_df <- dplyr::collect(cohortAttrition(cdm$chrt0))
+  attrition_df <- cohortAttrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
-  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
-  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(cohortSet(cdm$chrt0), "data.frame")
+  counts <- cohortCount(cdm$chrt0)
   expect_s3_class(counts, "data.frame")
   expect_equal(nrow(counts), nrow(cohortSet))
 
@@ -359,8 +366,8 @@ test_that("cohort generation works on spark", {
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
-  expect_s3_class(dplyr::collect(cohortSet(cdm$chrt0)), "data.frame")
-  counts <- dplyr::collect(cohortCount(cdm$chrt0))
+  expect_s3_class(cohortSet(cdm$chrt0), "data.frame")
+  counts <- cohortCount(cdm$chrt0)
   expect_s3_class(counts, "data.frame")
   expect_equal(nrow(counts), nrow(cohortSet))
 
