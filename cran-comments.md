@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a re-submission of a patch release.
+This is a new minor release.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: CirceR
