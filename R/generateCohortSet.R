@@ -97,8 +97,8 @@ readCohortSet <- read_cohort_set
 #'   specified.
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables.
-#' @param cohort_set,cohortSet A cohortSet object created with `readCohortSet()`.
-#' @param compute_attrition,computeAttrition Should attrition be computed? TRUE or FALSE (default)
+#' @param cohort_set,cohortSet Either a cohortSet object created with `readCohortSet()` or a named list of Capr cohort definitions.
+#' @param compute_attrition,computeAttrition Should attrition be computed? TRUE (default) or FALSE
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE or FALSE (default)
 #' @export
@@ -123,7 +123,7 @@ readCohortSet <- read_cohort_set
 generateCohortSet <- function(cdm,
                               cohortSet,
                               name = "cohort",
-                              computeAttrition = FALSE,
+                              computeAttrition = TRUE,
                               overwrite = FALSE) {
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
@@ -135,10 +135,38 @@ generateCohortSet <- function(cdm,
                               min.len = 1,
                               max.len = 2,
                               null.ok = FALSE)
+
+  if (!is.data.frame(cohortSet)) {
+    if (!is.list(cohortSet)) {
+      rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
+    }
+
+    checkmate::assertList(cohortSet,
+                          types = "Cohort",
+                          min.len = 1,
+                          names = "strict",
+                          any.missing = FALSE)
+
+    cohortSet <- dplyr::tibble(
+      cohort_definition_id = seq_along(cohortSet),
+      cohort_name = names(cohortSet),
+      cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)), #TODO implement as.list in Capr
+      json = purrr::map_chr(cohortSet, generics::compile)
+    )
+    class(cohortSet) <- c("CohortSet", class(cohortSet))
+  }
+
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
                          must.include = c("cohort_definition_id", "cohort_name", "cohort"))
-  checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE)
+
+  checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE, pattern = "[a-z_]+")
+  name_without_prefix <- name
+  if (!is.null(attr(cdm, "write_prefix"))) {
+    name <- paste0(attr(cdm, "write_prefix"), name)
+  }
+  checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE, pattern = "[a-z_]+")
+
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
   checkmate::assert_true(DBI::dbIsValid(attr(cdm, "dbcon")))
@@ -371,7 +399,7 @@ generateCohortSet <- function(cdm,
   }
 
   # Create the object. Let the constructor handle getting the counts.----
-  cdm[[name]] <- new_generated_cohort_set(
+  cdm[[name_without_prefix]] <- new_generated_cohort_set(
     cohort_ref = cohort_ref,
     cohort_set_ref = cohort_set_ref,
     cohort_attrition_ref = cohort_attrition_ref,
@@ -586,7 +614,11 @@ cohort_attrition <- cohortAttrition
 
 #' @export
 cohortAttrition.GeneratedCohortSet <- function(x) {
-  dplyr::collect(attr(x, "cohort_attrition"))
+  if (is.null(attr(x, "cohort_attrition"))) {
+    NULL
+  } else {
+    dplyr::collect(attr(x, "cohort_attrition"))
+  }
 }
 
 #' Get cohort settings from a GeneratedCohortSet object
