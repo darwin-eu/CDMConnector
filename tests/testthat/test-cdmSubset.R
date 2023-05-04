@@ -27,7 +27,7 @@ test_that("duckdb subsetting", {
   expect_true(nrow(cohortSet) == 1)
 
   if (rlang::is_installed("CirceR")) {
-    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
+    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed", overwrite = TRUE)
 
     class(cdm$gibleed)
     cdm4 <- cdmSubsetCohort(cdm, "gibleed")

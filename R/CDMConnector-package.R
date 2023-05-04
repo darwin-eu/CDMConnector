@@ -6,6 +6,7 @@
 #' @importFrom utils head
 #' @importFrom rlang :=
 #' @importFrom purrr %||%
+#' @importFrom generics compile
 "_PACKAGE"
 NULL
 utils::globalVariables(".") # so we can use `.` in dplyr pipelines.

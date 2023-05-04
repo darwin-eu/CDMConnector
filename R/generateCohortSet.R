@@ -48,8 +48,8 @@ read_cohort_set <- function(path) {
       cohort_definition_id = seq_along(jsonFiles),
       cohort_name = tools::file_path_sans_ext(basename(jsonFiles)),
       json_path = jsonFiles) %>%
-    dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
-    dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
+      dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
+      dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
   }
 
   cohortsToCreate <- dplyr::select(cohortsToCreate, "cohort_definition_id", "cohort_name", "cohort", "json")
@@ -135,30 +135,9 @@ generateCohortSet <- function(cdm,
                               min.len = 1,
                               max.len = 2,
                               null.ok = FALSE)
-
-  if (!is.data.frame(cohortSet)) {
-    if (!is.list(cohortSet)) {
-      rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
-    }
-
-    checkmate::assertList(cohortSet,
-                          types = "Cohort",
-                          min.len = 1,
-                          names = "strict",
-                          any.missing = FALSE)
-
-    cohortSet <- dplyr::tibble(
-      cohort_definition_id = seq_along(cohortSet),
-      cohort_name = names(cohortSet),
-      cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)), #TODO implement as.list in Capr
-      json = purrr::map_chr(cohortSet, generics::compile)
-    )
-    class(cohortSet) <- c("CohortSet", class(cohortSet))
-  }
-
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
-                         must.include = c("cohort_definition_id", "cohort_name", "cohort", "json"))
+                         must.include = c("cohort_definition_id", "cohort_name", "cohort"))
   checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE)
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
@@ -588,7 +567,7 @@ newGeneratedCohortSet <- function(cohortRef,
                            cohort_set_ref = cohortSetRef,
                            cohort_attrition_ref = cohortAttritionRef,
                            cohort_count_ref = cohortCountRef
-                           )
+  )
 }
 
 
@@ -673,7 +652,7 @@ computeAttritionTable <- function(cdm,
   checkmate::assertLogical(overwrite, len = 1)
   checkmate::assertDataFrame(cohortSet, min.rows = 0, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
-    must.include = c("cohort_definition_id", "cohort")
+                         must.include = c("cohort_definition_id", "cohort")
   )
   if (is.null(cohortId)) {
     cohortId <- cohortSet$cohort_definition_id
@@ -792,7 +771,7 @@ getInclusionMaskId <- function(numberInclusion) {
   for (k in 0:(numberInclusion - 1)) {
     inclusionMaskMatrix <- inclusionMaskMatrix %>%
       dplyr::mutate(!!paste0("inclusion_", k) :=
-          rep(c(rep(0, 2^k), rep(1, 2^k)), 2^(numberInclusion - k - 1))
+                      rep(c(rep(0, 2^k), rep(1, 2^k)), 2^(numberInclusion - k - 1))
       )
   }
 

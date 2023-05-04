@@ -29,7 +29,10 @@ test_that("duckdb cohort generation", {
   expect_s3_class(cohortSet, "CohortSet")
 
   # debugonce(generateCohortSet)
-  cdm <- generateCohortSet(cdm, cohortSet, name = "chrt0", computeAttrition = FALSE)
+  cdm <- generateCohortSet(cdm,
+                           cohortSet[1,],
+                           name = "chrt0",
+                           overwrite = TRUE)
   # check already exists
   expect_error(generateCohortSet(cdm, cohortSet, name = "chrt0", overwrite = FALSE))
 
@@ -92,7 +95,6 @@ test_that("duckdb cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
-                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -124,7 +126,6 @@ test_that("duckdb cohort generation with attrition", {
   cdm2 <- generateCohortSet(cdm2,
                             cohortSet,
                             name = "chrt0",
-                            computeAttrition = TRUE,
                             overwrite = TRUE)
 
   expect_s3_class(cdm2$chrt0, "GeneratedCohortSet")
@@ -170,7 +171,6 @@ test_that("SQL Server cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
-                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -231,7 +231,6 @@ test_that("Redshift cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
-                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -289,7 +288,6 @@ test_that("Postgres cohort generation with attrition", {
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
-                           computeAttrition = TRUE,
                            overwrite = TRUE)
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
@@ -411,7 +409,6 @@ test_that("Generation from Capr Cohorts", {
     cdm,
     list(gibleed = gibleed_cohort_definition),
     name = "gibleed",
-    computeAttrition = TRUE,
     overwrite = TRUE
   )
 
