@@ -123,15 +123,14 @@ datediff <- function(start, end, interval = "day") {
     if (interval == "month") {
       sql <- glue::glue(
         "(({yearEnd} * 1200 + {monthEnd} * 100 + {dayEnd} -
-      ({yearStart} * 1200 + {monthStart} * 100 + {dayStart})) / 100)"
+         ({yearStart} * 1200 + {monthStart} * 100 + {dayStart})) / 100)"
       )
     } else {
       sql <- glue::glue(
         "(({yearEnd} * 10000 + {monthEnd} * 100 + {dayEnd} -
-      ({yearStart} * 10000 + {monthStart} * 100 + {dayStart})) / 10000)"
+         ({yearStart} * 10000 + {monthStart} * 100 + {dayStart})) / 10000)"
       )
     }
-
   }
 
   dbplyr::sql(as.character(sql))

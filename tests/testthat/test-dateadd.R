@@ -18,40 +18,9 @@ test_that("Date functions work on duckdb", {
     dplyr::mutate(dif_days = !!datediff("date1", "date2", interval = "day")) %>%
     dplyr::collect()
 
-  dbGetQuery(con, "select datediff('year', date1, date2) as x from tmpdate")
-  dbGetQuery(con, "select datediff('year', DATE '1992-09-15', DATE '1992-11-14')")
-
-  df <- data.frame(date1 = as.Date('1992-12-01'), date2 = as.Date('1992-12-02'))
-
-  df <- data.frame(date1 = as.Date('2000-12-01'), date2 = as.Date('2000-12-01'))
-  dbWriteTable(con, "x2", df, overwrite = T)
-  dbGetQuery(con, "select date1, date2, datediff('year', date1, date2) from x2")
-
-  df <- data.frame(date1 = as.Date('2000-12-01'), date2 = as.Date('2000-12-01'))
-  dbWriteTable(con, "x2", df, overwrite = T)
-  dbGetQuery(con, "select date1, date2, datediff('year', date1, date2) from x2")
-
-  tbl(con, "x2") %>%
-    mutate(!!datediff("date1", "date2", interval = "year"))
-
-
-
-  date_tbl <- dplyr::copy_to(con, df, name = "x", overwrite = TRUE, temporary = TRUE)
-  date_tbl <- dplyr::copy_to(con, date_df, name = "x", overwrite = TRUE, temporary = TRUE)
-
-  date_df <- data.frame(
-    date1 = as.Date(c("2000-12-01")),# "2000-12-01", "2000-12-01", "2000-12-01")),
-    date2 = as.Date(c("2001-12-01"))#, "2001-12-02", "2001-11-30", "2001-01-01"))
-  )
-
-  dplyr::copy_to(con, date_df, name = "x", overwrite = TRUE, temporary = TRUE) %>%
-    head(1) %>%
-    dplyr::mutate(date3 = !!datediff("date1", "date2", interval = "year"))
-
-
   expect_true(all((lubridate::interval(df$date1, df$date3) / lubridate::years(1)) == 1))
-  expect_equal(df$dif_years, 1)
-  expect_equal(df$dif_days, 365)
+  expect_equal(df$dif_years, c(1, 1, 0, 0))
+  expect_equal(df$dif_days, c(365, 366, 364,  31))
 
   df <- date_tbl %>%
     dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "day")) %>%
@@ -60,10 +29,10 @@ test_that("Date functions work on duckdb", {
     dplyr::mutate(dif_days3 = !!datediff("date1", "date3", interval = "day")) %>%
     dplyr::collect()
 
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
-  expect_equal(df$dif_days2, 1)
-  expect_equal(df$dif_days3, -1)
+  expect_true(all(lubridate::interval(df$date1, df$date2) / lubridate::days(1) == 1))
+  expect_true(all(lubridate::interval(df$date1, df$date3) / lubridate::days(1) == -1))
+  expect_true(all(df$dif_days2 == 1))
+  expect_true(all(df$dif_days3 == -1))
 
   # can add a date and an integer column
   df <- date_tbl %>%
@@ -73,8 +42,8 @@ test_that("Date functions work on duckdb", {
     dplyr::collect()
 
 
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
+  expect_true(all(lubridate::interval(df$date1, df$date2) / lubridate::days(1) == 1))
+  expect_true(all(lubridate::interval(df$date1, df$date3) / lubridate::days(1) == -1))
 
 
   date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
