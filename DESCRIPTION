@@ -49,7 +49,6 @@ Suggests:
     RSQLite,
     RPostgres,
     odbc,
-    bigrquery,
     ggplot2,
     bigrquery,
     testthat (>= 3.0.0),

@@ -53,6 +53,7 @@ jobs:
             install.packages("RPostgres")
             install.packages("RSQLite")
             install.packages("DatabaseConnector")
+            install.packages("bigrquery")
             install.packages("arrow")
         shell: Rscript {0}
 
