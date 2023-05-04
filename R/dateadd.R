@@ -114,12 +114,12 @@ datediff <- function(start, end, interval = "day") {
       "bigquery" = glue::glue("DATE_DIFF({start}, {end}, DAY)")
     )
   } else {
-    dayStart   <- datepart(start, "day", db)
+    dayStart   <- datepart(start, "day",   db)
     monthStart <- datepart(start, "month", db)
-    yearStart  <- datepart(start, "year", db)
-    dayEnd.    <- datepart(end, "day", db)
-    monthEnd   <- datepart(end, "month", db)
-    yearEnd    <- datepart(end, "year", db)
+    yearStart  <- datepart(start, "year",  db)
+    dayEnd     <- datepart(end,   "day",   db)
+    monthEnd   <- datepart(end,   "month", db)
+    yearEnd    <- datepart(end,   "year",  db)
     if (interval == "month") {
       sql <- glue::glue(
         "(({yearEnd} * 1200 + {monthEnd} * 100 + {dayEnd} -
