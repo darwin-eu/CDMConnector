@@ -385,9 +385,9 @@ test_that("test year, month, day functionality", {
                              name = "tmp",
                              temporary = TRUE)
   df <- date_tbl %>%
-    dplyr::mutate(year = !!extract("birth_date", "year")) %>%
-    dplyr::mutate(month = !!extract("birth_date", "month")) %>%
-    dplyr::mutate(day = !!extract("birth_date", "day")) %>%
+    dplyr::mutate(year = !!datepart("birth_date", "year")) %>%
+    dplyr::mutate(month = !!datepart("birth_date", "month")) %>%
+    dplyr::mutate(day = !!datepart("birth_date", "day")) %>%
     dplyr::mutate(days1 = !!datediff("birth_date", "date1", "day")) %>%
     dplyr::mutate(month1 = !!datediff("birth_date", "date1", "month")) %>%
     dplyr::mutate(year1 = !!datediff("birth_date", "date1", "year")) %>%

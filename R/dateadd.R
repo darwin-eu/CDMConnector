@@ -189,8 +189,8 @@ as_date <- asDate
 
 #' Extract the day, month or year of a date in a dplyr pipeline
 #'
-#' @param date Character variable that points to a date column.
-#' @param interval Interval to extract. Valid options are "year", "month", or "day".
+#' @param date Character string that represents to a date column.
+#' @param interval Interval to extract from a date. Valid options are "year", "month", or "day".
 #' @param dms Database system, if NULL it is auto detected.
 #'
 #' @export
