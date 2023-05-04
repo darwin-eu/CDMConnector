@@ -5,6 +5,7 @@
 #' @importFrom dplyr all_of matches starts_with contains ends_with
 #' @importFrom utils head
 #' @importFrom rlang :=
+#' @importFrom generics compile
 "_PACKAGE"
 NULL
 

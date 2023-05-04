@@ -9,9 +9,8 @@ generateCohortSet(
   cdm,
   cohortSet,
   name = "cohort",
-  computeAttrition = deprecated(),
-  overwrite = FALSE,
-  temporary = FALSE
+  computeAttrition = FALSE,
+  overwrite = FALSE
 )
 
 generate_cohort_set(
@@ -32,12 +31,9 @@ as a prefix for the cohort attribute tables.}
 \item{overwrite}{Should the cohort table be overwritten if it already
 exists? TRUE or FALSE (default)}
 
-\item{temporary}{Should only temporary tables be used for cohort generation? TRUE or FALSE (default)}
-
 \item{cohort_set, cohortSet}{A cohortSet object created with \code{readCohortSet()}.}
 
-\item{compute_attrition, computeAttrition}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-Attrition is always computed.}
+\item{compute_attrition, computeAttrition}{Should attrition be computed? TRUE or FALSE (default)}
 }
 \description{
 A "GeneratedCohortSet" object consists of several components

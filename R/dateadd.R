@@ -188,11 +188,11 @@ asDate <- function(x) {
 #' @export
 as_date <- asDate
 
-#' Extract the day, month or year of a date in sql.
+#' Extract the day, month or year of a date in a dplyr pipeline
 #'
 #' @param date Character variable that points to a date column.
-#' @param interval Value to extract. It can be "year", "month", or "day".
-#' @param dms Database manager system, if NULL it is auto detected.
+#' @param interval Interval to extract. Valid options are "year", "month", or "day".
+#' @param dms Database system, if NULL it is auto detected.
 #'
 #' @export
 #' @examples
@@ -211,7 +211,7 @@ as_date <- asDate
 #' }
 datepart <- function(date, interval = "year", dms = NULL) {
   checkmate::assertCharacter(date, len = 1)
-  checkmate::assertChoice(value, c("year", "month", "day"))
+  checkmate::assertChoice(interval, c("year", "month", "day"))
   checkmate::assertChoice(
     dms,
     c(
@@ -228,18 +228,18 @@ datepart <- function(date, interval = "year", dms = NULL) {
   }
   sql <- switch (
     db,
-    "redshift" = "EXTRACT({toupper(value)}) FROM {date})",
-    "oracle" = "EXTRACT({toupper(value)} FROM {date})",
-    "postgresql" = "EXTRACT({toupper(value)} FROM {date})",
-    "sql server" = "{toupper(value)}({date})",
-    "spark" = "{toupper(value)}({date})",
-    "duckdb" = "date_part('{value}', {date})",
+    "redshift" = "EXTRACT({toupper(interval)}) FROM {date})",
+    "oracle" = "EXTRACT({toupper(interval)} FROM {date})",
+    "postgresql" = "EXTRACT({toupper(interval)} FROM {date})",
+    "sql server" = "{toupper(interval)}({date})",
+    "spark" = "{toupper(interval)}({date})",
+    "duckdb" = "date_part('{interval}', {date})",
     "sqlite" = ifelse(
-      value == "year",
+      interval == "year",
       "CAST(STRFTIME('%Y', {date}, 'unixepoch') AS INT)",
-      "CAST(STRFTIME('%{substr(value, 1, 1)}', {date}, 'unixepoch') AS INT)"
+      "CAST(STRFTIME('%{substr(interval, 1, 1)}', {date}, 'unixepoch') AS INT)"
     ),
-    "bigquery" = "EXTRACT({toupper(value)} from {date})"
+    "bigquery" = "EXTRACT({toupper(interval)} from {date})"
   )
   dbplyr::sql(as.character(glue::glue(sql)))
 }

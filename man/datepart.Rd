@@ -2,19 +2,19 @@
 % Please edit documentation in R/dateadd.R
 \name{datepart}
 \alias{datepart}
-\title{Extract the day, month or year of a date in sql.}
+\title{Extract the day, month or year of a date in a dplyr pipeline}
 \usage{
 datepart(date, interval = "year", dms = NULL)
 }
 \arguments{
 \item{date}{Character variable that points to a date column.}
 
-\item{interval}{Value to extract. It can be "year", "month", or "day".}
+\item{interval}{Interval to extract. Valid options are "year", "month", or "day".}
 
-\item{dms}{Database manager system, if NULL it is auto detected.}
+\item{dms}{Database system, if NULL it is auto detected.}
 }
 \description{
-Extract the day, month or year of a date in sql.
+Extract the day, month or year of a date in a dplyr pipeline
 }
 \examples{
 \dontrun{
