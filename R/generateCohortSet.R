@@ -547,7 +547,7 @@ newGeneratedCohortSet <- function(cohortRef,
                            cohort_set_ref = cohortSetRef,
                            cohort_attrition_ref = cohortAttritionRef,
                            cohort_count_ref = cohortCountRef
-                           )
+  )
 }
 
 
@@ -632,7 +632,7 @@ computeAttritionTable <- function(cdm,
   checkmate::assertLogical(overwrite, len = 1)
   checkmate::assertDataFrame(cohortSet, min.rows = 0, col.names = "named")
   checkmate::assertNames(colnames(cohortSet),
-    must.include = c("cohort_definition_id", "cohort")
+                         must.include = c("cohort_definition_id", "cohort")
   )
   if (is.null(cohortId)) {
     cohortId <- cohortSet$cohort_definition_id
@@ -751,7 +751,7 @@ getInclusionMaskId <- function(numberInclusion) {
   for (k in 0:(numberInclusion - 1)) {
     inclusionMaskMatrix <- inclusionMaskMatrix %>%
       dplyr::mutate(!!paste0("inclusion_", k) :=
-          rep(c(rep(0, 2^k), rep(1, 2^k)), 2^(numberInclusion - k - 1))
+                      rep(c(rep(0, 2^k), rep(1, 2^k)), 2^(numberInclusion - k - 1))
       )
   }
 
