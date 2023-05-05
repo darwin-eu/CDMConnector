@@ -4,14 +4,14 @@
 \alias{datepart}
 \title{Extract the day, month or year of a date in a dplyr pipeline}
 \usage{
-datepart(date, interval = "year", dms = NULL)
+datepart(date, interval = "year", dbms = NULL)
 }
 \arguments{
-\item{date}{Character variable that points to a date column.}
+\item{date}{Character string that represents to a date column.}
 
-\item{interval}{Interval to extract. Valid options are "year", "month", or "day".}
+\item{interval}{Interval to extract from a date. Valid options are "year", "month", or "day".}
 
-\item{dms}{Database system, if NULL it is auto detected.}
+\item{dbms}{Database system, if NULL it is auto detected.}
 }
 \description{
 Extract the day, month or year of a date in a dplyr pipeline

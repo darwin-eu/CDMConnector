@@ -114,24 +114,23 @@ datediff <- function(start, end, interval = "day") {
       "bigquery" = glue::glue("DATE_DIFF({start}, {end}, DAY)")
     )
   } else {
-    dayStart   <- datepart(start, "day", db)
+    dayStart   <- datepart(start, "day",   db)
     monthStart <- datepart(start, "month", db)
-    yearStart  <- datepart(start, "year", db)
-    dayEnd.    <- datepart(end, "day", db)
-    monthEnd   <- datepart(end, "month", db)
-    yearEnd    <- datepart(end, "year", db)
+    yearStart  <- datepart(start, "year",  db)
+    dayEnd     <- datepart(end,   "day",   db)
+    monthEnd   <- datepart(end,   "month", db)
+    yearEnd    <- datepart(end,   "year",  db)
     if (interval == "month") {
       sql <- glue::glue(
         "(({yearEnd} * 1200 + {monthEnd} * 100 + {dayEnd} -
-      ({yearStart} * 1200 + {monthStart} * 100 + {dayStart})) / 100)"
+         ({yearStart} * 1200 + {monthStart} * 100 + {dayStart})) / 100)"
       )
     } else {
       sql <- glue::glue(
         "(({yearEnd} * 10000 + {monthEnd} * 100 + {dayEnd} -
-      ({yearStart} * 10000 + {monthStart} * 100 + {dayStart})) / 10000)"
+         ({yearStart} * 10000 + {monthStart} * 100 + {dayStart})) / 10000)"
       )
     }
-
   }
 
   dbplyr::sql(as.character(sql))
@@ -190,9 +189,9 @@ as_date <- asDate
 
 #' Extract the day, month or year of a date in a dplyr pipeline
 #'
-#' @param date Character variable that points to a date column.
-#' @param interval Interval to extract. Valid options are "year", "month", or "day".
-#' @param dms Database system, if NULL it is auto detected.
+#' @param date Character string that represents to a date column.
+#' @param interval Interval to extract from a date. Valid options are "year", "month", or "day".
+#' @param dbms Database system, if NULL it is auto detected.
 #'
 #' @export
 #' @examples
@@ -209,36 +208,27 @@ as_date <- asDate
 #'   dplyr::collect()
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-datepart <- function(date, interval = "year", dms = NULL) {
+datepart <- function(date, interval = "year", dbms = NULL) {
   checkmate::assertCharacter(date, len = 1)
   checkmate::assertChoice(interval, c("year", "month", "day"))
-  checkmate::assertChoice(
-    dms,
-    c(
-      "redshift", "oracle", "postgresql", "sql server", "spark", "duckdb",
-      "sqlite", "bigquery"
-    ),
-    null.ok = TRUE
-  )
-  if (is.null(dms)) {
+  supported <- c("redshift", "oracle", "postgresql", "sql server", "spark", "duckdb", "sqlite", "bigquery")
+  checkmate::assertChoice(dbms, choices = supported, null.ok = TRUE)
+
+  if (is.null(dbms)) {
     dot <- get(".", envir = parent.frame())
-    db <- CDMConnector::dbms(dot$src$con)
-  } else {
-    db <- dms
+    dbms <- CDMConnector::dbms(dot$src$con)
   }
-  sql <- switch (
-    db,
-    "redshift" = "EXTRACT({toupper(interval)}) FROM {date})",
+
+  sql <- switch (dbms,
+    "redshift" = "DATE_PART({interval}, {date})",
     "oracle" = "EXTRACT({toupper(interval)} FROM {date})",
     "postgresql" = "EXTRACT({toupper(interval)} FROM {date})",
     "sql server" = "{toupper(interval)}({date})",
     "spark" = "{toupper(interval)}({date})",
     "duckdb" = "date_part('{interval}', {date})",
-    "sqlite" = ifelse(
-      interval == "year",
+    "sqlite" = ifelse(interval == "year",
       "CAST(STRFTIME('%Y', {date}, 'unixepoch') AS INT)",
-      "CAST(STRFTIME('%{substr(interval, 1, 1)}', {date}, 'unixepoch') AS INT)"
-    ),
+      "CAST(STRFTIME('%{substr(interval, 1, 1)}', {date}, 'unixepoch') AS INT)"),
     "bigquery" = "EXTRACT({toupper(interval)} from {date})"
   )
   dbplyr::sql(as.character(glue::glue(sql)))

@@ -9,7 +9,7 @@ generateCohortSet(
   cdm,
   cohortSet,
   name = "cohort",
-  computeAttrition = FALSE,
+  computeAttrition = TRUE,
   overwrite = FALSE
 )
 
@@ -31,9 +31,9 @@ as a prefix for the cohort attribute tables.}
 \item{overwrite}{Should the cohort table be overwritten if it already
 exists? TRUE or FALSE (default)}
 
-\item{cohort_set, cohortSet}{A cohortSet object created with \code{readCohortSet()}.}
+\item{cohort_set, cohortSet}{Either a cohortSet object created with \code{readCohortSet()} or a named list of Capr cohort definitions.}
 
-\item{compute_attrition, computeAttrition}{Should attrition be computed? TRUE or FALSE (default)}
+\item{compute_attrition, computeAttrition}{Should attrition be computed? TRUE (default) or FALSE}
 }
 \description{
 A "GeneratedCohortSet" object consists of several components

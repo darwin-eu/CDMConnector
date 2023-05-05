@@ -22,7 +22,22 @@ NULL
   }
 }
 
-# Helper function to deal with compound schemas
+
+
+
+#' Helper for working with compound schemas
+#'
+#' This is similar to dbplyr::in_schema but has been tested across mulitple
+#' database platforms. It only exists to work around some of the limitations
+#' of dbplyr::in_schema.
+#'
+#' @param schema A schema name as a character string
+#' @param table A table name as character string
+#' @param dbms The name of the database management system as returned
+#' by `dbms(connection)`
+#'
+#' @return A DBI::Id that represents a qualified table and schema
+#' @export
 inSchema <- function(schema, table, dbms = NULL) {
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
   checkmate::assertCharacter(table, len = 1)
@@ -39,3 +54,8 @@ inSchema <- function(schema, table, dbms = NULL) {
            DBI::Id(catalog = schema[1], schema = schema[2], table = table))
   }
 }
+
+#' @export
+#' @rdname inSchema
+in_schema <- inSchema
+

@@ -11,6 +11,7 @@ test_that("listTables works with duckdb schemas", {
   skip_if_not_installed("duckdb")
 
   con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
   DBI::dbWriteTable(con, "cars", cars)
 
   expect_equal(listTables(con), "cars")
