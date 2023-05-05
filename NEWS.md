@@ -1,3 +1,10 @@
+# CDMConnector 0.6.0
+
+* generate Capr cohorts with `generateCohortSet`
+* add datepart function for extracting year, month, day parts of dates in dplyr
+* fix datediff logic for years so it now returns number of complete years between two date
+* add "write_prefix" attribute to cdm objects to support a namespace within the write_schema
+
 # CDMConnector 0.5.1
 
 * Add both camelCase and snake_case versions of all functions (@Tsemharb)

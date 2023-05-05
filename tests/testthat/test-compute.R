@@ -15,7 +15,6 @@ test_that("computeQuery works on duckdb", {
   x <- dplyr::compute(q)
   expect_true(nrow(dplyr::collect(x)) == 2)
 
-
   x <- computeQuery(q, "rxnorm_count")
   expect_true(nrow(dplyr::collect(x)) == 2)
   expect_true("rxnorm_count" %in% DBI::dbListTables(con))
