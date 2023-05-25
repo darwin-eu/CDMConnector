@@ -127,7 +127,7 @@ datediff <- function(start, end, interval = "day") {
       )
     } else {
       sql <- glue::glue(
-        "(({yearEnd} * 10000 + {monthEnd} * 100 + {dayEnd} -
+        "FLOOR(({yearEnd} * 10000 + {monthEnd} * 100 + {dayEnd} -
          ({yearStart} * 10000 + {monthStart} * 100 + {dayStart})) / 10000)"
       )
     }
