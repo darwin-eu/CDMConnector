@@ -717,7 +717,7 @@ computeAttritionTable <- function(cdm,
   for (i in seq_along(cohortId)) {
 
     id <- cohortId[i]
-    inclusionName <-  purrr::map_chr(cohortSet$cohort[i]$InclusionRules, "name")
+    inclusionName <-  purrr::map_chr(cohortSet$cohort[[i]]$InclusionRules, "name")
 
     numberInclusion <- length(inclusionName)
     if (numberInclusion == 0) {
