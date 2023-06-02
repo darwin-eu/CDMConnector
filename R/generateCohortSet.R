@@ -636,7 +636,11 @@ cohort_set <- cohortSet
 
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
-  dplyr::collect(attr(x, "cohort_set"))
+  if (is.null(attr(x, "cohort_set"))) {
+    NULL
+  } else {
+    dplyr::collect(attr(x, "cohort_set"))
+  }
 }
 
 #' Get cohort counts from a GeneratedCohortSet object
@@ -654,7 +658,11 @@ cohort_count <- cohortCount
 
 #' @export
 cohortCount.GeneratedCohortSet <- function(x) {
-  dplyr::collect(attr(x, "cohort_count"))
+  if (is.null(attr(x, "cohort_count"))) {
+    NULL
+  } else {
+    dplyr::collect(attr(x, "cohort_count"))
+  }
 }
 
 
@@ -717,7 +725,7 @@ computeAttritionTable <- function(cdm,
   for (i in seq_along(cohortId)) {
 
     id <- cohortId[i]
-    inclusionName <-  purrr::map_chr(cohortSet$cohort[i]$InclusionRules, "name")
+    inclusionName <-  purrr::map_chr(cohortSet$cohort[[i]]$InclusionRules, "name")
 
     numberInclusion <- length(inclusionName)
     if (numberInclusion == 0) {
@@ -750,12 +758,14 @@ computeAttritionTable <- function(cdm,
         attrition[[k]] <- dplyr::tibble(
           cohort_definition_id = id,
           number_records = inclusionResult %>%
+            dplyr::filter(.data$cohort_definition_id == id) %>%
             dplyr::filter(.data$mode_id == 0) %>%
             dplyr::filter(.data$inclusion_rule_mask %in% inclusionMaskId[[k]]) %>%
             dplyr::pull("person_count") %>%
             base::sum() %>%
             as.numeric(),
           number_subjects = inclusionResult %>%
+            dplyr::filter(.data$cohort_definition_id == id) %>%
             dplyr::filter(.data$mode_id == 1) %>%
             dplyr::filter(.data$inclusion_rule_mask %in% inclusionMaskId[[k]]) %>%
             dplyr::pull("person_count") %>%
@@ -770,15 +780,15 @@ computeAttritionTable <- function(cdm,
         dplyr::mutate(
           excluded_records =
             dplyr::lag(.data$number_records, 1, order_by = .data$reason_id) -
-            .data$number_records
-        ) %>%
-        dplyr::mutate(
+            .data$number_records,
           excluded_subjects =
             dplyr::lag(.data$number_subjects, 1, order_by = .data$reason_id) -
             .data$number_subjects
         ) %>%
-        dplyr::mutate(excluded_records = dplyr::coalesce(.data$excluded_records, 0),
-                      excluded_subjects = dplyr::coalesce(.data$excluded_subjects, 0))
+        dplyr::mutate(
+          excluded_records = dplyr::coalesce(.data$excluded_records, 0),
+          excluded_subjects = dplyr::coalesce(.data$excluded_subjects, 0)
+        )
     }
     attritionList[[i]] <- attrition
   }
