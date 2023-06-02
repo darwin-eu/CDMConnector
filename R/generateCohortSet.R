@@ -636,7 +636,11 @@ cohort_set <- cohortSet
 
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
-  dplyr::collect(attr(x, "cohort_set"))
+  if (is.null(attr(x, "cohort_set"))) {
+    NULL
+  } else {
+    dplyr::collect(attr(x, "cohort_set"))
+  }
 }
 
 #' Get cohort counts from a GeneratedCohortSet object
@@ -654,7 +658,11 @@ cohort_count <- cohortCount
 
 #' @export
 cohortCount.GeneratedCohortSet <- function(x) {
-  dplyr::collect(attr(x, "cohort_count"))
+  if (is.null(attr(x, "cohort_count"))) {
+    NULL
+  } else {
+    dplyr::collect(attr(x, "cohort_count"))
+  }
 }
 
 
