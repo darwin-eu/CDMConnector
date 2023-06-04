@@ -132,11 +132,17 @@ cdm_from_con <- function(con,
 
       for (i in seq_along(cohort_tables)) {
 
-        cohort_ref <- dplyr::tbl(con, inSchema(write_schema, cohort_tables[i], dbms(con))) %>%
+        if (!is.null(write_prefix)) {
+          cohort_table <- paste0(write_prefix, cohort_tables[i])
+        } else {
+          cohort_table <- cohort_tables[i]
+        }
+
+        cohort_ref <- dplyr::tbl(con, inSchema(write_schema, cohort_table, dbms(con))) %>%
           dplyr::rename_all(tolower)
 
         # Optional attribute tables {cohort}_set, {chohort}_attrition, {cohort}_count
-        nm <- paste0(cohort_tables[i], "_set")
+        nm <- paste0(cohort_table, "_set")
         if (nm %in% dbTablesWrite) {
           cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
             dplyr::rename_all(tolower)
@@ -147,7 +153,7 @@ cdm_from_con <- function(con,
           cohort_set_ref <- NULL
         }
 
-        nm <- paste0(cohort_tables[i], "_attrition")
+        nm <- paste0(cohort_table, "_attrition")
         if (nm %in% dbTablesWrite) {
           cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
             dplyr::rename_all(tolower)
@@ -158,7 +164,7 @@ cdm_from_con <- function(con,
           cohort_attrition_ref <- NULL
         }
 
-        nm <- paste0(cohort_tables[i], "_count")
+        nm <- paste0(cohort_table, "_count")
         if (nm %in% dbTablesWrite) {
           cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
             dplyr::rename_all(tolower)
@@ -169,7 +175,7 @@ cdm_from_con <- function(con,
           cohort_count_ref <- NULL
         }
 
-
+        # Note use name without prefix in the cdm
         cdm[[cohort_tables[i]]] <- new_generated_cohort_set(
           cohort_ref = cohort_ref,
           cohort_attrition_ref = cohort_attrition_ref,
@@ -177,7 +183,6 @@ cdm_from_con <- function(con,
           cohort_count_ref = cohort_count_ref)
       }
     }
-
 
     # TODO cdm_reference constructor
     class(cdm) <- "cdm_reference"
