@@ -49,3 +49,14 @@ test_that("inSchema", {
   expect_equal(tableSchemaNames[3], "myTable")
 })
 
+test_that("inSchema works with duckdb", {
+  con <- DBI::dbConnect(duckdb::duckdb())
+  DBI::dbExecute(con, "create schema scratch")
+  DBI::dbWriteTable(con, DBI::Id(schema = "scratch", table = "cars"), cars)
+  expect_equal(nrow(DBI::dbGetQuery(con, "select * from scratch.cars limit 5")), 5)
+  df <- dplyr::tbl(con, inSchema("scratch", "cars")) %>% dplyr::collect()
+  expect_equal(dplyr::tibble(cars), df)
+  DBI::dbDisconnect(con, shutdown = T)
+})
+
+
