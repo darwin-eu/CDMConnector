@@ -37,7 +37,8 @@ Imports:
     jsonlite,
     stringr,
     fs,
-    generics
+    generics,
+    zeallot
 Suggests: 
     arrow,
     SqlRender, 
