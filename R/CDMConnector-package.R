@@ -7,6 +7,7 @@
 #' @importFrom rlang :=
 #' @importFrom purrr %||%
 #' @importFrom generics compile
+#' @importFrom zeallot %<-%
 "_PACKAGE"
 NULL
 utils::globalVariables(".") # so we can use `.` in dplyr pipelines.
