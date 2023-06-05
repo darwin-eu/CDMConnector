@@ -131,9 +131,9 @@ test_that("postgres subsetting", {
 
   if (rlang::is_installed("CirceR")) {
     path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
-    cohortSet <- readCohortSet(path) %>% filter(cohort_name == "GIBleed_male")
+    cohortSet <- readCohortSet(path) %>% dplyr::filter(cohort_name == "GIBleed_male")
     expect_true(nrow(cohortSet) == 1)
-    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed")
+    cdm <- generateCohortSet(cdm, cohortSet = cohortSet, name = "gibleed", overwrite = TRUE)
     expect_s3_class(cdm$gibleed, "GeneratedCohortSet")
     cdm4 <- cdmSubsetCohort(cdm, "gibleed")
     expect_lt(

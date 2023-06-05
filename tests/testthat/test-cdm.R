@@ -409,7 +409,7 @@ test_that("duckdb collect a cdm", {
 
 
 test_that("duckdb stow and cdm_from_files works", {
-  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(rlang::is_installed("duckdb"))
   skip_if_not(eunomia_is_available())
 
   save_path <- file.path(tempdir(), paste0("tmp_", paste(sample(letters, 10, replace = TRUE), collapse = "")))
