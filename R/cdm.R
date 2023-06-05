@@ -1,5 +1,9 @@
 #' Create a CDM reference object from a database connection
 #'
+#' `write_prefix`,`writePrefix` A prefix that should be used with all tables
+#' written to the "write_schema". This prefix allows for the creation of a
+#' namespace within a database schema.
+#'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
 #'   v5.3 instance is located.
 #' @param cdm_schema,cdmSchema The schema where the OMOP CDM tables are located. Defaults
@@ -20,9 +24,7 @@
 #'   heuristics. Cohort tables must be in the write_schema.
 #' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
 #'.  field in the CDM_SOURCE table will be used.
-#' @param write_prefix,writePrefix A prefix that should be used with all tables
-#' written to the "write_schema". This prefix allows for the creation of a
-#' namespace within a database schema.
+#'
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
@@ -32,8 +34,7 @@ cdm_from_con <- function(con,
                          write_schema = NULL,
                          cohort_tables = NULL,
                          cdm_version = "5.3",
-                         cdm_name = NULL,
-                         write_prefix = NULL) {
+                         cdm_name = NULL) {
 
   checkmate::assert_class(con, "DBIConnection")
   checkmate::assert_true(.dbIsValid(con))
@@ -42,43 +43,12 @@ cdm_from_con <- function(con,
     cdm_schema = "main"
   }
 
-  checkmate::assert_character(
-    cdm_schema,
-    null.ok = FALSE,
-    min.len = 1,
-    max.len = 2
-  )
-  checkmate::assert_character(
-    write_schema,
-    null.ok = TRUE,
-    min.len = 1,
-    max.len = 2
-  )
+  c(cdm_schema, cdm_prefix) %<-% normalize_schema(cdm_schema)
+  c(write_schema, write_prefix) %<-% normalize_schema(write_schema)
+
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
   checkmate::assert_character(cdm_name, null.ok = TRUE)
-  checkmate::assert_character(write_prefix, null.ok = TRUE, len = 1, min.chars = 1, pattern = "[_a-z]+")
-
-  # handle schema names like 'schema.dbo'
-  if (!is.null(cdm_schema) && length(cdm_schema) == 1) {
-    cdm_schema <- strsplit(cdm_schema, "\\.")[[1]]
-      checkmate::assert_character(
-        cdm_schema,
-        null.ok = TRUE,
-        min.len = 1,
-        max.len = 2
-      )
-    }
-
-  if (!is.null(write_schema) && length(write_schema) == 1) {
-    write_schema <- strsplit(write_schema, "\\.")[[1]]
-    checkmate::assert_character(
-      write_schema,
-      null.ok = TRUE,
-      min.len = 1,
-      max.len = 2
-    )
-  }
 
   if (cdm_version == "auto") {
     cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
@@ -110,20 +80,23 @@ cdm_from_con <- function(con,
     cdm_tables <- names(tidyselect::eval_select(rlang::enquo(cdm_tables),
                                                 data = all_cdm_tables))
 
+    # Add prefix if supplied. If no supplied cdm_prefix will be NULL.
+    cdm_tables_prefixed <- paste0(cdm_prefix, cdm_tables)
+
     # Handle uppercase table names in the database
     if (all(dbTables == toupper(dbTables))) {
-      cdm_tables <- toupper(cdm_tables)
+      cdm_tables_prefixed <- toupper(cdm_tables_prefixed)
     }
 
-    cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
+    cdm <- purrr::map(cdm_tables_prefixed, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
                       dplyr::rename_all(tolower)) %>%
-      rlang::set_names(tolower(cdm_tables))
+      rlang::set_names(cdm_tables)
 
     if (!is.null(write_schema)) {
       verify_write_access(con, write_schema = write_schema)
     }
 
-    dbTablesWrite <- listTables(con, schema = write_schema)
+    write_schema_tables <- listTables(con, schema = write_schema)
     # Add existing GeneratedCohortSet objects to cdm object
     if (!is.null(cohort_tables)) {
       if (is.null(write_schema)) {
@@ -132,59 +105,67 @@ cdm_from_con <- function(con,
 
       for (i in seq_along(cohort_tables)) {
 
-        if (!is.null(write_prefix)) {
-          cohort_table <- paste0(write_prefix, cohort_tables[i])
-        } else {
-          cohort_table <- cohort_tables[i]
+        cohort_table <- paste0(write_prefix, cohort_tables[i])
+
+        # A generated cohort set object has tables: {cohort}
+        # and attribute tables {cohort}_set, {cohort}_attrition, {cohort}_count
+        # Only {cohort}_attrition is optional. The others will be created if not supplied.
+        c(cohort_ref,
+          cohort_set_ref,
+          cohort_count_ref,
+          cohort_attrition_ref) %<-%
+          purrr::map(paste0(cohort_table, c("", "_set", "_count", "_attrition")),
+          function(nm) {
+            if (nm %in% write_schema_tables) {
+              dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
+                dplyr::rename_all(tolower)
+            } else if (nm %in% toupper(write_schema_tables)) {
+              dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
+                dplyr::rename_all(tolower)
+            } else {
+              NULL
+            }
+          }
+        )
+
+        if (is.null(cohort_ref)) {
+          rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
         }
 
-        cohort_ref <- dplyr::tbl(con, inSchema(write_schema, cohort_table, dbms(con))) %>%
-          dplyr::rename_all(tolower)
-
-        # Optional attribute tables {cohort}_set, {chohort}_attrition, {cohort}_count
-        nm <- paste0(cohort_table, "_set")
-        if (nm %in% dbTablesWrite) {
-          cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(dbTablesWrite)) {
-          cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else {
-          cohort_set_ref <- NULL
+        if (is.null(cohort_set_ref)) {
+          # create the required cohort_set table
+          cohort_set_ref <- cohort_ref %>%
+            dplyr::distinct(.data$cohort_definition_id) %>%
+            dplyr::mutate(cohort_name = paste("cohort", .data$cohort_definition_id)) %>%
+            computeQuery(name = paste0(cohort_table, "_set"),
+                         schema = write_schema,
+                         temporary = FALSE,
+                         overwrite = TRUE)
         }
 
-        nm <- paste0(cohort_table, "_attrition")
-        if (nm %in% dbTablesWrite) {
-          cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(dbTablesWrite)) {
-          cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else {
-          cohort_attrition_ref <- NULL
+        if (is.null(cohort_count_ref)) {
+          # create the required cohort_count table
+          cohort_count_ref <- cohort_ref %>%
+            dplyr::ungroup() %>%
+            dplyr::group_by(.data$cohort_definition_id) %>%
+            dplyr::summarise(number_records = dplyr::n(),
+                             number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
+            computeQuery(name = paste0(cohort_table, "_count"),
+                         schema = write_schema,
+                         temporary = FALSE,
+                         overwrite = TRUE)
         }
 
-        nm <- paste0(cohort_table, "_count")
-        if (nm %in% dbTablesWrite) {
-          cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(dbTablesWrite)) {
-          cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else {
-          cohort_count_ref <- NULL
-        }
-
-        # Note use name without prefix in the cdm
+        # Note: use name without prefix (i.e. `cohort_tables[i]`) in the cdm object
         cdm[[cohort_tables[i]]] <- new_generated_cohort_set(
           cohort_ref = cohort_ref,
-          cohort_attrition_ref = cohort_attrition_ref,
           cohort_set_ref = cohort_set_ref,
-          cohort_count_ref = cohort_count_ref)
+          cohort_count_ref = cohort_count_ref,
+          cohort_attrition_ref = cohort_attrition_ref)
       }
     }
 
-    # TODO cdm_reference constructor
+    # TODO use a cdm_reference constructor function
     class(cdm) <- "cdm_reference"
     attr(cdm, "cdm_schema") <- cdm_schema
     attr(cdm, "write_schema") <- write_schema
@@ -192,6 +173,11 @@ cdm_from_con <- function(con,
     attr(cdm, "dbcon") <- con
     attr(cdm, "cdm_version") <- cdm_version
     attr(cdm, "cdm_name") <- cdm_name
+    # The temp_behavior attribute can be used to communicate temp table preferences to downstream analytic packages.
+    # Allowed values are: "intermediate" (only intermediate tables are temp), "all", "none"
+    # This attribute is given a default value but can be overridden.
+    # This a feature for analytic package developers and user should not need to know about it.
+    attr(cdm, "temp_behavior") <- ifelse(is.null(write_prefix), "all", "intermediate")
     return(cdm)
   }
 
@@ -225,7 +211,6 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
     return("5.4")
   }
 
-
   procedure_occurrence_names <- cdm$procedure_occurrence %>%
     head() %>%
     collect() %>%
@@ -237,15 +222,15 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   }
 
   cdm_version <- cdm$cdm_source %>% dplyr::pull(.data$cdm_version)
-  if (isTRUE(grepl("5\\.4", cdm_version)))
-    return("5.4")
-  if (isTRUE(grepl("5\\.3", cdm_version)))
-    return("5.3")
+  if (isTRUE(grepl("5\\.4", cdm_version))) return("5.4")
 
-  if ("episode" %in% listTables(con, schema = cdm_schema))
+  if (isTRUE(grepl("5\\.3", cdm_version))) return("5.3")
+
+  if ("episode" %in% listTables(con, schema = cdm_schema)) {
     return("5.4")
-  else
+  } else {
     return("5.3")
+  }
 }
 
 #' Get the CDM version
@@ -363,8 +348,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
   # TODO quote SQL names
   write_schema <- paste(write_schema, collapse = ".")
-  tablename <-
-    paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
+  tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
   tablename <- paste(write_schema, tablename, sep = ".")
 
   df1 <- data.frame(chr_col = "a", numeric_col = 1)
@@ -379,9 +363,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   DBI::dbRemoveTable(con, DBI::SQL(tablename))
 
   if (!isTRUE(all.equal(df1, df2))) {
-    msg <- paste("Write access to schema",
-                 write_schema,
-                 "could not be verified.")
+    msg <- paste("Write access to schema", write_schema, "could not be verified.")
 
     if (is.null(add)) {
       rlang::abort(msg)
@@ -494,7 +476,7 @@ dbms.DBIConnection <- function(con) {
 #'
 #' @param cdm A cdm object
 #' @param path A folder to save the cdm object to
-#' @param format The file format to use: "parquet", "csv", "feather", "duckdb".
+#' @param format The file format to use: "duckdb" (default), "parquet", "csv", "feather".
 #'
 #' @return Invisibly returns the cdm input
 #' @export
@@ -506,7 +488,7 @@ dbms.DBIConnection <- function(con) {
 #' stow(vocab, here::here("vocab_tables"))
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-stow <- function(cdm, path, format = "parquet") {
+stow <- function(cdm, path, format = "duckdb") {
   checkmate::assert_class(cdm, "cdm_reference")
   checkmate::assert_choice(format, c("parquet", "csv", "feather", "duckdb"))
   path <- path.expand(path)
@@ -549,10 +531,9 @@ stow <- function(cdm, path, format = "parquet") {
 #'   FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
-cdm_from_files <-
-  function(path,
-           format = "auto",
-           as_data_frame = TRUE) {
+cdm_from_files <- function(path,
+                           format = "auto",
+                           as_data_frame = TRUE) {
     checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
     checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
     checkmate::assert_true(file.exists(path))
