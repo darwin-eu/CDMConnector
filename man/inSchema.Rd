@@ -21,7 +21,7 @@ by \code{dbms(connection)}}
 A DBI::Id that represents a qualified table and schema
 }
 \description{
-This is similar to dbplyr::in_schema but has been tested across mulitple
+This is similar to dbplyr::in_schema but has been tested across multiple
 database platforms. It only exists to work around some of the limitations
 of dbplyr::in_schema.
 }

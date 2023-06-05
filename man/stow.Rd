@@ -4,14 +4,14 @@
 \alias{stow}
 \title{Collect a list of lazy queries and save the results as files}
 \usage{
-stow(cdm, path, format = "parquet")
+stow(cdm, path, format = "duckdb")
 }
 \arguments{
 \item{cdm}{A cdm object}
 
 \item{path}{A folder to save the cdm object to}
 
-\item{format}{The file format to use: "parquet", "csv", "feather", "duckdb".}
+\item{format}{The file format to use: "duckdb" (default), "parquet", "csv", "feather".}
 }
 \value{
 Invisibly returns the cdm input

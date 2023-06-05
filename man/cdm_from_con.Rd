@@ -12,8 +12,7 @@ cdm_from_con(
   write_schema = NULL,
   cohort_tables = NULL,
   cdm_version = "5.3",
-  cdm_name = NULL,
-  write_prefix = NULL
+  cdm_name = NULL
 )
 
 cdmFromCon(
@@ -54,14 +53,12 @@ heuristics. Cohort tables must be in the write_schema.}
 
 \item{cdm_name, cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.}
-
-\item{write_prefix, writePrefix}{A prefix that should be used with all tables
-written to the "write_schema". This prefix allows for the creation of a
-namespace within a database schema.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables
 }
 \description{
-Create a CDM reference object from a database connection
+\code{write_prefix},\code{writePrefix} A prefix that should be used with all tables
+written to the "write_schema". This prefix allows for the creation of a
+namespace within a database schema.
 }
