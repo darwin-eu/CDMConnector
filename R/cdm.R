@@ -173,10 +173,8 @@ cdm_from_con <- function(con,
     attr(cdm, "dbcon") <- con
     attr(cdm, "cdm_version") <- cdm_version
     attr(cdm, "cdm_name") <- cdm_name
-    # The temp_behavior attribute can be used to communicate temp table preferences to downstream analytic packages.
-    # Allowed values are: "intermediate" (only intermediate tables are temp), "all", "none"
-    # This attribute is given a default value but can be overridden.
-    # This a feature for analytic package developers and user should not need to know about it.
+    # The following attributes can be used to communicate temp table preferences to downstream analytic packages.
+    # This a feature for analytic package developers and users should not need to know about it unless there is an issue to debug.
     attr(cdm, "cohort_as_temp") <- FALSE
     attr(cdm, "intermediate_as_temp") <- TRUE
     return(cdm)
