@@ -67,7 +67,7 @@ We can save these tables to file
 ```{r, message=FALSE, warning=FALSE}
 dOut <- tempfile()
 dir.create(dOut)
-CDMConnector::stow(cdm, dOut)
+CDMConnector::stow(cdm, dOut, format = "parquet")
 ```
 
 And now we can create a `cdm_reference` to the files

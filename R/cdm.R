@@ -543,11 +543,9 @@ cdm_from_files <- function(path,
 
     if (format == "auto") {
       format <- unique(tools::file_ext(files))
-      if (length(format) > 1)
-        rlang::abort(paste(
-          "Multiple file formats detected:",
-          paste(format, collapse = ", ")
-        ))
+      if (length(format) > 1) {
+        rlang::abort(paste("Multiple file formats detected:", paste(format, collapse = ", ")))
+      }
       checkmate::assert_choice(format, c("parquet", "csv", "feather"))
     }
 
