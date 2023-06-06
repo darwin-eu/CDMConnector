@@ -637,7 +637,7 @@ test_that("autodetect cdm version works", {
 
 test_that("snapshot works when cdm_source or vocabulary tables are empty", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  DBI::dbDisconnect(con, shutdown = TRUE)
   cdm <- cdm_from_con(con, "main")
   expect_s3_class(snapshot(cdm), "cdm_snapshot")
 
@@ -647,4 +647,22 @@ test_that("snapshot works when cdm_source or vocabulary tables are empty", {
 
   DBI::dbExecute(con, "delete from main.vocabulary")
   expect_s3_class(snapshot(cdm), "cdm_snapshot")
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+
+test_that("stow works", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con, "main")
+  names1 <- names(cdm)
+  dOut <- tempfile()
+  dir.create(dOut)
+  file.exists(dOut)
+  CDMConnector::stow(cdm, dOut)
+  DBI::dbDisconnect(con, shutdown = TRUE)
+
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = file.path(dOut, "cdm.duckdb"))
+  cdm <- cdm_from_con(con, cdm_schema = "main")
+  names2 <- names(cdm)
+  expect_equal(names1, names2)
 })

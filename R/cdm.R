@@ -513,7 +513,7 @@ stow <- function(cdm, path, format = "duckdb") {
     duckdb = {
       rlang::check_installed("duckdb")
       con <- DBI::dbConnect(duckdb::duckdb(), dbdir = file.path(path, "cdm.duckdb"))
-      purrr::walk2(cdm, names(cdm), ~DBI::dbWriteTable(con, name = dplyr::collect(.x), value = .y))
+      purrr::walk(names(cdm), ~DBI::dbWriteTable(con, name = ., value = dplyr::collect(cdm[[.]])))
       DBI::dbDisconnect(con, shutdown = TRUE)
     }
   )
