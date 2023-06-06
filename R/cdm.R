@@ -177,7 +177,8 @@ cdm_from_con <- function(con,
     # Allowed values are: "intermediate" (only intermediate tables are temp), "all", "none"
     # This attribute is given a default value but can be overridden.
     # This a feature for analytic package developers and user should not need to know about it.
-    attr(cdm, "temp_behavior") <- ifelse(is.null(write_prefix), "all", "intermediate")
+    attr(cdm, "cohort_as_temp") <- FALSE
+    attr(cdm, "intermediate_as_temp") <- TRUE
     return(cdm)
   }
 
