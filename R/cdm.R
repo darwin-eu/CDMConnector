@@ -287,12 +287,14 @@ cdm_name <- cdmName
 cdmFromCon <- function(con,
                        cdmSchema = NULL,
                        writeSchema = NULL,
+                       cohortTables = NULL,
                        cdmVersion = "5.3",
                        cdmName = NULL) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,
     write_schema = writeSchema,
+    cohort_tables = cohortTables,
     cdm_version = cdmVersion,
     cdm_name = cdmName,
   )
