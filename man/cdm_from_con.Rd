@@ -18,7 +18,6 @@ cdmFromCon(
   con,
   cdmSchema = NULL,
   writeSchema = NULL,
-  cohortTables = NULL,
   cdmVersion = "5.3",
   cdmName = NULL
 )

@@ -96,31 +96,26 @@ cdm_from_con <- function(con,
       # A generated cohort set object has tables: {cohort}
       # and attribute tables {cohort}_set, {cohort}_attrition, {cohort}_count
       # Only {cohort}_attrition is optional. The others will be created if not supplied.
-      c(cohort_ref,
-        cohort_set_ref,
-        cohort_count_ref,
-        cohort_attrition_ref) %<-%
-        purrr::map(paste0(cohort_table, c("", "_set", "_count", "_attrition")),
-        function(nm) {
-          if (nm %in% write_schema_tables) {
-            dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
-              dplyr::rename_all(tolower)
-          } else if (nm %in% toupper(write_schema_tables)) {
-            dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
-              dplyr::rename_all(tolower)
-          } else {
-            NULL
-          }
+      nms <- paste0(cohort_table, c("", "_set", "_count", "_attrition"))
+      x <- purrr::map(nms, function(nm) {
+        if (nm %in% write_schema_tables) {
+          dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else if (nm %in% toupper(write_schema_tables)) {
+          dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
+            dplyr::rename_all(tolower)
+        } else {
+          NULL
         }
-      )
+      }) %>% rlang::set_names(nms)
 
-      if (is.null(cohort_ref)) {
+      if (is.null(x$cohort_ref)) {
         rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
       }
 
-      if (is.null(cohort_set_ref)) {
+      if (is.null(x$cohort_set_ref)) {
         # create the required cohort_set table
-        cohort_set_ref <- cohort_ref %>%
+        x$cohort_set_ref <- x$cohort_ref %>%
           dplyr::distinct(.data$cohort_definition_id) %>%
           dplyr::mutate(cohort_name = paste("cohort", .data$cohort_definition_id)) %>%
           computeQuery(name = paste0(cohort_table, "_set"),
@@ -129,9 +124,9 @@ cdm_from_con <- function(con,
                        overwrite = TRUE)
       }
 
-      if (is.null(cohort_count_ref)) {
+      if (is.null(x$cohort_count_ref)) {
         # create the required cohort_count table
-        cohort_count_ref <- cohort_ref %>%
+        x$cohort_count_ref <- x$cohort_ref %>%
           dplyr::ungroup() %>%
           dplyr::group_by(.data$cohort_definition_id) %>%
           dplyr::summarise(number_records = dplyr::n(),
@@ -144,10 +139,10 @@ cdm_from_con <- function(con,
 
       # Note: use name without prefix (i.e. `cohort_tables[i]`) in the cdm object
       cdm[[cohort_tables[i]]] <- new_generated_cohort_set(
-        cohort_ref = cohort_ref,
-        cohort_set_ref = cohort_set_ref,
-        cohort_count_ref = cohort_count_ref,
-        cohort_attrition_ref = cohort_attrition_ref)
+        cohort_ref = x$cohort_ref,
+        cohort_set_ref = x$cohort_set_ref,
+        cohort_count_ref = x$cohort_count_ref,
+        cohort_attrition_ref = x$cohort_attrition_ref)
     }
   }
 
@@ -174,7 +169,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
     rlang::abort(paste0(
       "The ",
       paste(cdm_tables, collapse = ", "),
-      " tables are require for auto-detection of cdm version."
+      " tables are required for auto-detection of cdm version."
     ))
   }
 
@@ -286,14 +281,12 @@ cdm_name <- cdmName
 cdmFromCon <- function(con,
                        cdmSchema = NULL,
                        writeSchema = NULL,
-                       cohortTables = NULL,
                        cdmVersion = "5.3",
                        cdmName = NULL) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,
     write_schema = writeSchema,
-    cohort_tables = cohortTables,
     cdm_version = cdmVersion,
     cdm_name = cdmName,
   )
@@ -334,7 +327,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   tablename <- paste(write_schema, tablename, sep = ".")
 
   df1 <- data.frame(chr_col = "a", numeric_col = 1)
-  # ROracle does not support integer round trip
+  # Note: ROracle does not support integer round trip
   DBI::dbWriteTable(con, DBI::SQL(tablename), df1)
 
   withr::with_options(list(databaseConnectorIntegerAsNumeric = FALSE), {
@@ -621,6 +614,8 @@ NULL
 #' from the cdm_source table and record counts from the person and
 #' observation_period tables
 #' @export
+#'
+#' @importFrom tidyr gather
 #'
 #' @examples
 #' \dontrun{
