@@ -387,7 +387,7 @@ test_that("duckdb inclusion of cohort tables", {
 })
 
 test_that("duckdb collect a cdm", {
-  skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
+  skip_if_not(rlang::is_installed("duckdb"))
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
@@ -396,7 +396,9 @@ test_that("duckdb collect a cdm", {
   local_cdm <- collect(cdm)
 
   expect_s3_class(local_cdm, "cdm_reference")
-  expect_equal(local_cdm$person, collect(cdm$person))
+  local_person <- local_cdm$person
+  attr(local_person, "cdm_reference") <- NULL # remove the attribute
+  expect_equal(local_person, collect(cdm$person))
 
   query <- function(con) DBI::dbGetQuery(con, "select count(*) as n from person")
 
@@ -440,7 +442,9 @@ test_that("duckdb stow and cdm_from_files works", {
 
   local_cdm <- cdm_from_files(save_path)
   expect_s3_class(local_cdm, "cdm_reference")
-  expect_equal(local_cdm$person, collect(cdm$person))
+  local_person <- local_cdm$person
+  attr(local_person, "cdm_reference") <- NULL
+  expect_equal(local_person, collect(cdm$person))
   expect_s3_class(snapshot(cdm), "data.frame")
 
   local_arrow_cdm <- cdm_from_files(save_path, as_data_frame = FALSE)
