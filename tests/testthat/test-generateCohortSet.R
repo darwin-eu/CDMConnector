@@ -12,7 +12,6 @@ test_that("duckdb cohort generation", {
 
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
-                      cdm_tables = c(tbl_group("default")),
                       write_schema = write_schema)
 
   inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
@@ -81,7 +80,6 @@ test_that("duckdb cohort generation with attrition", {
 
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
-                      cdm_tables = c(tbl_group("default")),
                       write_schema = write_schema)
 
   inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
@@ -164,7 +162,6 @@ test_that("SQL Server cohort generation with attrition", {
 
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
-                      cdm_tables = c(tbl_group("default"), -visit_detail),
                       write_schema = write_schema)
 
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
@@ -225,7 +222,6 @@ test_that("Redshift cohort generation with attrition", {
 
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
-                      cdm_tables = c(tbl_group("default")),
                       write_schema = write_schema)
 
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))

@@ -237,7 +237,8 @@ test_that("summarise_quantile works on DuckDB", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
-  cdm <- cdm_from_con(con, cdm_schema = "main", cdm_tables = "drug_exposure")
+  cdm <- cdm_from_con(con, cdm_schema = "main")
+
   df1 <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
     dplyr::filter(!is.na(days_supply)) %>%
@@ -274,7 +275,7 @@ test_that("summarise_quantile works on Postgres", {
                         user =     Sys.getenv("CDM5_POSTGRESQL_USER"),
                         password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), cdm_tables = "drug_exposure")
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
   df1 <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
     dplyr::filter(!is.na(days_supply)) %>%
@@ -316,7 +317,7 @@ test_that("summarise_quantile works on SQL Server", {
                         TrustServerCertificate = "yes",
                         Port     = 1433)
 
-  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = "drug_exposure")
+  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"))
   df1 <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
     dplyr::filter(!is.na(days_supply)) %>%
@@ -356,7 +357,7 @@ test_that("`summarise_quantile` works on Redshift", {
                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), cdm_tables = "drug_exposure")
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
   df1 <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
     dplyr::filter(!is.na(days_supply)) %>%
@@ -439,7 +440,7 @@ test_that("quantile translation works on sql server", {
                         TrustServerCertificate = "yes",
                         Port     = 1433)
 
-  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"))
 
   df <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
@@ -473,7 +474,7 @@ test_that("quantile translation works on redshift", {
                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
 
   # df <- cdm$drug_exposure %>%
   #   dplyr::select(drug_concept_id, days_supply) %>%
@@ -503,7 +504,7 @@ test_that("quantile translation works on Oracle", {
 
   con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
 
-  cdm <- cdm_from_con(con, cdm_schema = "CDMV5", cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = "CDMV5")
 
   df <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
@@ -560,7 +561,7 @@ test_that("quantile translation works on duckdb", {
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
-  cdm <- cdm_from_con(con, cdm_schema = "main", cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = "main")
 
   # df <- cdm$drug_exposure %>%
   #   dplyr::select(drug_concept_id, days_supply) %>%

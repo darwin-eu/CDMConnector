@@ -108,7 +108,6 @@ readCohortSet <- read_cohort_set
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 #' cdm <- cdm_from_con(con,
 #'                     cdm_schema = "main",
-#'                     cdm_tables = c(tbl_group("default")),
 #'                     write_schema = "main")
 #'
 #' cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))

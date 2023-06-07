@@ -3,7 +3,7 @@ test_that("validate cdm works", {
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
+  cdm <- cdm_from_con(con, "main")
   expect_output(validate_cdm(cdm))
 
   cdm <- cdm_from_con(con)
@@ -21,22 +21,22 @@ test_that("assert_tables works", {
 
   expect_error(assertTables(cdm_from_con(con), tables = c("person")), NA)
 
-  expect_error(assertTables(cdm_from_con(con, cdm_tables = "drug_era"), tables = c("person")), "not found")
+  expect_error(assertTables(cdm_from_con(con) %>% cdm_select_tbl("drug_era"), tables = c("person")), "not found")
 
   # add missing table error to collection
   err <- checkmate::makeAssertCollection()
-  expect_error(assertTables(cdm_from_con(con, cdm_tables = "drug_era"), tables = c("person"), add = err), NA)
+  expect_error(assertTables(cdm_from_con(con) %>% cdm_select_tbl("drug_era"), tables = c("person"), add = err), NA)
   expect_length(err$getMessages(), 1)
 
   # add both missing table and empty table to assert collection
   err2 <- checkmate::makeAssertCollection()
   invisible(DBI::dbExecute(con, "delete from condition_era"))
-  expect_error(assertTables(cdm_from_con(con, cdm_tables = "condition_era"), tables = c("person", "condition_era"), add = err2), NA)
+  expect_error(assertTables(cdm_from_con(con) %>% cdm_select_tbl("condition_era"), tables = c("person", "condition_era"), add = err2), NA)
   expect_length(err2$getMessages(), 2) # one table is missing and the other is empty
 
   # add missing column error to collection
   err3 <- checkmate::makeAssertCollection()
-  cdm <- cdm_from_con(con, cdm_tables = "person")
+  cdm <- cdm_from_con(con, "main")
   cdm$person <- cdm$person %>%
     dplyr::select(-person_id)
   expect_error(assertTables(cdm = cdm, tables = c("person"), add = err3), NA)
@@ -54,7 +54,7 @@ test_that("assert_tables works", {
   }
 
   expect_error(countDrugsByGender(cdm_from_con(con)), NA)
-  expect_error(countDrugsByGender(cdm_from_con(con, cdm_tables = "person")), "not found")
+  expect_error(countDrugsByGender(cdm_from_con(con) %>% cdm_select_tbl("person")), "not found")
 
   DBI::dbExecute(con, "delete from drug_era")
   expect_error(countDrugsByGender(cdm_from_con(con)), "empty")
@@ -67,7 +67,7 @@ test_that("assert_write_schema", {
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_tables = c("person"), write_schema = "main")
+  cdm <- cdm_from_con(con, write_schema = "main")
 
   result <- assert_write_schema(cdm)
   expect_equal(result, cdm)

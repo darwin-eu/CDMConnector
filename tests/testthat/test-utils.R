@@ -4,7 +4,7 @@ test_that("getFullTableNameQuoted", {
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   # debugonce(cdm_from_con)
-  cdm <- cdm_from_con(con, cdm_tables = c("person"))
+  cdm <- cdm_from_con(con, "main")
 
   result <- getFullTableNameQuoted(x = cdm$person, name = "myTable", schema = NULL)
   expect_equal(as.character(result), "myTable")

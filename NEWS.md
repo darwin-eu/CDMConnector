@@ -1,3 +1,12 @@
+# CDMConnector 1.0.0
+
+* remove `write_prefix` in `cdm_from_con` in favor of using the `write_schema` argument for prefixing
+* 
+*
+
+Released June 6, 2023
+
+
 # CDMConnector 0.6.0
 
 * generate Capr cohorts with `generateCohortSet`

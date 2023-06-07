@@ -14,7 +14,7 @@
 #' @examples
 #' \dontrun{
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
+#' cdm <- cdm_from_con(con, cdm_schema = "main")
 #' validate_cdm(cdm)
 #' DBI::dbDisconnect(con)
 #' }
