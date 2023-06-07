@@ -10,17 +10,19 @@
 #' one cohort_definition_id resulting from the union of all cohorts in the original
 #' cohort table
 #' @export
-union_cohorts <- function(x, cohort_definition_id = 1) {
+union_cohorts <- function(x, cohort_definition_id = 1L) {
   checkmate::assert_class(x, "tbl")
   checkmate::assert_integerish(cohort_definition_id, len = 1, lower = 0)
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
+  cohort_definition_id <- as.integer(cohort_definition_id)
 
   x %>%
     dplyr::select(subject_id, event_date = cohort_start_date) %>%
     dplyr::group_by(subject_id) %>%
     dplyr::mutate(event_type = -1L, start_ordinal = row_number(event_date)) %>%
     dplyr::union_all(dplyr::transmute(x, subject_id, event_date = cohort_end_date, event_type = 1L, start_ordinal = NULL)) %>%
-    dbplyr::window_order(event_date, event_type) %>%
+    {if ("data.frame" %in% class(.)) dplyr::arrange(event_date, event_type) else .} %>%
+    {if ("tbl_lazy"   %in% class(.)) dbplyr::window_order(event_date, event_type) else .} %>%
     dplyr::mutate(start_ordinal = cummax(start_ordinal), overall_ordinal = row_number()) %>%
     dplyr::filter((2 * start_ordinal) == overall_ordinal) %>%
     dplyr::distinct(subject_id, end_date = event_date) %>%
@@ -30,7 +32,8 @@ union_cohorts <- function(x, cohort_definition_id = 1) {
     dplyr::summarise(cohort_end_date = min(end_date, na.rm = TRUE), .groups = "drop") %>%
     dplyr::group_by(subject_id, cohort_end_date) %>%
     dplyr::summarise(cohort_start_date = min(cohort_start_date, na.rm = TRUE), .groups = "drop") %>%
-    dplyr::transmute(cohort_definition_id = local(cohort_definition_id), subject_id, cohort_start_date, cohort_end_date)
+    dplyr::mutate(cohort_definition_id = .env$cohort_definition_id) %>%
+    dplyr::select(cohort_definition_id, subject_id, cohort_start_date, cohort_end_date)
 }
 
 #' Intersect all cohorts in a single cohort table
@@ -44,10 +47,11 @@ union_cohorts <- function(x, cohort_definition_id = 1) {
 #' one cohort_definition_id resulting from the intersection of all cohorts in the original
 #' cohort table
 #' @export
-intersect_cohorts <- function(x, cohort_definition_id = 1) {
+intersect_cohorts <- function(x, cohort_definition_id = 1L) {
   checkmate::assert_class(x, "tbl")
   checkmate::assert_integerish(cohort_definition_id, len = 1, lower = 0)
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
+  cohort_definition_id <- as.integer(cohort_definition_id)
 
   # get the total number of cohorts we are intersecting together
   n_cohorts_to_intersect <- x %>%
@@ -89,4 +93,11 @@ intersect_cohorts <- function(x, cohort_definition_id = 1) {
     union_cohorts(cohort_definition_id = cohort_definition_id)
 }
 
+#' @rdname intersect_cohorts
+#' @export
+intersectCohorts <- intersect_cohorts
+
+#' @rdname union_cohorts
+#' @export
+unionCohorts <- union_cohorts
 

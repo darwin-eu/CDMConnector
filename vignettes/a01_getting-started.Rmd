@@ -91,7 +91,7 @@ cohort <- tibble(cohort_definition_id = 1L,
 
 invisible(DBI::dbExecute(con, "create schema write_schema;"))
 
-DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", table_name = "cohort"), cohort)
+DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", name = "cohort"), cohort)
 
 ```
 

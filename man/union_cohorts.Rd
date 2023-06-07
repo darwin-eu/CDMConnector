@@ -2,9 +2,12 @@
 % Please edit documentation in R/intersect.R
 \name{union_cohorts}
 \alias{union_cohorts}
+\alias{unionCohorts}
 \title{Union all cohorts in a single cohort table}
 \usage{
-union_cohorts(x, cohort_definition_id = 1)
+union_cohorts(x, cohort_definition_id = 1L)
+
+unionCohorts(x, cohort_definition_id = 1L)
 }
 \arguments{
 \item{x}{A tbl reference to a cohort table}

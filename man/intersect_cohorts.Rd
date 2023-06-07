@@ -2,9 +2,12 @@
 % Please edit documentation in R/intersect.R
 \name{intersect_cohorts}
 \alias{intersect_cohorts}
+\alias{intersectCohorts}
 \title{Intersect all cohorts in a single cohort table}
 \usage{
-intersect_cohorts(x, cohort_definition_id = 1)
+intersect_cohorts(x, cohort_definition_id = 1L)
+
+intersectCohorts(x, cohort_definition_id = 1L)
 }
 \arguments{
 \item{x}{A tbl reference to a cohort table}

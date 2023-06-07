@@ -29,7 +29,7 @@ for(p in csvPaths) {
 
 tables <- DBI::dbListTables(con)
 for (tbl in tables) {
-  print(tibble::tibble(DBI::dbGetQuery(con, paste("select * from ", tbl, "limit 10"))))
+  print(dplyr::tibble(DBI::dbGetQuery(con, paste("select * from ", tbl, "limit 10"))))
 }
 
 DBI::dbDisconnect(con, shutdown = TRUE)

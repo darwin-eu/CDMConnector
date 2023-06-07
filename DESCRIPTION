@@ -38,7 +38,6 @@ Imports:
     stringr,
     fs,
     generics,
-    zeallot,
     tidyr
 Suggests: 
     arrow,
@@ -55,7 +54,8 @@ Suggests:
     bigrquery,
     testthat (>= 3.0.0),
     DatabaseConnector,
-    lubridate
+    lubridate,
+    tibble
 Enhances:
     CirceR
 Config/testthat/edition: 3

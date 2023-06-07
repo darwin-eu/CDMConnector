@@ -29,6 +29,9 @@ v5.3 instance is located.}
 \item{cdm_schema, cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
 to NULL.}
 
+\item{write_schema, writeSchema}{An optional schema in the CDM database that the user has
+write access to.}
+
 \item{cohort_tables, cohortTables}{A character vector listing the cohort table names to be
 included in the CDM object.}
 

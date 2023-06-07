@@ -4,6 +4,8 @@
 #'   v5.3 instance is located.
 #' @param cdm_schema,cdmSchema The schema where the OMOP CDM tables are located. Defaults
 #'   to NULL.
+#' @param write_schema,writeSchema An optional schema in the CDM database that the user has
+#'   write access to.
 #' @param cohort_tables,cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
 #' @param cdm_version,cdmVersion The version of the OMOP CDM: "5.3" (default), "5.4",
@@ -31,8 +33,12 @@ cdm_from_con <- function(con,
     cdm_schema = "main"
   }
 
-  c(cdm_schema, cdm_prefix) %<-% normalize_schema(cdm_schema)
-  c(write_schema, write_prefix) %<-% normalize_schema(write_schema)
+  cdm_schema_list <- normalize_schema(cdm_schema)
+  cdm_schema <- cdm_schema_list$schema
+  cdm_prefix <- cdm_schema_list$prefix
+  write_schema_list <- normalize_schema(write_schema)
+  write_schema <- write_schema_list$schema
+  write_prefix <- write_schema_list$prefix
 
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
@@ -107,7 +113,7 @@ cdm_from_con <- function(con,
         } else {
           NULL
         }
-      }) %>% rlang::set_names(nms)
+      }) %>% rlang::set_names(paste0(nms, "_ref"))
 
       if (is.null(x$cohort_ref)) {
         rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
