@@ -56,7 +56,7 @@ cdm$person %>%
 
 ## Selecting a subset of CDM tables
 
-If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_tables` argument of `cdm_from_con` supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
+If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_select_tbl` function supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
 
 ```{r}
 cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl("person", "observation_period") # quoted names
@@ -70,8 +70,8 @@ Predefined sets of tables can also be selected using `tbl_group` which supports 
 
 ```{r}
 # pre-defined groups
-cdm_from_con(con, cdm_tables = tbl_group("clinical")) 
-cdm_from_con(con, cdm_tables = tbl_group("vocab")) 
+cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("clinical")) 
+cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("vocab")) 
 ```
 
 The default set of CDM tables included in a CDM object is:
@@ -97,7 +97,6 @@ DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", table_name = "cohort"), 
 
 ```{r}
 cdm <- cdm_from_con(con, 
-                    cdm_tables = c("person", "observation_period"), 
                     write_schema = "write_schema",
                     cohort_tables = "cohort") 
 
@@ -127,7 +126,7 @@ save_path <- file.path(tempdir(), "tmp")
 dir.create(save_path)
 
 cdm %>% 
-  stow(path = save_path)
+  stow(path = save_path, format = "parquet")
 
 list.files(save_path)
 ```
