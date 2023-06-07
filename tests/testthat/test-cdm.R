@@ -659,11 +659,12 @@ test_that("stow works", {
   dOut <- tempfile()
   dir.create(dOut)
   file.exists(dOut)
-  CDMConnector::stow(cdm, dOut)
+  CDMConnector::stow(cdm, dOut, format = "duckdb")
   DBI::dbDisconnect(con, shutdown = TRUE)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = file.path(dOut, "cdm.duckdb"))
   cdm <- cdm_from_con(con, cdm_schema = "main")
   names2 <- names(cdm)
   expect_equal(names1, names2)
+  DBI::dbDisconnect(con, shutdown = TRUE)
 })

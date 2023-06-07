@@ -38,7 +38,8 @@ Imports:
     stringr,
     fs,
     generics,
-    zeallot
+    zeallot,
+    tidyr
 Suggests: 
     arrow,
     SqlRender, 
