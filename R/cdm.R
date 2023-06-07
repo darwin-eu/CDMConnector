@@ -459,7 +459,7 @@ dbms.DBIConnection <- function(con) {
 #'
 #' @param cdm A cdm object
 #' @param path A folder to save the cdm object to
-#' @param format The file format to use: "duckdb" (default), "parquet", "csv", "feather".
+#' @param format The file format to use: "parquet" (default), "csv", "feather" or "duckdb".
 #'
 #' @return Invisibly returns the cdm input
 #' @export
@@ -472,7 +472,7 @@ dbms.DBIConnection <- function(con) {
 #' stow(vocab, here::here("vocab_tables"))
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-stow <- function(cdm, path, format = "duckdb") {
+stow <- function(cdm, path, format = "parquet") {
   checkmate::assert_class(cdm, "cdm_reference")
   checkmate::assert_choice(format, c("parquet", "csv", "feather", "duckdb"))
   path <- path.expand(path)
