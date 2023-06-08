@@ -119,7 +119,7 @@ cdm$cohort %>%
 # Next up
 # - Snowflake support
 # - New Databricks test server
-# Shoule we require cdm_name?
+# Should we require cdm_name?
 
 
 
