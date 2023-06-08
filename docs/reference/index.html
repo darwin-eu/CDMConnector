@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,13 @@
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"></ul></div>
+      <ul class="navbar-nav"><li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/darwin-eu/CDMConnector/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div>
 
     
   </div>
@@ -68,6 +74,16 @@
           <code><a href="assert_write_schema.html">assert_write_schema()</a></code> <code><a href="assert_write_schema.html">assertWriteSchema()</a></code> 
         </dt>
         <dd>Assert that cdm has a writable schema</dd>
+      </dl><dl><dt>
+          
+          <code><a href="cash-.cdm_reference.html">`$`(<i>&lt;cdm_reference&gt;</i>)</a></code> 
+        </dt>
+        <dd>Subset a cdm reference object</dd>
+      </dl><dl><dt>
+          
+          <code><a href="cdmDisconnect.html">cdmDisconnect()</a></code> <code><a href="cdmDisconnect.html">cdm_disconnect()</a></code> 
+        </dt>
+        <dd>Disconnect the connection of the cdm object</dd>
       </dl><dl><dt>
           
           <code><a href="cdmFlatten.html">cdmFlatten()</a></code> <code><a href="cdmFlatten.html">cdm_flatten()</a></code> 
@@ -106,6 +122,11 @@
 files</dd>
       </dl><dl><dt>
           
+          <code><a href="cdm_select_tbl.html">cdm_select_tbl()</a></code> 
+        </dt>
+        <dd>Select a subset of tables in a cdm reference object</dd>
+      </dl><dl><dt>
+          
           <code><a href="collect.cdm_reference.html">collect(<i>&lt;cdm_reference&gt;</i>)</a></code> 
         </dt>
         <dd>Bring a remote CDM reference into R</dd>
@@ -131,6 +152,16 @@ files</dd>
         <dd>Collect a list of lazy queries and save the results as files</dd>
       </dl><dl><dt>
           
+          <code><a href="sub-.cdm_reference.html">`[`(<i>&lt;cdm_reference&gt;</i>)</a></code> 
+        </dt>
+        <dd>Subset a cdm reference object</dd>
+      </dl><dl><dt>
+          
+          <code><a href="sub-sub-.cdm_reference.html">`[[`(<i>&lt;cdm_reference&gt;</i>)</a></code> 
+        </dt>
+        <dd>Subset a cdm reference object</dd>
+      </dl><dl><dt>
+          
           <code><a href="tbl_group.html">tbl_group()</a></code> <code><a href="tbl_group.html">tblGroup()</a></code> 
         </dt>
         <dd>CDM table selection helper</dd>
@@ -146,8 +177,8 @@ files</dd>
         <dd>Get the CDM version</dd>
       </dl></div><div class="section level2">
       
-      <h3 id="cohort-generation">Cohort Generation<a class="anchor" aria-label="anchor" href="#cohort-generation"></a></h3>
-      <p class="section-desc"></p><p>Create and use <code>GeneratedCohortSet</code> objects</p>
+      <h3 id="cohort-creation-and-transformation">Cohort Creation and Transformation<a class="anchor" aria-label="anchor" href="#cohort-creation-and-transformation"></a></h3>
+      <p class="section-desc"></p><p>A cohort is a set of person-days representing the time during which people in a CDM exhibited some observable characteristics. Cohorts are often the foundation of downstream analyses.</p>
 
       
     </div><div id="" class="section level2">
@@ -177,6 +208,11 @@ files</dd>
         <dd>Generate a cohort set on a cdm object</dd>
       </dl><dl><dt>
           
+          <code><a href="intersect_cohorts.html">intersect_cohorts()</a></code> <code><a href="intersect_cohorts.html">intersectCohorts()</a></code> 
+        </dt>
+        <dd>Intersect all cohorts in a single cohort table</dd>
+      </dl><dl><dt>
+          
           <code><a href="new_generated_cohort_set.html">new_generated_cohort_set()</a></code> <code><a href="new_generated_cohort_set.html">newGeneratedCohortSet()</a></code> 
         </dt>
         <dd>Low level constructor for GeneratedCohortSet objects for package developers</dd>
@@ -185,6 +221,11 @@ files</dd>
           <code><a href="read_cohort_set.html">read_cohort_set()</a></code> <code><a href="read_cohort_set.html">readCohortSet()</a></code> 
         </dt>
         <dd>Read a set of cohort definitions into R</dd>
+      </dl><dl><dt>
+          
+          <code><a href="union_cohorts.html">union_cohorts()</a></code> <code><a href="union_cohorts.html">unionCohorts()</a></code> 
+        </dt>
+        <dd>Union all cohorts in a single cohort table</dd>
       </dl></div><div class="section level2">
       
       <h3 id="dbplyr-workarounds">dbplyr workarounds<a class="anchor" aria-label="anchor" href="#dbplyr-workarounds"></a></h3>
@@ -223,9 +264,24 @@ files</dd>
         <dd>Compute the difference between two days</dd>
       </dl><dl><dt>
           
+          <code><a href="datepart.html">datepart()</a></code> 
+        </dt>
+        <dd>Extract the day, month or year of a date in a dplyr pipeline</dd>
+      </dl><dl><dt>
+          
+          <code><a href="inSchema.html">inSchema()</a></code> <code><a href="inSchema.html">in_schema()</a></code> 
+        </dt>
+        <dd>Helper for working with compound schemas</dd>
+      </dl><dl><dt>
+          
           <code><a href="summarise_quantile.html">summarise_quantile()</a></code> <code><a href="summarise_quantile.html">summarize_quantile()</a></code> <code><a href="summarise_quantile.html">summariseQuantile()</a></code> <code><a href="summarise_quantile.html">summarizeQuantile()</a></code> 
         </dt>
         <dd>Quantile calculation using dbplyr</dd>
+      </dl><dl><dt>
+          
+          <code><a href="uniqueTableName.html">uniqueTableName()</a></code> <code><a href="uniqueTableName.html">unique_table_name()</a></code> 
+        </dt>
+        <dd>Create a unique table name for temp tables</dd>
       </dl></div><div class="section level2">
       
       <h3 id="dbi-connection">DBI connection<a class="anchor" aria-label="anchor" href="#dbi-connection"></a></h3>
@@ -251,7 +307,7 @@ connection</dd>
       </dl></div><div class="section level2">
       
       <h3 id="eunomia-example-cdm">Eunomia example CDM<a class="anchor" aria-label="anchor" href="#eunomia-example-cdm"></a></h3>
-      <p class="section-desc"></p><p>Easily create and use example file based duckdb CDMs</p>
+      <p class="section-desc"></p><p>Easily create and use example CDMs in a <a href="https://duckdb.org/" class="external-link">duckdb</a> database</p>
 
       
     </div><div id="" class="section level2">
@@ -279,22 +335,6 @@ connection</dd>
           <code><a href="eunomia_is_available.html">eunomia_is_available()</a></code> <code><a href="eunomia_is_available.html">eunomiaIsAvailable()</a></code> 
         </dt>
         <dd>Has the Eunomia dataset been cached?</dd>
-      </dl></div><div class="section level2">
-      
-      <h3 id="deprecated">Deprecated<a class="anchor" aria-label="anchor" href="#deprecated"></a></h3>
-      <p class="section-desc"></p><p>Functions that will be removed in a future release</p>
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="computePermanent.html">computePermanent()</a></code> <code><a href="computePermanent.html">compute_permanent()</a></code> 
-        </dt>
-        <dd>Run a dplyr query and store the result in a permanent table</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

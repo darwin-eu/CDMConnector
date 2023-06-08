@@ -16,7 +16,7 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
   cohort_definition_id <- as.integer(cohort_definition_id)
 
-  event_date <- event_type <- NA # to remove r check error
+  event_date <- event_type <- NA # to remove r check error initialize these variables to NA
 
   x %>%
     dplyr::select("subject_id", event_date = "cohort_start_date") %>%
@@ -85,7 +85,7 @@ intersect_cohorts <- function(x, cohort_definition_id = 1L) {
                     .data$candidate_start_date,
                     .data$candidate_end_date) %>%
     dplyr::summarise(n_cohorts_interval_is_inside = dplyr::n(), .groups = "drop") %>%
-    # only keep intervals that are inside all cohorts we want to intersect
+    # only keep intervals that are inside all cohorts we want to intersect (i.e. all cohorts in the input cohort table)
     dplyr::filter(.data$n_cohorts_interval_is_inside == .env$n_cohorts_to_intersect) %>%
     dplyr::mutate(cohort_definition_id = .env$cohort_definition_id) %>%
     dplyr::select("cohort_definition_id",

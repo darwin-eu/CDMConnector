@@ -37,6 +37,9 @@
     <loc>/news/index.html</loc>
   </url>
   <url>
+    <loc>/pare_report.html</loc>
+  </url>
+  <url>
     <loc>/reference/CDMConnector-package.html</loc>
   </url>
   <url>
@@ -50,6 +53,12 @@
   </url>
   <url>
     <loc>/reference/assert_write_schema.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cash-.cdm_reference.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cdmDisconnect.html</loc>
   </url>
   <url>
     <loc>/reference/cdmFlatten.html</loc>
@@ -79,6 +88,9 @@
     <loc>/reference/cdm_from_files.html</loc>
   </url>
   <url>
+    <loc>/reference/cdm_select_tbl.html</loc>
+  </url>
+  <url>
     <loc>/reference/cohortAttrition.html</loc>
   </url>
   <url>
@@ -101,6 +113,9 @@
   </url>
   <url>
     <loc>/reference/datediff.html</loc>
+  </url>
+  <url>
+    <loc>/reference/datepart.html</loc>
   </url>
   <url>
     <loc>/reference/dbConnect-dbConnectDetails-method.html</loc>
@@ -142,7 +157,13 @@
     <loc>/reference/generateCohortSet.html</loc>
   </url>
   <url>
+    <loc>/reference/inSchema.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/intersect_cohorts.html</loc>
   </url>
   <url>
     <loc>/reference/listTables.html</loc>
@@ -175,10 +196,22 @@
     <loc>/reference/stow.html</loc>
   </url>
   <url>
+    <loc>/reference/sub-.cdm_reference.html</loc>
+  </url>
+  <url>
+    <loc>/reference/sub-sub-.cdm_reference.html</loc>
+  </url>
+  <url>
     <loc>/reference/summarise_quantile.html</loc>
   </url>
   <url>
     <loc>/reference/tbl_group.html</loc>
+  </url>
+  <url>
+    <loc>/reference/union_cohorts.html</loc>
+  </url>
+  <url>
+    <loc>/reference/uniqueTableName.html</loc>
   </url>
   <url>
     <loc>/reference/validate_cdm.html</loc>

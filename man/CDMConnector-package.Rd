@@ -8,6 +8,15 @@
 \description{
 Provides tools for working with observational health data in the Observational Medical Outcomes Partnership (OMOP) Common Data Model format with a pipe friendly syntax. Common data model database table references are stored in a single compound object along with metadata.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://darwin-eu.github.io/CDMConnector/}
+  \item \url{https://github.com/darwin-eu/CDMConnector}
+  \item Report bugs at \url{https://github.com/darwin-eu/CDMConnector/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Adam Black \email{black@ohdsi.org} (\href{https://orcid.org/0000-0001-5576-8701}{ORCID})
 

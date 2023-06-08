@@ -111,7 +111,8 @@ cohort_attrition(cdm$cohort)
 
 # Both camel case and snake case styles are supported for the new functions.
 cdm$cohort %>%
-  intersectCohorts(cohort_definition_id = 99)
+  intersectCohorts(cohort_definition_id = 99) %>%
+  dplyr::show_query()
 
 cdm$cohort %>%
   unionCohorts(cohort_definition_id = 99)

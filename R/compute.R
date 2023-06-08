@@ -1,25 +1,16 @@
-#' Run a dplyr query and store the result in a permanent table
-#'
-#' This function has been superceded by `computeQuery` which should be used
-#' instead of `computePermanent`.
-#'
-#' `r lifecycle::badge("deprecated")`
-#'
-#' @param x A dplyr query
-#' @param name Name of the table to be created
-#' @param schema Schema to create the new table in
-#' Can be a length 1 or 2 vector.
-#' (e.g. schema = "my_schema", schema = c("my_schema", "dbo"))
-#' @param overwrite If the table already exists in the remote database
-#' should it be overwritten? (TRUE or FALSE)
-#'
-#' @return A dplyr reference to the newly created table
-#' @export
-computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
-  lifecycle::deprecate_warn("0.5.0", "computePermanent()", "computeQuery()")
-  .computePermanent(x, name, schema, overwrite)
-}
-
+# Run a dplyr query and store the result in a permanent table
+#
+# @param x A dplyr query
+# @param name Name of the table to be created
+# @param schema Schema to create the new table in
+# Can be a length 1 or 2 vector.
+# (e.g. schema = "my_schema", schema = c("my_schema", "dbo"))
+# @param overwrite If the table already exists in the remote database
+# should it be overwritten? (TRUE or FALSE)
+#
+# @return A dplyr reference to the newly created table
+#
+# internal function
 .computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
@@ -78,12 +69,6 @@ computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
   return(ref)
 }
 
-
-#' @rdname computePermanent
-#' @export
-compute_permanent <- computePermanent
-
-
 #' Run a dplyr query and add the result set to an existing
 #'
 #' @param x A dplyr query
@@ -107,7 +92,7 @@ compute_permanent <- computePermanent
 #'   dplyr::filter(domain_id == "Drug") %>%
 #'   dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) %>%
 #'   dplyr::count(domain_id, isRxnorm) %>%
-#'   computeQu("rxnorm_count")
+#'   computeQuery("rxnorm_count")
 #'
 #' # append to an existing table
 #' rxnorm_count <- concept %>%

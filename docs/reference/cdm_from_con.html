@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,13 @@
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"></ul></div>
+      <ul class="navbar-nav"><li class="nav-item">
+  <a class="external-link nav-link" href="https://github.com/darwin-eu/CDMConnector/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div>
 
     
   </div>
@@ -45,7 +51,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Create a CDM reference object from a database connection</h1>
-      
+      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/HEAD/R/cdm.R" class="external-link"><code>R/cdm.R</code></a></small>
       <div class="d-none name"><code>cdm_from_con.Rd</code></div>
     </div>
 
@@ -58,7 +64,6 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cdm_from_con</span><span class="op">(</span></span>
 <span>  <span class="va">con</span>,</span>
 <span>  cdm_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cdm_tables <span class="op">=</span> <span class="fu"><a href="tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span>,</span>
 <span>  write_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cohort_tables <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdm_version <span class="op">=</span> <span class="st">"5.3"</span>,</span>
@@ -68,7 +73,6 @@
 <span><span class="fu">cdmFromCon</span><span class="op">(</span></span>
 <span>  <span class="va">con</span>,</span>
 <span>  cdmSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cdmTables <span class="op">=</span> <span class="fu"><a href="tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span>,</span>
 <span>  writeSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cohortTables <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdmVersion <span class="op">=</span> <span class="st">"5.3"</span>,</span>
@@ -86,14 +90,6 @@ v5.3 instance is located.</p></dd>
 <dt>cdm_schema, cdmSchema</dt>
 <dd><p>The schema where the OMOP CDM tables are located. Defaults
 to NULL.</p></dd>
-
-
-<dt>cdm_tables, cdmTables</dt>
-<dd><p>Which tables should be included? Supports a character
-vector, tidyselect selection helpers, or table groups.</p><ul><li><p>tbl_group("all")all CDM tables</p></li>
-<li><p>tbl_group("vocab")the CDM vocabulary tables</p></li>
-<li><p>tbl_group("clinical")the clinical CDM tables</p></li>
-</ul></dd>
 
 
 <dt>write_schema, writeSchema</dt>
