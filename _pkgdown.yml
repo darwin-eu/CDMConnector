@@ -9,7 +9,7 @@ template:
 home:
   links:
   - text: PaRe package reviewer report
-    href: /pare_report.html
+    href: /CDMConnector/pare_report.html
 
 reference:
 - subtitle: CDM Object
