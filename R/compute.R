@@ -215,6 +215,7 @@ computeQuery <- function(x,
 
   checkmate::assertLogical(temporary, len = 1)
 
+  cdm_reference <- attr(x, "cdm_reference") # might be NULL
   con <- x$src$con
 
   if (temporary) {
@@ -230,7 +231,7 @@ computeQuery <- function(x,
         con = con
       )
       DBI::dbExecute(con, sql)
-      return(dplyr::tbl(con, name))
+      out <- dplyr::tbl(con, name)
     } else if (methods::is(con, "Spark SQL")) {
       sql <- dbplyr::build_sql(
         "CREATE ", if (overwrite) dbplyr::sql("OR REPLACE "),
@@ -240,13 +241,20 @@ computeQuery <- function(x,
         con = con
       )
       DBI::dbExecute(con, sql)
-      return(dplyr::tbl(con, name))
+      out <- dplyr::tbl(con, name)
     } else {
-      return(dplyr::compute(x, name = name, temporary = temporary, ...))
+      out <- dplyr::compute(x, name = name, temporary = temporary, ...)
     }
+
   } else {
-    .computePermanent(x, name = name, schema = schema, overwrite = overwrite)
+    out <- .computePermanent(x, name = name, schema = schema, overwrite = overwrite)
   }
+
+  if (!is.null(cdm_reference)) {
+    attr(out, "cdm_reference") <- cdm_reference
+  }
+
+  return(out)
 }
 
 

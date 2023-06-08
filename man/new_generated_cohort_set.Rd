@@ -72,7 +72,8 @@ to a table in a database and is described below.
 cohort_set is a table with one row per cohort_definition_id. The first
 two columns of the cohort_set table are: cohort_definition_id, and
 cohort_name. Additional columns can be added. The cohort_set table is meant
-to store metadata about the cohort definition.
+to store metadata about the cohort definition. Since this table is required it
+will be created if it it is not supplied.
 }
 
 \subsection{cohort_attrition}{
@@ -91,7 +92,8 @@ and the number of unique persons in each cohort in a \code{generatedCohortSet}.
 It is derived metadata that can be re-derived as long as cohort_set,
 the complete list of cohorts in the set, is available. Column names of
 cohort_count are: cohort_definition_id, number_records,
-number_subjects.
+number_subjects. This table is required for generatedCohortSet objects and
+will be created if not supplied.
 }
 }
 \examples{

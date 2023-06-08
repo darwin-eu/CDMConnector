@@ -1,9 +1,10 @@
 test_that("getFullTableNameQuoted", {
-  skip_if_not_installed("duckdb", "0.6")
+  skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_tables = c("person"))
+  # debugonce(cdm_from_con)
+  cdm <- cdm_from_con(con, "main")
 
   result <- getFullTableNameQuoted(x = cdm$person, name = "myTable", schema = NULL)
   expect_equal(as.character(result), "myTable")
@@ -48,4 +49,60 @@ test_that("inSchema", {
   expect_equal(tableSchemaNames[2], "dbo")
   expect_equal(tableSchemaNames[3], "myTable")
 })
+
+test_that("inSchema works with duckdb", {
+  con <- DBI::dbConnect(duckdb::duckdb())
+  DBI::dbExecute(con, "create schema scratch")
+  DBI::dbWriteTable(con, DBI::Id(schema = "scratch", table = "cars"), cars)
+  expect_equal(nrow(DBI::dbGetQuery(con, "select * from scratch.cars limit 5")), 5)
+  df <- dplyr::tbl(con, inSchema("scratch", "cars")) %>% dplyr::collect()
+  expect_equal(dplyr::tibble(cars), df)
+  DBI::dbDisconnect(con, shutdown = T)
+})
+
+test_that("normalize_schema works", {
+  library(zeallot)
+  c(schema, prefix) %<-% normalize_schema("asdf")
+  expect_true(schema == "asdf" & is.null(prefix))
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(c(schema = "asdf"))
+  expect_true(schema == "asdf" & is.null(prefix))
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(DBI::Id(schema = "asdf"))
+  expect_true(schema == "asdf" & is.null(prefix))
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(c(schema = "asdf", prefix = "prefix"))
+  expect_true(schema == "asdf" & prefix == "prefix")
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(DBI::Id(schema = "asdf", prefix = "prefix"))
+  expect_true(schema == "asdf" & prefix == "prefix")
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema("asdf.dbo")
+  expect_true(all(schema == c("asdf", "dbo")) & is.null(prefix))
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(c(catalog = "asdf", schema = "dbo"))
+  expect_true(all(schema == c("asdf", "dbo")) & is.null(prefix))
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(DBI::Id(catalog = "asdf", schema = "dbo"))
+  expect_true(all(schema == c("asdf", "dbo")) & is.null(prefix))
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(c(catalog = "asdf", schema = "dbo", prefix = "prefix"))
+  expect_true(all(schema == c("asdf", "dbo")) & prefix == "prefix")
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+
+  c(schema, prefix) %<-% normalize_schema(DBI::Id(catalog = "asdf", schema = "dbo", prefix = "prefix"))
+  expect_true(all(schema == c("asdf", "dbo")) & prefix == "prefix")
+  expect_true(is.null(names(schema)) & is.null(names(prefix)))
+})
+
+
+
 

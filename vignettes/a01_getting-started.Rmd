@@ -56,21 +56,22 @@ cdm$person %>%
 
 ## Selecting a subset of CDM tables
 
-If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_tables` argument of `cdm_from_con` supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
+If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_select_tbl` function supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
 
 ```{r}
-cdm_from_con(con, cdm_tables = c("person", "observation_period")) # character vector
-cdm_from_con(con, cdm_tables = starts_with("concept")) # tables that start with 'concept'
-cdm_from_con(con, cdm_tables = contains("era")) # tables that contain the substring 'era'
-cdm_from_con(con, cdm_tables = matches("person|period")) # regular expression
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl("person", "observation_period") # quoted names
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(person, observation_period) # unquoted names 
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(starts_with("concept")) # tables that start with 'concept'
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(contains("era")) # tables that contain the substring 'era'
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(matches("person|period")) # regular expression
 ```
 
 Predefined sets of tables can also be selected using `tbl_group` which supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
 
 ```{r}
 # pre-defined groups
-cdm_from_con(con, cdm_tables = tbl_group("clinical")) 
-cdm_from_con(con, cdm_tables = tbl_group("vocab")) 
+cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("clinical")) 
+cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("vocab")) 
 ```
 
 The default set of CDM tables included in a CDM object is:
@@ -90,13 +91,12 @@ cohort <- tibble(cohort_definition_id = 1L,
 
 invisible(DBI::dbExecute(con, "create schema write_schema;"))
 
-DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", table_name = "cohort"), cohort)
+DBI::dbWriteTable(con, DBI::Id(schema = "write_schema", name = "cohort"), cohort)
 
 ```
 
 ```{r}
 cdm <- cdm_from_con(con, 
-                    cdm_tables = c("person", "observation_period"), 
                     write_schema = "write_schema",
                     cohort_tables = "cohort") 
 
@@ -126,7 +126,7 @@ save_path <- file.path(tempdir(), "tmp")
 dir.create(save_path)
 
 cdm %>% 
-  stow(path = save_path)
+  stow(path = save_path, format = "parquet")
 
 list.files(save_path)
 ```

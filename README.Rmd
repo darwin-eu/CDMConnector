@@ -93,7 +93,7 @@ cdm$condition_era %>%
 Run a simple quality check on a cdm.
 
 ```{r}
-cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
+cdm <- cdm_from_con(con, cdm_schema = "main")
 validate_cdm(cdm)
 ```
 

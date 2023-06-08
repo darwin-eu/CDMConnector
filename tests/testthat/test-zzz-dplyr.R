@@ -6,8 +6,7 @@ test_that("Oracle dplyr works", {
 
   cdm <- CDMConnector::cdm_from_con(
     con = con,
-    cdm_schema = "CDMV5",
-    cdm_tables = c(CDMConnector::tbl_group("default"), -visit_detail) # visit_detail is missing in Oracle test database
+    cdm_schema = "CDMV5"
   )
 
   df <- cdm$observation_period %>%
@@ -96,7 +95,7 @@ test_that("quantile translation works on sql server", {
                         TrustServerCertificate = "yes",
                         Port     = 1433)
 
-  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"), cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"))
 
   df <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
@@ -130,7 +129,7 @@ test_that("quantile translation works on redshift", {
                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
 
   # df <- cdm$drug_exposure %>%
   #   dplyr::select(drug_concept_id, days_supply) %>%
@@ -161,9 +160,7 @@ test_that("quantile translation works on Oracle", {
   cdm_schema <- Sys.getenv("CDM5_ORACLE_CDM_SCHEMA")
   con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
 
-  cdm <- cdm_from_con(con,
-                      cdm_schema = cdm_schema,
-                      cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
 
   df <- cdm$drug_exposure %>%
     dplyr::select(drug_concept_id, days_supply) %>%
@@ -220,7 +217,7 @@ test_that("quantile translation works on duckdb", {
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
-  cdm <- cdm_from_con(con, cdm_schema = "main", cdm_tables = c("person", "drug_exposure"))
+  cdm <- cdm_from_con(con, cdm_schema = "main")
 
   # df <- cdm$drug_exposure %>%
   #   dplyr::select(drug_concept_id, days_supply) %>%

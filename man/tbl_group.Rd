@@ -40,6 +40,7 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       user = "postgres",
                       password = Sys.getenv("PASSWORD"))
 
-cdm <- cdm_from_con(con, cdm_tables = tbl_group("vocab"))
+cdm <- cdm_from_con(con) \%>\%
+  cdm_select_tbl(tbl_group("vocab"))
 }
 }

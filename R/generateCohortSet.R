@@ -66,7 +66,7 @@ readCohortSet <- read_cohort_set
 #' Generate a cohort set on a cdm object
 #'
 #' @description
-#' A "GeneratedCohortSet" object consists of several components
+#' A "GeneratedCohortSet" object consists of four components
 #' \itemize{
 #'   \item{A remote table reference to an OHDSI cohort table with at least
 #'         the columns: cohort_definition_id, subject_id, cohort_start_date,
@@ -108,7 +108,6 @@ readCohortSet <- read_cohort_set
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 #' cdm <- cdm_from_con(con,
 #'                     cdm_schema = "main",
-#'                     cdm_tables = c(tbl_group("default")),
 #'                     write_schema = "main")
 #'
 #' cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
@@ -340,13 +339,13 @@ generateCohortSet <- function(cdm,
       SqlRender::splitSql()
 
     if (dbms(con) == "duckdb") {
+      # hotfix for duckdb sql translation
       sql <- gsub("'-1 \\* 0 day'", "'0 day'", sql)
     }
 
     purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
     cli::cli_progress_update(set = i)
   }
-
 
   cohort_ref <- dplyr::tbl(con, inSchema(writeSchema, name))
 
@@ -459,7 +458,8 @@ generate_cohort_set <- function(cdm,
 #' cohort_set is a table with one row per cohort_definition_id. The first
 #' two columns of the cohort_set table are: cohort_definition_id, and
 #' cohort_name. Additional columns can be added. The cohort_set table is meant
-#' to store metadata about the cohort definition.
+#' to store metadata about the cohort definition. Since this table is required it
+#' will be created if it it is not supplied.
 #'
 #' ## cohort_attrition
 #'
@@ -476,7 +476,8 @@ generate_cohort_set <- function(cdm,
 #' It is derived metadata that can be re-derived as long as cohort_set,
 #' the complete list of cohorts in the set, is available. Column names of
 #' cohort_count are: cohort_definition_id, number_records,
-#' number_subjects.
+#' number_subjects. This table is required for generatedCohortSet objects and
+#' will be created if not supplied.
 #'
 #' @param cohort_ref,cohortRef A `tbl_sql` object that points to a remote cohort table
 #' with the following first four columns: cohort_definition_id,
@@ -540,15 +541,14 @@ new_generated_cohort_set <- function(cohort_ref,
                                      cohort_count_ref = NULL) {
 
   checkmate::assertClass(cohort_ref, classes = c("tbl_sql"), null.ok = FALSE)
-  checkmate::assertClass(cohort_set_ref, classes = c("tbl_sql"), null.ok = TRUE)
+  checkmate::assertClass(cohort_set_ref, classes = c("tbl_sql"), null.ok = FALSE)
+  checkmate::assertClass(cohort_count_ref, classes = c("tbl_sql"), null.ok = FALSE)
   checkmate::assertClass(cohort_attrition_ref, classes = c("tbl_sql"), null.ok = TRUE)
-  checkmate::assertClass(cohort_count_ref, classes = c("tbl_sql"), null.ok = TRUE)
 
-  checkmate::assertSubset(c("cohort_definition_id", "subject_id",
-                            "cohort_start_date", "cohort_end_date"),
-                          choices = names(cohort_ref))
+  checkmate::assertSubset(
+    c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"),
+    choices = names(cohort_ref))
 
-  if (!is.null(cohort_set_ref)) {
     stopifnot(colnames(cohort_set_ref)[1] == "cohort_definition_id",
               colnames(cohort_set_ref)[2] == "cohort_name")
 
@@ -561,19 +561,16 @@ new_generated_cohort_set <- function(cohort_ref,
     if (!(length(one) == 1 && one == 1)) {
       rlang::abort("cohort_definition_id is not a primary key on cohort_set_ref")
     }
-  }
 
   if (!is.null(cohort_attrition_ref)) {
     checkmate::assertSubset(c("cohort_definition_id"),
                             choices = names(cohort_attrition_ref))
   }
 
-  if (!is.null(cohort_count_ref)) {
-    checkmate::assertSubset(c("cohort_definition_id",
-                              "number_records",
-                              "number_subjects"),
-                            choices = names(cohort_count_ref))
-  }
+  checkmate::assertSubset(c("cohort_definition_id",
+                            "number_records",
+                            "number_subjects"),
+                          choices = names(cohort_count_ref))
 
   # create the object
   class(cohort_ref) <- c("GeneratedCohortSet", class(cohort_ref))
@@ -636,11 +633,7 @@ cohort_set <- cohortSet
 
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
-  if (is.null(attr(x, "cohort_set"))) {
-    NULL
-  } else {
-    dplyr::collect(attr(x, "cohort_set"))
-  }
+  dplyr::collect(attr(x, "cohort_set"))
 }
 
 #' Get cohort counts from a GeneratedCohortSet object
@@ -658,11 +651,7 @@ cohort_count <- cohortCount
 
 #' @export
 cohortCount.GeneratedCohortSet <- function(x) {
-  if (is.null(attr(x, "cohort_count"))) {
-    NULL
-  } else {
-    dplyr::collect(attr(x, "cohort_count"))
-  }
+  dplyr::collect(attr(x, "cohort_count"))
 }
 
 

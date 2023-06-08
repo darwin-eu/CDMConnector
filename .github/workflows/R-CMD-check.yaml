@@ -55,6 +55,8 @@ jobs:
             install.packages("DatabaseConnector")
             install.packages("bigrquery")
             install.packages("arrow")
+            install.packages("tibble")
+            install.packages("zeallot")
         shell: Rscript {0}
 
       - name: Install CirceR

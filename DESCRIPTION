@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 0.6.0
+Version: 1.0.0
 Authors@R: c(
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
@@ -37,7 +37,8 @@ Imports:
     jsonlite,
     stringr,
     fs,
-    generics
+    generics,
+    tidyr
 Suggests: 
     arrow,
     SqlRender, 
@@ -53,7 +54,9 @@ Suggests:
     bigrquery,
     testthat (>= 3.0.0),
     DatabaseConnector,
-    lubridate
+    lubridate,
+    tibble,
+    zeallot
 Enhances:
     CirceR
 Config/testthat/edition: 3

@@ -1,9 +1,20 @@
+# CDMConnector 1.0.0
+
+* remove `write_prefix` in `cdm_from_con` in favor of using the `write_schema` argument for prefixing
+* remove `cdm_tables` argument from `cdm_from_con` in favor of `cdm_select_tbl` selection function
+* add attributes to the cdm object to communicate downstream temp table preferences
+
+Released June 7, 2023
+
+
 # CDMConnector 0.6.0
 
 * generate Capr cohorts with `generateCohortSet`
 * add datepart function for extracting year, month, day parts of dates in dplyr
 * fix datediff logic for years so it now returns number of complete years between two date
 * add "write_prefix" attribute to cdm objects to support a namespace within the write_schema
+
+Released May 5, 2023
 
 # CDMConnector 0.5.1
 

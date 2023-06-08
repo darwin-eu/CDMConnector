@@ -8,23 +8,19 @@
 cdm_from_con(
   con,
   cdm_schema = NULL,
-  cdm_tables = tbl_group("default"),
   write_schema = NULL,
   cohort_tables = NULL,
   cdm_version = "5.3",
-  cdm_name = NULL,
-  write_prefix = NULL
+  cdm_name = NULL
 )
 
 cdmFromCon(
   con,
   cdmSchema = NULL,
-  cdmTables = tbl_group("default"),
   writeSchema = NULL,
   cohortTables = NULL,
   cdmVersion = "5.3",
-  cdmName = NULL,
-  writePrefix = NULL
+  cdmName = NULL
 )
 }
 \arguments{
@@ -33,14 +29,6 @@ v5.3 instance is located.}
 
 \item{cdm_schema, cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
 to NULL.}
-
-\item{cdm_tables, cdmTables}{Which tables should be included? Supports a character
-vector, tidyselect selection helpers, or table groups.
-\itemize{
-\item{tbl_group("all")}{all CDM tables}
-\item{tbl_group("vocab")}{the CDM vocabulary tables}
-\item{tbl_group("clinical")}{the clinical CDM tables}
-}}
 
 \item{write_schema, writeSchema}{An optional schema in the CDM database that the user has
 write access to.}
@@ -54,10 +42,6 @@ heuristics. Cohort tables must be in the write_schema.}
 
 \item{cdm_name, cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.}
-
-\item{write_prefix, writePrefix}{A prefix that should be used with all tables
-written to the "write_schema". This prefix allows for the creation of a
-namespace within a database schema.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

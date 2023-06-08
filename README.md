@@ -91,7 +91,7 @@ Use dplyr verbs with the table references.
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpk913PZ/giloosuw]
+    ## # Database: DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpIEhJQI/enygnzdd]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -103,7 +103,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.6.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpk913PZ/giloosuw]
+    ## # Database:   DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpIEhJQI/enygnzdd]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -117,16 +117,34 @@ Compose operations with the pipe.
     ##  8 Concussion with no loss of consciousness  1013
     ##  9 Sinusitis                                 1001
     ## 10 Acute bacterial sinusitis                  939
-    ## # … with more rows
+    ## # ℹ more rows
 
 Run a simple quality check on a cdm.
 
-    cdm <- cdm_from_con(con, cdm_tables = c("person", "observation_period"))
+    cdm <- cdm_from_con(con, cdm_schema = "main")
     validate_cdm(cdm)
 
-    ## ── CDM v5.3 validation (checking 2 tables) ─────────────────────────────────────
-    ## ✔ cdm field names are correct
-    ## ✔ all row counts > 0
+    ## ── CDM v5.3 validation (checking 22 tables) ────────────────────────────────────
+    ## condition_occurrence table expected columns[6:16] vs condition_occurrence table actual_colums[6:16]
+    ##   "condition_end_date"
+    ##   "condition_end_datetime"
+    ##   "condition_type_concept_id"
+    ## - "condition_status_concept_id"
+    ## + "stop_reason"
+    ## - "stop_reason"
+    ## + "provider_id"
+    ## - "provider_id"
+    ## + "visit_occurrence_id"
+    ## - "visit_occurrence_id"
+    ## + "visit_detail_id"
+    ## - "visit_detail_id"
+    ## + "condition_source_value"
+    ## - "condition_source_value"
+    ## + "condition_source_concept_id"
+    ## - "condition_source_concept_id"
+    ## + "condition_status_source_value"
+    ## and 1 more ...
+    ## • 6 empty CDM tables: death, location, care_site, provider, dose_era, drug_strength
 
 ## DBI Drivers
 

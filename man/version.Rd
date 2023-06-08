@@ -19,7 +19,7 @@ Extract the CDM version attribute from a cdm_reference object
 \dontrun{
 library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-cdm <- cdm_from_con(con, cdm_tables = c(tbl_group("default"), "cdm_source"))
+cdm <- cdm_from_con(con, "main")
 version(cdm)
 
 DBI::dbDisconnect(con, shutdown = TRUE)

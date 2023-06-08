@@ -11,7 +11,7 @@ stow(cdm, path, format = "parquet")
 
 \item{path}{A folder to save the cdm object to}
 
-\item{format}{The file format to use: "parquet", "csv", "feather", "duckdb".}
+\item{format}{The file format to use: "parquet" (default), "csv", "feather" or "duckdb".}
 }
 \value{
 Invisibly returns the cdm input
@@ -22,7 +22,8 @@ Collect a list of lazy queries and save the results as files
 \examples{
 \dontrun{
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-vocab <- cdm_from_con(con, cdm_tables = c("concept", "concept_ancestor"))
+vocab <- cdm_from_con(con, "main") \%>\%
+  cdm_select_tbl("concept", "concept_ancestor")
 stow(vocab, here::here("vocab_tables"))
 DBI::dbDisconnect(con, shutdown = TRUE)
 }

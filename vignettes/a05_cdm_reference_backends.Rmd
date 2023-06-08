@@ -43,7 +43,7 @@ library(ggplot2)
 
 ```{r, message=FALSE, warning=FALSE}
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con, cdm_schema = "main", cdm_tables = c("person", "condition_occurrence"))
+cdm <- cdm_from_con(con, cdm_schema = "main")
 
 # first filter to only those with condition_concept_id "4035415"
 cdm$condition_occurrence %>% tally()
@@ -67,7 +67,7 @@ We can save these tables to file
 ```{r, message=FALSE, warning=FALSE}
 dOut <- tempfile()
 dir.create(dOut)
-CDMConnector::stow(cdm, dOut)
+CDMConnector::stow(cdm, dOut, format = "parquet")
 ```
 
 And now we can create a `cdm_reference` to the files

@@ -36,7 +36,7 @@ exists? TRUE or FALSE (default)}
 \item{compute_attrition, computeAttrition}{Should attrition be computed? TRUE (default) or FALSE}
 }
 \description{
-A "GeneratedCohortSet" object consists of several components
+A "GeneratedCohortSet" object consists of four components
 \itemize{
 \item{A remote table reference to an OHDSI cohort table with at least
 the columns: cohort_definition_id, subject_id, cohort_start_date,
@@ -69,7 +69,6 @@ library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 cdm <- cdm_from_con(con,
                     cdm_schema = "main",
-                    cdm_tables = c(tbl_group("default")),
                     write_schema = "main")
 
 cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
