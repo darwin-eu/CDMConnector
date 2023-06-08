@@ -168,6 +168,24 @@ cdm_from_con <- function(con,
   return(cdm)
 }
 
+#' @rdname cdm_from_con
+#' @export
+cdmFromCon <- function(con,
+                       cdmSchema = NULL,
+                       writeSchema = NULL,
+                       cohortTables = NULL,
+                       cdmVersion = "5.3",
+                       cdmName = NULL) {
+  cdm_from_con(
+    con = con,
+    cdm_schema = cdmSchema,
+    write_schema = writeSchema,
+    cohort_tables = cohortTables,
+    cdm_version = cdmVersion,
+    cdm_name = cdmName
+  )
+}
+
 detect_cdm_version <- function(con, cdm_schema = NULL) {
   cdm_tables <- c("visit_occurrence", "cdm_source", "procedure_occurrence")
 
@@ -280,26 +298,6 @@ cdmName <- function(cdm) {
 #' @rdname cdmName
 #' @export
 cdm_name <- cdmName
-
-
-#' @rdname cdm_from_con
-#' @export
-cdmFromCon <- function(con,
-                       cdmSchema = NULL,
-                       writeSchema = NULL,
-                       cohortTables = NULL,
-                       cdmVersion = "5.3",
-                       cdmName = NULL) {
-  cdm_from_con(
-    con = con,
-    cdm_schema = cdmSchema,
-    write_schema = writeSchema,
-    cohort_tables = cohortTables,
-    cdm_version = cdmVersion,
-    cdm_name = cdmName,
-  )
-}
-
 
 #' Print a CDM reference object
 #'
