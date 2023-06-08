@@ -23,8 +23,7 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
     dplyr::group_by(.data$subject_id) %>%
     dplyr::mutate(event_type = -1L, start_ordinal = dplyr::row_number(.data$event_date)) %>%
     dplyr::union_all(dplyr::transmute(x, .data$subject_id, event_date = .data$cohort_end_date, event_type = 1L, start_ordinal = NULL)) %>%
-    {if ("data.frame" %in% class(.)) dplyr::arrange(.data$event_date, .data$event_type) else .} %>%
-    {if ("tbl_lazy"   %in% class(.)) dbplyr::window_order(event_date, event_type) else .} %>%
+    {if ("tbl_sql" %in% class(.)) dbplyr::window_order(., event_date, event_type) else dplyr::arrange(., .data$event_date, .data$event_type)} %>%
     dplyr::mutate(start_ordinal = cummax(.data$start_ordinal), overall_ordinal = dplyr::row_number()) %>%
     dplyr::filter((2 * .data$start_ordinal) == .data$overall_ordinal) %>%
     dplyr::transmute(.data$subject_id, end_date = .data$event_date) %>%
