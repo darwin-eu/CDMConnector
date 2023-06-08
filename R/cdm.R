@@ -113,15 +113,20 @@ cdm_from_con <- function(con,
         } else {
           NULL
         }
-      }) %>% rlang::set_names(paste0(nms, "_ref"))
+      })
 
-      if (is.null(x$cohort_ref)) {
+      cohort_ref <- x[[1]]
+      cohort_set_ref <- x[[2]]
+      cohort_count_ref <- x[[3]]
+      cohort_attrition_ref <- x[[4]]
+
+      if (is.null(cohort_ref)) {
         rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
       }
 
-      if (is.null(x$cohort_set_ref)) {
+      if (is.null(cohort_set_ref)) {
         # create the required cohort_set table
-        x$cohort_set_ref <- x$cohort_ref %>%
+        cohort_set_ref <- cohort_ref %>%
           dplyr::distinct(.data$cohort_definition_id) %>%
           dplyr::mutate(cohort_name = paste("cohort", .data$cohort_definition_id)) %>%
           computeQuery(name = paste0(cohort_table, "_set"),
@@ -130,9 +135,9 @@ cdm_from_con <- function(con,
                        overwrite = TRUE)
       }
 
-      if (is.null(x$cohort_count_ref)) {
+      if (is.null(cohort_count_ref)) {
         # create the required cohort_count table
-        x$cohort_count_ref <- x$cohort_ref %>%
+        cohort_count_ref <- cohort_ref %>%
           dplyr::ungroup() %>%
           dplyr::group_by(.data$cohort_definition_id) %>%
           dplyr::summarise(number_records = dplyr::n(),
@@ -145,10 +150,10 @@ cdm_from_con <- function(con,
 
       # Note: use name without prefix (i.e. `cohort_tables[i]`) in the cdm object
       cdm[[cohort_tables[i]]] <- new_generated_cohort_set(
-        cohort_ref = x$cohort_ref,
-        cohort_set_ref = x$cohort_set_ref,
-        cohort_count_ref = x$cohort_count_ref,
-        cohort_attrition_ref = x$cohort_attrition_ref)
+        cohort_ref = cohort_ref,
+        cohort_set_ref = cohort_set_ref,
+        cohort_count_ref = cohort_count_ref,
+        cohort_attrition_ref = cohort_attrition_ref)
     }
   }
 
