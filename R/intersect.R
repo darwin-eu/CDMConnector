@@ -25,7 +25,8 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
     {if ("tbl_lazy"   %in% class(.)) dbplyr::window_order(.data$event_date, .data$event_type) else .} %>%
     dplyr::mutate(start_ordinal = cummax(.data$start_ordinal), overall_ordinal = dplyr::row_number()) %>%
     dplyr::filter((2 * .data$start_ordinal) == .data$overall_ordinal) %>%
-    dplyr::distinct(.data$subject_id, end_date = .data$event_date) %>%
+    dplyr::transmute(.data$subject_id, end_date = .data$event_date) %>%
+    dplyr::distinct() %>%
     dplyr::inner_join(x, by = "subject_id") %>%
     dplyr::filter(.data$end_date >= .data$cohort_start_date) %>%
     dplyr::group_by(.data$subject_id, .data$cohort_start_date) %>%
