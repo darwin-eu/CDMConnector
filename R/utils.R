@@ -73,7 +73,7 @@ normalize_schema <- function(schema) {
     return(list(schema = NULL, prefix = NULL))
   }
 
-  if (class(schema) == "Id") {
+  if (is(schema, "Id")) {
     # convert Id to named vector
     schema <- attr(schema, "name")
   }

@@ -19,11 +19,11 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
   x %>%
     dplyr::select("subject_id", event_date = "cohort_start_date") %>%
     dplyr::group_by(.data$subject_id) %>%
-    dplyr::mutate(event_type = -1L, start_ordinal = row_number(.data$event_date)) %>%
+    dplyr::mutate(event_type = -1L, start_ordinal = dplyr::row_number(.data$event_date)) %>%
     dplyr::union_all(dplyr::transmute(x, .data$subject_id, event_date = .data$cohort_end_date, event_type = 1L, start_ordinal = NULL)) %>%
     {if ("data.frame" %in% class(.)) dplyr::arrange(.data$event_date, .data$event_type) else .} %>%
     {if ("tbl_lazy"   %in% class(.)) dbplyr::window_order(.data$event_date, .data$event_type) else .} %>%
-    dplyr::mutate(start_ordinal = cummax(.data$start_ordinal), overall_ordinal = row_number()) %>%
+    dplyr::mutate(start_ordinal = cummax(.data$start_ordinal), overall_ordinal = dplyr::row_number()) %>%
     dplyr::filter((2 * .data$start_ordinal) == .data$overall_ordinal) %>%
     dplyr::distinct(.data$subject_id, end_date = .data$event_date) %>%
     dplyr::inner_join(x, by = "subject_id") %>%
@@ -84,7 +84,7 @@ intersect_cohorts <- function(x, cohort_definition_id = 1L) {
                     .data$candidate_end_date) %>%
     dplyr::summarise(n_cohorts_interval_is_inside = dplyr::n(), .groups = "drop") %>%
     # only keep intervals that are inside all cohorts we want to intersect
-    dplyr::filter(n_cohorts_interval_is_inside == .env$n_cohorts_to_intersect) %>%
+    dplyr::filter(.data$n_cohorts_interval_is_inside == .env$n_cohorts_to_intersect) %>%
     dplyr::mutate(cohort_definition_id = .env$cohort_definition_id) %>%
     dplyr::select("cohort_definition_id",
                   "subject_id",
