@@ -3,8 +3,8 @@ template:
   bootswatch: flatly
   bslib:
     primary: "#123293" # darwin dark blue
-    fg: "#5fa7d7" # darwin light blue
-    bg: "#f8d556" # darwin yellow
+    #fg: "#5fa7d7" # darwin light blue
+    #bg: "#f8d556" # darwin yellow
 
 home:
   links:
