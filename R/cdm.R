@@ -88,12 +88,13 @@ cdm_from_con <- function(con,
     verify_write_access(con, write_schema = write_schema)
   }
 
-  write_schema_tables <- listTables(con, schema = write_schema)
   # Add existing GeneratedCohortSet objects to cdm object
   if (!is.null(cohort_tables)) {
     if (is.null(write_schema)) {
       rlang::abort("write_schema is required when using cohort_tables")
     }
+
+    write_schema_tables <- listTables(con, schema = write_schema)
 
     for (i in seq_along(cohort_tables)) {
 
@@ -128,7 +129,7 @@ cdm_from_con <- function(con,
         # create the required cohort_set table
         cohort_set_ref <- cohort_ref %>%
           dplyr::distinct(.data$cohort_definition_id) %>%
-          dplyr::mutate(cohort_name = paste("cohort", .data$cohort_definition_id)) %>%
+          dplyr::mutate(cohort_name = paste("cohort", as.integer(.data$cohort_definition_id))) %>%
           computeQuery(name = paste0(cohort_table, "_set"),
                        schema = write_schema,
                        temporary = FALSE,
