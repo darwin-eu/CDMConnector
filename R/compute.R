@@ -56,13 +56,10 @@
 
   DBI::dbExecute(x$src$con, sql)
 
-  if (methods::is(x$src$con, "duckdb_connection")) {
-    ref <- dplyr::tbl(x$src$con, paste(c(schema, name), collapse = "."))
-  } else if (length(schema) == 2) {
-    ref <- dplyr::tbl(x$src$con,
-                      dbplyr::in_catalog(schema[[1]], schema[[2]], name))
+  if (length(schema) == 2) {
+    ref <- dplyr::tbl(x$src$con, DBI::Id(catalog = schema[[1]], schema = schema[[2]], table = name))
   } else if (length(schema) == 1) {
-    ref <- dplyr::tbl(x$src$con, dbplyr::in_schema(schema, name))
+    ref <- dplyr::tbl(x$src$con, DBI::Id(schema = schema, table = name))
   } else {
     ref <- dplyr::tbl(x$src$con, name)
   }

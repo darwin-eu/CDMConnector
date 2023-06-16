@@ -45,9 +45,6 @@ inSchema <- function(schema, table, dbms = NULL) {
     switch(length(schema),
            dbplyr::in_schema(schema = schema, table = table),
            dbplyr::in_catalog(catalog = schema[1], schema = schema[2], table = table))
-  } else if (isTRUE(dbms == "duckdb")) {
-    checkmate::assertCharacter(schema, len = 1)
-    paste0(schema, ".", table)
   } else {
     switch(length(schema),
            DBI::Id(schema = schema, table = table),
