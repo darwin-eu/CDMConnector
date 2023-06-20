@@ -156,8 +156,19 @@ generateCohortSet <- function(cdm,
   }
 
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
+
+  # Handle OHDSI cohort sets
+  if ("cohortId" %in% names(cohortSet) && !("cohort_definition_id" %in% names(cohortSet))) {
+    cohortSet$cohort_definition_id <- cohortSet$cohortId
+  }
+
+  if ("cohortName" %in% names(cohortSet) && !("cohort_name" %in% names(cohortSet))) {
+    cohortSet$cohort_name <- cohortSet$cohortName
+  }
+
+
   checkmate::assertNames(colnames(cohortSet),
-                         must.include = c("cohort_definition_id", "cohort_name", "cohort"))
+                         must.include = c("cohort_definition_id", "cohort_name", "json"))
 
   checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE, pattern = "[a-z_]+")
   name_without_prefix <- name
@@ -339,8 +350,8 @@ generateCohortSet <- function(cdm,
       SqlRender::splitSql()
 
     if (dbms(con) == "duckdb") {
-      # hotfix for duckdb sql translation
-      sql <- gsub("'-1 \\* 0 day'", "'0 day'", sql)
+      # hotfix for duckdb sql translation https://github.com/OHDSI/SqlRender/issues/340
+      sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
     }
 
     purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
