@@ -38,6 +38,7 @@ Imports:
     lifecycle,
     jsonlite,
     stringr,
+    stringi,
     fs,
     generics,
     tidyr

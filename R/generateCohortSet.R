@@ -166,6 +166,16 @@ generateCohortSet <- function(cdm,
     cohortSet$cohort_name <- cohortSet$cohortName
   }
 
+  if (!("cohort" %in% names(cohortSet)) && ("json" %in% names(cohortSet))) {
+    cohortColumn <- list()
+    for (i in seq_len(nrow(cohortSet))) {
+      x <- cohortSet$json[i]
+      if (!validUTF8(x)) { x <- stringi::stri_enc_toutf8(x, validate = TRUE) }
+      if (!validUTF8(x)) { rlang::abort("Failed to convert json UTF-8 encoding") }
+      cohortColumn[[i]] <- jsonlite::fromJSON(x, simplifyVector = FALSE)
+    }
+    cohortSet$cohort <- cohortColumn
+  }
 
   checkmate::assertNames(colnames(cohortSet),
                          must.include = c("cohort_definition_id", "cohort_name", "json"))
@@ -425,7 +435,7 @@ generateCohortSet <- function(cdm,
 generate_cohort_set <- function(cdm,
                                 cohort_set,
                                 name = "cohort",
-                                compute_attrition = FALSE,
+                                compute_attrition = TRUE,
                                 overwrite = FALSE) {
   generateCohortSet(cdm = cdm,
                     cohortSet = cohort_set,

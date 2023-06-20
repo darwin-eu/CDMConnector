@@ -17,7 +17,7 @@ generate_cohort_set(
   cdm,
   cohort_set,
   name = "cohort",
-  compute_attrition = FALSE,
+  compute_attrition = TRUE,
   overwrite = FALSE
 )
 }

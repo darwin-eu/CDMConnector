@@ -135,8 +135,11 @@ extractLoadData <- function(from, to, dbms = "sqlite", verbose = FALSE) {
       file = file.path(tempFileLocation, dataFiles[i]),
       col_types = readr::cols(),
       guess_max = 2e6,
-      lazy = FALSE
-    )
+      lazy = FALSE) %>%
+      dplyr::mutate(dplyr::across(dplyr::matches("date$"), as.Date)) %>%
+      dplyr::mutate(dplyr::across(dplyr::matches("_id$"), as.integer)) %>%
+      dplyr::mutate(dplyr::across(dplyr::matches("_datetime"), ~as.POSIXct(., origin = "1970-01-01")))
+
     # CDM table and column names should be lowercase: https://github.com/OHDSI/CommonDataModel/issues/509#issuecomment-1315754238
     names(tableData) <- tolower(names(tableData))
     tableName <- tools::file_path_sans_ext(tolower(dataFiles[i]))

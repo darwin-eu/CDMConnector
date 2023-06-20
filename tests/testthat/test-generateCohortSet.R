@@ -419,23 +419,17 @@ test_that("Generation from Capr Cohorts", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-# Test generate phenotype library generateion
-
-test_that("duckdb - OHDSI phenotype library generates", {
+test_that("duckdb - phenotype library generation", {
   skip("manual test")
-  skip("failing test")
 
-  covid_ids <- PhenotypeLibrary::listPhenotypes() %>%
-    # dplyr::filter(stringr::str_detect(tolower(cohortName), "covid")) %>%
-    dplyr::pull(cohortId)
-
-  cohort_set <- PhenotypeLibrary::getPlCohortDefinitionSet(covid_ids)
+  cohort_set <- PhenotypeLibrary::listPhenotypes() %>%
+    dplyr::pull("cohortId") %>%
+    PhenotypeLibrary::getPlCohortDefinitionSet()
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-
   cdm <- cdm_from_con(con, "main", write_schema = "main")
   expect_error(
-    generate_cohort_set(cdm, cohort_set, name = "cohort", overwrite = TRUE),
+    generate_cohort_set(cdm, cohort_set, name = "cohort", overwrite = TRUE, compute_attrition = TRUE),
     NA
   )
   DBI::dbDisconnect(con, shutdown = T)
