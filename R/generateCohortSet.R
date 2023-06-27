@@ -139,7 +139,7 @@ generateCohortSet <- function(cdm,
     generateConceptCohortSet(cdm = cdm,
                              conceptSet = cohortSet,
                              name = name,
-                             computeAttrition = computeAttrition
+                             computeAttrition = computeAttrition,
                              overwrite = overwrite)
   }
 
