@@ -97,7 +97,13 @@ readCohortSet <- read_cohort_set
 #'   specified.
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables.
-#' @param cohort_set,cohortSet Either a cohortSet object created with `readCohortSet()` or a named list of Capr cohort definitions.
+#' @param cohort_set,cohortSet Can be a cohortSet object created with `readCohortSet()`,
+#' a single Capr cohort definition,
+#' a named list of Capr cohort definitions,
+#' a numeric vector interpreted as a concept set,
+#' a named list of numeric vectors,
+#' a Capr concept set,
+#' or a named list of Capr concept sets.
 #' @param compute_attrition,computeAttrition Should attrition be computed? TRUE (default) or FALSE
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE or FALSE (default)
@@ -124,6 +130,23 @@ generateCohortSet <- function(cdm,
                               name = "cohort",
                               computeAttrition = TRUE,
                               overwrite = FALSE) {
+
+  if (is.numeric(cohortSet) ||
+      (is.list(cohortSet) && is.numeric(cohortSet[[1]])) ||
+      methods::is(cohortSet, "ConceptSet") ||
+      (is.list(cohortSet) && is.numeric(cohortSet[[1]]))) {
+
+    generateConceptCohortSet(cdm = cdm,
+                             conceptSet = cohortSet,
+                             name = name,
+                             computeAttrition = computeAttrition
+                             overwrite = overwrite)
+  }
+
+  if (methods::is(cohortSet, "Cohort")) {
+    cohortSet <- list("unnamed cohort" = cohortSet)
+  }
+
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
 
