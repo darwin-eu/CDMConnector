@@ -292,7 +292,7 @@ test_collapse <- function(con, write_schema) {
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
   x_actual <- x %>%
-    collapse_cohorts() %>%
+    cohort_collapse() %>%
     collect() %>%
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
@@ -307,7 +307,7 @@ test_collapse <- function(con, write_schema) {
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
   x_actual <- x %>%
-    collapse_cohorts() %>%
+    cohort_collapse() %>%
     collect() %>%
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
@@ -327,7 +327,7 @@ test_collapse <- function(con, write_schema) {
   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 
   x_actual <- x %>%
-    collapse_cohorts() %>%
+    cohort_collapse() %>%
     collect() %>%
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
@@ -347,7 +347,7 @@ test_collapse <- function(con, write_schema) {
   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 
   x_actual <- x %>%
-    collapse_cohorts() %>%
+    cohort_collapse() %>%
     collect() %>%
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
@@ -367,7 +367,7 @@ test_collapse <- function(con, write_schema) {
   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 
   x_actual <- x %>%
-    collapse_cohorts() %>%
+    cohort_collapse() %>%
     collect() %>%
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
@@ -387,7 +387,7 @@ test_collapse <- function(con, write_schema) {
   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 
   x_actual <- x %>%
-    collapse_cohorts() %>%
+    cohort_collapse() %>%
     collect() %>%
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
@@ -407,7 +407,7 @@ test_collapse <- function(con, write_schema) {
   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 
   x_actual <- x %>%
-    collapse_cohorts() %>%
+    cohort_collapse() %>%
     collect() %>%
     arrange(cohort_definition_id, subject_id, cohort_start_date)
 
