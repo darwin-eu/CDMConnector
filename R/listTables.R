@@ -21,44 +21,65 @@ list_tables <- function(con, schema = NULL) {
   withr::local_options(list(arrow.pull_as_vector = TRUE))
 
   if (methods::is(con, "DatabaseConnectorJdbcConnection")) {
-    DBI::dbListTables(con, databaseSchema = paste0(schema, collapse = "."))
+    out <- DBI::dbListTables(con, databaseSchema = paste0(schema, collapse = "."))
+    return(out)
+  }
 
-      } else if (methods::is(con, "PqConnection") || methods::is(con, "RedshiftConnection")) {
+  if (methods::is(con, "PqConnection") || methods::is(con, "RedshiftConnection")) {
     sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
-    DBI::dbGetQuery(con, sql) %>%
-      dplyr::pull(.data$table_name)
+    out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
+    return(out)
+  }
 
-  } else if (methods::is(con, "duckdb_connection")) {
+  if (methods::is(con, "duckdb_connection")) {
     sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
-    DBI::dbGetQuery(con, sql) %>%
-      dplyr::pull(.data$table_name)
+    out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
+    return(out)
+  }
 
-  } else if (methods::is(con, "Spark SQL")) {
+  if (methods::is(con, "Snowflake")) {
+    if (length(schema) == 2) {
+      sql <- glue::glue("select table_name from {schema[1]}.information_schema.tables where table_schema = '{schema[2]}';")
+    } else {
+      sql <- glue::glue("select table_name from information_schema.tables where table_schema = '{schema[1]}';")
+    }
+    out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(1)
+    return(out)
+  }
+
+  if (methods::is(con, "Spark SQL")) {
     # spark odbc connection
     sql <- paste("SHOW TABLES", if (!is.null(schema)) paste("IN", schema[[1]]))
-    DBI::dbGetQuery(con, sql) %>%
-      dplyr::filter(.data$isTemporary == FALSE) %>%
-      dplyr::pull(.data$tableName)
-
-  } else if (methods::is(con, "OdbcConnection")) {
-    if (length(schema) == 1) {
-      DBI::dbListTables(con, schema_name = schema)
-    } else {
-      DBI::dbListTables(con, catalog_name = schema[[1]], schema_name = schema[[2]])
-    }
-  } else if (methods::is(con, "OraConnection")) {
-    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
-    DBI::dbListTables(con, schema = schema)
-  } else if (methods::is(con, "BigQueryConnection")) {
-    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
-
-    DBI::dbGetQuery(con,
-                    glue::glue("SELECT table_name
-                                FROM `{schema}`.INFORMATION_SCHEMA.TABLES
-                                WHERE table_schema = '{schema}'"))[[1]]
-  } else {
-    rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
+    out <- DBI::dbGetQuery(con, sql) %>% dplyr::filter(.data$isTemporary == FALSE) %>% dplyr::pull(.data$tableName)
+    return(out)
   }
+
+  if (methods::is(con, "OdbcConnection")) {
+    if (length(schema) == 1) {
+      out <- DBI::dbListTables(con, schema_name = schema)
+    } else {
+      out <- DBI::dbListTables(con, catalog_name = schema[[1]], schema_name = schema[[2]])
+    }
+    return(out)
+  }
+
+  if (methods::is(con, "OraConnection")) {
+    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
+    out <- DBI::dbListTables(con, schema = schema)
+    return(out)
+  }
+
+  if (methods::is(con, "BigQueryConnection")) {
+    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
+
+    out <- DBI::dbGetQuery(con,
+             glue::glue("SELECT table_name
+                         FROM `{schema}`.INFORMATION_SCHEMA.TABLES
+                         WHERE table_schema = '{schema}'"))[[1]]
+    return(out)
+  }
+
+  rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
 }
 
 #' @rdname list_tables

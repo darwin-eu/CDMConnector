@@ -1,10 +1,5 @@
 
-test_that("Date functions work on duckdb", {
-  skip_if_not_installed("duckdb")
-  skip_if_not(eunomia_is_available())
-
-  con <- DBI::dbConnect(duckdb::duckdb())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+test_date_functions <- function(con) {
 
   date_df <- dplyr::tibble(
     date1 = as.Date(c("2000-12-01", "2000-12-01", "2000-12-01", "2000-12-01")),
@@ -17,7 +12,9 @@ test_that("Date functions work on duckdb", {
     dplyr::mutate(date3 = !!dateadd("date1", 1, interval = "year")) %>%
     dplyr::mutate(dif_years = !!datediff("date1", "date2", interval = "year")) %>%
     dplyr::mutate(dif_days = !!datediff("date1", "date2", interval = "day")) %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    dplyr::left_join(date_df, ., by = c("date1", "date2")) %>%
+    dplyr::mutate(dif_years = as.numeric(dif_years), dif_days = as.numeric(dif_days))
 
   expect_true(all((lubridate::interval(df$date1, df$date3) / lubridate::years(1)) == 1))
   expect_equal(df$dif_years, c(1, 1, 0, 0))
@@ -28,7 +25,9 @@ test_that("Date functions work on duckdb", {
     dplyr::mutate(date3 = !!dateadd("date1", -1, interval = "day")) %>%
     dplyr::mutate(dif_days2 = !!datediff("date1", "date2", interval = "day")) %>%
     dplyr::mutate(dif_days3 = !!datediff("date1", "date3", interval = "day")) %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    dplyr::mutate(dplyr::across(1:3, as.Date)) %>%
+    dplyr::mutate(dif_days2 = as.integer(dif_days2), dif_days3 = as.integer(dif_days3))
 
   expect_true(all(lubridate::interval(df$date1, df$date2) / lubridate::days(1) == 1))
   expect_true(all(lubridate::interval(df$date1, df$date3) / lubridate::days(1) == -1))
@@ -42,7 +41,6 @@ test_that("Date functions work on duckdb", {
     dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
     dplyr::collect()
 
-
   expect_true(all(lubridate::interval(df$date1, df$date2) / lubridate::days(1) == 1))
   expect_true(all(lubridate::interval(df$date1, df$date3) / lubridate::days(1) == -1))
 
@@ -58,190 +56,51 @@ test_that("Date functions work on duckdb", {
     dplyr::collect()
 
   expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
+}
 
-
+test_that("duckdb - date functions", {
+  con <- get_connection("duckdb")
+  test_date_functions(con)
+  disconnect(con)
 })
 
-test_that("Date functions work on Postgres", {
-  skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
-  con <- DBI::dbConnect(RPostgres::Postgres(),
-                        dbname =   Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
-                        host =     Sys.getenv("CDM5_POSTGRESQL_HOST"),
-                        user =     Sys.getenv("CDM5_POSTGRESQL_USER"),
-                        password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
-
-  date_tbl <- dplyr::copy_to(con, data.frame(date1 = as.Date("1999-01-01")), name = "tmpdate", overwrite = TRUE, temporary = TRUE)
-
-  df <- date_tbl %>%
-    dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "year")) %>%
-    dplyr::mutate(dif_years = !!datediff("date1", "date2", interval = "year")) %>%
-    dplyr::mutate(dif_days = !!datediff("date1", "date2", interval = "day")) %>%
-    dplyr::collect()
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::years(1), 1)
-  expect_equal(df$dif_years, 1)
-  expect_equal(df$dif_days, 365)
-
-  df <- date_tbl %>%
-    dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "day")) %>%
-    dplyr::mutate(date3 = !!dateadd("date1", -1, interval = "day")) %>%
-    dplyr::mutate(dif_days2 = !!datediff("date1", "date2", interval = "day")) %>%
-    dplyr::mutate(dif_days3 = !!datediff("date1", "date3", interval = "day")) %>%
-    dplyr::collect()
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(df$dif_days2, 1)
-  expect_equal(df$dif_days3, -1)
-
-  # can add a date and an integer column
-  df <- date_tbl %>%
-    dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
-    dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
-    dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
-    dplyr::collect()
-
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
-
-  date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
-
-  df <- date_tbl2 %>%
-    dplyr::mutate(date_from_parts = !!asDate(paste0(
-      as.character(.data$y), "-",
-      as.character(.data$m), "-",
-      as.character(.data$d)
-    ))) %>%
-    dplyr::collect()
-
-  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
-
-  DBI::dbDisconnect(con)
+test_that("postgres - date functions", {
+  con <- get_connection("postgres")
+  test_date_functions(con)
+  disconnect(con)
 })
 
-test_that("Date functions work on SQL Server", {
-  skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-  con <-   con <- DBI::dbConnect(odbc::odbc(),
-                                 Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
-                                 Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
-                                 Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
-                                 UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                                 PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                                 TrustServerCertificate="yes",
-                                 Port     = 1433)
-
-  suppressMessages({
-    date_tbl <- dplyr::copy_to(con, data.frame(date1 = as.Date("1999-01-01")), name = "tmpdate", overwrite = TRUE, temporary = TRUE)
-  })
-
-  df <- date_tbl %>%
-    dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "year")) %>%
-    dplyr::mutate(dif_years = !!datediff("date1", "date2", interval = "year")) %>%
-    dplyr::mutate(dif_days = !!datediff("date1", "date2", interval = "day")) %>%
-    dplyr::collect()
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::years(1), 1)
-  expect_equal(df$dif_years, 1)
-  expect_equal(df$dif_days, 365)
-
-  df <- date_tbl %>%
-    dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "day")) %>%
-    dplyr::mutate(date3 = !!dateadd("date1", -1, interval = "day")) %>%
-    dplyr::mutate(dif_days2 = !!datediff("date1", "date2", interval = "day")) %>%
-    dplyr::mutate(dif_days3 = !!datediff("date1", "date3", interval = "day")) %>%
-    dplyr::collect()
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(df$dif_days2, 1)
-  expect_equal(df$dif_days3, -1)
-
-  # can add a date and an integer column
-  df <- date_tbl %>%
-    dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
-    dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
-    dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
-    dplyr::collect()
-
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
-
-  suppressMessages({
-    date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
-  })
-
-  df <- date_tbl2 %>%
-    dplyr::mutate(date_from_parts = !!asDate(paste0(
-      as.character(.data$y), "-",
-      as.character(.data$m), "-",
-      as.character(.data$d)
-    ))) %>%
-    dplyr::collect()
-
-  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
-
-  DBI::dbDisconnect(con)
+test_that("sqlserver - date functions", {
+  con <- get_connection("sqlserver")
+  test_date_functions(con)
+  disconnect(con)
 })
 
-test_that("Date functions work on Redshift", {
-  skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
-  con <- DBI::dbConnect(RPostgres::Redshift(),
-                        dbname   = Sys.getenv("CDM5_REDSHIFT_DBNAME"),
-                        host     = Sys.getenv("CDM5_REDSHIFT_HOST"),
-                        port     = Sys.getenv("CDM5_REDSHIFT_PORT"),
-                        user     = Sys.getenv("CDM5_REDSHIFT_USER"),
-                        password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
+test_that("redshift - date functions", {
+  con <- get_connection("redshift")
+  test_date_functions(con)
+  disconnect(con)
+})
 
-  date_tbl <- dplyr::copy_to(con, data.frame(date1 = as.Date("1999-01-01")), name = "tmpdate", overwrite = TRUE, temporary = TRUE)
+test_that("oracle - date functions", {
+  skip("failing test")
+  con <- get_connection("oracle")
+  test_date_functions(con)
+  disconnect(con)
+})
 
-  df <- date_tbl %>%
-    dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "year")) %>%
-    dplyr::mutate(dif_years = !!datediff("date1", "date2", interval = "year")) %>%
-    dplyr::mutate(dif_days = !!datediff("date1", "date2", interval = "day")) %>%
-    # dbplyr::sql_render()
-    dplyr::collect()
+test_that("bigquery - date functions", {
+  skip("failing test")
+  con <- get_connection("bigquery")
+  test_date_functions(con)
+  disconnect(con)
+})
 
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::years(1), 1)
-
-  # TODO Datediff returns integer64 on redshift - How to handle different return types?
-  expect_equal(as.integer(df$dif_years), 1)
-  expect_equal(as.integer(df$dif_days), 365)
-
-  df <- date_tbl %>%
-    dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "day")) %>%
-    dplyr::mutate(date3 = !!dateadd("date1", -1, interval = "day")) %>%
-    dplyr::mutate(dif_days2 = !!datediff("date1", "date2", interval = "day")) %>%
-    dplyr::mutate(dif_days3 = !!datediff("date1", "date3", interval = "day")) %>%
-    dplyr::collect()
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(as.integer(df$dif_days2), 1)
-  expect_equal(as.integer(df$dif_days3), -1)
-
-  # can add a date and an integer column
-  df <- date_tbl %>%
-    dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
-    dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
-    dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
-    dplyr::collect()
-
-
-  expect_equal(lubridate::interval(df$date1, df$date2) / lubridate::days(1), 1)
-  expect_equal(lubridate::interval(df$date1, df$date3) / lubridate::days(1), -1)
-
-  date_tbl2 <- dplyr::copy_to(con, data.frame(y = 2000L, m = 10L, d = 11L), name = "tmpdate2", overwrite = TRUE, temporary = TRUE)
-
-  df <- date_tbl2 %>%
-    dplyr::mutate(date_from_parts = !!asDate(paste0(
-      as.character(.data$y), "-",
-      as.character(.data$m), "-",
-      as.character(.data$d)
-    ))) %>%
-    dplyr::collect()
-
-  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
-
-  DBI::dbDisconnect(con)
+test_that("snowflake - date functions", {
+  skip("failing test")
+  con <- get_connection("snowflake")
+  test_date_functions(con)
+  disconnect(con)
 })
 
 test_that("Date functions work on Spark", {

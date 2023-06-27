@@ -40,19 +40,15 @@ inSchema <- function(schema, table, dbms = NULL) {
   checkmate::assertCharacter(table, len = 1)
   checkmate::assertCharacter(dbms, len = 1, null.ok = TRUE)
 
-  if (isTRUE(dbms == "oracle")) {
-    # some dbms need in_schema, others DBI::Id
-    switch(length(schema),
-           dbplyr::in_schema(schema = schema, table = table),
-           dbplyr::in_catalog(catalog = schema[1], schema = schema[2], table = table))
-  } else if (isTRUE(dbms == "duckdb")) {
+  if (isTRUE(dbms == "bigquery")) {
     checkmate::assertCharacter(schema, len = 1)
-    paste0(schema, ".", table)
+    out <- paste(c(schema, table), collapse = ".")
   } else {
-    switch(length(schema),
-           DBI::Id(schema = schema, table = table),
-           DBI::Id(catalog = schema[1], schema = schema[2], table = table))
+    out <- switch(length(schema),
+      DBI::Id(schema = schema, table = table),
+      DBI::Id(catalog = schema[1], schema = schema[2], table = table))
   }
+  return(out)
 }
 
 #' @export

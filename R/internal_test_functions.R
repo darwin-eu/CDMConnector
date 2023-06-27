@@ -1,24 +1,11 @@
-withr::local_envvar(
-  R_USER_CACHE_DIR = tempfile(),
-  .local_envir = teardown_env(),
-  EUNOMIA_DATA_FOLDER = tempfile()
-)
-
-tryCatch(downloadEunomiaData(overwrite = TRUE), error = function(e) NA)
-
-# functions used for the test matrix
 
 get_connection <- function(dbms) {
-  if (dbms == "duckdb") {
-    return(DBI::dbConnect(duckdb::duckdb(), eunomia_dir()))
-  }
-
   if (dbms == "postgres") {
-    return(DBI::dbConnect(RPostgres::Postgres(),
-                          dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
-                          host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
-                          user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-                          password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")))
+    return(dbConnect(RPostgres::Postgres(),
+                     dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+                     host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+                     user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                     password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")))
   }
 
   if (dbms == "local" && Sys.getenv("LOCAL_POSTGRESQL_DBNAME") != "") {
@@ -52,23 +39,9 @@ get_connection <- function(dbms) {
   if (dbms == "oracle" && "OracleODBC-19" %in% odbc::odbcListDataSources()$name) {
     return(DBI::dbConnect(odbc::odbc(), "OracleODBC-19"))
   }
-
-  if (dbms == "bigquery" && Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH") != "") {
-    bigrquery::bq_auth(path = Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH"))
-
-    return(DBI::dbConnect(
-      bigrquery::bigquery(),
-      project = Sys.getenv("BIGQUERY_PROJECT_ID"),
-      dataset = Sys.getenv("BIGQUERY_CDM_SCHEMA")
-    ))
-  }
-
-  if (dbms == "snowflake" && "Snowflake" %in% odbc::odbcListDataSources()$name) {
-    return(DBI::dbConnect(odbc::odbc(), "Snowflake"))
-  }
-
-  return(invisible(NULL))
+  NULL
 }
+
 
 get_cdm_schema <- function(dbms) {
   switch (dbms,
@@ -77,10 +50,8 @@ get_cdm_schema <- function(dbms) {
           "redshift" = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"),
           "sqlserver" = strsplit(Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), "\\.")[[1]],
           "oracle" =  "CDMV5",
-          "duckdb" = "main",
-          "bigquery" = Sys.getenv("BIGQUERY_CDM_SCHEMA"),
-          "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]],
           NULL
+
   )
 }
 
@@ -91,20 +62,6 @@ get_write_schema <- function(dbms) {
           "redshift" = Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA"),
           "sqlserver" = strsplit(Sys.getenv("CDM5_SQL_SERVER_SCRATCH_SCHEMA"), "\\.")[[1]],
           "oracle" = "OHDSI",
-          "duckdb" = "main",
-          "bigquery" = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"),
-          "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]],
           NULL
   )
 }
-
-disconnect <- function(con) {
-  if (is.null(con)) return(invisible(NULL))
-
-  if (dbms(con) == "duckdb") {
-    DBI::dbDisconnect(con, shutdown = TRUE)
-  } else {
-    DBI::dbDisconnect(con)
-  }
-}
-
