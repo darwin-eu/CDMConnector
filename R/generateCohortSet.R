@@ -584,6 +584,11 @@ new_generated_cohort_set <- function(cohort_ref,
                                      cohort_attrition_ref = NULL,
                                      cohort_count_ref = NULL) {
 
+  if (is.data.frame(cohort_ref)) rlang::abort("cohort_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
+  if (is.data.frame(cohort_set_ref)) rlang::abort("cohort_set_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
+  if (is.data.frame(cohort_attrition_ref)) rlang::abort("cohort_attrition_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
+  if (is.data.frame(cohort_count_ref)) rlang::abort("cohort_count_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
+
   checkmate::assertClass(cohort_ref, classes = c("tbl_sql"), null.ok = FALSE)
   checkmate::assertClass(cohort_set_ref, classes = c("tbl_sql"), null.ok = FALSE)
   checkmate::assertClass(cohort_count_ref, classes = c("tbl_sql"), null.ok = FALSE)
