@@ -131,14 +131,15 @@ extractLoadData <- function(from, to, dbms = "sqlite", verbose = FALSE) {
   }
 
   for (i in seq_len(length(dataFiles))) {
+    # TODO use DDL to instantiate tables. Then fill them.
     tableData <- readr::read_csv(
       file = file.path(tempFileLocation, dataFiles[i]),
       col_types = readr::cols(),
       guess_max = 2e6,
       lazy = FALSE) %>%
       dplyr::mutate(dplyr::across(dplyr::matches("date$"), as.Date)) %>%
-      dplyr::mutate(dplyr::across(dplyr::matches("_id$"), as.integer)) %>%
-      dplyr::mutate(dplyr::across(dplyr::matches("_datetime"), ~as.POSIXct(., origin = "1970-01-01")))
+      dplyr::mutate(dplyr::across(dplyr::matches("person_id$|concept_id$"), as.integer)) %>%
+      dplyr::mutate(dplyr::across(dplyr::matches("_datetime$"), ~as.POSIXct(., origin = "1970-01-01")))
 
     # CDM table and column names should be lowercase: https://github.com/OHDSI/CommonDataModel/issues/509#issuecomment-1315754238
     names(tableData) <- tolower(names(tableData))
