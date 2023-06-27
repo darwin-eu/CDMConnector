@@ -434,3 +434,26 @@ test_that("duckdb - phenotype library generation", {
   )
   DBI::dbDisconnect(con, shutdown = T)
 })
+
+
+
+
+test_concept_set_creation <- function(con, cdm_schema) {
+  cdm <- cdm_from_con("cdm", cdm_schema = cdm_schema)
+  cdm <- generateCohortSet(cdm, cohortSet = )
+}
+
+
+test_that("postgres - concept based cohorts" , {
+  con <- dbConnect(RPostgres::Postgres(),
+                   dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+                   host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+                   user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                   password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+
+  write_schema <- Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")
+  cdm_schema <- Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA")
+
+
+})
+

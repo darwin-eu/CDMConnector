@@ -31,7 +31,13 @@ as a prefix for the cohort attribute tables.}
 \item{overwrite}{Should the cohort table be overwritten if it already
 exists? TRUE or FALSE (default)}
 
-\item{cohort_set, cohortSet}{Either a cohortSet object created with \code{readCohortSet()} or a named list of Capr cohort definitions.}
+\item{cohort_set, cohortSet}{Can be a cohortSet object created with \code{readCohortSet()},
+a single Capr cohort definition,
+a named list of Capr cohort definitions,
+a numeric vector interpreted as a concept set,
+a named list of numeric vectors,
+a Capr concept set,
+or a named list of Capr concept sets.}
 
 \item{compute_attrition, computeAttrition}{Should attrition be computed? TRUE (default) or FALSE}
 }

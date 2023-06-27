@@ -230,59 +230,59 @@ cohort_erafy <- function(x, gap) {
 #' @export
 cohortErafy <- cohort_erafy
 
-cohort_under_observation <- function(.data) {
-  checkmate::assert_class(.data, "tbl")
-  cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
+# cohort_under_observation <- function(.data) {
+#   checkmate::assert_class(.data, "tbl")
+#   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
+#
+#   cdm <- attr(tbl, "cdm_reference")
+#   checkmate::assert_class(.data, "cdm_reference")
+#   assertTables(cdm, "observation_period", empty.ok = FALSE)
+#
+#   .data %>%
+#     dplyr::left_join(cdm$observation_period, by = c("cohort_id" = "person_id")) %>%
+#     dplyr::filter((.data$observation_period_start_date <= .data$cohort_start_date && .data$cohort_start_date <= .data$observation_period_end_date) ||
+#                   (.data$observation_period_start_date <= .data$cohort_end_date   && .data$cohort_end_date   <= .data$observation_period_end_date)) %>%
+#     dplyr::mutate(cohort_start_date = ifelse(cohort_start_date < observation_period_start_date, observation_period_start_date, cohort_start_date),
+#                   cohort_end_date = ifelse(observation_period_end_date < cohort_end_date, observation_period_end_date, cohort_end_date)) %>%
+#     cohort_collapse()
+# }
 
-  cdm <- attr(tbl, "cdm_reference")
-  checkmate::assert_class(.data, "cdm_reference")
-  assertTables(cdm, "observation_period", empty.ok = FALSE)
+# #' @rdname cohort_under_observation
+# #' @export
+# cohortUnderObservation <- cohort_under_observation
 
-  .data %>%
-    dplyr::left_join(cdm$observation_period, by = c("cohort_id" = "person_id")) %>%
-    dplyr::filter((.data$observation_period_start_date <= .data$cohort_start_date && .data$cohort_start_date <= .data$observation_period_end_date) ||
-                  (.data$observation_period_start_date <= .data$cohort_end_date   && .data$cohort_end_date   <= .data$observation_period_end_date)) %>%
-    dplyr::mutate(cohort_start_date = ifelse(cohort_start_date < observation_period_start_date, observation_period_start_date, cohort_start_date),
-                  cohort_end_date = ifelse(observation_period_end_date < cohort_end_date, observation_period_end_date, cohort_end_date)) %>%
-    cohort_collapse()
-}
-
-#' @rdname cohort_under_observation
-#' @export
-cohortUnderObservation <- cohort_under_observation
-
-cohort_setdiff <- function(x, y) {
-  checkmate::assert_class(x, "tbl")
-  checkmate::assert_class(y, "tbl")
-  cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-  checkmate::assert_true(all(cols %in% names(x)))
-  checkmate::assert_true(all(cols %in% names(y)))
-
-  # remove days in the second cohort table from the first cohort table
-  x %>%
-    dplyr::left_join(dplyr::distinct(dplyr::select(y, "subject_id", remove_start = "cohort_start_date", remove_end = "cohort_end_date")), by = "subject_id") %>%
-    dplyr::mutate(
-      cohort_start_date = dplyr::case_when(
-        # cohort x is inside cohort y interval
-        remove_start <= cohort_start_date && cohort_start_date <= remove_end &&
-        remove_start <= cohort_end_date && cohort_end_date <= remove_end
-        ~ NULL,
-        # cohort x starts inside y and ends later than y
-        remove_start <= cohort_start_date && cohort_start_date <= remove_end &&
-        cohort_end_date > remove_end < cohort_end_date
-        ~ !!dateadd("remove_end", 1L),
-        # cohort x is entirely before cohort y
-        cohort_start_date < remove_start && cohort_start_date <= remove_end && # start is inside remove interval
-          remove_start <= cohort_end_date && cohort_end_date <= remove_end, # end is inside remove interval
-        cohort_start_date <= observation_period_start_date && observation_period_start_date <= cohort_end_date ~ !!dateadd("cohort_end_date", 1)
-      ),
-      cohort_end_date = dplyr::case_when(
-        observation_period_start_date < cohort_start_date || cohort_end_date < observation_period_start_date ~ observation_period_start_date,
-        cohort_start_date <= observation_period_start_date && observation_period_start_date <= cohort_end_date ~ !!dateadd("cohort_end_date", 1)
-      )
-    ) %>%
-    cohort_collapse()
-}
+# cohort_setdiff <- function(x, y) {
+#   checkmate::assert_class(x, "tbl")
+#   checkmate::assert_class(y, "tbl")
+#   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
+#   checkmate::assert_true(all(cols %in% names(x)))
+#   checkmate::assert_true(all(cols %in% names(y)))
+#
+#   # remove days in the second cohort table from the first cohort table
+#   x %>%
+#     dplyr::left_join(dplyr::distinct(dplyr::select(y, "subject_id", remove_start = "cohort_start_date", remove_end = "cohort_end_date")), by = "subject_id") %>%
+#     dplyr::mutate(
+#       cohort_start_date = dplyr::case_when(
+#         # cohort x is inside cohort y interval
+#         remove_start <= cohort_start_date && cohort_start_date <= remove_end &&
+#         remove_start <= cohort_end_date && cohort_end_date <= remove_end
+#         ~ NULL,
+#         # cohort x starts inside y and ends later than y
+#         remove_start <= cohort_start_date && cohort_start_date <= remove_end &&
+#         cohort_end_date > remove_end
+#         ~ !!dateadd("remove_end", 1L),
+#         # cohort x is entirely before cohort y
+#         cohort_start_date < remove_start && cohort_start_date <= remove_end && # start is inside remove interval
+#           remove_start <= cohort_end_date && cohort_end_date <= remove_end, # end is inside remove interval
+#         cohort_start_date <= observation_period_start_date && observation_period_start_date <= cohort_end_date ~ !!dateadd("cohort_end_date", 1)
+#       ),
+#       cohort_end_date = dplyr::case_when(
+#         observation_period_start_date < cohort_start_date || cohort_end_date < observation_period_start_date ~ observation_period_start_date,
+#         cohort_start_date <= observation_period_start_date && observation_period_start_date <= cohort_end_date ~ !!dateadd("cohort_end_date", 1)
+#       )
+#     ) %>%
+#     cohort_collapse()
+# }
 
 
 

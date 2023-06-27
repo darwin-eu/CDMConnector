@@ -4,7 +4,7 @@
 #' @param x A tbl reference to a cohort table
 #' @param cohort_definition_id A number to use for the new cohort_definition_id
 #'
-#' `r lifecycle::badge("superceded")`
+#' `r lifecycle::badge("superseded")`
 #'
 #' @return A lazy query that when executed will resolve to a new cohort table with
 #' one cohort_definition_id resulting from the union of all cohorts in the original
@@ -44,7 +44,7 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
 #' @param x A tbl reference to a cohort table
 #' @param cohort_definition_id A number to use for the new cohort_definition_id
 #'
-#' `r lifecycle::badge("superceded")`
+#' `r lifecycle::badge("superseded")`
 #'
 #' @return A lazy query that when executed will resolve to a new cohort table with
 #' one cohort_definition_id resulting from the intersection of all cohorts in the original
