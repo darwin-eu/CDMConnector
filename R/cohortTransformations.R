@@ -128,15 +128,15 @@ cohort_first <- function(x) {
 
 #' Keep only the latest record for each person in a cohort
 #'
-#' @param .data A generated cohort set
+#' @param x A generated cohort set
 #'
 #' @return A lazy query on a generated cohort set
 #' @export
-cohort_last <- function(.data) {
+cohort_last <- function(x) {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-  checkmate::assert_subset(names(.data), cols)
+  checkmate::assert_subset(names(x), cols)
 
-  .data %>%
+  x %>%
     dplyr::group_by(.data$subject_id, .data$cohort_definition_id, .add = FALSE) %>%
     dplyr::slice_max(.data$cohort_start_date, order_by = "cohort_start_date", n = 1, with_ties = FALSE) %>%
     dplyr::ungroup()
@@ -144,20 +144,20 @@ cohort_last <- function(.data) {
 
 #' Add or subtract days from the start or end of a cohort set
 #'
-#' @param .data A generated cohort set table reference
+#' @param x A generated cohort set table reference
 #' @param days The number of days to add. Can by any positive or negative integer
 #' @param from Reference date to add or subtract days to. "start" or "end" (default)
 #'
 #' @return A lazy tbl query on a the cohort table
 #' @export
-cohort_pad_end <- function(.data, days = NULL, from = "end") {
+cohort_pad_end <- function(x, days = NULL, from = "end") {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
   checkmate::assert_subset(names(x), cols)
   checkmate::check_integerish(days, len = 1, null.ok = TRUE)
   checkmate::check_choice(from, choices = c("start", "end"))
 
   if (is.null(days)) {
-    return(.data)
+    return(x)
   }
 
   if (from == "start" && days < 0) {
@@ -166,7 +166,7 @@ cohort_pad_end <- function(.data, days = NULL, from = "end") {
 
   date_col <- paste0("cohort_", from, "_date")
 
-  .data %>%
+  x %>%
     dplyr::ungroup() %>%
     dplyr::mutate(cohort_end_date = CDMConnector::dateadd(date = date_col, number = days, interval = "day")) %>%
     cohort_collapse() %>% # TODO what if end < start, remove row?
@@ -175,20 +175,20 @@ cohort_pad_end <- function(.data, days = NULL, from = "end") {
 
 #' Add or subtract days from the start or end of a cohort set
 #'
-#' @param .data A generated cohort set table reference
+#' @param x A generated cohort set table reference
 #' @param days The number of days to add. Can by any positive or negative integer
 #' @param from Reference date to add or subtract days to. "start" or "end" (default)
 #'
 #' @return A lazy tbl query on a the cohort table
 #' @export
-cohort_pad_start <- function(.data, days = NULL, from = "start") {
+cohort_pad_start <- function(x, days = NULL, from = "start") {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
   checkmate::assert_subset(names(x), cols)
   checkmate::check_integerish(days, len = 1, null.ok = TRUE)
   checkmate::check_choice(from, choices = c("start", "end"))
 
   if (is.null(days)) {
-    return(.data)
+    return(x)
   }
 
   if (from == "end" && days > 0) {
@@ -197,10 +197,10 @@ cohort_pad_start <- function(.data, days = NULL, from = "start") {
 
   date_col <- paste0("cohort_", from, "_date")
 
-  .data %>%
+  x %>%
     dplyr::mutate(cohort_start_date = CDMConnector::dateadd(date = date_col, number = days, interval = "day")) %>%
     dplyr::ungroup() %>%
-    cohort_collapse() %>% # TODO what if end < start, remove row?
+    cohort_collapse() %>%
     dplyr::filter(.data$cohort_start_date <= .data$cohort_end_date)
 }
 
