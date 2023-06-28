@@ -58,19 +58,19 @@ test_that("redshift - inSchema", {
 })
 
 test_that("oracle - inSchema", {
-  skip("failing test")
   con <- get_connection("oracle")
   write_schema <- get_write_schema("oracle")
   test_in_schema(con, write_schema, get_cdm_schema("oracle"))
   disconnect(con)
 })
 
-test_that("oracle - list_tables only", {
-  con <- get_connection("oracle")
-  tables <- list_tables(con, get_cdm_schema("oracle")) %>% tolower
-  expect_true(all(c("person", "observation_period") %in% tables))
-  disconnect(con)
-})
+# test_that("oracle - list_tables only", {
+# only needed when the previous test was failing
+#   con <- get_connection("oracle")
+#   tables <- list_tables(con, get_cdm_schema("oracle")) %>% tolower
+#   expect_true(all(c("person", "observation_period") %in% tables))
+#   disconnect(con)
+# })
 
 test_that("bigquery - inSchema", {
   con <- get_connection("bigquery")
@@ -182,92 +182,4 @@ test_that("normalize_schema works", {
   expect_true(is.null(names(schema)) & is.null(names(prefix)))
 })
 
-
-#' List tables in a schema
-#'
-#' DBI::dbListTables can be used to get all tables in a database but not always in a
-#' specific schema. `listTables` will list tables in a schema.
-#'
-#' @param con A DBI connection to a database
-#' @param schema The name of a schema in a database. If NULL, returns DBI::dbListTables(con).
-#'
-#' @return A character vector of table names
-#' @export
-#' @importFrom rlang .data
-#'
-#' @examples
-#' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' listTables(con, schema = "main")
-#' }
-list_tables <- function(con, schema = NULL) {
-  checkmate::assert_character(schema, null.ok = TRUE, min.len = 1, max.len = 2, min.chars = 1)
-  if (is.null(schema)) return(DBI::dbListTables(con))
-  withr::local_options(list(arrow.pull_as_vector = TRUE))
-
-  if (methods::is(con, "DatabaseConnectorJdbcConnection")) {
-    out <- DBI::dbListTables(con, databaseSchema = paste0(schema, collapse = "."))
-    return(out)
-  }
-
-  if (methods::is(con, "PqConnection") || methods::is(con, "RedshiftConnection")) {
-    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
-    out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
-    return(out)
-  }
-
-  if (methods::is(con, "duckdb_connection")) {
-    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
-    out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
-    return(out)
-  }
-
-  if (methods::is(con, "Snowflake")) {
-    if (length(schema) == 2) {
-      sql <- glue::glue("select table_name from {schema[1]}.information_schema.tables where table_schema = '{schema[2]}';")
-    } else {
-      sql <- glue::glue("select table_name from information_schema.tables where table_schema = '{schema[1]}';")
-    }
-    out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(1)
-    return(out)
-  }
-
-  if (methods::is(con, "Spark SQL")) {
-    # spark odbc connection
-    sql <- paste("SHOW TABLES", if (!is.null(schema)) paste("IN", schema[[1]]))
-    out <- DBI::dbGetQuery(con, sql) %>% dplyr::filter(.data$isTemporary == FALSE) %>% dplyr::pull(.data$tableName)
-    return(out)
-  }
-
-  if (methods::is(con, "OdbcConnection")) {
-    if (length(schema) == 1) {
-      out <- DBI::dbListTables(con, schema_name = schema)
-    } else {
-      out <- DBI::dbListTables(con, catalog_name = schema[[1]], schema_name = schema[[2]])
-    }
-    return(out)
-  }
-
-  if (methods::is(con, "OraConnection")) {
-    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
-    out <- DBI::dbListTables(con, schema = schema)
-    return(out)
-  }
-
-  if (methods::is(con, "BigQueryConnection")) {
-    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
-
-    out <- DBI::dbGetQuery(con,
-                           glue::glue("SELECT table_name
-                         FROM `{schema}`.INFORMATION_SCHEMA.TABLES
-                         WHERE table_schema = '{schema}'"))[[1]]
-    return(out)
-  }
-
-  rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
-}
-
-#' @rdname list_tables
-#' @export
-listTables <- list_tables
 

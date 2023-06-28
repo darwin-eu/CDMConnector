@@ -10,6 +10,10 @@ test_that("duckdb cohort generation", {
   write_schema <- "main"
   cdm_schema <- "main"
 
+  if (dbms(con) == "duckdb") {
+    con <- dbplyr::src_dbi(con)
+  }
+
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
                       write_schema = write_schema)
@@ -74,6 +78,7 @@ test_that("duckdb cohort generation with attrition", {
   skip_if_not_installed("SqlRender")
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- dbplyr::src_dbi(con, auto_disconnect = FALSE)
 
   write_schema <- "main"
   cdm_schema <- "main"

@@ -683,7 +683,7 @@ snapshot <- function(cdm) {
       "person_cnt",
       "observation_period_cnt"
     ) %>%
-    dplyr::mutate(cdm_schema = attr(cdm, "cdm_schema"),
+    dplyr::mutate(cdm_schema = paste(attr(cdm, "cdm_schema"), collapse = "."),
                   write_schema = attr(cdm, "write_schema"),
                   cdm_name = attr(cdm, "cdm_name")) %>%
     dplyr::mutate_all(as.character) %>%
@@ -707,3 +707,85 @@ cdmDisconnect <- function(cdm) {
 #' @rdname cdmDisconnect
 #' @export
 cdm_disconnect <- cdmDisconnect
+
+
+
+#' Select a subset of tables in a cdm reference object
+#'
+#' This function uses syntax similar to `dplyr::select` and can be used to
+#' subset a cdm reference object to a specific tables
+#'
+#' @param cdm A cdm reference object created by `cdm_from_con`
+#' @param ... One or more table names of the tables of the `cdm` object.
+#' `tidyselect` is supported, see `dplyr::select()` for details on the semantics.
+#'
+#' @return A cdm reference object containing the selected tables
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#'
+#' cdm <- cdm_from_con(con, "main")
+#'
+#' cdm_select_tbl(cdm, person)
+#' cdm_select_tbl(cdm, person, observation_period)
+#' cdm_select_tbl(cdm, tbl_group("vocab"))
+#' cdm_select_tbl(cdm, "person")
+#'
+#' DBI::dbDisconnect(con)
+#' }
+cdm_select_tbl <- function(cdm, ...) {
+  tables <- names(cdm) %>% rlang::set_names(names(cdm))
+  selected <- names(tidyselect::eval_select(rlang::quo(c(...)), data = tables))
+  if (length(selected) == 0) {
+    rlang::abort("No tables selected!")
+  }
+
+  tables_to_drop <- dplyr::setdiff(tables, selected)
+  for (i in tables_to_drop) {
+    cdm[i] <- NULL
+  }
+  cdm
+}
+
+#' Subset a cdm reference object
+#'
+#' @param x A cdm reference
+#' @param name The name of the table to extract from the cdm object
+#'
+#' @return A single cdm table reference
+#' @export
+`$.cdm_reference` <- function(x, name) {
+  x[[name]]
+}
+
+#' Subset a cdm reference object
+#'
+#' @param x A cdm reference
+#' @param i The name or index of the table to extract from the cdm object
+#'
+#' @return A single cdm table reference
+#' @export
+`[.cdm_reference` <- function(x, i) {
+  cdm_select_tbl(x, dplyr::all_of(i))
+}
+
+#' Subset a cdm reference object
+#'
+#' @param x A cdm reference
+#' @param i The name or index of the table to extract from the cdm object
+#'
+#' @return A single cdm table reference
+#' @export
+`[[.cdm_reference` <- function(x, i) {
+  x_raw <- unclass(x)
+  tbl <- x_raw[[i]]
+
+  if(is.null(tbl)) return(NULL)
+
+  attr(tbl, "cdm_reference") <- x
+  return(tbl)
+}
+
+

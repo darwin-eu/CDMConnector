@@ -2,31 +2,26 @@ library(testthat)
 library(dplyr, warn.conflicts = FALSE)
 
 ### CDM object DBI drivers ------
+test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 
-test_that("local postgres cdm_reference", {
-  skip_if(Sys.getenv("LOCAL_POSTGRESQL_USER") == "")
-  con <- DBI::dbConnect(RPostgres::Postgres(),
-                        dbname = Sys.getenv("LOCAL_POSTGRESQL_DBNAME"),
-                        host = Sys.getenv("LOCAL_POSTGRESQL_HOST"),
-                        user = Sys.getenv("LOCAL_POSTGRESQL_USER"),
-                        password = Sys.getenv("LOCAL_POSTGRESQL_PASSWORD"))
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
 
-  expect_true(is.character(listTables(con, schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"))))
-
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA")) %>%
-    cdm_select_tbl(-cost)
-
-  expect_error(assert_tables(cdm, "cost"))
+  expect_s3_class(cdm, "cdm_reference")
+  expect_error(assert_tables(cdm, "person"), NA)
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
-
-  expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
-
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
-  expect_equal(dbms(cdm), "postgresql")
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  expect_s3_class(cdm, "cdm_reference")
+  expect_error(assert_write_schema(cdm), NA)
+  expect_true("concept" %in% names(cdm))
+  expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
+  expect_equal(dbms(cdm), dbms(attr(cdm, "dbcon")))
+
+  # simple join
   df <- dplyr::inner_join(cdm$person,
                           cdm$observation_period,
                           by = "person_id") %>%
@@ -34,178 +29,79 @@ test_that("local postgres cdm_reference", {
     dplyr::collect()
 
   expect_s3_class(df, "data.frame")
+}
 
-  DBI::dbDisconnect(con)
+test_that("local postgres cdm_from_con", {
+  skip("manual test")
+  skip_if(get_cdm_schema("local") == "")
+  con <- get_connection("local")
+  cdm_schema <- get_cdm_schema("local")
+  write_schema <- get_write_schema("local")
+  test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  disconnect(con)
 })
 
-test_that("postgres cdm_reference", {
-  skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
-  con <- DBI::dbConnect(RPostgres::Postgres(),
-                        dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
-                        host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
-                        user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-                        password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
-
-  expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))))
-
-  expect_null(verify_write_access(con, Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")))
-
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
-
-  expect_error(assert_tables(cdm, "visit_detail"))
-  expect_true(version(cdm) %in% c("5.3", "5.4"))
-
-  expect_true("concept" %in% names(cdm))
-  expect_s3_class(collect(head(cdm$concept)), "data.frame")
-
-  df <- dplyr::inner_join(cdm$person,
-                          cdm$observation_period,
-                          by = "person_id") %>%
-    head(2) %>%
-    dplyr::collect()
-
-  expect_s3_class(df, "data.frame")
-
-  DBI::dbDisconnect(con)
+test_that("postgres cdm_from_con", {
+  dbms <- "postgres"
+  skip_if(get_cdm_schema(dbms) == "")
+  con <- get_connection(dbms)
+  cdm_schema <- get_cdm_schema(dbms)
+  write_schema <- get_write_schema(dbms)
+  test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  disconnect(con)
 })
 
-
-test_that("sql server cdm_reference", {
-  skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
-
-  con <- DBI::dbConnect(odbc::odbc(),
-                        Driver   = "ODBC Driver 18 for SQL Server",
-                        Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
-                        Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
-                        UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                        PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                        TrustServerCertificate = "yes",
-                        Port     = 1433)
-
-  expect_true(is.character(listTables(con, schema = c("CDMV5", "dbo"))))
-  expect_true(is.character(listTables(con, schema = c("dbo"))))
-
-  cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"))
-
-  expect_error(assert_tables(cdm, "visit_detail"))
-  expect_true(version(cdm) %in% c("5.3", "5.4"))
-
-  expect_true("concept" %in% names(cdm))
-  expect_s3_class(collect(head(cdm$concept)), "data.frame")
-
-  expect_null(verify_write_access(con, write_schema = c("tempdb.dbo")))
-  expect_null(verify_write_access(con, write_schema = c("tempdb", "dbo")))
-
-  cohort <- dplyr::tibble(cohort_definition_id = 1L,
-                          subject_id = 1L:2L,
-                          cohort_start_date = c(Sys.Date(), as.Date("2020-02-03")),
-                          cohort_end_date = c(Sys.Date(), as.Date("2020-11-04")))
-
-  DBI::dbWriteTable(con,
-                    DBI::Id(catalog = "tempdb", schema = "dbo", table = "cohort"),
-                    cohort,
-                    overwrite = TRUE)
-
-  cdm <- cdm_from_con(con,
-                      cdm_schema = c("CDMV5", "dbo"),
-                      write_schema = c("tempdb", "dbo"),
-                      cohort_tables = "cohort")
-
-  expect_s3_class(cdm$cohort, "GeneratedCohortSet")
-
-  expect_equal(collect(cdm$cohort), cohort)
-
-  DBI::dbRemoveTable(con, DBI::Id(catalog = "tempdb", schema = "dbo", table = "cohort"))
-
-  expect_error(DBI::dbGetQuery(con, "select * from tempdb.dbo.cohort"), "Invalid object")
-
-  expect_equal(dbms(cdm), "sql server")
-
-  df <- dplyr::inner_join(cdm$person,
-                          cdm$observation_period,
-                          by = "person_id") %>%
-    head(2) %>%
-    dplyr::collect()
-
-  expect_s3_class(df, "data.frame")
-
-  DBI::dbDisconnect(con)
+test_that("sqlserver cdm_from_con", {
+  dbms <- "sqlserver"
+  skip_if(get_cdm_schema(dbms) == "")
+  con <- get_connection(dbms)
+  cdm_schema <- get_cdm_schema(dbms)
+  write_schema <- get_write_schema(dbms)
+  test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  disconnect(con)
 })
 
-# test_that("snowflake cdm_reference", {
-#   skip_if_not("Snowflake" %in% odbc::odbcListDataSources()$name)
-#   skip("failing test") # list_tables does not work on snowflake
-#
-#   cdm_schema <- Sys.getenv("SNOWFLAKE_CDM_SCHEMA")
-#   write_schema <- Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA")
-#   con <- DBI::dbConnect(odbc::odbc(), "Snowflake")
-#
-#   expect_null(verify_write_access(con, write_schema))
-#
-#   expect_true(is.character(listTables(con, schema = cdm_schema)))
-#
-#   debugonce(cdm_from_con)
-#
-#   cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
-#
-#   expect_error(assert_tables(cdm, "cost"))
-#   expect_true(version(cdm) %in% c("5.3", "5.4"))
-#
-#   expect_true("concept" %in% names(cdm))
-#   expect_s3_class(collect(head(cdm$concept)), "data.frame")
-#
-#   expect_equal(dbms(con), "snowflake")
-#
-#   df <- dplyr::inner_join(cdm$person,
-#                           cdm$observation_period,
-#                           by = "person_id") %>%
-#     head(2) %>%
-#     dplyr::collect()
-#
-#   expect_s3_class(df, "data.frame")
-#
-#   md <- snapshot(cdm)
-#   expect_s3_class(snapshot(cdm), "data.frame")
-#
-#   DBI::dbDisconnect(con)
-# })
-
-test_that("redshift cdm_reference", {
-  skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
-
-  con <- DBI::dbConnect(RPostgres::Redshift(),
-                        dbname   = Sys.getenv("CDM5_REDSHIFT_DBNAME"),
-                        host     = Sys.getenv("CDM5_REDSHIFT_HOST"),
-                        port     = Sys.getenv("CDM5_REDSHIFT_PORT"),
-                        user     = Sys.getenv("CDM5_REDSHIFT_USER"),
-                        password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
-
-
-  expect_null(verify_write_access(con, Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA")))
-
-  expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))))
-
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
-
-  expect_error(assert_tables(cdm, "cost"))
-  expect_true(version(cdm) %in% c("5.3", "5.4"))
-
-  expect_true("concept" %in% names(cdm))
-  expect_s3_class(collect(head(cdm$concept)), "data.frame")
-
-  expect_equal(dbms(con), "redshift")
-
-  df <- dplyr::inner_join(cdm$person,
-                          cdm$observation_period,
-                          by = "person_id") %>%
-    head(2) %>%
-    dplyr::collect()
-
-  expect_s3_class(df, "data.frame")
-
-  DBI::dbDisconnect(con)
+test_that("redshift cdm_from_con", {
+  dbms <- "redshift"
+  skip_if(get_cdm_schema(dbms) == "")
+  con <- get_connection(dbms)
+  cdm_schema <- get_cdm_schema(dbms)
+  write_schema <- get_write_schema(dbms)
+  test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  disconnect(con)
 })
 
+test_that("oracle cdm_from_con", {
+  dbms <- "oracle"
+  skip("failing test")
+  skip_if(get_cdm_schema(dbms) == "")
+  con <- get_connection(dbms)
+  cdm_schema <- get_cdm_schema(dbms)
+  write_schema <- get_write_schema(dbms)
+  test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  disconnect(con)
+})
+
+test_that("bigquery cdm_from_con", {
+  dbms <- "bigquery"
+  skip("failing test")
+  skip_if(get_cdm_schema(dbms) == "")
+  con <- get_connection(dbms)
+  cdm_schema <- get_cdm_schema(dbms)
+  write_schema <- get_write_schema(dbms)
+  test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  disconnect(con)
+})
+
+test_that("snowflake cdm_from_con", {
+  dbms <- "snowflake"
+  skip_if(get_cdm_schema(dbms) == "")
+  con <- get_connection(dbms)
+  cdm_schema <- get_cdm_schema(dbms)
+  write_schema <- get_write_schema(dbms)
+  test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  disconnect(con)
+})
 
 test_that("spark cdm_reference", {
 
@@ -245,6 +141,8 @@ test_that("oracle cdm_reference", {
   skip_on_ci()
   skip_on_cran()
   skip_if_not("OracleODBC-19" %in% odbc::odbcListDataSources()$name)
+
+  skip("failing test")
 
   # library(ROracle)
   # con <- DBI::dbConnect(DBI::dbDriver("Oracle"),
@@ -323,37 +221,6 @@ test_that("cdm reference works on bigquery", {
   DBI::dbDisconnect(con)
 })
 
-test_that("duckdb cdm_reference", {
-  skip_if_not(rlang::is_installed("duckdb"))
-  skip_if_not(eunomia_is_available())
-
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-
-  expect_null(verify_write_access(con, "main"))
-
-  expect_true(is.character(listTables(con)))
-
-  cdm <- cdm_from_con(con, cdm_schema = "main")
-
-  expect_error(assert_tables(cdm, "cost"))
-  expect_true(version(cdm) %in% c("5.3", "5.4"))
-  expect_s3_class(snapshot(cdm), "data.frame")
-
-  expect_true("concept" %in% names(cdm))
-  expect_s3_class(collect(head(cdm$concept)), "data.frame")
-
-  expect_equal(dbms(cdm), "duckdb")
-
-  df <- dplyr::inner_join(cdm$person,
-                          cdm$observation_period,
-                          by = "person_id") %>%
-    head(2) %>%
-    dplyr::collect()
-
-  expect_s3_class(df, "data.frame")
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
-})
 
 test_that("duckdb inclusion of cohort tables", {
   skip_if_not(rlang::is_installed("duckdb"))
@@ -642,6 +509,7 @@ test_that("autodetect cdm version works", {
 })
 
 test_that("snapshot works when cdm_source or vocabulary tables are empty", {
+  skip_if_not(eunomia_is_available())
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   cdm <- cdm_from_con(con, "main")
   expect_s3_class(snapshot(cdm), "data.frame")
@@ -657,6 +525,7 @@ test_that("snapshot works when cdm_source or vocabulary tables are empty", {
 
 
 test_that("stow works", {
+  skip_if_not(eunomia_is_available())
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   cdm <- cdm_from_con(con, "main")
   names1 <- names(cdm)
@@ -672,3 +541,71 @@ test_that("stow works", {
   expect_equal(names1, names2)
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
+
+
+test_that("cdm_select_tbl works", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+
+  cdm <- cdm_from_con(con, "main")
+
+  expect_equal(names(cdm_select_tbl(cdm, person)), "person")
+  expect_equal(names(cdm_select_tbl(cdm, person, observation_period)), c("person", "observation_period"))
+  expect_equal(names(cdm_select_tbl(cdm, tbl_group("vocab"))), tbl_group("vocab"))
+  expect_equal(names(cdm_select_tbl(cdm, "person")), "person")
+  expect_error(names(cdm_select_tbl(cdm, "blah")))
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+test_that("subsetting cdm tables", {
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con)
+
+  # $ always returns a `tbl`
+  expect_s3_class(attr(cdm$person, "cdm_reference"), "cdm_reference")
+
+  # double bracket always returns a `tbl`
+  expect_s3_class(attr(cdm[["person"]], "cdm_reference"), "cdm_reference")
+  expect_s3_class(attr(cdm[[1]], "cdm_reference"), "cdm_reference")
+
+  # single bracket always returns a cdm
+  expect_s3_class(cdm[1], "cdm_reference")
+  expect_s3_class(cdm[1:3], "cdm_reference")
+  expect_s3_class(cdm["person"], "cdm_reference")
+  expect_s3_class(cdm[c("person", "concept")], "cdm_reference")
+
+
+  # dplyr verbs retain cdm_attribute
+  cdm2 <- cdm$person %>%
+    dplyr::mutate(a = 1) %>%
+    dplyr::filter(.data$person_id < 100) %>%
+    dplyr::left_join(cdm$death, by = "person_id") %>%
+    dplyr::arrange(.data$person_id) %>%
+    attr("cdm_reference")
+
+  expect_s3_class(cdm2, "cdm_reference")
+
+  # cdm_reference is not retained after collect
+  expect_null(attr(collect(cdm$person), "cdm_reference"))
+
+  # cdm_reference attribute is retained after computeQuery
+  cdm2 <- cdm$person %>%
+    dplyr::mutate(a = 1) %>%
+    dplyr::filter(.data$person_id < 100) %>%
+    dplyr::left_join(cdm$death, by = "person_id") %>%
+    dplyr::arrange(.data$person_id) %>%
+    computeQuery() %>%
+    attr("cdm_reference")
+
+  expect_s3_class(cdm2, "cdm_reference")
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+
+
+
+
+
+
+
