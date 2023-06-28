@@ -42,7 +42,7 @@ inSchema <- function(schema, table, dbms = NULL) {
 
   if (isTRUE(dbms %in% c("bigquery", "duckdb", "redshift"))) {
     checkmate::assertCharacter(schema, len = 1)
-    out <- dbplyr::sql(paste(c(schema, table), collapse = "."))
+    out <- paste(c(schema, table), collapse = ".")
   } else {
     out <- switch(length(schema),
       DBI::Id(schema = schema, table = table),
