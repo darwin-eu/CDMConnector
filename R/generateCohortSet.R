@@ -136,11 +136,11 @@ generateCohortSet <- function(cdm,
       methods::is(cohortSet, "ConceptSet") ||
       (!is.data.frame(cohortSet) && is.list(cohortSet) && is.numeric(cohortSet[[1]]))) {
 
-    generateConceptCohortSet(cdm = cdm,
-                             conceptSet = cohortSet,
-                             name = name,
-                             computeAttrition = computeAttrition,
-                             overwrite = overwrite)
+    return(generateConceptCohortSet(cdm = cdm,
+                                    conceptSet = cohortSet,
+                                    name = name,
+                                    computeAttrition = computeAttrition,
+                                    overwrite = overwrite))
   }
 
   if (methods::is(cohortSet, "Cohort")) {
