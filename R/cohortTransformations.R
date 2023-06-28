@@ -58,12 +58,11 @@ cohortUnion <- cohort_union
 
 #' Intersect all cohorts in a single cohort table
 #'
-#' @param .data A tbl reference to a cohort table
-#' @param cohort_definition_id A positive integer to use for the new cohort_definition_id
+#' @param x A tbl reference to a cohort table with one or more cohorts
+#' @param y A tbl reference to a cohort table with one cohort
 #'
 #' @return A lazy query that when executed will resolve to a new cohort table with
-#' one cohort_definition_id resulting from the intersection of all cohorts in the original
-#' cohort table
+#' one cohort_definition_id resulting from the intersection of all cohorts x with the cohort in y
 #' @export
 cohort_intersect <- function(x, y) {
   checkmate::assert_class(x, "tbl")
@@ -113,11 +112,11 @@ cohort_intersect <- function(x, y) {
 
 #' Keep only the earliest record for each person in a cohort
 #'
-#' @param .data A generated cohort set
+#' @param x A generated cohort set
 #'
 #' @return A lazy query on a generated cohort set
 #' @export
-cohort_first <- function(.data) {
+cohort_first <- function(x) {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
   checkmate::assert_subset(names(x), cols)
 
