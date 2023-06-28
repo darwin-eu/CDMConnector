@@ -9,7 +9,7 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
     DBI::dbRemoveTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)))
   }
 
-  DBI::dbWriteTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)), cars)
+  DBI::dbWriteTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)), cars, overwrite = TRUE)
 
   # <BigQueryConnection> uses an old dbplyr interface
   # i Please install a newer version of the package or contact the maintainer
