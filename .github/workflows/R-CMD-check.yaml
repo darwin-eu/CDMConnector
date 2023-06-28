@@ -87,7 +87,7 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-          build_args: "--no-build-vignettes --ignore-vignettes --no-manual"
+          args: 'c("--no-manual", "--as-cran", "--no-build-vignettes", "--ignore-vignettes")'
           error-on: '"error"'
 
       -  name: List contents of home directory after R check
