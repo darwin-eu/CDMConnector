@@ -70,6 +70,10 @@ get_connection <- function(dbms) {
     return(DBI::dbConnect(odbc::odbc(), "Snowflake"))
   }
 
+  if (dbms == "spark" && "Databricks" %in% odbc::odbcListDataSources()$name) {
+    return(DBI::dbConnect(odbc::odbc(), "Databricks", bigint = "numeric"))
+  }
+
   return(invisible(NULL))
 }
 
@@ -83,6 +87,7 @@ get_cdm_schema <- function(dbms) {
           "duckdb" = "main",
           "bigquery" = Sys.getenv("BIGQUERY_CDM_SCHEMA"),
           "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]],
+          "spark" = Sys.getenv("SPARK_CDM_SCHEMA"),
           NULL
   )
 }
@@ -97,6 +102,7 @@ get_write_schema <- function(dbms) {
           "duckdb" = "main",
           "bigquery" = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"),
           "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]],
+          "spark" = Sys.getenv("SPARK_SCRATCH_SCHEMA"),
           NULL
   )
 }
