@@ -4,7 +4,9 @@ withr::local_envvar(
   EUNOMIA_DATA_FOLDER = tempfile()
 )
 
-tryCatch(downloadEunomiaData(overwrite = TRUE), error = function(e) NA)
+tryCatch({
+  if (Sys.getenv("skip_eunomia_download_test") != "TRUE") downloadEunomiaData(overwrite = TRUE)
+  }, error = function(e) NA)
 
 # functions used for the test matrix
 
