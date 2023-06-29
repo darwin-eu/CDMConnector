@@ -39,10 +39,10 @@ dbToTest <- c(
 # dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
-    skip_if(get_cdm_schema(dbtype) == "")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
+    skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
     disconnect(con)
   })

@@ -56,7 +56,7 @@ for (dbtype in dbToTest) {
     write_schema <- get_write_schema(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     con <- get_connection(dbtype)
-    skip_if(write_schema == "" || cdm_schema == "" || is.null(con))
+    skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_dbi(con, cdm_schema, write_schema)
     disconnect(con)
   })
