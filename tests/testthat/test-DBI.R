@@ -53,7 +53,7 @@ dbToTest <- c(
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
-    if (dbtype != "postgres") skip_on_ci()
+    if (dbtype != "duckdb") skip_on_ci()
     write_schema <- get_write_schema(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     con <- get_connection(dbtype)
