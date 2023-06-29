@@ -7,14 +7,13 @@
 cohort_intersect(x, y)
 }
 \arguments{
-\item{.data}{A tbl reference to a cohort table}
+\item{x}{A tbl reference to a cohort table with one or more cohorts}
 
-\item{cohort_definition_id}{A positive integer to use for the new cohort_definition_id}
+\item{y}{A tbl reference to a cohort table with one cohort}
 }
 \value{
 A lazy query that when executed will resolve to a new cohort table with
-one cohort_definition_id resulting from the intersection of all cohorts in the original
-cohort table
+one cohort_definition_id resulting from the intersection of all cohorts x with the cohort in y
 }
 \description{
 Intersect all cohorts in a single cohort table
