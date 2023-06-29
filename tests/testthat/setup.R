@@ -78,7 +78,7 @@ get_connection <- function(dbms) {
 }
 
 get_cdm_schema <- function(dbms) {
-  switch (dbms,
+  s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"),
           "local" =  Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"),
           "redshift" = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"),
@@ -90,10 +90,12 @@ get_cdm_schema <- function(dbms) {
           "spark" = Sys.getenv("SPARK_CDM_SCHEMA"),
           NULL
   )
+  if (length(s) == 0) s <- ""
+  return(s)
 }
 
 get_write_schema <- function(dbms) {
-  switch (dbms,
+  s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
           "local" = Sys.getenv("LOCAL_POSTGRESQL_SCRATCH_SCHEMA"),
           "redshift" = Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA"),
@@ -105,6 +107,8 @@ get_write_schema <- function(dbms) {
           "spark" = Sys.getenv("SPARK_SCRATCH_SCHEMA"),
           NULL
   )
+  if (length(s) == 0) s <- ""
+  return(s)
 }
 
 disconnect <- function(con) {
