@@ -1,5 +1,4 @@
-test_intesect <- function(con, write_schema) {
-
+test_cohort_collapse <- function(con, write_schema) {
 
   cohort_input <- dplyr::tibble(
     cohort_definition_id = 1,
