@@ -48,7 +48,7 @@ dbToTest <- c(
   ,"oracle"
   ,"snowflake"
   ,"bigquery"
-  )
+)
 
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {

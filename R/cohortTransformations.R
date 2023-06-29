@@ -1,4 +1,3 @@
-
 # Internal function to remove overlapping periods in cohorts
 # This is used as a helper inside other cohort manipulation functions
 # @param x A cohort table (dataframe, tbl_dbi, arrow table...) that may have overlapping periods
@@ -8,24 +7,46 @@ cohort_collapse <- function(x) {
   checkmate::assert_set_equal(colnames(x), c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"))
   checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
 
-  x %>%
-    dplyr::ungroup() %>%
-    dplyr::transmute(
-      .data$cohort_definition_id,
-      .data$subject_id,
-      start_date = dbplyr::win_over(dbplyr::sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id", "cohort_end_date"),   con = x$src$con),
-      end_date   = dbplyr::win_over(dbplyr::sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id", "cohort_start_date"), con = x$src$con),
-      prev_start = dbplyr::win_over(dbplyr::sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = x$src$con),
-      prev_end   = dbplyr::win_over(dbplyr::sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = x$src$con)) %>%
-    dplyr::distinct() %>%
-    dplyr::group_by(.data$cohort_definition_id) %>%
-    dplyr::mutate(cohort_start_date = dplyr::case_when(
-      !is.na(.data$prev_start) & between(.data$start_date, .data$prev_start, .data$prev_end) ~ .data$prev_start,
-      TRUE ~ .data$start_date)) %>%
-    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date) %>%
-    dplyr::summarise(cohort_end_date = max(.data$end_date, na.rm = TRUE), .groups = "drop") %>%
-    dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
-    dplyr::distinct()
+  return(x %>%
+           dplyr::ungroup() %>%
+           dplyr::group_by(
+             cohort_definition_id,
+             subject_id
+             ) %>%
+           dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date) %>%
+           dplyr::mutate(
+             prev_start = dbplyr::win_over(
+               dbplyr::sql("min(cohort_start_date)"),
+               partition = c("cohort_definition_id", "subject_id"),
+               frame = c(-Inf, -1),
+               order = "cohort_start_date",
+               con = x$src$con),
+             prev_end = dbplyr::win_over(
+               dbplyr::sql("max(cohort_end_date)"),
+               partition = c("cohort_definition_id", "subject_id"),
+               frame = c(-Inf, -1),
+               order = "cohort_start_date",
+               con = x$src$con)
+           ) %>%
+           dplyr::mutate(
+             overlap =  pmin(.data$cohort_end_date, .data$prev_end) - pmax(.data$cohort_start_date, .data$prev_start) + 1
+           ) %>%
+           dplyr::mutate(
+             groups = cumsum(if_else(.data$overlap > 0, 0, 1))
+           ) %>%
+           dplyr::ungroup() %>%
+           dplyr::group_by(
+             cohort_definition_id,
+             subject_id,
+            groups
+           ) %>%
+           dplyr::summarize(
+             cohort_start_date = min(.data$cohort_start_date),
+             cohort_end_date = max(.data$cohort_end_date),
+             .groups = "drop"
+           ) %>%
+           dplyr::select(- "groups")
+  )
 }
 
 #' Union all cohorts in a cohort set with cohorts in a second cohort set
