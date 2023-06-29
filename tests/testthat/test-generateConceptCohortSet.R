@@ -23,5 +23,4 @@ test_that("working example", {
     dplyr::pull("subject_id"))))
 
 cdmDisconnect(cdm)
-
 })

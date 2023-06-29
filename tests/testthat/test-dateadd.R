@@ -97,16 +97,18 @@ test_date_functions <- function(con, write_schema) {
 }
 
 test_that("duckdb - date functions", {
-  con <- get_connection("duckdb")
   write_schema <- get_write_schema("duckdb")
+  skip_if(write_schema == "")
   test_date_functions(con, write_schema)
+  con <- get_connection("duckdb")
   disconnect(con)
 })
 
 test_that("postgres - date functions", {
-  con <- get_connection("postgres")
   write_schema <- get_write_schema("postgres")
+  skip_if(write_schema == "")
   test_date_functions(con, write_schema)
+  con <- get_connection("postgres")
   disconnect(con)
 })
 
@@ -118,15 +120,17 @@ test_that("sqlserver - date functions", {
 })
 
 test_that("redshift - date functions", {
-  con <- get_connection("redshift")
   write_schema <- get_write_schema("redshift")
+  skip_if(write_schema == "")
+  con <- get_connection("redshift")
   test_date_functions(con, write_schema)
   disconnect(con)
 })
 
 test_that("oracle - date functions", {
-  con <- get_connection("oracle")
   write_schema <- get_write_schema("oracle")
+  skip_if(write_schema == "")
+  con <- get_connection("oracle")
   test_date_functions(con, write_schema)
   disconnect(con)
 })
@@ -140,8 +144,9 @@ test_that("oracle - date functions", {
 # )))
 
 test_that("bigquery - date functions", {
-  con <- get_connection("bigquery")
   write_schema <- get_write_schema("bigquery")
+  skip_if(write_schema == "")
+  con <- get_connection("bigquery")
   suppressWarnings({
     # Warning: <BigQueryConnection> uses an old dbplyr interface
     # https://github.com/r-dbi/bigrquery/issues/508
@@ -151,8 +156,9 @@ test_that("bigquery - date functions", {
 })
 
 test_that("snowflake - date functions", {
-  con <- get_connection("snowflake")
   write_schema <- get_write_schema("snowflake")
+  skip_if(write_schema == "")
+  con <- get_connection("snowflake")
   test_date_functions(con, write_schema)
   disconnect(con)
 })

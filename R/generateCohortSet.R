@@ -914,7 +914,8 @@ generateConceptCohortSet <- function(cdm,
                                      computeAttrition = TRUE) {
 
   checkmate::checkClass(cdm, "cdm_reference")
-  assert_write_schema(cdm)
+  assert_write_schema(cdm) # required for now
+  write_schema <- attr(cdm, "write_schema")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
 
   if (!is.list(conceptSet)) {
@@ -934,9 +935,9 @@ generateConceptCohortSet <- function(cdm,
       tidyr::unnest(cols = df) %>%
       dplyr::select("cohort_definition_id",
                     "cohort_name",
-                    concept_id = conceptId,
-                    include_descendants = includeDescendants,
-                    is_excluded = isExcluded)
+                    concept_id = "conceptId",
+                    include_descendants = "includeDescendants",
+                    is_excluded = "isExcluded")
 
   } else {
     # conceptSet must be a named list of integer-ish vectors

@@ -53,8 +53,9 @@ dbToTest <- c(
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
-    con <- get_connection(dbtype)
     write_schema <- get_write_schema(dbtype)
+    skip_if(write_schema == "")
+    con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     test_dbi(con, cdm_schema, write_schema)
     disconnect(con)
