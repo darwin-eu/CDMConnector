@@ -907,6 +907,7 @@ generateConceptCohortSet <- function(cdm,
                                      computeAttrition = TRUE) {
 
   checkmate::checkClass(cdm, "cdm_reference")
+  assert_write_schema(cdm)
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
 
   if (!is.list(conceptSet)) {
@@ -915,13 +916,6 @@ generateConceptCohortSet <- function(cdm,
 
   checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet"), names = "named")
   checkmate::assertLogical(restrictToObservationPeriod, len = 1)
-  checkmate::assertLogical(temporary, len = 1)
-
-  if (restrictToObservationPeriod) rlang::warn("restrictToObservationPeriod is not implemented yet!")
-
-  if (isFALSE(temporary) && is.null(attr(cdm, "write_schema"))) {
-    rlang::abort("write_schema is required when temporary is FALSE")
-  }
 
   checkmate::assertList(conceptSet, min.len = 1, names = "named")
   CDMConnector::assert_tables(cdm, "concept")
@@ -956,14 +950,19 @@ generateConceptCohortSet <- function(cdm,
 
   # upload data to the database
   tempName <- uniqueTableName()
-  DBI::dbWriteTable(attr(cdm, "dbcon"), name = tempName, value = df, temporary = TRUE, overwrite = TRUE)
+
+  # TODO fully test temporary argument of dbWriteTable across all database platforms
+  DBI::dbWriteTable(attr(cdm, "dbcon"),
+                    name = inSchema(write_schema, tempName, dbms = dbms(con)),
+                    value = df,
+                    overwrite = TRUE)
 
   if (any(df$include_descendants)) {
     CDMConnector::assert_tables(cdm, "concept_ancestor")
   }
 
   # realize full list of concepts
-  concepts <- dplyr::tbl(attr(cdm, "dbcon"), tempName) %>%
+  concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(write_schema, tempName, dbms = dbms(con))) %>%
     { if (any(df$include_descendants)) {
       dplyr::filter(., include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
@@ -975,6 +974,8 @@ generateConceptCohortSet <- function(cdm,
     dplyr::select("cohort_definition_id", "cohort_name", "concept_id", "domain_id") %>%
     dplyr::distinct() %>%
     CDMConnector::computeQuery(temporary = TRUE)
+
+  DBI::dbRemoveTable(attr(cdm, "dbcon"), name = inSchema(write_schema, tempName, dbms = dbms(con)))
 
   domains <- dplyr::distinct(concepts, domain_id) %>% pull() %>% tolower()
 
@@ -1005,7 +1006,7 @@ generateConceptCohortSet <- function(cdm,
 
     cdm[[df$table_name]] %>%
       dplyr::inner_join(concepts, by = local(by)) %>%
-      dplyr::transmute(cohort_definition_id,
+      dplyr::transmute(cohort_definition_id = cohort_definition_id,
                        subject_id = person_id,
                        cohort_start_date = !!rlang::parse_expr(df$start_date),
                        cohort_end_date = dplyr::coalesce(!!rlang::parse_expr(df$end_date),
@@ -1027,41 +1028,37 @@ generateConceptCohortSet <- function(cdm,
       computeQuery(temporary = TRUE)
   }
 
-  checkmate::assertCharacter(attr(cdm, "write_prefix"), len = 1, null.ok = TRUE, min.chars = 1)
+  checkmate::assertCharacter(attr(cdm, "write_prefix"), len = 1, null.ok = TRUE, min.chars = 1, pattern = "^[a-zA-Z0-9_]+$")
   cohort_table_name <- paste0(attr(cdm, "write_prefix"), name) # This works when write_prefix is null
 
-  # debugonce(cohort_collapse)
-  # TODO fix overwrite in cdmconnector when temp table exists
+  # TODO fully test overwrite in computeQuery
   cohortRef <- cohort %>%
     cohort_collapse() %>%
-    CDMConnector::computeQuery(temporary = temporary,
+    CDMConnector::computeQuery(temporary = FALSE,
                                schema = attr(cdm, "write_schema"),
                                name = cohort_table_name,
                                overwrite = overwrite)
 
   # create attributes
   cohortSetRef <- dplyr::distinct(concepts, cohort_definition_id, cohort_name) %>%
-    computeQuery(temporary = temporary,
+    computeQuery(temporary = FALSE,
                  schema = attr(cdm, "write_schema"),
                  name = paste0(cohort_table_name, "_set"),
                  overwrite = overwite)
 
-  # DBI::dbRemoveTable(con, "cohort2_count")
-
   cohortCountRef <- cohortRef %>%
-    dplyr::group_by(cohort_definition_id) %>%
-    dplyr::summarise(n_subjects = dplyr::n_distinct(subject_id),
+    dplyr::group_by(.data$cohort_definition_id) %>%
+    dplyr::summarise(n_subjects = dplyr::n_distinct(.data$subject_id),
                      n_records = dplyr::n()) %>%
     dplyr::left_join(cohortSetRef, ., by = "cohort_definition_id") %>%
-    dplyr::mutate(number_subjects = ifelse(is.na(n_subjects), 0L, n_subjects),
-                  number_records  = ifelse(is.na(n_subjects), 0L, n_subjects)) %>%
+    dplyr::mutate(number_subjects = ifelse(is.na(.data$n_subjects), 0L, .data$n_subjects),
+                  number_records  = ifelse(is.na(.data$n_subjects), 0L, .data$n_subjects)) %>%
     dplyr::select("cohort_definition_id", "number_records", "number_subjects") %>%
-    CDMConnector::computeQuery(temporary = temporary,
+    CDMConnector::computeQuery(temporary = FALSE,
                                schema = attr(cdm, "write_schema"),
                                name = paste0(cohort_table_name, "_count"),
                                overwrite = overwrite)
 
-  # DBI::dbRemoveTable(con, "cohort2_attrition")
   if (computeAttrition) {
     cohortAttritionRef <- cohortCountRef %>%
       dplyr::transmute(
@@ -1072,7 +1069,7 @@ generateConceptCohortSet <- function(cdm,
         reason = "Qualifying initial records",
         excluded_records = 0L,
         excluded_subjects = 0L) %>%
-      CDMConnector::computeQuery(temporary = temporary,
+      CDMConnector::computeQuery(temporary = FALSE,
                                  schema = attr(cdm, "write_schema"),
                                  name = paste0(cohort_table_name, "_attrition"),
                                  overwrite = overwrite)
@@ -1087,6 +1084,5 @@ generateConceptCohortSet <- function(cdm,
     cohortCountRef = cohortCountRef)
 
   return(cdm)
-
 }
 
