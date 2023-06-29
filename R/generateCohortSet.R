@@ -916,6 +916,7 @@ generateConceptCohortSet <- function(cdm,
   checkmate::checkClass(cdm, "cdm_reference")
   assert_write_schema(cdm) # required for now
   write_schema <- attr(cdm, "write_schema")
+  con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
 
   if (!is.list(conceptSet)) {
@@ -970,12 +971,12 @@ generateConceptCohortSet <- function(cdm,
   # realize full list of concepts
   concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(write_schema, tempName, dbms = dbms(con))) %>%
     { if (any(df$include_descendants)) {
-      dplyr::filter(., include_descendants) %>%
+      dplyr::filter(., .data$include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
-        dplyr::select("cohort_definition_id", "cohort_name", concept_id = descendant_concept_id, "is_excluded") %>%
+        dplyr::select("cohort_definition_id", "cohort_name", concept_id = "descendant_concept_id", "is_excluded") %>%
         dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), tempName), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
     } else . } %>%
-    dplyr::filter(!is_excluded) %>%
+    dplyr::filter(!.data$is_excluded) %>%
     dplyr::left_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
     dplyr::select("cohort_definition_id", "cohort_name", "concept_id", "domain_id") %>%
     dplyr::distinct() %>%
