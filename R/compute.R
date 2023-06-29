@@ -32,7 +32,7 @@
   if (CDMConnector::dbms(x$src$con) == "spark" &&
       !rlang::is_installed("SqlRender", version = "1.8.0")) {
     rlang::abort("SqlRender version 1.8.0 or later is required
-                 to use computePermanent with spark.")
+                 to use .computePermanent with spark.")
   }
 
   if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "oracle")) {
