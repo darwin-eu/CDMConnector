@@ -1,7 +1,8 @@
 # Test DBI functions we rely on
 
 test_dbi <- function(con, cdm_schema, write_schema) {
-  df <- dplyr::tibble(logical = TRUE, char = "a", int = 1L, float = 1.5)
+  df <- data.frame(logical = TRUE, char = "a", int = 1L, float = 1.5, stringsAsFactors = FALSE)
+  # df1 <- dplyr::tibble(logical = TRUE, chr = "a", int = 1L) # this gives a warning
 
   if ("temp_test" %in% list_tables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
@@ -13,7 +14,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 
   db <- dplyr::tbl(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con))) %>%
     dplyr::collect() %>%
-    dplyr::tibble() %>%
+    as.data.frame() %>%
     dplyr::select("logical", "char", "int", "float") # bigquery can return columns in any order apparently
 
   # TODO: There is an issue with oracle's odbc type conversion
@@ -50,18 +51,13 @@ dbToTest <- c(
   ,"bigquery"
   )
 
-# dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
-    if (dbtype != "postgres") skip_on_ci()
     write_schema <- get_write_schema(dbtype)
-    cdm_schema <- get_cdm_schema(dbtype)
+    skip_if(write_schema == "")
     con <- get_connection(dbtype)
-    skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
+    cdm_schema <- get_cdm_schema(dbtype)
     test_dbi(con, cdm_schema, write_schema)
     disconnect(con)
   })
 }
-
-
-#TODO test dplyr::copy_to with temp and non-temp tables as well as the overwrite argument of dbWriteTable

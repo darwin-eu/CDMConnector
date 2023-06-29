@@ -6,12 +6,11 @@ cohort_collapse <- function(x) {
   checkmate::assert_true(methods::is(x, "tbl_dbi"))
   checkmate::assert_set_equal(colnames(x), c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"))
   checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
-
   return(x %>%
            dplyr::ungroup() %>%
            dplyr::group_by(
-             "cohort_definition_id",
-             "subject_id"
+             cohort_definition_id,
+             subject_id
              ) %>%
            dbplyr::window_order(.data$cohort_start_date) %>%
            dplyr::mutate(
@@ -26,9 +25,9 @@ cohort_collapse <- function(x) {
            ) %>%
            dplyr::ungroup() %>%
            dplyr::group_by(
-             "cohort_definition_id",
-             "subject_id",
-             "groups"
+             cohort_definition_id,
+             subject_id,
+            groups
            ) %>%
            dplyr::summarize(
              cohort_start_date = min(.data$cohort_start_date),
@@ -51,9 +50,7 @@ cohort_collapse <- function(x) {
 cohort_union <- function(x, y) {
   checkmate::assert_class(x, "tbl")
   checkmate::assert_class(y, "tbl")
-  checkmate::assert_integerish(id, len = 1, lower = 0)
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
-  cohort_definition_id <- as.integer(cohort_definition_id)
 
   y %>%
     dplyr::distinct(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
@@ -67,59 +64,75 @@ cohort_union <- function(x, y) {
 #' @export
 cohortUnion <- cohort_union
 
-#' Intersect all cohorts in a single cohort table
-#'
-#' @param x A tbl reference to a cohort table with one or more cohorts
-#' @param y A tbl reference to a cohort table with one cohort
-#'
-#' @return A lazy query that when executed will resolve to a new cohort table with
-#' one cohort_definition_id resulting from the intersection of all cohorts x with the cohort in y
-#' @export
-cohort_intersect <- function(x, y) {
-  checkmate::assert_class(x, "tbl")
-  checkmate::assert_class(y, "tbl")
-  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
-  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(y))
+# Intersect all cohorts in a single cohort table
+#
+# @param x A tbl reference to a cohort table with one or more cohorts
+# @param y A tbl reference to a cohort table with one cohort
+#
+# @return A lazy query that when executed will resolve to a new cohort table with
+# one cohort_definition_id resulting from the intersection of all cohorts x with the cohort in y
+# @export
+#
+#
 
-  # for each interval in y, create a record for each cohort id x
-  x <- y %>%
-    dplyr::distinct(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-    dplyr::cross_join(dplyr::distinct(x, .data$cohort_definition_id)) %>%
-    dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
-    dplyr::union_all(x)
+# TODO rewrite cohort_intersect and add tests
 
-  # create every possible interval
-  candidate_intervals <- x %>%
-    dplyr::select("cohort_definition_id", "subject_id", cohort_date = "cohort_start_date") %>%
-    dplyr::union_all(dplyr::select(x, "cohort_definition_id", "subject_id", cohort_date = "cohort_end_date")) %>%
-    dplyr::group_by(.data$cohort_definition_id, .data$subject_id) %>%
-    dplyr::mutate(cohort_date_seq = dplyr::row_number(.data$cohort_date)) %>%
-    dplyr::mutate(candidate_start_date = .data$cohort_date,
-                  candidate_end_date = dplyr::lead(.data$cohort_date, order_by = c("cohort_date", "cohort_date_seq")))
+# cohort_intersect <- function(x, y) {
+#   checkmate::assert_class(x, "tbl")
+#   checkmate::assert_class(y, "tbl")
+#   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
+#   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(y))
+#
+#   # collapse cohorts just
+#   x <- cohort_collapse(x) %>%
+#     computeQuery(temporary = TRUE)
+#
+#   y <- y %>%
+#     dplyr::mutate(cohort_definition_id = -1) %>%
+#     cohort_collapse() %>%
+#     dplyr::select(-"cohort_definition_id") %>%
+#     computeQuery(temporary = TRUE)
+#
+#
+#   # collapse cohort table y into a single cohort
+#   # for each interval in y, create a record for each cohort id x
+#   x <- y %>%
+#     dplyr::cross_join(dplyr::distinct(x, .data$cohort_definition_id)) %>%
+#     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
+#     dplyr::union_all(x)
+#
+#   # create every possible interval
+#   candidate_intervals <- x %>%
+#     dplyr::select("cohort_definition_id", "subject_id", cohort_date = "cohort_start_date") %>%
+#     dplyr::union_all(dplyr::select(x, "cohort_definition_id", "subject_id", cohort_date = "cohort_end_date")) %>%
+#     dplyr::group_by(.data$cohort_definition_id, .data$subject_id) %>%
+#     dplyr::mutate(cohort_date_seq = dplyr::row_number(.data$cohort_date)) %>%
+#     dplyr::mutate(candidate_start_date = .data$cohort_date,
+#                   candidate_end_date = dplyr::lead(.data$cohort_date, order_by = c("cohort_date", "cohort_date_seq")))
+#
+#   # get intervals that are contained within all of the cohorts
+#   x %>%
+#     dplyr::inner_join(candidate_intervals, by = "subject_id") %>%
+#     dplyr::filter(.data$candidate_start_date >= .data$cohort_start_date,
+#                   .data$candidate_end_date <= .data$cohort_end_date) %>%
+#     dplyr::distinct(.data$cohort_definition_id,
+#                     .data$subject_id,
+#                     .data$candidate_start_date,
+#                     .data$candidate_end_date) %>%
+#     dplyr::group_by(.data$subject_id,
+#                     .data$candidate_start_date,
+#                     .data$candidate_end_date) %>%
+#     dplyr::summarise(n_cohorts_interval_is_inside = dplyr::n(), .groups = "drop") %>%
+#     # only keep intervals that are inside all cohorts we want to intersect (i.e. all cohorts in the input cohort table)
+#     dplyr::filter(.data$n_cohorts_interval_is_inside == 2) %>%
+#     dplyr::mutate(cohort_definition_id = .env$id) %>%
+#     dplyr::select("cohort_definition_id",
+#                   "subject_id",
+#                   cohort_start_date = "candidate_start_date",
+#                   cohort_end_date = "candidate_end_date") %>%
+#     cohort_collapse()
+# }
 
-  # get intervals that are contained within all of the cohorts
-  x %>%
-    dplyr::inner_join(candidate_intervals, by = "subject_id") %>%
-    dplyr::filter(.data$candidate_start_date >= .data$cohort_start_date,
-                  .data$candidate_end_date <= .data$cohort_end_date) %>%
-    dplyr::distinct(.data$cohort_definition_id,
-                    .data$subject_id,
-                    .data$candidate_start_date,
-                    .data$candidate_end_date) %>%
-    dplyr::group_by(.data$subject_id,
-                    .data$candidate_start_date,
-                    .data$candidate_end_date) %>%
-    dplyr::summarise(n_cohorts_interval_is_inside = dplyr::n(), .groups = "drop") %>%
-    dplyr::cross_join(n_cohorts_to_intersect) %>%
-    # only keep intervals that are inside all cohorts we want to intersect (i.e. all cohorts in the input cohort table)
-    dplyr::filter(.data$n_cohorts_interval_is_inside == .data$n_cohorts_to_intersect) %>%
-    dplyr::mutate(cohort_definition_id = .env$id) %>%
-    dplyr::select("cohort_definition_id",
-                  "subject_id",
-                  cohort_start_date = "candidate_start_date",
-                  cohort_end_date = "candidate_end_date") %>%
-    cohort_collapse()
-}
 
 #' Keep only the earliest record for each person in a cohort
 #'

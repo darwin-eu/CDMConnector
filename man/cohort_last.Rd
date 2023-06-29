@@ -4,10 +4,10 @@
 \alias{cohort_last}
 \title{Keep only the latest record for each person in a cohort}
 \usage{
-cohort_last(.data)
+cohort_last(x)
 }
 \arguments{
-\item{.data}{A generated cohort set}
+\item{x}{A generated cohort set}
 }
 \value{
 A lazy query on a generated cohort set

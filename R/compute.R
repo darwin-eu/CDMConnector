@@ -32,7 +32,7 @@
   if (CDMConnector::dbms(x$src$con) == "spark" &&
       !rlang::is_installed("SqlRender", version = "1.8.0")) {
     rlang::abort("SqlRender version 1.8.0 or later is required
-                 to use computePermanent with spark.")
+                 to use .computePermanent with spark.")
   }
 
   if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "oracle")) {
@@ -112,10 +112,10 @@ appendPermanent <- function(x, name, schema = NULL) {
   fullNameQuoted <- getFullTableNameQuoted(x, name, schema)
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
   if (!(tolower(name) %in% tolower(existingTables))) {
-    return(computePermanent(x = x,
-                            name = name,
-                            schema = schema,
-                            overwrite = FALSE))
+    return(.computePermanent(x = x,
+                             name = name,
+                             schema = schema,
+                             overwrite = FALSE))
   }
 
   sql <- glue::glue("INSERT INTO {fullNameQuoted} {dbplyr::sql_render(x)}")

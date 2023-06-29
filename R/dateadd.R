@@ -33,7 +33,7 @@ dateadd <- function(date, number, interval = "day") {
   dot <- get(".", envir = parent.frame())
   db <- CDMConnector::dbms(dot$src$con)
 
-  if (db == "oracle") {
+  if (db %in% c("oracle", "snowflake")) {
     date <- as.character(DBI::dbQuoteIdentifier(dot$src$con, date))
     if (is.character(number)) {
       number <- as.character(DBI::dbQuoteIdentifier(dot$src$con, number))
@@ -42,7 +42,11 @@ dateadd <- function(date, number, interval = "day") {
 
   if (db %in% c("spark", "oracle") && interval == "year") {
     # spark and oracle sql requires number of days in dateadd
-    number <- floor(number*365.25)
+    if (is.numeric(number)) {
+      number <- floor(number*365.25)
+    } else {
+      number <- paste(number, "* 365.25")
+    }
   }
 
   sql <- switch (db,
@@ -54,9 +58,9 @@ dateadd <- function(date, number, interval = "day") {
                  "duckdb" = glue::glue("({date} + {number}*INTERVAL'1 {interval}')"),
                  "sqlite" = glue::glue("CAST(STRFTIME('%s', DATETIME({date}, 'unixepoch', ({number})||' {interval}s')) AS REAL)"),
                  "bigquery" = glue::glue("DATE_ADD({date}, INTERVAL {number} {toupper(interval)})"),
-                 glue::glue("DATEADD({interval}, {number}, {date})")
+                 "snowflake" = glue::glue('DATEADD({interval}, {number}, {date})'),
+                 rlang::abort(glue::glue("Connection type {paste(class(dot$src$con), collapse = ', ')} is not supported!"))
   )
-
   dbplyr::sql(as.character(sql))
 }
 
@@ -96,12 +100,13 @@ datediff <- function(start, end, interval = "day") {
   dot <- get(".", envir = parent.frame())
   db <- CDMConnector::dbms(dot$src$con)
 
-  if (db == "oracle") {
-    start <- as.character(DBI::dbQuoteIdentifier(dot$src$con, start))
-    end <- as.character(DBI::dbQuoteIdentifier(dot$src$con, end))
-  }
 
   if (interval == "day") {
+    if (db == "oracle") {
+      start <- as.character(DBI::dbQuoteIdentifier(dot$src$con, start))
+      end <- as.character(DBI::dbQuoteIdentifier(dot$src$con, end))
+    }
+
     sql <- switch (
       db,
       "redshift" = glue::glue("DATEDIFF(day, {start}, {end})"),
@@ -111,9 +116,12 @@ datediff <- function(start, end, interval = "day") {
       "spark" = glue::glue("datediff({end},{start})"),
       "duckdb" = glue::glue("datediff('day', {start}, {end})"),
       "sqlite" = glue::glue("(JULIANDAY(end, 'unixepoch') - JULIANDAY(start, 'unixepoch'))"),
-      "bigquery" = glue::glue("DATE_DIFF({start}, {end}, DAY)")
+      "bigquery" = glue::glue("DATE_DIFF({end}, {start}, DAY)"),
+      "snowflake" = glue::glue('DATEDIFF(day, "{start}", "{end}")'),
+      rlang::abort(glue::glue("Connection type {paste(class(dot$src$con), collapse = ', ')} is not supported!"))
     )
   } else {
+    # datepart will quote oracle names
     dayStart   <- datepart(start, "day",   db)
     monthStart <- datepart(start, "month", db)
     yearStart  <- datepart(start, "year",  db)
@@ -211,7 +219,7 @@ as_date <- asDate
 datepart <- function(date, interval = "year", dbms = NULL) {
   checkmate::assertCharacter(date, len = 1)
   checkmate::assertChoice(interval, c("year", "month", "day"))
-  supported <- c("redshift", "oracle", "postgresql", "sql server", "spark", "duckdb", "sqlite", "bigquery")
+  supported <- c("redshift", "oracle", "postgresql", "sql server", "spark", "duckdb", "sqlite", "bigquery", "snowflake")
   checkmate::assertChoice(dbms, choices = supported, null.ok = TRUE)
 
   if (is.null(dbms)) {
@@ -221,15 +229,16 @@ datepart <- function(date, interval = "year", dbms = NULL) {
 
   sql <- switch (dbms,
     "redshift" = "DATE_PART({interval}, {date})",
-    "oracle" = "EXTRACT({toupper(interval)} FROM {date})",
-    "postgresql" = "EXTRACT({toupper(interval)} FROM {date})",
+    "oracle" = 'EXTRACT({toupper(interval)} FROM "{date}")',
+    "postgresql" = "EXTRACT({toupper(interval)} FROM {date})", # TODO use a more dbplyr approach to build sql
     "sql server" = "{toupper(interval)}({date})",
     "spark" = "{toupper(interval)}({date})",
     "duckdb" = "date_part('{interval}', {date})",
     "sqlite" = ifelse(interval == "year",
       "CAST(STRFTIME('%Y', {date}, 'unixepoch') AS INT)",
       "CAST(STRFTIME('%{substr(interval, 1, 1)}', {date}, 'unixepoch') AS INT)"),
-    "bigquery" = "EXTRACT({toupper(interval)} from {date})"
+    "bigquery" = "EXTRACT({toupper(interval)} from {date})",
+    "snowflake" = 'DATE_PART({interval}, "{date}")'
   )
   dbplyr::sql(as.character(glue::glue(sql)))
 }

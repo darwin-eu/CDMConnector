@@ -4,10 +4,10 @@
 \alias{cohort_pad_start}
 \title{Add or subtract days from the start or end of a cohort set}
 \usage{
-cohort_pad_start(.data, days = NULL, from = "start")
+cohort_pad_start(x, days = NULL, from = "start")
 }
 \arguments{
-\item{.data}{A generated cohort set table reference}
+\item{x}{A generated cohort set table reference}
 
 \item{days}{The number of days to add. Can by any positive or negative integer}
 
