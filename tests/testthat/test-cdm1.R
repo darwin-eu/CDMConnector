@@ -39,11 +39,7 @@ dbToTest <- c(
 # dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
-<<<<<<< HEAD
-    if (dbtype != "postgres") skip_on_ci()
-=======
     if (dbtype != "duckdb") skip_on_ci()
->>>>>>> fa6fc71661f2c1cbe43d77f5871c5330bda7926d
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
