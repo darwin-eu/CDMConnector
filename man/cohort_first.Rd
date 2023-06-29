@@ -4,10 +4,10 @@
 \alias{cohort_first}
 \title{Keep only the earliest record for each person in a cohort}
 \usage{
-cohort_first(.data)
+cohort_first(x)
 }
 \arguments{
-\item{.data}{A generated cohort set}
+\item{x}{A generated cohort set}
 }
 \value{
 A lazy query on a generated cohort set
