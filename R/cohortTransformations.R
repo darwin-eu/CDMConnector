@@ -6,19 +6,30 @@ cohort_collapse <- function(x) {
   checkmate::assert_true(methods::is(x, "tbl_dbi"))
   checkmate::assert_set_equal(colnames(x), c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"))
   checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
+
   return(x %>%
            dplyr::ungroup() %>%
            dplyr::group_by(
              cohort_definition_id,
              subject_id
              ) %>%
-           dbplyr::window_order(.data$cohort_start_date) %>%
+           dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date) %>%
            dplyr::mutate(
-             lag_end = lag(.data$cohort_end_date),
-             lag_start = lag(.data$cohort_start_date)
+             prev_start = dbplyr::win_over(
+               dbplyr::sql("min(cohort_start_date)"),
+               partition = c("cohort_definition_id", "subject_id"),
+               frame = c(-Inf, -1),
+               order = "cohort_start_date",
+               con = x$src$con),
+             prev_end = dbplyr::win_over(
+               dbplyr::sql("max(cohort_end_date)"),
+               partition = c("cohort_definition_id", "subject_id"),
+               frame = c(-Inf, -1),
+               order = "cohort_start_date",
+               con = x$src$con)
            ) %>%
            dplyr::mutate(
-             overlap =  pmin(.data$cohort_end_date, .data$lag_end) - pmax(.data$cohort_start_date, .data$lag_start) + 1
+             overlap =  pmin(.data$cohort_end_date, .data$prev_end) - pmax(.data$cohort_start_date, .data$prev_start) + 1
            ) %>%
            dplyr::mutate(
              groups = cumsum(if_else(.data$overlap > 0, 0, 1))

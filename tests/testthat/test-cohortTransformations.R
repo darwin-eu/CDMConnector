@@ -1,6 +1,6 @@
 test_intesect <- function(con, write_schema) {
 
-  ## 1 cohort id, 1 person
+
   cohort_input <- dplyr::tibble(
     cohort_definition_id = 1,
     subject_id = 3,
@@ -14,16 +14,78 @@ test_intesect <- function(con, write_schema) {
         "2000-05-15", "2000-06-26", "2000-08-28",
         "2000-10-03", "2000-11-15", "2000-12-21")
     )
-  )
+  ) %>%
+   dplyr::union_all(
+      dplyr::tibble(
+        cohort_definition_id = 1,
+        subject_id = 4,
+        cohort_start_date = as.Date(
+          c("2000-01-11", "2000-01-11", "2000-02-21",
+            "2000-04-04", "2000-05-16", "2000-07-18",
+            "2000-08-23", "2000-10-05", "2000-11-10")
+        ),
+        cohort_end_date   = as.Date(
+          c("2000-12-21", "2000-02-21", "2000-04-04",
+            "2000-05-15", "2000-06-26", "2000-08-28",
+            "2000-10-03", "2000-11-15", "2000-12-21")
+        )
+      )
+    ) %>%
+   dplyr::union_all(
+      dplyr::tibble(
+        cohort_definition_id = 2,
+        subject_id = 3,
+        cohort_start_date = as.Date(
+          c("2001-08-30", "2001-09-27", "2001-10-22",
+            "2001-11-21", "2001-12-12", "2002-08-27",
+            "2002-09-23", "2002-10-16", "2002-11-19")
+        ),
+        cohort_end_date   = as.Date(
+          c("2001-09-28", "2001-10-26", "2001-11-20",
+            "2001-12-20", "2002-01-10", "2002-09-25",
+            "2002-10-22", "2002-11-14", "2002-12-18")
+        )
+      )
+    )
+
 
   expected_output <- tibble(
     cohort_definition_id = 1,
     subject_id = 3,
     cohort_start_date = as.Date(c("2000-01-11", "2000-05-16", "2000-07-18",
-                                  "2000-10-05")),
+                                  "2000-10-05")
+    ),
     cohort_end_date   = as.Date(c("2000-05-15", "2000-06-26", "2000-10-03",
-                                  "2000-12-21"))
-  )
+                                  "2000-12-21")
+    )
+  )%>%
+   dplyr::union_all(
+      dplyr::tibble(
+        cohort_definition_id = 1,
+        subject_id = 4,
+        cohort_start_date = as.Date(
+          c("2000-01-11")
+        ),
+        cohort_end_date   = as.Date(
+          c("2000-12-21")
+        )
+      )
+    ) %>%
+    dplyr::union_all(
+      dplyr::tibble(
+        cohort_definition_id = 2,
+        subject_id = 3,
+        cohort_start_date = as.Date(
+          c("2001-08-30", "2001-11-21", "2002-08-27",
+            "2002-11-19")
+        ),
+        cohort_end_date   = as.Date(
+          c("2001-11-20", "2002-01-10", "2002-11-14",
+            "2002-12-18")
+        )
+      )
+    )
+
 
   if (dbms(con) == "oracle") {
 
@@ -43,32 +105,13 @@ test_intesect <- function(con, write_schema) {
     DBI::dbWriteTable(con, inSchema(write_schema, "tmp_cohort_collapse_input",
                                     dbms = dbms(con)), cohort_input, overwrite = TRUE)
     input_db <- dplyr::tbl(con, inSchema(write_schema, "tmp_cohort_collapse_input", dbms = dbms(con)))
+
   }
 
 
-  cohort_collect(input_db)
-
-  x %>%
-    dplyr::ungroup() %>%
-    dplyr::transmute(
-      .data$cohort_definition_id,
-      .data$subject_id,
-      start_date = dbplyr::win_over(sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id", "cohort_end_date"),   con = x$src$con),
-      end_date   = dbplyr::win_over(sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id", "cohort_start_date"), con = x$src$con),
-      prev_start = dbplyr::win_over(sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = x$src$con),
-      prev_end   = dbplyr::win_over(sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = x$src$con)) %>%
-    distinct() %>%
-    group_by(.data$cohort_definition_id) %>%
-    dplyr::mutate(cohort_start_date = dplyr::case_when(
-      !is.na(prev_start) & between(start_date, prev_start, prev_end) ~ prev_start,
-      TRUE ~ start_date)) %>%
-    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date) %>%
-    dplyr::summarise(cohort_end_date = max(end_date, na.rm = TRUE), .groups = "drop") %>%
-    dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
-    dplyr::distinct()
-
-
-  expect_identical(cohort_collapse(cohort_input) %>%
+  expect_identical(cohort_collapse(input_db) %>%
+                     dplyr::arrange(cohort_definition_id, subject_id, cohort_start_date) %>%
                      dplyr::collect(),
-                   expected_output)
+                   expected_output %>%
+                     dplyr::arrange(cohort_definition_id, subject_id, cohort_start_date))
 }
