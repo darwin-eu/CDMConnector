@@ -7,46 +7,34 @@ cohort_collapse <- function(x) {
   checkmate::assert_set_equal(colnames(x), c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"))
   checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
 
-  return(x %>%
-           dplyr::ungroup() %>%
-           dplyr::group_by(
-             cohort_definition_id,
-             subject_id
-             ) %>%
-           dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date) %>%
-           dplyr::mutate(
-             prev_start = dbplyr::win_over(
-               dbplyr::sql("min(cohort_start_date)"),
-               partition = c("cohort_definition_id", "subject_id"),
-               frame = c(-Inf, -1),
-               order = "cohort_start_date",
-               con = x$src$con),
-             prev_end = dbplyr::win_over(
-               dbplyr::sql("max(cohort_end_date)"),
-               partition = c("cohort_definition_id", "subject_id"),
-               frame = c(-Inf, -1),
-               order = "cohort_start_date",
-               con = x$src$con)
-           ) %>%
-           dplyr::mutate(
-             overlap =  pmin(.data$cohort_end_date, .data$prev_end) - pmax(.data$cohort_start_date, .data$prev_start) + 1
-           ) %>%
-           dplyr::mutate(
-             groups = cumsum(if_else(.data$overlap > 0, 0, 1))
-           ) %>%
-           dplyr::ungroup() %>%
-           dplyr::group_by(
-             cohort_definition_id,
-             subject_id,
-            groups
-           ) %>%
-           dplyr::summarize(
-             cohort_start_date = min(.data$cohort_start_date),
-             cohort_end_date = max(.data$cohort_end_date),
-             .groups = "drop"
-           ) %>%
-           dplyr::select(- "groups")
-  )
+  # note this assumes all columns are fully populated and cohort_end_date >= cohort_start_date
+  # TODO do we need to confirm this assumption?
+  x %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
+    dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date) %>%
+    dplyr::mutate(
+      prev_start = dbplyr::win_over(
+        dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(x$src$con, "cohort_start_date")})')),
+        partition = c("cohort_definition_id", "subject_id"),
+        frame = c(-Inf, -1),
+        order = "cohort_start_date",
+        con = x$src$con),
+      prev_end = dbplyr::win_over(
+        dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(x$src$con, "cohort_end_date")})')),
+        partition = c("cohort_definition_id", "subject_id"),
+        frame = c(-Inf, -1),
+        order = "cohort_start_date",
+        con = x$src$con)
+    ) %>%
+    dplyr::mutate(pmin_end   = ifelse(!is.na(.data$prev_end) & (.data$prev_end < .data$cohort_end_date),     .data$prev_end,   .data$cohort_end_date),
+                  pmax_start = ifelse(!is.na(.data$prev_end) & (.data$prev_start > .data$cohort_start_date), .data$prev_start, .data$cohort_start_date)) %>%
+    dplyr::mutate(overlap = !!datediff("pmax_start", "pmin_end") + 1) %>%
+    dplyr::mutate(groups = cumsum(ifelse(.data$overlap > 0, 0, 1))) %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$groups, .add = FALSE) %>%
+    dplyr::summarize(cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
+                     cohort_end_date = max(.data$cohort_end_date, na.rm = TRUE),
+                     .groups = "drop") %>%
+    dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
 }
 
 #' Union all cohorts in a cohort set with cohorts in a second cohort set

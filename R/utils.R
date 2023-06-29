@@ -195,3 +195,9 @@ list_tables <- function(con, schema = NULL) {
 #' @export
 listTables <- list_tables
 
+# To silence warning <BigQueryConnection> uses an old dbplyr interface
+# https://github.com/r-dbi/bigrquery/issues/508
+
+#' @importFrom dbplyr dbplyr_edition
+#' @export
+dbplyr_edition.BigQueryConnection<- function(con) 2L
