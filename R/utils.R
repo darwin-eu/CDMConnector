@@ -1,12 +1,10 @@
 #' Pipe operator
 #'
-#' See \code{magrittr::\link[magrittr:pipe]{\%>\%}} for details.
-#'
 #' @name %>%
 #' @rdname pipe
 #' @keywords internal
 #' @export
-#' @importFrom magrittr %>%
+#' @importFrom dplyr %>%
 #' @usage lhs \%>\% rhs
 #' @param lhs A value or the magrittr placeholder.
 #' @param rhs A function call using the magrittr semantics.
@@ -40,7 +38,12 @@ inSchema <- function(schema, table, dbms = NULL) {
   checkmate::assertCharacter(table, len = 1)
   checkmate::assertCharacter(dbms, len = 1, null.ok = TRUE)
 
-  if (isTRUE(dbms %in% c("bigquery", "duckdb", "redshift"))) {
+  if (isFALSE(dbms %in% c("snowflake", "sql server"))) {
+    # only a few dbms support three part names
+    checkmate::assertCharacter(schema, len = 1)
+  }
+
+  if (isTRUE(dbms %in% c("bigquery"))) {
     checkmate::assertCharacter(schema, len = 1)
     out <- paste(c(schema, table), collapse = ".")
   } else {

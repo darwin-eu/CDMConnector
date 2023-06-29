@@ -314,7 +314,7 @@ cdm_name <- cdmName
 #' @export
 print.cdm_reference <- function(x, ...) {
   type <- class(x[[1]])[[1]]
-  cli::cat_line(pillar::style_subtle(glue::glue("# OMOP CDM reference ({type})")))
+  cli::cat_line(glue::glue("# OMOP CDM reference ({type})"))
   cli::cat_line("")
   cli::cat_line(paste("Tables:", paste(names(x), collapse = ", ")))
   invisible(x)
@@ -333,21 +333,24 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   checkmate::assert_class(add, "AssertCollection", null.ok = TRUE)
   checkmate::assert_true(.dbIsValid(con))
 
-  # TODO quote SQL names
-  write_schema <- paste(write_schema, collapse = ".")
   tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
-  tablename <- paste(write_schema, tablename, sep = ".")
-
-  df1 <- data.frame(chr_col = "a", numeric_col = 1)
+  df1 <- data.frame(chr_col = "a", numeric_col = 1, stringsAsFactors = FALSE)
   # Note: ROracle does not support integer round trip
-  DBI::dbWriteTable(con, DBI::SQL(tablename), df1)
+  DBI::dbWriteTable(con,
+                    name = inSchema(schema = write_schema, table = tablename, dbms = dbms(con)),
+                    value = df1,
+                    overwrite = TRUE)
 
   withr::with_options(list(databaseConnectorIntegerAsNumeric = FALSE), {
-    df2 <- DBI::dbReadTable(con, DBI::SQL(tablename))
+    df2 <- dplyr::tbl(con, inSchema(write_schema, tablename, dbms = dbms(con))) %>%
+      dplyr::collect() %>%
+      dplyr::select("chr_col", "numeric_col") %>%  # bigquery can reorder columns
+      as.data.frame()
+
     names(df2) <- tolower(names(df2))
   })
 
-  DBI::dbRemoveTable(con, DBI::SQL(tablename))
+  DBI::dbRemoveTable(con, inSchema(write_schema, tablename, dbms = dbms(con)))
 
   if (!isTRUE(all.equal(df1, df2))) {
     msg <- paste("Write access to schema", write_schema, "could not be verified.")
@@ -554,9 +557,10 @@ cdm_from_files <- function(path,
     feather = purrr::map(cdm_table_files, function(.) {
       arrow::read_feather(., as_data_frame = as_data_frame)
     })
-  ) %>%
-    magrittr::set_names(cdm_tables) %>%
-    magrittr::set_class("cdm_reference")
+  )
+
+  names(cdm) <- cdm_tables
+  class(cdm) <- "cdm_reference"
 
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL

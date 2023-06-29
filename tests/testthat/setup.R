@@ -1,7 +1,7 @@
 withr::local_envvar(
   R_USER_CACHE_DIR = tempfile(),
   .local_envir = teardown_env(),
-  EUNOMIA_DATA_FOLDER = tempfile()
+  EUNOMIA_DATA_FOLDER = Sys.getenv("EUNOMIA_DATA_FOLDER", unset = tempfile())
 )
 
 tryCatch({
@@ -56,6 +56,7 @@ get_connection <- function(dbms) {
   }
 
   if (dbms == "bigquery" && Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH") != "") {
+
     bigrquery::bq_auth(path = Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH"))
 
     return(DBI::dbConnect(
@@ -69,11 +70,15 @@ get_connection <- function(dbms) {
     return(DBI::dbConnect(odbc::odbc(), "Snowflake"))
   }
 
+  if (dbms == "spark" && "Databricks" %in% odbc::odbcListDataSources()$name) {
+    return(DBI::dbConnect(odbc::odbc(), "Databricks", bigint = "numeric"))
+  }
+
   return(invisible(NULL))
 }
 
 get_cdm_schema <- function(dbms) {
-  switch (dbms,
+  s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"),
           "local" =  Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"),
           "redshift" = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"),
@@ -82,12 +87,15 @@ get_cdm_schema <- function(dbms) {
           "duckdb" = "main",
           "bigquery" = Sys.getenv("BIGQUERY_CDM_SCHEMA"),
           "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]],
+          "spark" = Sys.getenv("SPARK_CDM_SCHEMA"),
           NULL
   )
+  if (length(s) == 0) s <- ""
+  return(s)
 }
 
 get_write_schema <- function(dbms) {
-  switch (dbms,
+  s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
           "local" = Sys.getenv("LOCAL_POSTGRESQL_SCRATCH_SCHEMA"),
           "redshift" = Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA"),
@@ -96,8 +104,11 @@ get_write_schema <- function(dbms) {
           "duckdb" = "main",
           "bigquery" = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"),
           "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]],
+          "spark" = Sys.getenv("SPARK_SCRATCH_SCHEMA"),
           NULL
   )
+  if (length(s) == 0) s <- ""
+  return(s)
 }
 
 disconnect <- function(con) {

@@ -1,3 +1,5 @@
+# copy_to with overwrite=T does not work on Oracle. Global temp tables need to be truncated before being dropped.
+
 # test_that("Oracle dplyr works", {
 #   skip_if_not("OracleODBC-19" %in% odbc::odbcListDataSources()$name)
 #   skip_on_ci() # need development version of dbplyr

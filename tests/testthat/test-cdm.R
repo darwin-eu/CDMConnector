@@ -31,15 +31,17 @@
 #   expect_s3_class(df, "data.frame")
 # }
 #
-# test_that("local postgres cdm_from_con", {
-#   skip("manual test")
-#   skip_if(get_cdm_schema("local") == "")
-#   con <- get_connection("local")
-#   cdm_schema <- get_cdm_schema("local")
-#   write_schema <- get_write_schema("local")
-#   test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
-#   disconnect(con)
-# })
+# # test_that("local postgres cdm_from_con", {
+# #   skip("manual test")
+# #   skip_if(get_cdm_schema("local") == "")
+# #   con <- get_connection("local")
+# #   cdm_schema <- get_cdm_schema("local")
+# #   write_schema <- get_write_schema("local")
+# #   test_cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+# #   disconnect(con)
+# # })
+#
+#
 #
 # test_that("postgres cdm_from_con", {
 #   dbms <- "postgres"
@@ -63,7 +65,7 @@
 #
 # test_that("redshift cdm_from_con", {
 #   dbms <- "redshift"
-#   skip("failing test")
+#   # skip("failing test")
 #   skip_if(get_cdm_schema(dbms) == "")
 #   con <- get_connection(dbms)
 #   cdm_schema <- get_cdm_schema(dbms)
