@@ -314,7 +314,7 @@ cdm_name <- cdmName
 #' @export
 print.cdm_reference <- function(x, ...) {
   type <- class(x[[1]])[[1]]
-  cli::cat_line(pillar::style_subtle(glue::glue("# OMOP CDM reference ({type})")))
+  cli::cat_line(glue::glue("# OMOP CDM reference ({type})"))
   cli::cat_line("")
   cli::cat_line(paste("Tables:", paste(names(x), collapse = ", ")))
   invisible(x)
@@ -557,9 +557,10 @@ cdm_from_files <- function(path,
     feather = purrr::map(cdm_table_files, function(.) {
       arrow::read_feather(., as_data_frame = as_data_frame)
     })
-  ) %>%
-    magrittr::set_names(cdm_tables) %>%
-    magrittr::set_class("cdm_reference")
+  )
+
+  names(cdm) <- cdm_tables
+  class(cdm) <- "cdm_reference"
 
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL

@@ -31,7 +31,7 @@ dbToTest <- c(
   ,"postgres"
   ,"redshift"
   ,"sqlserver"
-  ,"oracle"
+  # ,"oracle" # requires development dbplyr version to work
   ,"snowflake"
   ,"bigquery"
 )

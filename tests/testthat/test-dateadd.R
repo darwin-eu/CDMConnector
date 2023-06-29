@@ -96,44 +96,27 @@ test_date_functions <- function(con, write_schema) {
   expect_equal(df$day, 1)
 }
 
-test_that("duckdb - date functions", {
-  write_schema <- get_write_schema("duckdb")
-  skip_if(write_schema == "")
-  test_date_functions(con, write_schema)
-  con <- get_connection("duckdb")
-  disconnect(con)
-})
+dbToTest <- c(
+  "duckdb"
+  ,"postgres"
+  ,"redshift"
+  ,"sqlserver"
+  # ,"oracle" # requires development dbplyr version to work
+  ,"snowflake"
+  ,"bigquery"
+)
 
-test_that("postgres - date functions", {
-  write_schema <- get_write_schema("postgres")
-  skip_if(write_schema == "")
-  test_date_functions(con, write_schema)
-  con <- get_connection("postgres")
-  disconnect(con)
-})
-
-test_that("sqlserver - date functions", {
-  con <- get_connection("sqlserver")
-  write_schema <- get_write_schema("sqlserver")
-  test_date_functions(con, write_schema)
-  disconnect(con)
-})
-
-test_that("redshift - date functions", {
-  write_schema <- get_write_schema("redshift")
-  skip_if(write_schema == "")
-  con <- get_connection("redshift")
-  test_date_functions(con, write_schema)
-  disconnect(con)
-})
-
-test_that("oracle - date functions", {
-  write_schema <- get_write_schema("oracle")
-  skip_if(write_schema == "")
-  con <- get_connection("oracle")
-  test_date_functions(con, write_schema)
-  disconnect(con)
-})
+# dbtype = "bigquery"
+for (dbtype in dbToTest) {
+  test_that(glue::glue("{dbtype} - dbi"), {
+    write_schema <- get_write_schema(dbtype)
+    skip_if(write_schema == "")
+    con <- get_connection(dbtype)
+    skip_if(is.null(con))
+    test_date_functions(con, write_schema)
+    disconnect(con)
+  })
+}
 
 # TODO as.Date translation fails on Oracle. asDate provides the workaround.
 # df <- date_tbl2 %>%
@@ -143,32 +126,15 @@ test_that("oracle - date functions", {
 #   .data$day_of_birth1
 # )))
 
-test_that("bigquery - date functions", {
-  write_schema <- get_write_schema("bigquery")
-  skip_if(write_schema == "")
-  con <- get_connection("bigquery")
-  suppressWarnings({
-    # Warning: <BigQueryConnection> uses an old dbplyr interface
-    # https://github.com/r-dbi/bigrquery/issues/508
-    test_date_functions(con, write_schema)
-  })
-  disconnect(con)
-})
-
-test_that("snowflake - date functions", {
-  write_schema <- get_write_schema("snowflake")
-  skip_if(write_schema == "")
-  con <- get_connection("snowflake")
-  test_date_functions(con, write_schema)
-  disconnect(con)
-})
-
-test_that("spark - date functions", {
-  skip("manual test")
-  skip_if_not("Databricks" %in% odbc::odbcListDataSources()$name)
-  con <- get_connection("spark")
-  write_schema <- get_write_schema("spark")
-  test_date_functions(con, write_schema)
-  disconnect(con)
-})
+# test_that("bigquery - date functions", {
+#   write_schema <- get_write_schema("bigquery")
+#   skip_if(write_schema == "")
+#   con <- get_connection("bigquery")
+#   suppressWarnings({
+#     # Warning: <BigQueryConnection> uses an old dbplyr interface
+#     # https://github.com/r-dbi/bigrquery/issues/508
+#     test_date_functions(con, write_schema)
+#   })
+#   disconnect(con)
+# })
 
