@@ -13,17 +13,17 @@ cohort_collapse <- function(x) {
     dplyr::transmute(
       .data$cohort_definition_id,
       .data$subject_id,
-      start_date = dbplyr::win_over(sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id", "cohort_end_date"),   con = .data$src$con),
-      end_date   = dbplyr::win_over(sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id", "cohort_start_date"), con = .data$src$con),
-      prev_start = dbplyr::win_over(sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = .data$src$con),
-      prev_end   = dbplyr::win_over(sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = .data$src$con)) %>%
-    distinct() %>%
-    group_by(.data$cohort_definition_id) %>%
+      start_date = dbplyr::win_over(dbplyr::sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id", "cohort_end_date"),   con = .data$src$con),
+      end_date   = dbplyr::win_over(dbplyr::sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id", "cohort_start_date"), con = .data$src$con),
+      prev_start = dbplyr::win_over(dbplyr::sql("min(cohort_start_date)"), partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = .data$src$con),
+      prev_end   = dbplyr::win_over(dbplyr::sql("max(cohort_end_date)"),   partition = c("cohort_definition_id", "subject_id"), frame = c(-Inf, -1), order = "cohort_start_date", con = .data$src$con)) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(.data$cohort_definition_id) %>%
     dplyr::mutate(cohort_start_date = dplyr::case_when(
-      !is.na(prev_start) & between(start_date, prev_start, prev_end) ~ prev_start,
-      TRUE ~ start_date)) %>%
+      !is.na(.data$prev_start) & between(.data$start_date, .data$prev_start, .data$prev_end) ~ .data$prev_start,
+      TRUE ~ .data$start_date)) %>%
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date) %>%
-    dplyr::summarise(cohort_end_date = max(end_date, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::summarise(cohort_end_date = max(.data$end_date, na.rm = TRUE), .groups = "drop") %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::distinct()
 }
@@ -40,9 +40,7 @@ cohort_collapse <- function(x) {
 cohort_union <- function(x, y) {
   checkmate::assert_class(x, "tbl")
   checkmate::assert_class(y, "tbl")
-  checkmate::assert_integerish(id, len = 1, lower = 0)
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
-  cohort_definition_id <- as.integer(cohort_definition_id)
 
   y %>%
     dplyr::distinct(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%

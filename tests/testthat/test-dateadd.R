@@ -142,18 +142,20 @@ test_that("oracle - date functions", {
 test_that("bigquery - date functions", {
   con <- get_connection("bigquery")
   write_schema <- get_write_schema("bigquery")
-  test_date_functions(con, write_schema)
+  suppressWarnings({
+    # Warning: <BigQueryConnection> uses an old dbplyr interface
+    # https://github.com/r-dbi/bigrquery/issues/508
+    test_date_functions(con, write_schema)
+  })
   disconnect(con)
 })
 
 test_that("snowflake - date functions", {
-  # skip("failing test")
   con <- get_connection("snowflake")
   write_schema <- get_write_schema("snowflake")
   test_date_functions(con, write_schema)
   disconnect(con)
 })
-
 
 test_that("spark - date functions", {
   skip("manual test")

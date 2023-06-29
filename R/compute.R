@@ -112,10 +112,10 @@ appendPermanent <- function(x, name, schema = NULL) {
   fullNameQuoted <- getFullTableNameQuoted(x, name, schema)
   existingTables <- CDMConnector::listTables(x$src$con, schema = schema)
   if (!(tolower(name) %in% tolower(existingTables))) {
-    return(computePermanent(x = x,
-                            name = name,
-                            schema = schema,
-                            overwrite = FALSE))
+    return(.computePermanent(x = x,
+                             name = name,
+                             schema = schema,
+                             overwrite = FALSE))
   }
 
   sql <- glue::glue("INSERT INTO {fullNameQuoted} {dbplyr::sql_render(x)}")
