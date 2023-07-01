@@ -878,6 +878,22 @@ getInclusionMaskId <- function(numberInclusion) {
   })
 }
 
+
+caprConceptToDataframe <- function(x) {
+  tibble::tibble(
+    conceptId = purrr::map_int(x@Expression, ~.@Concept@concept_id),
+    conceptCode = purrr::map_chr(x@Expression, ~.@Concept@concept_code),
+    conceptName = purrr::map_chr(x@Expression, ~.@Concept@concept_name),
+    domainId = purrr::map_chr(x@Expression, ~.@Concept@domain_id),
+    vocabularyId = purrr::map_chr(x@Expression, ~.@Concept@vocabulary_id),
+    standardConcept = purrr::map_chr(x@Expression, ~.@Concept@standard_concept),
+    includeDescendants = purrr::map_lgl(x@Expression, "includeDescendants"),
+    isExcluded = purrr::map_lgl(x@Expression, "isExcluded"),
+    includeMapped = purrr::map_lgl(x@Expression, "includeMapped")
+  )
+
+}
+
 # Internal function to create a new generated cohort set from a list of concept sets
 #
 # @description
@@ -919,7 +935,7 @@ generateConceptCohortSet <- function(cdm,
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
 
-  if (!is.list(conceptSet)) {
+  if (!is.list(conceptSet) || methods::is(conceptSet, "ConceptSet")) {
     conceptSet <- list("unnamed cohort" = conceptSet)
   }
 
@@ -932,7 +948,7 @@ generateConceptCohortSet <- function(cdm,
 
     df <- dplyr::tibble(cohort_definition_id = seq_along(conceptSet),
                         cohort_name = names(conceptSet),
-                        df = purrr::map(conceptSet, as.data.frame)) %>%
+                        df = purrr::map(conceptSet, caprConceptToDataframe)) %>%
       tidyr::unnest(cols = df) %>%
       dplyr::select("cohort_definition_id",
                     "cohort_name",
@@ -974,7 +990,7 @@ generateConceptCohortSet <- function(cdm,
       dplyr::filter(., .data$include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
         dplyr::select("cohort_definition_id", "cohort_name", concept_id = "descendant_concept_id", "is_excluded") %>%
-        dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), tempName), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
+        dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), inSchema(write_schema, tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
     } else . } %>%
     dplyr::filter(!.data$is_excluded) %>%
     dplyr::left_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
