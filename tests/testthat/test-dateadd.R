@@ -101,7 +101,7 @@ dbToTest <- c(
   ,"postgres"
   ,"redshift"
   ,"sqlserver"
-  # ,"oracle" # requires development dbplyr version to work
+  # # ,"oracle" # requires development dbplyr version to work
   ,"snowflake"
   ,"bigquery"
 )
@@ -111,8 +111,9 @@ for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
     if (dbtype != "duckdb") skip_on_ci()
     write_schema <- get_write_schema(dbtype)
+    skip_if(any(write_schema == ""))
     con <- get_connection(dbtype)
-    skip_if(any(write_schema == "") || is.null(con))
+    skip_if(is.null(con))
     test_date_functions(con, write_schema)
     disconnect(con)
   })

@@ -1021,7 +1021,7 @@ generateConceptCohortSet <- function(cdm,
   }
 
   # rowbind results
-  if (!is.na(domains) && length(domains) > 0) {
+  if (!any(is.na(domains)) && length(domains) > 0) {
     cohort <- purrr::map(domains, get_domain) %>% purrr::reduce(dplyr::union_all)
   } else {
     # create the base cohort table
