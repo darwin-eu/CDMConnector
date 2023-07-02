@@ -71,16 +71,20 @@ test_date_functions <- function(con, write_schema) {
   expect_true(all(lubridate::interval(df$date1, df$date3) / lubridate::days(1) == -1))
 
   # test creation of date from parts
-  df <- date_tbl %>%
-    dplyr::transmute(date_from_parts = !!asDate(paste0(
-      as.character(.data$y), "-",
-      as.character(.data$m), "-",
-      as.character(.data$d)
-    ))) %>%
-    dplyr::collect() %>%
-    dplyr::distinct()
+  if (dbms(con) != "bigquery") {
+    # paste0 translation incorrect on bigquery
+    df <- date_tbl %>%
+      dplyr::transmute(date_from_parts = paste0(
+        as.character(.data$y), "-",
+        as.character(.data$m), "-",
+        as.character(.data$d)
+      )) %>%
+      dplyr::mutate(date_from_parts = !!asDate(date_from_parts)) %>%
+      dplyr::collect() %>%
+      dplyr::distinct()
 
-  expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
+    expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
+  }
 
   # test datepart
   df <- date_tbl %>%
@@ -101,7 +105,7 @@ dbToTest <- c(
   ,"postgres"
   ,"redshift"
   ,"sqlserver"
-  # # ,"oracle" # requires development dbplyr version to work
+  ,"oracle"
   ,"snowflake"
   ,"bigquery"
 )
