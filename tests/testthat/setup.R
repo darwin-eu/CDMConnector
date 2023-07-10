@@ -15,7 +15,7 @@ get_connection <- function(dbms) {
     return(DBI::dbConnect(duckdb::duckdb(), eunomia_dir()))
   }
 
-  if (dbms == "postgres") {
+  if (dbms == "postgres" && Sys.getenv("CDM5_POSTGRESQL_DBNAME") != "") {
     return(DBI::dbConnect(RPostgres::Postgres(),
                           dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
                           host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
