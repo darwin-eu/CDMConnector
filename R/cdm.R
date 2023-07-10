@@ -81,7 +81,7 @@ cdm_from_con <- function(con,
   }
 
   cdm <- purrr::map(cdm_tables_prefixed, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
-                    dplyr::rename_all(tolower)) %>%
+                      dplyr::rename_all(tolower)) %>%
     rlang::set_names(cdm_tables)
 
   if (!is.null(write_schema)) {
@@ -204,7 +204,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   }
 
   cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
-                    dplyr::rename_all(tolower)) %>%
+                      dplyr::rename_all(tolower)) %>%
     rlang::set_names(tolower(cdm_tables))
 
   # Try a few different things to figure out what the cdm version is
@@ -646,9 +646,9 @@ snapshot <- function(cdm) {
   assert_tables(cdm, tables = c("cdm_source", "vocabulary"), empty.ok = TRUE)
   assert_tables(cdm, tables = c("person", "observation_period"))
 
-  person_cnt <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
+  person_count <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
 
-  observation_period_cnt <- dplyr::tally(cdm$observation_period, name = "n") %>%
+  observation_period_count <- dplyr::tally(cdm$observation_period, name = "n") %>%
     dplyr::pull(.data$n)
 
   vocab_version <-
@@ -664,36 +664,35 @@ snapshot <- function(cdm) {
 
   cdm_source <- dplyr::collect(cdm$cdm_source)
   if (nrow(cdm_source) == 0) {
-    cdm_source <- dplyr::tibble(vocabulary_version = vocab_version,
-                                cdm_source_name = "",
-                                cdm_holder = "",
-                                cdm_release_date = "",
-                                cdm_version = attr(cdm, "cdm_version"))
+    cdm_source <- dplyr::tibble(
+      vocabulary_version = vocab_version,
+      cdm_source_name = "",
+      cdm_holder = "",
+      cdm_release_date = "",
+      cdm_version = attr(cdm, "cdm_version")
+    )
   }
 
   cdm_source %>%
-    dplyr::mutate(vocabulary_version = dplyr::coalesce(.env$vocab_version,
-                                                       .data$vocabulary_version)) %>%
     dplyr::mutate(
-      person_cnt = .env$person_cnt,
-      observation_period_cnt = .env$observation_period_cnt
+      cdm_name = attr(cdm, "cdm_name"),
+      vocabulary_version = dplyr::coalesce(
+        .env$vocab_version, .data$vocabulary_version
+      ),
+      person_count = .env$person_count,
+      observation_period_count = .env$observation_period_count
     ) %>%
     dplyr::select(
+      "cdm_name",
       "cdm_source_name",
       "cdm_version",
       "cdm_holder",
       "cdm_release_date",
       "vocabulary_version",
-      "person_cnt",
-      "observation_period_cnt"
+      "person_count",
+      "observation_period_count"
     ) %>%
-    dplyr::mutate(cdm_schema = paste(attr(cdm, "cdm_schema"), collapse = "."),
-                  write_schema = attr(cdm, "write_schema"),
-                  cdm_name = attr(cdm, "cdm_name")) %>%
-    dplyr::mutate_all(as.character) %>%
-    tidyr::gather(key = "attribute", value = "value") %>%
-    dplyr::mutate(value = ifelse(.data$value == "", NA_character_, .data$value)) %>%
-    dplyr::tibble()
+    dplyr::mutate_all(as.character)
 }
 
 #' Disconnect the connection of the cdm object
