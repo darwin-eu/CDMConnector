@@ -1076,7 +1076,7 @@ generateConceptCohortSet <- function(cdm,
                      n_records = dplyr::n()) %>%
     dplyr::left_join(cohortSetRef, ., by = "cohort_definition_id") %>%
     dplyr::mutate(number_subjects = ifelse(is.na(.data$n_subjects), 0L, .data$n_subjects),
-                  number_records  = ifelse(is.na(.data$n_subjects), 0L, .data$n_subjects)) %>%
+                  number_records  = ifelse(is.na(.data$n_records), 0L, .data$n_records)) %>%
     dplyr::select("cohort_definition_id", "number_records", "number_subjects") %>%
     CDMConnector::computeQuery(temporary = attr(cdm, "cohort_as_temp"),
                                schema = attr(cdm, "write_schema"),
