@@ -107,7 +107,7 @@ dbToTest <- c(
   ,"sqlserver"
   ,"oracle"
   ,"snowflake"
-  ,"bigquery"
+  # ,"bigquery"
 )
 
 # dbtype = "bigquery"

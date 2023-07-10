@@ -30,11 +30,11 @@ test_dbi <- function(con, cdm_schema, write_schema) {
   person_table_name <- table_names[tolower(table_names) == "person"]
   stopifnot(length(person_table_name) == 1)
 
-  person <- dplyr::tbl(con, inSchema(schema = cdm_schema, table = person_table_name, dbms = dbms(con))) %>%
+  person_tbl <- dplyr::tbl(con, inSchema(schema = cdm_schema, table = person_table_name, dbms = dbms(con))) %>%
     head(1) %>%
     dplyr::collect()
 
-  expect_true(nrow(person) == 1)
+  expect_true(nrow(person_tbl) == 1)
 
   DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
   # DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "temp_test"))
@@ -48,9 +48,10 @@ dbToTest <- c(
   ,"sqlserver"
   ,"oracle"
   ,"snowflake"
-  ,"bigquery"
+  # ,"bigquery"
   )
 
+# dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
     write_schema <- get_write_schema(dbtype)

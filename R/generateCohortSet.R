@@ -131,6 +131,21 @@ generateCohortSet <- function(cdm,
                               computeAttrition = TRUE,
                               overwrite = FALSE) {
 
+  # check inputs ----
+  write_schema <- attr(cdm, "write_schema")
+  con <- attr(cdm, "dbcon")
+  checkmate::assertClass(cdm, "cdm_reference")
+  checkmate::assert_character(write_schema,
+                              min.chars = 1,
+                              min.len = 1,
+                              max.len = 2,
+                              null.ok = FALSE)
+
+  checkmate::assertLogical(computeAttrition, len = 1)
+  checkmate::assertLogical(overwrite, len = 1)
+  checkmate::assert_true(DBI::dbIsValid(con))
+  assert_write_schema(cdm) # required for now
+
   if (is.numeric(cohortSet) ||
       (!is.data.frame(cohortSet) && is.list(cohortSet) && is.numeric(cohortSet[[1]])) ||
       methods::is(cohortSet, "ConceptSet") ||
@@ -149,14 +164,6 @@ generateCohortSet <- function(cdm,
 
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
-
-  # check inputs ----
-  checkmate::assertClass(cdm, "cdm_reference")
-  checkmate::assert_character(attr(cdm, "write_schema"),
-                              min.chars = 1,
-                              min.len = 1,
-                              max.len = 2,
-                              null.ok = FALSE)
 
   if (!is.data.frame(cohortSet)) {
     if (!is.list(cohortSet)) {
@@ -210,18 +217,13 @@ generateCohortSet <- function(cdm,
   }
   checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE, pattern = "[a-z_]+")
 
-  checkmate::assertLogical(computeAttrition, len = 1)
-  checkmate::assertLogical(overwrite, len = 1)
-  checkmate::assert_true(DBI::dbIsValid(attr(cdm, "dbcon")))
-
   if (name != tolower(name)) {
     rlang::abort("Cohort table names must be lowercase.")
   }
 
-  writeSchema <- attr(cdm, "write_schema")
-  con <- attr(cdm, "dbcon")
 
-  existingTables <- CDMConnector::listTables(con, writeSchema)
+
+  existingTables <- CDMConnector::listTables(con, write_schema)
 
   if ((name %in% existingTables) && isFALSE(overwrite)) {
     rlang::abort(glue::glue("The cohort table {name} already exists.
@@ -244,100 +246,7 @@ generateCohortSet <- function(cdm,
   }
 
   # Create the cohort tables ----
-
-  if (name %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, name))
-  }
-
-  DBI::dbCreateTable(con,
-                     name = inSchema(writeSchema, name),
-                     fields = c(
-                       cohort_definition_id = "INT",
-                       subject_id = "BIGINT",
-                       cohort_start_date = "DATE",
-                       cohort_end_date = "DATE"
-                     ))
-
-  stopifnot(name %in% listTables(con, writeSchema))
-
-  if (computeAttrition) {
-
-    nm <- paste0(name, "_inclusion")
-
-    if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-    }
-
-    DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm),
-                       fields = c(
-                         cohort_definition_id = "INT",
-                         rule_sequence = "INT",
-                         name = "VARCHAR(255)",
-                         description = "VARCHAR(1000)")
-    )
-
-    nm <- paste0(name, "_inclusion_result") # used for attrition
-
-    if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-    }
-
-    DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm),
-                       fields = c(
-                         cohort_definition_id = "INT",
-                         inclusion_rule_mask = "INT",
-                         person_count = "INT",
-                         mode_id = "INT")
-    )
-
-    nm <- paste0(name, "_inclusion_stats")
-
-    if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-    }
-
-    DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm),
-                       fields = c(
-                         cohort_definition_id = "INT",
-                         rule_sequence = "INT",
-                         person_count = "INT",
-                         gain_count = "INT",
-                         person_total = "INT",
-                         mode_id = "INT")
-    )
-
-
-    nm <- paste0(name, "_summary_stats")
-
-    if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-    }
-
-    DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm),
-                       fields = c(
-                         cohort_definition_id = "INT",
-                         base_count = "INT",
-                         final_count = "INT",
-                         mode_id = "INT")
-    )
-
-    nm <- paste0(name, "_censor_stats")
-
-    if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
-    }
-
-    DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm),
-                       fields = c(
-                         cohort_definition_id = "INT",
-                         lost_count = "INT")
-    )
-  }
+  createCohortTables(con, write_schema, name, computeAttrition)
 
   # Run the OHDSI-SQL ----
 
@@ -387,16 +296,24 @@ generateCohortSet <- function(cdm,
       sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
     }
 
+    if (dbms(con) == "oracle") {
+      sql <- SqlRender::translate("IF OBJECT_ID('#Codesets', 'U') IS NOT NULL DROP TABLE #Codesets;",
+                                  targetDialect = "oracle")
+      DBI::dbExecute(con, sql)
+    }
+
     purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
     cli::cli_progress_update(set = i)
   }
 
-  cohort_ref <- dplyr::tbl(con, inSchema(writeSchema, name))
+  toupperIfOracle <- function(x) if(dbms(con) == "oracle") toupper(x) else x
+
+  cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name))
 
   # Create attrition attribute ----
   if (computeAttrition) {
     cohort_attrition_ref <- computeAttritionTable(cdm,
-                                                  cohortStem = name,
+                                                  cohortStem = toupperIfOracle(name),
                                                   cohortSet = cohortSet,
                                                   overwrite = overwrite)
   } else {
@@ -405,15 +322,15 @@ generateCohortSet <- function(cdm,
 
   # Create cohort_set attribute -----
   if (paste0(name, "_set") %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_set")))
+    DBI::dbRemoveTable(con, inSchema(write_schema, toupperIfOracle(paste0(name, "_set"))))
   }
 
   DBI::dbWriteTable(con,
-                    name = inSchema(writeSchema, paste0(name, "_set")),
+                    name = inSchema(write_schema, toupperIfOracle(paste0(name, "_set"))),
                     value = as.data.frame(cohortSet[,c("cohort_definition_id", "cohort_name")]),
                     overwrite = TRUE)
 
-  cohort_set_ref <- dplyr::tbl(con, inSchema(writeSchema, paste0(name, "_set")))
+  cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, toupperIfOracle(paste0(name, "_set"))))
 
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
@@ -431,15 +348,6 @@ generateCohortSet <- function(cdm,
                  schema = attr(cdm, "write_schema"),
                  temporary = FALSE,
                  overwrite = TRUE)
-
-  # Clean up tables ---- TODO decide how to handle this
-  if (FALSE) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion")))
-    DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion_result")))
-    DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_inclusion_stats")))
-    DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_summary_stats")))
-    DBI::dbRemoveTable(con, inSchema(writeSchema, paste0(name, "_censor_stats")))
-  }
 
   # Create the object. Let the constructor handle getting the counts.----
   cdm[[name_without_prefix]] <- new_generated_cohort_set(
@@ -596,7 +504,7 @@ new_generated_cohort_set <- function(cohort_ref,
 
   checkmate::assertSubset(
     c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"),
-    choices = names(cohort_ref))
+    choices = colnames(cohort_ref))
 
     stopifnot(colnames(cohort_set_ref)[1] == "cohort_definition_id",
               colnames(cohort_set_ref)[2] == "cohort_name")
@@ -613,13 +521,13 @@ new_generated_cohort_set <- function(cohort_ref,
 
   if (!is.null(cohort_attrition_ref)) {
     checkmate::assertSubset(c("cohort_definition_id"),
-                            choices = names(cohort_attrition_ref))
+                            choices = colnames(cohort_attrition_ref))
   }
 
   checkmate::assertSubset(c("cohort_definition_id",
                             "number_records",
                             "number_subjects"),
-                          choices = names(cohort_count_ref))
+                          choices = colnames(cohort_count_ref))
 
   # create the object
   class(cohort_ref) <- c("GeneratedCohortSet", class(cohort_ref))
@@ -742,6 +650,7 @@ computeAttritionTable <- function(cdm,
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
   inclusionResultTableName <- paste0(cohortStem, "_inclusion_result")
+  if (dbms(attr(cdm, "dbcon")) == "oracle") inclusionResultTableName <- toupper(inclusionResultTableName)
   schema <- attr(cdm, "write_schema")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, min.chars = 1)
 
@@ -756,6 +665,7 @@ computeAttritionTable <- function(cdm,
   # Bring the inclusion result table to R memory
   inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName, dbms(con))) %>%
     dplyr::collect() %>%
+    dplyr::rename_all(tolower) %>%
     dplyr::mutate(inclusion_rule_mask = as.numeric(.data$inclusion_rule_mask))
 
   attritionList <- list()
@@ -781,11 +691,13 @@ computeAttritionTable <- function(cdm,
       attrition <- dplyr::tibble(
         cohort_definition_id = id,
         number_records = dplyr::tbl(con, inSchema(schema, cohortTableName, dbms(con))) %>%
+          dplyr::rename_all(tolower) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::tally() %>%
           dplyr::pull("n") %>%
           as.numeric(),
         number_subjects = dplyr::tbl(con, inSchema(schema, cohortTableName, dbms(con))) %>%
+          dplyr::rename_all(tolower) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::select("subject_id") %>%
           dplyr::distinct() %>%
@@ -841,7 +753,8 @@ computeAttritionTable <- function(cdm,
   }
 
   attrition <- attritionList %>%
-    dplyr::bind_rows()
+    dplyr::bind_rows() %>%
+    dplyr::rename_all(tolower)
 
   # upload attrition table to database
   DBI::dbWriteTable(con,
@@ -894,46 +807,45 @@ caprConceptToDataframe <- function(x) {
 
 }
 
-# Internal function to create a new generated cohort set from a list of concept sets
-#
-# @description
-#
-# Generate a new cohort set from one or more concept sets. Each
-# concept set will result in one cohort and represent the time during which
-# the concept was observed for each subject/person. Concept sets can be
-# passed to this function as:
-# \itemize{
-#  \item{A named list of numeric vectors, one vector per concept set}
-#  \item{A named list of Capr concept sets}
-# }
-#
-# Clinical observation records will be looked up in the respective domain tables
-# using the vocabulary in the CDM. If a required domain table does not exist in
-# the cdm object a warning will be given.
-# Concepts that are not in the vocabulary or in the data will be silently ignored.
-# If end dates are missing or do not exist, as in the case of the procedure and
-# observation domains, the the start date will be used as the end date.
-#
-#
-#
-# @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
-# @param conceptSet A named list of numeric vectors or Capr concept sets
-# @param name The name of the new generated cohort table as a character string
-# @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE
-#
-# @return A cdm reference object with the new generated cohort set table added
-# @export
+#' Internal function to create a new generated cohort set from a list of concept sets
+#'
+#' @description
+#'
+#' Generate a new cohort set from one or more concept sets. Each
+#' concept set will result in one cohort and represent the time during which
+#' the concept was observed for each subject/person. Concept sets can be
+#' passed to this function as:
+#' \itemize{
+#'  \item{A named list of numeric vectors, one vector per concept set}
+#'  \item{A named list of Capr concept sets}
+#' }
+#'
+#' Clinical observation records will be looked up in the respective domain tables
+#' using the vocabulary in the CDM. If a required domain table does not exist in
+#' the cdm object a warning will be given.
+#' Concepts that are not in the vocabulary or in the data will be silently ignored.
+#' If end dates are missing or do not exist, as in the case of the procedure and
+#' observation domains, the the start date will be used as the end date.
+#'
+#' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
+#' @param conceptSet A named list of numeric vectors or Capr concept sets
+#' @param name The name of the new generated cohort table as a character string
+#' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE
+#'
+#' @return A cdm reference object with the new generated cohort set table added
+#' @export
 generateConceptCohortSet <- function(cdm,
                                      conceptSet = NULL,
                                      name = "cohort",
-                                     overwrite = FALSE,
-                                     computeAttrition = TRUE) {
+                                     overwrite = FALSE) {
 
   checkmate::checkClass(cdm, "cdm_reference")
-  assert_write_schema(cdm) # required for now
-  write_schema <- attr(cdm, "write_schema")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+
+  if (isFALSE(attr(cdm, "cohort_as_temp"))) {
+    assert_write_schema(cdm)
+  }
 
   if (!is.list(conceptSet) || methods::is(conceptSet, "ConceptSet")) {
     conceptSet <- list("unnamed cohort" = conceptSet)
@@ -1083,23 +995,20 @@ generateConceptCohortSet <- function(cdm,
                                name = paste0(cohort_table_name, "_count"),
                                overwrite = overwrite)
 
-  if (computeAttrition) {
-    cohortAttritionRef <- cohortCountRef %>%
-      dplyr::transmute(
-        .data$cohort_definition_id,
-        .data$number_records,
-        .data$number_subjects,
-        reason_id = 1L,
-        reason = "Qualifying initial records",
-        excluded_records = 0L,
-        excluded_subjects = 0L) %>%
-      CDMConnector::computeQuery(temporary = attr(cdm, "cohort_as_temp"),
-                                 schema = attr(cdm, "write_schema"),
-                                 name = paste0(cohort_table_name, "_attrition"),
-                                 overwrite = overwrite)
-  } else {
-    cohortAttritionRef <- NULL
-  }
+
+  cohortAttritionRef <- cohortCountRef %>%
+    dplyr::transmute(
+      .data$cohort_definition_id,
+      .data$number_records,
+      .data$number_subjects,
+      reason_id = 1L,
+      reason = "Qualifying initial records",
+      excluded_records = 0L,
+      excluded_subjects = 0L) %>%
+    CDMConnector::computeQuery(temporary = attr(cdm, "cohort_as_temp"),
+                               schema = attr(cdm, "write_schema"),
+                               name = paste0(cohort_table_name, "_attrition"),
+                               overwrite = overwrite)
 
   cdm[[name]] <- CDMConnector::newGeneratedCohortSet(
     cohortRef = cohortRef,

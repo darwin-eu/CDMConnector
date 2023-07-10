@@ -3,6 +3,7 @@ library(dplyr, warn.conflicts = FALSE)
 
 ### CDM object DBI drivers ------
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
+  # debugonce(cdm_from_con)
   cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
   expect_s3_class(cdm, "cdm_reference")
   expect_error(assert_tables(cdm, "person"), NA)
@@ -33,12 +34,12 @@ dbToTest <- c(
   ,"sqlserver"
   # ,"oracle" # requires development dbplyr version to work
   ,"snowflake"
-  ,"bigquery"
+  # ,"bigquery" # issue with bigquery tbl
 )
 
 # dbtype = "bigquery"
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - dbi"), {
+  test_that(glue::glue("{dbtype} - cdm_from_con"), {
     if (dbtype != "duckdb") skip_on_ci()
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)

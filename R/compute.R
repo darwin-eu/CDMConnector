@@ -56,17 +56,7 @@
 
   DBI::dbExecute(x$src$con, sql)
 
-  if (methods::is(x$src$con, "duckdb_connection")) {
-    ref <- dplyr::tbl(x$src$con, paste(c(schema, name), collapse = "."))
-  } else if (length(schema) == 2) {
-    ref <- dplyr::tbl(x$src$con,
-                      dbplyr::in_catalog(schema[[1]], schema[[2]], name))
-  } else if (length(schema) == 1) {
-    ref <- dplyr::tbl(x$src$con, dbplyr::in_schema(schema, name))
-  } else {
-    ref <- dplyr::tbl(x$src$con, name)
-  }
-  return(ref)
+  dplyr::tbl(x$src$con, inSchema(schema = schema, table = name, dbms = dbms(x$src$con)))
 }
 
 #' Run a dplyr query and add the result set to an existing
@@ -197,6 +187,10 @@ computeQuery <- function(x,
                          schema = NULL,
                          overwrite = FALSE,
                          ...) {
+
+  if (is.data.frame(x) || (methods::is(x, "Table") && methods::is(x, "ArrowTabular"))) {
+    return(x)
+  }
 
   checkmate::assertLogical(temporary, len = 1)
 
@@ -359,4 +353,22 @@ getFullTableNameQuoted <- function(x, name, schema) {
   }
   return(fullNameQuoted)
 }
+
+# #' ComputeQuery for cohort tables
+# #'
+# #' @param x a tbl_dbi pointing to a generated cohort
+# #'
+# #' @return
+# #' @export
+# #'
+# #' @examples
+# computeCohort <- function(x) {
+#   # run the query keep the attributes
+#
+#   attributes()
+#
+#
+# }
+
+
 

@@ -4,7 +4,7 @@
 # @return A dplyr query that collapses any overlapping periods. This is very similar to union.
 cohort_collapse <- function(x) {
   checkmate::assert_true(methods::is(x, "tbl_dbi"))
-  checkmate::assert_set_equal(colnames(x), c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"))
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
   checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
 
   # note this assumes all columns are fully populated and cohort_end_date >= cohort_start_date
@@ -13,23 +13,28 @@ cohort_collapse <- function(x) {
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
     dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date) %>%
     dplyr::mutate(
-      prev_start = dbplyr::win_over(
-        dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(x$src$con, "cohort_start_date")})')),
-        partition = c("cohort_definition_id", "subject_id"),
-        frame = c(-Inf, -1),
-        order = "cohort_start_date",
-        con = x$src$con),
-      prev_end = dbplyr::win_over(
-        dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(x$src$con, "cohort_end_date")})')),
-        partition = c("cohort_definition_id", "subject_id"),
-        frame = c(-Inf, -1),
-        order = "cohort_start_date",
-        con = x$src$con)
+      prev_start = dplyr::coalesce(
+        dbplyr::win_over(
+          dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(x$src$con, "cohort_start_date")})')),
+          partition = c("cohort_definition_id", "subject_id"),
+          frame = c(-Inf, -1),
+          order = "cohort_start_date",
+          con = x$src$con),
+        .data$cohort_start_date),
+      prev_end = dplyr::coalesce(
+        dbplyr::win_over(
+          dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(x$src$con, "cohort_end_date")})')),
+          partition = c("cohort_definition_id", "subject_id"),
+          frame = c(-Inf, -1),
+          order = "cohort_start_date",
+          con = x$src$con),
+        .data$cohort_end_date)
     ) %>%
-    dplyr::mutate(pmin_end   = ifelse(!is.na(.data$prev_end) & (.data$prev_end < .data$cohort_end_date),     .data$prev_end,   .data$cohort_end_date),
-                  pmax_start = ifelse(!is.na(.data$prev_end) & (.data$prev_start > .data$cohort_start_date), .data$prev_start, .data$cohort_start_date)) %>%
-    dplyr::mutate(overlap = !!datediff("pmax_start", "pmin_end") + 1) %>%
-    dplyr::mutate(groups = cumsum(ifelse(.data$overlap > 0, 0, 1))) %>%
+    dplyr::mutate(groups = cumsum(ifelse(dplyr::between(.data$cohort_start_date, .data$prev_start, .data$prev_end), 0, 1))) %>%
+    # dplyr::mutate(pmin_end   = ifelse(!is.na(.data$prev_end) & (.data$prev_end < .data$cohort_end_date),     .data$prev_end,   .data$cohort_end_date),
+                  # pmax_start = ifelse(!is.na(.data$prev_end) & (.data$prev_start > .data$cohort_start_date), .data$prev_start, .data$cohort_start_date)) %>%
+    # dplyr::mutate(overlap = !!datediff("pmax_start", "pmin_end") + 1) %>%
+    # dplyr::mutate(groups = cumsum(ifelse(.data$overlap > 0, 0, 1))) %>%
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$groups, .add = FALSE) %>%
     dplyr::summarize(cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
                      cohort_end_date = max(.data$cohort_end_date, na.rm = TRUE),
@@ -50,6 +55,15 @@ cohort_union <- function(x, y) {
   checkmate::assert_class(x, "tbl")
   checkmate::assert_class(y, "tbl")
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(y))
+
+  cohort_id <- y %>%
+    dplyr::distinct(.data$cohort_definition_id) %>%
+    dplyr::pull(1)
+
+  if (length(cohort_id) != 1) {
+    rlang::abort("cohort table y can only contain one cohort when performing an union!")
+  }
 
   y %>%
     dplyr::distinct(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
