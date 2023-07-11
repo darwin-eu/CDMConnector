@@ -121,9 +121,9 @@ readCohortSet <- read_cohort_set
 #'
 #' print(cdm$cohort)
 #'
-#' attrition(cdm$cohort)
-#' settings(cdm$cohort)
-#' cohortCounts(cdm$cohort)
+#' cohortAttrition(cdm$cohort)
+#' cohortSet(cdm$cohort)
+#' cohortCount(cdm$cohort)
 #' }
 generateCohortSet <- function(cdm,
                               cohortSet,
