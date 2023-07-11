@@ -651,6 +651,15 @@ snapshot <- function(cdm) {
   observation_period_count <- dplyr::tally(cdm$observation_period, name = "n") %>%
     dplyr::pull(.data$n)
 
+  observation_period_range <- cdm$observation_period %>%
+    dplyr::summarise(
+      max = max(.data$observation_period_end_date),
+      min = min(.data$observation_period_start_date)
+    ) %>%
+    dplyr::collect()
+
+  execution_date <- as.character(format(Sys.Date(), "%Y-%m-%d"))
+
   vocab_version <-
     cdm$vocabulary %>%
     dplyr::filter(.data$vocabulary_id == "None") %>%
@@ -675,12 +684,16 @@ snapshot <- function(cdm) {
 
   cdm_source %>%
     dplyr::mutate(
-      cdm_name = attr(cdm, "cdm_name"),
+      cdm_name = dplyr::coalesce(attr(cdm, "cdm_name"), as.character(NA)),
       vocabulary_version = dplyr::coalesce(
         .env$vocab_version, .data$vocabulary_version
       ),
       person_count = .env$person_count,
-      observation_period_count = .env$observation_period_count
+      observation_period_count = .env$observation_period_count,
+      earliest_observation_period_start_date =
+        .env$observation_period_range$min,
+      latest_observation_period_end_date = .env$observation_period_range$max,
+      execution_date = .env$execution_date
     ) %>%
     dplyr::select(
       "cdm_name",
@@ -690,7 +703,10 @@ snapshot <- function(cdm) {
       "cdm_release_date",
       "vocabulary_version",
       "person_count",
-      "observation_period_count"
+      "observation_period_count",
+      "earliest_observation_period_start_date",
+      "latest_observation_period_end_date",
+      "execution_date"
     ) %>%
     dplyr::mutate_all(as.character)
 }
