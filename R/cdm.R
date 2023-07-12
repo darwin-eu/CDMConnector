@@ -658,7 +658,7 @@ snapshot <- function(cdm) {
     ) %>%
     dplyr::collect()
 
-  execution_date <- as.character(format(Sys.Date(), "%Y-%m-%d"))
+  snapshot_date <- as.character(format(Sys.Date(), "%Y-%m-%d"))
 
   vocab_version <-
     cdm$vocabulary %>%
@@ -695,7 +695,7 @@ snapshot <- function(cdm) {
       earliest_observation_period_start_date =
         .env$observation_period_range$min,
       latest_observation_period_end_date = .env$observation_period_range$max,
-      execution_date = .env$execution_date
+      snapshot_date = .env$snapshot_date
     ) %>%
     dplyr::select(
       "cdm_name",
@@ -710,7 +710,7 @@ snapshot <- function(cdm) {
       "observation_period_count",
       "earliest_observation_period_start_date",
       "latest_observation_period_end_date",
-      "execution_date"
+      "snapshot_date"
     ) %>%
     dplyr::mutate_all(as.character)
 }
