@@ -233,6 +233,23 @@ computeQuery <- function(x,
     attr(out, "cdm_reference") <- cdm_reference
   }
 
+  # retain cohort attributes if output is a cohort table but don't update them
+  if (all(c("subject_id", "cohort_definition_id",
+            "cohort_start_date", "cohort_end_date") %in% colnames(out))) {
+
+    if (!("GeneratedCohortSet" %in% class(out))) {
+      class(out) <- c("GeneratedCohortSet", class(out))
+    }
+
+    attr(out, "cohort_set") <- attr(x, "cohort_set")
+    attr(out, "cohort_attrition") <- attr(x, "cohort_attrition")
+    attr(out, "cohort_count") <- attr(x, "cohort_count")
+    attr(out, "cdm_reference") <- attr(x, "cdm_reference")
+
+  } else if (!is.null(cdm_reference)) {
+    attr(out, "cdm_reference") <- cdm_reference
+  }
+
   return(out)
 }
 
@@ -354,21 +371,58 @@ getFullTableNameQuoted <- function(x, name, schema) {
   return(fullNameQuoted)
 }
 
-# #' ComputeQuery for cohort tables
-# #'
-# #' @param x a tbl_dbi pointing to a generated cohort
-# #'
-# #' @return
-# #' @export
-# #'
-# #' @examples
-# computeCohort <- function(x) {
-#   # run the query keep the attributes
+# Not sure this function should exist
 #
-#   attributes()
-#
-#
-# }
-
+#' #' ComputeQuery for cohort tables and updates cohort attributes
+#' #'
+#' #' @param x a tbl_dbi query pointing to a generated cohort set
+#' #' @param name A name for the new cohort table in the database
+#' #' @param overwrite If a table with the same name already exists should it be overwritten? TRUE or FALSE
+#' #'
+#' #' @return a tbl_dbi reference pointing to a new generated cohort object
+#' #' @export
+#' computeCohort <- function(x, name = uniqueTableName(), overwrite = FALSE, attritionReason = "") {
+#'
+#'   checkmate::assert_character(name, len = 1, min.chars = 1)
+#'
+#'   cdm <- attr(x, "cdm_reference")
+#'   checkmate::assert_class(cdm, "cdm_reference")
+#'
+#'   write_prefix <- attr(cdm, "write_prefix")
+#'   checkmate::assert_character(write_prefix,
+#'                               len = 1,
+#'                               min.chars = 1,
+#'                               null.ok = TRUE,
+#'                               pattern = "[a-zA-Z0-9_]+")
+#'
+#'   x2 <- computeQuery(x,
+#'                      name = paste0(write_prefix, name),
+#'                      temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
+#'                      schema = attr(cdm, "write_schema"),
+#'                      overwrite = overwrite)
+#'
+#'   nm <- c("subject_id", "cohort_definition_id",
+#'           "cohort_start_date", "cohort_end_date")
+#'
+#'   if (all(nm %in% colnames(x2))) {
+#'     # restore cohort table attributes
+#'
+#'     if (!("GeneratedCohortSet" %in% class(x))) {
+#'       class(x2) <- c("GeneratedCohortSet", class(x2))
+#'     }
+#'
+#'     # TODO should we make any updates to these like updating cohort counts or attrition?
+#'     attr(x2, "cohort_set") <- attr(x, "cohort_set")
+#'     attr(x2, "cohort_attrition") <- attr(x, "cohort_attrition")
+#'     attr(x2, "cohort_count") <- attr(x, "cohort_count")
+#'     attr(x2, "cdm_reference") <- cdm
+#'   }
+#'   return(x2)
+#' }
+#'
+#' #' @rdname computeCohort
+#' #' @export
+#' compute_cohort <- computeCohort
+#'
 
 

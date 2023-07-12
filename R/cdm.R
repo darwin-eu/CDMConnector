@@ -66,8 +66,12 @@ cdm_from_con <- function(con,
                                 cdm_source$cdm_source_abbreviation[1])
   }
 
+  if (is.null(cdm_name)) {
+    rlang::abort("cdm_name must be supplied!")
+  }
+
   # only get the cdm tables that exist in the database
-  cdm_tables <- cdm_tables[which(cdm_tables %in% tolower(dbTables))]
+  cdm_tables <- cdm_tables[which(paste0(cdm_prefix, cdm_tables) %in% tolower(dbTables))]
   if (length(cdm_tables) == 0) {
     rlang::abort("There were no cdm tables found in the cdm_schema!")
   }
@@ -169,8 +173,8 @@ cdm_from_con <- function(con,
   attr(cdm, "cdm_name") <- cdm_name
   # The following attributes can be used to communicate temp table preferences to downstream analytic packages.
   # This a feature for analytic package developers and users should not need to know about it unless there is an issue to debug.
-  attr(cdm, "cohort_as_temp") <- FALSE
-  attr(cdm, "intermediate_as_temp") <- TRUE
+  attr(cdm, "cohort_as_temp") <- getOption("CDMConnector.cohort_as_temp", FALSE)
+  attr(cdm, "intermediate_as_temp") <- getOption("CDMConnector.intermediate_as_temp", TRUE)
   return(cdm)
 }
 
@@ -631,8 +635,6 @@ NULL
 #' observation_period tables
 #' @export
 #'
-#' @importFrom tidyr gather
-#'
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
@@ -653,8 +655,8 @@ snapshot <- function(cdm) {
 
   observation_period_range <- cdm$observation_period %>%
     dplyr::summarise(
-      max = max(.data$observation_period_end_date),
-      min = min(.data$observation_period_start_date)
+      max = max(.data$observation_period_end_date, na.rm = TRUE),
+      min = min(.data$observation_period_start_date, na.rm = TRUE)
     ) %>%
     dplyr::collect()
 

@@ -157,7 +157,7 @@ test_that("ReadCohortSet gives informative error when pointed to a file", {
 
 test_that("Generation from Capr Cohorts", {
   skip_if_not(eunomia_is_available())
-  skip_if_not_installed("Capr")
+  skip_if_not_installed("Capr", minimum_version = "2.0.5")
   library(Capr)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
@@ -168,11 +168,11 @@ test_that("Generation from Capr Cohorts", {
   )
 
   gibleed_cohort_definition <- cohort(
-    entry = condition(cs(descendants(192671))),
+    entry = Capr::conditionOccurrence(cs(descendants(192671))),
     attrition = attrition(
       "no RA" = withAll(
         exactly(0,
-                condition(cs(descendants(80809))),
+                conditionOccurrence(cs(descendants(80809))),
                 duringInterval(eventStarts(-Inf, Inf))))
     )
   )

@@ -111,11 +111,12 @@ test_cohort_collapse <- function(con, write_schema) {
     df <- intervals %>%
       dplyr::mutate(dplyr::across(dplyr::matches("date"), as.character))
 
-    DBI::dbWriteTable(con, "tmp_intervals", df, temporary = TRUE, overwrite = TRUE)
+    nm <- unique_table_name()
+    DBI::dbWriteTable(con, nm, df, temporary = TRUE)
 
-    db <- tbl(con, "tmp_intervals") %>%
+    db <- tbl(con, nm) %>%
       mutate(cohort_start_date = TO_DATE(cohort_start_date, "YYYY-MM-DD")) %>%
-      mutate(cohort_start_date = TO_DATE(cohort_end_date, "YYYY-MM-DD")) %>%
+      mutate(cohort_end_date   = TO_DATE(cohort_end_date, "YYYY-MM-DD")) %>%
       compute_query()
   } else {
     DBI::dbWriteTable(con, inSchema(write_schema, "tmp_intervals", dbms = dbms(con)), intervals, overwrite = TRUE)
@@ -125,23 +126,26 @@ test_cohort_collapse <- function(con, write_schema) {
   # precedes
   x <- db %>%
     dplyr::filter(relationship %in% c("reference", "precedes")) %>%
+    dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     dplyr::collect() %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
 
   expected <- db %>%
     dplyr::filter(relationship %in% c("reference", "precedes")) %>%
+    dplyr::select(-"relationship") %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
 
 
-  expect_equal(names(x), c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"))
+  expect_equal(colnames(x), c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"))
   expect_equal(x, expected)
 
   # meets
   x <- db %>%
     dplyr::filter(.data$relationship %in% c("reference", "meets")) %>%
+    dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
@@ -149,6 +153,7 @@ test_cohort_collapse <- function(con, write_schema) {
 
   expected <- db %>%
     dplyr::filter(relationship %in% c("reference", "meets")) %>%
+    dplyr::select(-"relationship") %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
@@ -158,6 +163,7 @@ test_cohort_collapse <- function(con, write_schema) {
   # overlaps
   x <- db %>%
     dplyr::filter(relationship %in% c("reference", "overlaps")) %>%
+    dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
@@ -175,6 +181,7 @@ test_cohort_collapse <- function(con, write_schema) {
   # finished_by
   x <- db %>%
     filter(relationship %in% c("reference", "finished_by")) %>%
+    dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
@@ -191,6 +198,7 @@ test_cohort_collapse <- function(con, write_schema) {
   # contains
   x <- db %>%
     filter(relationship %in% c("reference", "contains")) %>%
+    dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
@@ -207,6 +215,7 @@ test_cohort_collapse <- function(con, write_schema) {
   # starts
   x <- db %>%
     filter(relationship %in% c("reference", "starts")) %>%
+    dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
@@ -223,6 +232,7 @@ test_cohort_collapse <- function(con, write_schema) {
   # equals
   x <- db %>%
     filter(relationship %in% c("reference", "equals")) %>%
+    dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     collect() %>%
     arrange(subject_id)
@@ -240,11 +250,11 @@ test_cohort_collapse <- function(con, write_schema) {
 
 dbToTest <- c(
   "duckdb"
-  # ,"postgres"
-  # ,"redshift"
-  # ,"sqlserver"
+  ,"postgres"
+  ,"redshift"
+  ,"sqlserver"
   # ,"oracle"
-  # ,"snowflake"
+  ,"snowflake"
   # ,"bigquery"
 )
 

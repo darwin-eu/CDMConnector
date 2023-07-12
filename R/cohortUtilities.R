@@ -1,7 +1,7 @@
 #' Create or update the GeneratedCohortSet attributes to a cohort object
 #'
 #' @param cohort Cohort in the cdm.
-#' @param reason The reason of the attrition.
+#' @param attritionReason The reason for attrition as a character string.
 #' @param cohortSet tbl to update the cohort_set attribute.
 #' @param cdm A cdm_reference object. If not provided the one linked to cohort
 #' will be used.
@@ -38,7 +38,7 @@
 #' }
 #'
 appendCohortAttributes <- function(cohort,
-                                   reason = "Qualifying initial records",
+                                   attritionReason = "Qualifying initial records",
                                    cohortSet = attr(cohort, "cohort_set"),
                                    cdm = attr(cohort, "cdm_reference")) {
   # initial checks

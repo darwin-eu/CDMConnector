@@ -790,7 +790,6 @@ getInclusionMaskId <- function(numberInclusion) {
   })
 }
 
-
 caprConceptToDataframe <- function(x) {
   tibble::tibble(
     conceptId = purrr::map_int(x@Expression, ~.@Concept@concept_id),

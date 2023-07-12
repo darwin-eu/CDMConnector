@@ -6,7 +6,7 @@
 \usage{
 appendCohortAttributes(
   cohort,
-  reason = "Qualifying initial records",
+  attritionReason = "Qualifying initial records",
   cohortSet = attr(cohort, "cohort_set"),
   cdm = attr(cohort, "cdm_reference")
 )
@@ -14,7 +14,7 @@ appendCohortAttributes(
 \arguments{
 \item{cohort}{Cohort in the cdm.}
 
-\item{reason}{The reason of the attrition.}
+\item{attritionReason}{The reason for attrition as a character string.}
 
 \item{cohortSet}{tbl to update the cohort_set attribute.}
 

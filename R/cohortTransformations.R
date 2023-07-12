@@ -30,11 +30,11 @@ cohort_collapse <- function(x) {
           con = x$src$con),
         .data$cohort_end_date)
     ) %>%
-    dplyr::mutate(groups = cumsum(ifelse(dplyr::between(.data$cohort_start_date, .data$prev_start, .data$prev_end), 0, 1))) %>%
-    # dplyr::mutate(pmin_end   = ifelse(!is.na(.data$prev_end) & (.data$prev_end < .data$cohort_end_date),     .data$prev_end,   .data$cohort_end_date),
-                  # pmax_start = ifelse(!is.na(.data$prev_end) & (.data$prev_start > .data$cohort_start_date), .data$prev_start, .data$cohort_start_date)) %>%
-    # dplyr::mutate(overlap = !!datediff("pmax_start", "pmin_end") + 1) %>%
-    # dplyr::mutate(groups = cumsum(ifelse(.data$overlap > 0, 0, 1))) %>%
+    dplyr::mutate(groups = cumsum(
+      dplyr::case_when(
+        .data$prev_start <= .data$cohort_start_date && .data$cohort_start_date <= .data$prev_end ~ 0L,
+        TRUE ~ 1L)
+      )) %>%
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$groups, .add = FALSE) %>%
     dplyr::summarize(cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
                      cohort_end_date = max(.data$cohort_end_date, na.rm = TRUE),

@@ -79,7 +79,6 @@ dateadd <- function(date, number, interval = "day") {
 #'
 #' @examples
 #' \dontrun{
-#' library(SqlUtilities)
 #' con <- DBI::dbConnect(duckdb::duckdb())
 #' date_tbl <- dplyr::copy_to(con, data.frame(date1 = as.Date("1999-01-01")),
 #'                            name = "tmpdate", overwrite = TRUE, temporary = TRUE)

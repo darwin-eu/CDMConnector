@@ -66,7 +66,7 @@ generateConceptCohortSet <- function(cdm,
     df <- dplyr::tibble(cohort_definition_id = seq_along(.env$conceptSet),
                         cohort_name = names(.env$conceptSet),
                         concept_id = .env$conceptSet) %>%
-      tidyr::unnest(cols = .data$concept_id) %>%
+      tidyr::unnest(cols = "concept_id") %>%
       dplyr::transmute(.data$cohort_definition_id,
                        .data$cohort_name,
                        .data$concept_id,
