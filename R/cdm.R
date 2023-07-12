@@ -678,7 +678,9 @@ snapshot <- function(cdm) {
       cdm_source_name = "",
       cdm_holder = "",
       cdm_release_date = "",
-      cdm_version = attr(cdm, "cdm_version")
+      cdm_version = attr(cdm, "cdm_version"),
+      source_description = "",
+      source_documentation_reference = ""
     )
   }
 
@@ -698,6 +700,8 @@ snapshot <- function(cdm) {
     dplyr::select(
       "cdm_name",
       "cdm_source_name",
+      "cdm_description" = "source_description",
+      "cdm_documentation_reference" = "source_documentation_reference",
       "cdm_version",
       "cdm_holder",
       "cdm_release_date",
