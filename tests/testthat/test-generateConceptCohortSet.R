@@ -3,9 +3,9 @@ dbToTest <- c(
   ,"postgres"
   ,"redshift"
   # ,"sqlserver"
-  # ,"oracle"  # requires development version of dbplyr
-  # ,"snowflake" invalid identifier 'COHORT_DEFINITION_ID'
-  # ,"bigquery" Type not found: VARCHAR at [4:10] [invalidQuery]
+  # ,"oracle"
+  # ,"snowflake"
+  # ,"bigquery"
 )
 
 test_concept_cohort_perm <- function(con,
@@ -88,9 +88,69 @@ test_concept_cohort_perm <- function(con,
                                dplyr::filter(cohort_definition_id == "2") %>%
                                dplyr::pull("subject_id")))))
 
+   # clean up
+   CDMConnector::dropTable(cdm = cdm,
+                              name = dplyr::starts_with(test_prefix_rand))
+
+    # test temp tables
+   attr(cdm, "cohort_as_temp") <- TRUE
+   cdm <- generateConceptCohortSet(cdm = cdm,
+                                   conceptSet = list(gibleed = 80809),
+                                   name = "gibleed",
+                                   overwrite = TRUE)
+   # tables shouldn´t have been created
+   expect_false(paste0(test_prefix_rand, "gibleed") %in%
+                 CDMConnector::listTables(con = con, schema = write_schema))
+   expect_false(paste0(test_prefix_rand, "gibleed_attrition") %in%
+                 CDMConnector::listTables(con = con,
+                                          schema = write_schema))
+   expect_false(paste0(test_prefix_rand, "gibleed_count")  %in%
+                 CDMConnector::listTables(con = con,
+                                          schema = write_schema))
+   expect_false(paste0(test_prefix_rand, "gibleed_set")  %in%
+                 CDMConnector::listTables(con = con,
+                                          schema = write_schema))
+
+
+}
+
+
+test_capr_concept_cohort <- function(con,
+                                     cdm_schema,
+                                     write_schema) {
+
+  test_prefix_rand <- paste0("test_",
+                             paste0(sample(letters, size = 5, replace = TRUE),
+                                    collapse = ""))
+
+  gibleed_cs <- Capr::cs(80809, name = "gibleed")
+  gibleed_desc_cs <- Capr::cs(Capr::descendants(80809), name = "gibleed_desc")
+
+  cdm <- cdm_from_con(con,
+                      cdm_schema = cdm_schema,
+                      write_schema = c(schema = write_schema,
+                                       prefix = test_prefix_rand))
+
+  attr(cdm, "cohort_as_temp") <- FALSE
+
+  # single concept set
+  expect_no_error(cdm <- generateConceptCohortSet(cdm = cdm,
+                                  conceptSet = gibleed_cs,
+                                  name = "gibleed",
+                                  overwrite = TRUE))
+
+  # list of concept sets
+  expect_no_error(cdm <- generateConceptCohortSet(cdm = cdm,
+                                  conceptSet = list("gibleed" = gibleed_cs,
+                                                    "gibleed_desc" = gibleed_desc_cs),
+                                  name = "gibleed",
+                                  overwrite = TRUE))
+
+  # clean up
   CDMConnector::dropTable(cdm = cdm,
                           name = dplyr::starts_with(test_prefix_rand))
 }
+
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
@@ -104,6 +164,20 @@ for (dbtype in dbToTest) {
                              write_schema = write_schema)
     disconnect(con)
   })
+
+  # cohort from capr concept set
+  test_that(glue::glue("{dbtype} - generateCohortSet"), {
+    skip_if_not_installed("Capr", minimum_version = "2.0.5")
+    con <- get_connection(dbtype)
+    cdm_schema <- get_cdm_schema(dbtype)
+    write_schema <- get_write_schema(dbtype)
+    skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
+    test_capr_concept_cohort(con,
+                             cdm_schema = cdm_schema,
+                             write_schema = write_schema)
+    disconnect(con)
+  })
+
 }
 
 
