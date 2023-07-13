@@ -14,7 +14,7 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
   lifecycle::deprecate_warn("1.1.0", "union_cohorts()", "cohort_union()")
   checkmate::assert_class(x, "tbl")
   checkmate::assert_integerish(cohort_definition_id, len = 1, lower = 0)
-  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
   cohort_definition_id <- as.integer(cohort_definition_id)
 
   event_date <- event_type <- NA # to remove r check error initialize these variables to NA
@@ -54,7 +54,7 @@ intersect_cohorts <- function(x, cohort_definition_id = 1L) {
   lifecycle::deprecate_warn("1.1.0", "intersect_cohorts()", "cohort_intersect()")
   checkmate::assert_class(x, "tbl")
   checkmate::assert_integerish(cohort_definition_id, len = 1, lower = 0)
-  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
   cohort_definition_id <- as.integer(cohort_definition_id)
 
   # get the total number of cohorts we are intersecting together

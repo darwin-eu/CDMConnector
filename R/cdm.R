@@ -215,7 +215,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   visit_occurrence_names <- cdm$visit_occurrence %>%
     head() %>%
     collect() %>%
-    names() %>%
+    colnames() %>%
     tolower()
 
   if ("admitting_source_concept_id" %in% visit_occurrence_names) {
@@ -229,7 +229,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   procedure_occurrence_names <- cdm$procedure_occurrence %>%
     head() %>%
     collect() %>%
-    names() %>%
+    colnames() %>%
     tolower()
 
   if ("procedure_end_date" %in% procedure_occurrence_names) {
@@ -351,7 +351,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
       dplyr::select("chr_col", "numeric_col") %>%  # bigquery can reorder columns
       as.data.frame()
 
-    names(df2) <- tolower(names(df2))
+    colnames(df2) <- tolower(colnames(df2))
   })
 
   DBI::dbRemoveTable(con, inSchema(write_schema, tablename, dbms = dbms(con)))

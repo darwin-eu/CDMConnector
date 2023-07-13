@@ -33,7 +33,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
   df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
-  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
+  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% colnames(df)))
 
   # expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
   expect_true(all(c("cohort_set", "cohort_count", "cohort_attrition") %in% names(attributes(cdm$chrt0))))
@@ -124,7 +124,7 @@ test_that("duckdb cohort generation", {
   df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
   expect_true(nrow(df) > 0)
-  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% names(df)))
+  expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% colnames(df)))
 
   # expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
   expect_true(all(c("cohort_set", "cohort_count", "cohort_attrition") %in% names(attributes(cdm$chrt0))))

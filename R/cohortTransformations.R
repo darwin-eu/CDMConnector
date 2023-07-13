@@ -54,8 +54,8 @@ cohort_collapse <- function(x) {
 cohort_union <- function(x, y) {
   checkmate::assert_class(x, "tbl")
   checkmate::assert_class(y, "tbl")
-  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
-  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(y))
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(y))
 
   cohort_id <- y %>%
     dplyr::distinct(.data$cohort_definition_id) %>%
@@ -93,8 +93,8 @@ cohortUnion <- cohort_union
 # cohort_intersect <- function(x, y) {
 #   checkmate::assert_class(x, "tbl")
 #   checkmate::assert_class(y, "tbl")
-#   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(x))
-#   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), names(y))
+#   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
+#   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(y))
 #
 #   # collapse cohorts just
 #   x <- cohort_collapse(x) %>%
@@ -155,7 +155,7 @@ cohortUnion <- cohort_union
 #' @export
 cohort_first <- function(x) {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-  checkmate::assert_subset(names(x), cols)
+  checkmate::assert_subset(colnames(x), cols)
 
   x %>%
     dplyr::group_by(.data$subject_id, .data$cohort_definition_id, .add = FALSE) %>%
@@ -171,7 +171,7 @@ cohort_first <- function(x) {
 #' @export
 cohort_last <- function(x) {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-  checkmate::assert_subset(names(x), cols)
+  checkmate::assert_subset(colnames(x), cols)
 
   x %>%
     dplyr::group_by(.data$subject_id, .data$cohort_definition_id, .add = FALSE) %>%
@@ -189,7 +189,7 @@ cohort_last <- function(x) {
 #' @export
 cohort_pad_end <- function(x, days = NULL, from = "end") {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-  checkmate::assert_subset(names(x), cols)
+  checkmate::assert_subset(colnames(x), cols)
   checkmate::check_integerish(days, len = 1, null.ok = TRUE)
   checkmate::check_choice(from, choices = c("start", "end"))
 
@@ -220,7 +220,7 @@ cohort_pad_end <- function(x, days = NULL, from = "end") {
 #' @export
 cohort_pad_start <- function(x, days = NULL, from = "start") {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-  checkmate::assert_subset(names(x), cols)
+  checkmate::assert_subset(colnames(x), cols)
   checkmate::check_integerish(days, len = 1, null.ok = TRUE)
   checkmate::check_choice(from, choices = c("start", "end"))
 
@@ -253,7 +253,7 @@ cohort_erafy <- function(x, gap) {
   checkmate::assert_class(x, "tbl")
   checkmate::assertIntegerish(gap, len = 1)
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-  checkmate::assert_subset(names(x), cols)
+  checkmate::assert_subset(colnames(x), cols)
 
   checkmate::assertIntegerish(gap, len = 1)
   x %>%
@@ -291,8 +291,8 @@ cohortErafy <- cohort_erafy
 #   checkmate::assert_class(x, "tbl")
 #   checkmate::assert_class(y, "tbl")
 #   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-#   checkmate::assert_true(all(cols %in% names(x)))
-#   checkmate::assert_true(all(cols %in% names(y)))
+#   checkmate::assert_true(all(cols %in% colnames(x)))
+#   checkmate::assert_true(all(cols %in% colnames(y)))
 #
 #   # remove days in the second cohort table from the first cohort table
 #   x %>%
