@@ -52,15 +52,22 @@ for (dbtype in dbToTest) {
 test_that("duckdb - copy_cdm_to without prefix", {
 
   con1 <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con1, cdm_schema = "main")
+  cdm1 <- cdm_from_con(con1, cdm_schema = "main")
 
-  con <- DBI::dbConnect(duckdb::duckdb())
-  cdm2 <- copy_cdm_to(con, cdm, schema = "main")
+  con2 <- DBI::dbConnect(duckdb::duckdb())
+  cdm2 <- copy_cdm_to(con2, cdm1, schema = "main")
 
-  expect_setequal(names(cdm), names(cdm2))
+  expect_setequal(names(cdm1), names(cdm2))
   expect_s3_class(cdm2, "cdm_reference")
 
+  con3 <- DBI::dbConnect(duckdb::duckdb())
+  cdm3 <- copy_cdm_to(con3, dplyr::collect(cdm1), schema = "main")
+
+  expect_setequal(names(cdm1), names(cdm3))
+  expect_s3_class(cdm3, "cdm_reference")
+
   DBI::dbDisconnect(con1, shutdown = T)
-  DBI::dbDisconnect(con, shutdown = T)
+  DBI::dbDisconnect(con2, shutdown = T)
+  DBI::dbDisconnect(con3, shutdown = T)
 })
 
