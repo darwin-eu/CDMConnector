@@ -26,7 +26,7 @@ cdm_from_con <- function(con,
 
   cdm_tables <- tbl_group("all")
 
-  checkmate::assert_class(con, "DBIConnection")
+  checkmate::assert_true(methods::is(con, "DBIConnection") || methods::is(con, "Pool"))
   checkmate::assert_true(.dbIsValid(con))
 
   if (dbms(con) %in% c("duckdb", "sqlite") && is.null(cdm_schema)) {
@@ -77,7 +77,7 @@ cdm_from_con <- function(con,
     cdm_tables <- toupper(cdm_tables)
   }
 
-  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
+  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con)), check_from = FALSE) %>%
                     dplyr::rename_all(tolower)) %>%
     rlang::set_names(cdm_tables)
 
@@ -418,18 +418,18 @@ tblGroup <- tbl_group
 #' dbms(con)
 #' }
 dbms <- function(con) {
-  UseMethod("dbms")
-}
 
-#' @export
-dbms.cdm_reference <- function(con) {
-  dbms(attr(con, "dbcon"))
-}
+  if (methods::is(con, "cdm_reference")) {
+    con <- attr(con, "dbcon")
+  } else if (methods::is(con, "Pool")) {
+    con <- pool::localCheckout(con)
+  }
 
-#' @export
-dbms.DBIConnection <- function(con) {
-  if (!is.null(attr(con, "dbms")))
+  checkmate::assertClass(con, "DBIConnection")
+
+  if (!is.null(attr(con, "dbms"))) {
     return(attr(con, "dbms"))
+  }
 
   result <- switch(
     class(con),

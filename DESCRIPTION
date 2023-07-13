@@ -39,7 +39,8 @@ Imports:
     stringi,
     fs,
     generics,
-    tidyr
+    tidyr,
+    pool
 Suggests: 
     arrow,
     SqlRender, 

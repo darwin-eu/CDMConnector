@@ -135,6 +135,12 @@ normalize_schema <- function(schema) {
 #' }
 list_tables <- function(con, schema = NULL) {
 
+  if (methods::is(con, "Pool")) {
+    con <- pool::localCheckout(con)
+  }
+
+  checkmate::assertTRUE(DBI::dbIsValid(con))
+
   if ("prefix" %in% names(schema)) {
     prefix <- schema["prefix"]
     checkmate::assert_character(prefix, min.chars = 1, len = 1)
