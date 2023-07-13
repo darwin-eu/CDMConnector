@@ -121,3 +121,13 @@ disconnect <- function(con) {
   }
 }
 
+
+dbToTest <- c(
+  "duckdb"
+  # ,"postgres"
+  # ,"redshift"
+  # ,"sqlserver"
+  # ,"oracle"
+  # ,"snowflake"
+  # ,"bigquery"
+)

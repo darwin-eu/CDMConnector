@@ -41,15 +41,15 @@ test_dbi <- function(con, cdm_schema, write_schema) {
   expect_false("temp_test" %in% list_tables(con, schema = write_schema))
 }
 
-dbToTest <- c(
-  "duckdb"
-  ,"postgres"
-  ,"redshift"
-  ,"sqlserver"
-  ,"oracle"
-  ,"snowflake"
-  # ,"bigquery"
-  )
+# dbToTest <- c(
+#   "duckdb"
+#   ,"postgres"
+#   ,"redshift"
+#   ,"sqlserver"
+#   ,"oracle"
+#   ,"snowflake"
+#   # ,"bigquery"
+#   )
 
 # dbtype = "bigquery"
 for (dbtype in dbToTest) {

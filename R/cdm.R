@@ -33,12 +33,8 @@ cdm_from_con <- function(con,
     cdm_schema = "main"
   }
 
-  cdm_schema_list <- normalize_schema(cdm_schema)
-  cdm_schema <- cdm_schema_list$schema
-  cdm_prefix <- cdm_schema_list$prefix
-  write_schema_list <- normalize_schema(write_schema)
-  write_schema <- write_schema_list$schema
-  write_prefix <- write_schema_list$prefix
+  checkmate::assert_character(cdm_schema, min.len = 1, max.len = 3)
+  checkmate::assert_character(write_schema, min.len = 1, max.len = 3, null.ok = TRUE)
 
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
@@ -71,21 +67,18 @@ cdm_from_con <- function(con,
   }
 
   # only get the cdm tables that exist in the database
-  cdm_tables <- cdm_tables[which(paste0(cdm_prefix, cdm_tables) %in% tolower(dbTables))]
+  cdm_tables <- cdm_tables[which(cdm_tables %in% tolower(dbTables))]
   if (length(cdm_tables) == 0) {
     rlang::abort("There were no cdm tables found in the cdm_schema!")
   }
 
-  # Add prefix if supplied. If not supplied cdm_prefix will be NULL
-  cdm_tables_prefixed <- paste0(cdm_prefix, cdm_tables)
-
   # Handle uppercase table names in the database
   if (all(dbTables == toupper(dbTables))) {
-    cdm_tables_prefixed <- toupper(cdm_tables_prefixed)
+    cdm_tables <- toupper(cdm_tables)
   }
 
-  cdm <- purrr::map(cdm_tables_prefixed, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
-                      dplyr::rename_all(tolower)) %>%
+  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
+                    dplyr::rename_all(tolower)) %>%
     rlang::set_names(cdm_tables)
 
   if (!is.null(write_schema)) {
@@ -100,9 +93,7 @@ cdm_from_con <- function(con,
 
     write_schema_tables <- listTables(con, schema = write_schema)
 
-    for (i in seq_along(cohort_tables)) {
-
-      cohort_table <- paste0(write_prefix, cohort_tables[i])
+    for (cohort_table in cohort_tables) {
 
       # A generated cohort set object has tables: {cohort}
       # and attribute tables {cohort}_set, {cohort}_attrition, {cohort}_count
@@ -154,7 +145,7 @@ cdm_from_con <- function(con,
       }
 
       # Note: use name without prefix (i.e. `cohort_tables[i]`) in the cdm object
-      cdm[[cohort_tables[i]]] <- new_generated_cohort_set(
+      cdm[[cohort_table]] <- new_generated_cohort_set(
         cohort_ref = cohort_ref,
         cohort_set_ref = cohort_set_ref,
         cohort_count_ref = cohort_count_ref,
@@ -166,15 +157,9 @@ cdm_from_con <- function(con,
   class(cdm) <- "cdm_reference"
   attr(cdm, "cdm_schema") <- cdm_schema
   attr(cdm, "write_schema") <- write_schema
-  attr(cdm, "write_prefix") <- write_prefix
-  attr(cdm, "cdm_prefix") <- cdm_prefix
   attr(cdm, "dbcon") <- con
   attr(cdm, "cdm_version") <- cdm_version
   attr(cdm, "cdm_name") <- cdm_name
-  # The following attributes can be used to communicate temp table preferences to downstream analytic packages.
-  # This a feature for analytic package developers and users should not need to know about it unless there is an issue to debug.
-  attr(cdm, "cohort_as_temp") <- getOption("CDMConnector.cohort_as_temp", FALSE)
-  attr(cdm, "intermediate_as_temp") <- getOption("CDMConnector.intermediate_as_temp", TRUE)
   return(cdm)
 }
 
@@ -568,15 +553,10 @@ cdm_from_files <- function(path,
 
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL
-  attr(cdm, "write_prefix") <- NULL
-  attr(cdm, "cdm_prefix") <- NULL
   attr(cdm, "dbcon") <- NULL
   attr(cdm, "cdm_version") <- NULL
   attr(cdm, "cdm_name") <- NULL
-  attr(cdm, "cohort_as_temp") <- NULL
-  attr(cdm, "intermediate_as_temp") <- NULL
-
-  cdm
+  return(cdm)
 }
 
 

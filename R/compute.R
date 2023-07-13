@@ -14,6 +14,7 @@
 .computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
 
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
+  schema <- unname(schema)
   checkmate::assertCharacter(name, len = 1)
   checkmate::assertClass(x, "tbl_sql")
   checkmate::assertLogical(overwrite, len = 1)
@@ -193,11 +194,34 @@ computeQuery <- function(x,
   }
 
   checkmate::assertLogical(temporary, len = 1)
+  checkmate::assertLogical(overwrite, len = 1)
+
+  if (isFALSE(temporary)) {
+    checkmate::assertCharacter(schema, min.len = 1, max.len = 3)
+
+    # handle prefixes
+    if ("prefix" %in% names(schema)) {
+      checkmate::assertCharacter(schema["prefix"], len = 1, min.chars = 1, pattern = "[a-zA-Z1-9_]+")
+      name <- paste0(schema["prefix"], name)
+      schema <- schema[names(schema) != "prefix"]
+    }
+    checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
+  }
 
   cdm_reference <- attr(x, "cdm_reference") # might be NULL
   con <- x$src$con
 
   if (temporary) {
+
+    # handle overwrite for temp tables
+    # TODO test this across all dbms
+    if (name %in% list_tables(con)) {
+      if (isFALSE(overwrite)) {
+        rlang::abort(glue::glue("table {name} already exists and overwrite is FALSE!"))
+      }
+      DBI::dbRemoveTable(con, name)
+    }
+
     if (methods::is(con, "OraConnection") || methods::is(con, "Oracle")) {
       # https://github.com/tidyverse/dbplyr/issues/621#issuecomment-1362229669
       name <- paste0("ORA$PTT_", name)
@@ -229,26 +253,19 @@ computeQuery <- function(x,
     out <- .computePermanent(x, name = name, schema = schema, overwrite = overwrite)
   }
 
-  if (!is.null(cdm_reference)) {
-    attr(out, "cdm_reference") <- cdm_reference
-  }
-
   # retain cohort attributes if output is a cohort table but don't update them
   if (all(c("subject_id", "cohort_definition_id",
-            "cohort_start_date", "cohort_end_date") %in% colnames(out))) {
+            "cohort_start_date", "cohort_end_date") %in% colnames(out))
+      && !("GeneratedCohortSet" %in% class(out))) {
 
-    if (!("GeneratedCohortSet" %in% class(out))) {
-      class(out) <- c("GeneratedCohortSet", class(out))
-    }
-
-    attr(out, "cohort_set") <- attr(x, "cohort_set")
-    attr(out, "cohort_attrition") <- attr(x, "cohort_attrition")
-    attr(out, "cohort_count") <- attr(x, "cohort_count")
-    attr(out, "cdm_reference") <- attr(x, "cdm_reference")
-
-  } else if (!is.null(cdm_reference)) {
-    attr(out, "cdm_reference") <- cdm_reference
+    class(out) <- c("GeneratedCohortSet", class(out))
   }
+
+  # Note if these attributes are NULL then no assignment will be made
+  attr(out, "cohort_set") <- attr(x, "cohort_set")
+  attr(out, "cohort_attrition") <- attr(x, "cohort_attrition")
+  attr(out, "cohort_count") <- attr(x, "cohort_count")
+  attr(out, "cdm_reference") <- attr(x, "cdm_reference")
 
   return(out)
 }

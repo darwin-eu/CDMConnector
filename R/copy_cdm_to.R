@@ -28,8 +28,8 @@ copy_cdm_to <- function(con, cdm, schema, prefix = NULL, overwrite = FALSE) {
   tables_to_copy <- names(cdm)
 
   specs <- spec_cdm_field[[attr(cdm, "cdm_version")]] %>%
-    dplyr::mutate(cdmDatatype = dplyr::if_else(cdmDatatype == "varchar(max)", "varchar(2000)", .data$cdmDatatype)) %>%
-    dplyr::mutate(cdmFieldName = dplyr::if_else(cdmFieldName == '"offset"', "offset", .data$cdmFieldName)) %>%
+    dplyr::mutate(cdmDatatype = dplyr::if_else(.data$cdmDatatype == "varchar(max)", "varchar(2000)", .data$cdmDatatype)) %>%
+    dplyr::mutate(cdmFieldName = dplyr::if_else(.data$cdmFieldName == '"offset"', "offset", .data$cdmFieldName)) %>%
     # TODO come up with a better way to store datatype mappings
     dplyr::mutate(cdmDatatype = dplyr::case_when(
       dbms(con) == "postgresql" & .data$cdmDatatype == "datetime" ~ "timestamp",

@@ -55,15 +55,15 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
 
-dbToTest <- c(
-  "duckdb"
-  # ,"postgres"
-  # ,"redshift"
-  # ,"sqlserver"
-  # ,"oracle"  # requires development version of dbplyr
-  # ,"snowflake" invalid identifier 'COHORT_DEFINITION_ID'
-  # ,"bigquery" Type not found: VARCHAR at [4:10] [invalidQuery]
-)
+# dbToTest <- c(
+#   "duckdb"
+#   # ,"postgres"
+#   # ,"redshift"
+#   # ,"sqlserver"
+#   # ,"oracle"  # requires development version of dbplyr
+#   # ,"snowflake" invalid identifier 'COHORT_DEFINITION_ID'
+#   # ,"bigquery" Type not found: VARCHAR at [4:10] [invalidQuery]
+# )
 
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {
@@ -168,11 +168,11 @@ test_that("Generation from Capr Cohorts", {
   )
 
   gibleed_cohort_definition <- cohort(
-    entry = Capr::conditionOccurrence(cs(descendants(192671))),
+    entry = Capr::conditionOccurrence(cs(descendants(192671), name = "test")),
     attrition = attrition(
       "no RA" = withAll(
         exactly(0,
-                conditionOccurrence(cs(descendants(80809))),
+                conditionOccurrence(cs(descendants(80809), name = "test")),
                 duringInterval(eventStarts(-Inf, Inf))))
     )
   )

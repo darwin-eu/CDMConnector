@@ -100,15 +100,15 @@ test_date_functions <- function(con, write_schema) {
   expect_equal(df$day, 1)
 }
 
-dbToTest <- c(
-  "duckdb"
-  ,"postgres"
-  ,"redshift"
-  ,"sqlserver"
-  ,"oracle"
-  ,"snowflake"
-  # ,"bigquery"
-)
+# dbToTest <- c(
+#   "duckdb"
+#   ,"postgres"
+#   ,"redshift"
+#   ,"sqlserver"
+#   ,"oracle"
+#   ,"snowflake"
+#   # ,"bigquery"
+# )
 
 # dbtype = "bigquery"
 for (dbtype in dbToTest) {

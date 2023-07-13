@@ -43,7 +43,7 @@ appendCohortAttributes <- function(cohort,
                                    cdm = attr(cohort, "cdm_reference")) {
   # initial checks
   checkmate::assertCharacter(
-    reason, min.chars = 1, len = 1, any.missing = FALSE
+    attritionReason, min.chars = 1, len = 1, any.missing = FALSE
   )
   checkmate::assertClass(cohortSet, "tbl", null.ok = TRUE)
   checkmate::assertClass(cdm, "cdm_reference")
@@ -80,7 +80,7 @@ appendCohortAttributes <- function(cohort,
   # new line of attrition
   attrition <- attr(cohort, "cohort_count") %>%
     dplyr::mutate(
-      reason = .env$reason,
+      reason = .env$attritionReason,
       number_records = dplyr::if_else(
         is.na(.data$number_records), 0, .data$number_records
       ),
@@ -109,7 +109,7 @@ appendCohortAttributes <- function(cohort,
             by = c("cohort_definition_id", "reason_id")
           ) %>%
           dplyr::mutate(
-            reason_id = .env$reasonId + 1, reason = .env$reason,
+            reason_id = .env$reasonId + 1, reason = .env$attritionReason,
             excluded_records = .data$previous_records - .data$number_records,
             excluded_subjects = .data$previous_subjects - .data$number_subjects
           ) %>%

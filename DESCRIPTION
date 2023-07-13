@@ -59,7 +59,8 @@ Suggests:
     tibble,
     zeallot
 Enhances:
-    CirceR
+    CirceR,
+    Capr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Additional_repositories: https://OHDSI.github.io/drat
