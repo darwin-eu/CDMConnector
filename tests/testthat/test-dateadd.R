@@ -142,3 +142,30 @@ for (dbtype in dbToTest) {
 #   })
 #   disconnect(con)
 # })
+
+test_that('dateadd works without pipe', {
+  skip("failing test")
+  con <- DBI::dbConnect(duckdb::duckdb())
+  DBI::dbWriteTable(con, "tbl", data.frame(date = as.Date("2020-01-01")))
+
+  db <- dplyr::tbl(con, "tbl")
+
+  df1 <- db %>%
+    dplyr::mutate(next_day = !!dateadd("date", 1, "day")) %>%
+    collect()
+
+
+  df2 <- db |>
+    dplyr::mutate(next_day = !!dateadd("date", 1, "day")) |>
+    collect()
+
+  # dateadd does not work without the magrittr pipe
+  df3 <- dplyr::mutate(db, next_day = !!dateadd("date", 1, "day")) %>%
+    dplyr::collect()
+
+  expect_equal(df1, df2)
+  expect_equal(df2, df3)
+
+  DBI::dbDisconnect(con, shutdown = T)
+})
+

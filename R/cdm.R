@@ -27,6 +27,11 @@ cdm_from_con <- function(con,
   cdm_tables <- tbl_group("all")
 
   checkmate::assert_true(methods::is(con, "DBIConnection") || methods::is(con, "Pool"))
+
+  if (methods::is(con, "Pool")) {
+    con <- pool::localCheckout(con)
+  }
+
   checkmate::assert_true(.dbIsValid(con))
 
   if (dbms(con) %in% c("duckdb", "sqlite") && is.null(cdm_schema)) {
@@ -508,16 +513,23 @@ stow <- function(cdm, path, format = "parquet") {
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
 #' @param format What is the file format to be read in? Must be "auto"
 #'   (default), "parquet", "csv", "feather".
+#' @param cdm_version The version of the cdm (5.3 or 5.4)
+#' @param cdm_name A name to use for the cdm.
 #' @param as_data_frame,asDataFrame TRUE (default) will read files into R as dataframes.
 #'   FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
 cdm_from_files <- function(path,
                            format = "auto",
+                           cdm_version = "5.3",
+                           cdm_name = NULL,
                            as_data_frame = TRUE) {
   checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
   checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
   checkmate::assert_true(file.exists(path))
+
+  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
+  checkmate::assert_character(cdm_name, null.ok = TRUE)
 
   path <- path.expand(path)
 
@@ -548,14 +560,32 @@ cdm_from_files <- function(path,
     })
   )
 
+  # Try to get the cdm name if not supplied
+  if (is.null(cdm_name) && ("cdm_source" %in% names(cdm))) {
+      cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source", dbms(con)))
+
+    cdm_source <- cdm_source %>%
+      head() %>%
+      dplyr::collect() %>%
+      dplyr::rename_all(tolower)
+
+    cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[1],
+                                cdm_source$cdm_source_abbreviation[1])
+  }
+
+  if (is.null(cdm_name)) {
+    rlang::abort("cdm_name must be supplied!")
+  }
+
+
   names(cdm) <- cdm_tables
   class(cdm) <- "cdm_reference"
 
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL
   attr(cdm, "dbcon") <- NULL
-  attr(cdm, "cdm_version") <- NULL
-  attr(cdm, "cdm_name") <- NULL
+  attr(cdm, "cdm_version") <- cdm_version
+  attr(cdm, "cdm_name") <- cdm_name
   return(cdm)
 }
 
