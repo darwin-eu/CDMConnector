@@ -6,6 +6,7 @@
 \usage{
 appendCohortAttributes(
   cohort,
+  name = sprintf("dbplyr_\%03i", getOption("dbplyr_table_name", 0)),
   attritionReason = "Qualifying initial records",
   cohortSet = attr(cohort, "cohort_set"),
   cdm = attr(cohort, "cdm_reference")
@@ -13,6 +14,8 @@ appendCohortAttributes(
 }
 \arguments{
 \item{cohort}{Cohort in the cdm.}
+
+\item{name}{Name of the cohort table.}
 
 \item{attritionReason}{The reason for attrition as a character string.}
 

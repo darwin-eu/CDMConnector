@@ -1,6 +1,7 @@
 #' Create or update the GeneratedCohortSet attributes to a cohort object
 #'
 #' @param cohort Cohort in the cdm.
+#' @param name Name of the cohort table.
 #' @param attritionReason The reason for attrition as a character string.
 #' @param cohortSet tbl to update the cohort_set attribute.
 #' @param cdm A cdm_reference object. If not provided the one linked to cohort
@@ -38,6 +39,7 @@
 #' }
 #'
 appendCohortAttributes <- function(cohort,
+                                   name = sprintf("dbplyr_%03i", getOption("dbplyr_table_name", 0)),
                                    attritionReason = "Qualifying initial records",
                                    cohortSet = attr(cohort, "cohort_set"),
                                    cdm = attr(cohort, "cdm_reference")) {
@@ -51,6 +53,16 @@ appendCohortAttributes <- function(cohort,
     checkmate::assertTRUE(all(
       c("cohort_definition_id", "cohort_name") %in% colnames(cohortSet)
     ))
+    if (!("tbl_sql" %in% class(cohortSet))) {
+      ref <- inSchema(
+        schema = attr(cdm, "write_schema"), name = paste0(name, "_set")
+      )
+      DBI::dbWriteTable(
+        conn = attr(cdm, "dbcon"), name = ref, value = cohortSet,
+        overwrite = TRUE
+      )
+      cohortSet <- dplyr::tbl(attr(cdm, "dbcon"), ref)
+    }
   } else {
     cohortSet <- cohort %>%
       dplyr::select("cohort_definition_id") %>%
@@ -58,7 +70,11 @@ appendCohortAttributes <- function(cohort,
       dplyr::mutate(
         cohort_name = paste0("cohort_", .data$cohort_definition_id)
       ) %>%
-      computeQuery()
+      computeQuery(
+        name = paste0(name, "_set"),
+        temporary = getOption("cohort_as_temp", FALSE),
+        schema = attr(cdm, "write_schema"), overwrite = TRUE
+      )
   }
 
   # update cohort_set
@@ -75,7 +91,18 @@ appendCohortAttributes <- function(cohort,
       attr(cohort, "cohort_set") %>% dplyr::select("cohort_definition_id"),
       by = "cohort_definition_id"
     ) %>%
-    computeQuery()
+    dplyr::mutate(
+      number_records = dplyr::if_else(
+        is.na(.data$number_records), 0, .data$number_records
+      ), number_subjects = dplyr::if_else(
+        is.na(.data$number_subjects), 0, .data$number_subjects
+      )
+    ) %>%
+    computeQuery(
+      name = paste0(name, "_count"),
+      temporary = getOption("cohort_as_temp", FALSE),
+      schema = attr(cdm, "write_schema"), overwrite = TRUE
+    )
 
   # new line of attrition
   attrition <- attr(cohort, "cohort_count") %>%
@@ -88,7 +115,10 @@ appendCohortAttributes <- function(cohort,
         is.na(.data$number_subjects), 0, .data$number_subjects
       )
     ) %>%
-    computeQuery()
+    computeQuery(
+      temporary = getOption("intermediate_as_temp", TRUE),
+      schema = attr(cdm, "write_schema"), overwrite = TRUE
+    )
 
   # append line if already exists
   if (!is.null(attr(cohort, "cohort_attrition"))) {
@@ -117,8 +147,7 @@ appendCohortAttributes <- function(cohort,
             "cohort_definition_id", "number_records", "number_subjects",
             "reason_id", "reason", "excluded_records", "excluded_subjects"
           )
-      ) %>%
-      computeQuery()
+      )
   } else {
     attr(cohort, "cohort_attrition") <- attrition %>%
       dplyr::mutate(
@@ -127,9 +156,14 @@ appendCohortAttributes <- function(cohort,
       dplyr::select(
         "cohort_definition_id", "number_records", "number_subjects",
         "reason_id", "reason", "excluded_records", "excluded_subjects"
-      ) %>%
-      computeQuery()
+      )
   }
+  attr(cohort, "cohort_attrition") <- attr(cohort, "cohort_attrition") %>%
+    computeQuery(
+      name = paste0(name, "_attrition"),
+      temporary = getOption("cohort_as_temp", FALSE),
+      schema = attr(cdm, "write_schema"), overwrite = TRUE
+    )
 
   # this function has to be updated with the behavior of the computes
   #  according new modifications and insert cohortSet if it is local
