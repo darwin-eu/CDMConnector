@@ -1,33 +1,36 @@
-# dbToTest <- c(
-#   "duckdb"
-#   ,"postgres"
-#   # ,"redshift"
-#   # ,"sqlserver"
-#   # ,"oracle"
-#   # ,"snowflake"
-#   # ,"bigquery"
-# )
+dbToTest <- c(
+  "duckdb"
+  ,"postgres"
+  # ,"redshift"
+  # ,"sqlserver"
+  # ,"oracle"
+  # ,"snowflake"
+  # ,"bigquery"
+)
 
-test_concept_cohort_perm <- function(con, cdm_schema, write_schema) {
+test_concept_cohort_perm <- function(con,
+                                     cdm_schema,
+                                     write_schema) {
 
   prefix <- paste0("test", as.integer(Sys.time()), "_")
 
+  withr::local_options("CDMConnector.cohort_as_temp" = FALSE)
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
                       write_schema = c(schema = write_schema,
                                        prefix = prefix))
 
   # create permanent cohort tables
-  # debugonce(generateConceptCohortSet)
   cdm <- generateConceptCohortSet(cdm = cdm,
                                   conceptSet = list(gibleed = 80809),
                                   name = "gibleed",
                                   overwrite = TRUE)
 
   # check tables we expected have been created
-  tables <- paste0("gibleed", c("", "_attrition", "_count", "_set"))
+  tables <- paste0(prefix, "gibleed", c("", "_attrition", "_count", "_set"))
   # failing in testthat
-  # expect_true(all(tables %in% listTables(con = con, schema = write_schema)))
+  expect_true(all(tables %in%
+                    listTables(con = con, schema = write_schema)))
 
   # check that overwrite works as expected
   expect_no_error({
@@ -44,70 +47,11 @@ test_concept_cohort_perm <- function(con, cdm_schema, write_schema) {
                              overwrite = FALSE)
   })
 
-  # check we have the people we would expect
-
-  expected_ids <- cdm$condition_occurrence %>%
-    dplyr::filter(condition_concept_id == 80809) %>%
-    dplyr::distinct(.data$person_id) %>%
-    dplyr::pull("person_id")
-
-  # this test fails on eunomia because domain_id is not populated in concept table
-  # TODO fix this
-  # expect_setequal(expected_ids, unique(dplyr::pull(cdm$gibleed, "subject_id")))
-
-    # concept cohorts based on multiple domains
-    conceptList <- list("a" = c(4336464), # procedure
-                        "b" = c(4112343, # condition
-                                4336464, # procedure
-                                3006322))  # measurement
-
-    cdm <- generateConceptCohortSet(cdm,
-                                    conceptSet = conceptList,
-                                    name = "test_cohort_2",
-                                    overwrite = TRUE)
-
-    # check we have the people we would expect
-    # cohort 1
-    # expect_true(all(sort(unique(cdm$procedure_occurrence %>%
-    #                        dplyr::filter(procedure_concept_id==4336464) %>%
-    #                        dplyr::pull("person_id"))) ==
-    #                   sort(unique(cdm$test_cohort_2 %>%
-    #                          dplyr::filter(cohort_definition_id == "1") %>%
-    #                          dplyr::pull("subject_id")))))
-    # # cohort 2
-    # expect_true(all(sort(unique(c(cdm$condition_occurrence %>%
-    #                        dplyr::filter(condition_concept_id==4112343 ) %>%
-    #                        dplyr::pull("person_id"),
-    #                       cdm$procedure_occurrence %>%
-    #                        dplyr::filter(procedure_concept_id==4336464) %>%
-    #                        dplyr::pull("person_id"),
-    #                 cdm$measurement %>%
-    #                   dplyr::filter(measurement_concept_id==3006322) %>%
-    #                   dplyr::pull("person_id"))))==
-    #                   sort(unique(cdm$test_cohort_2 %>%
-    #                          dplyr::filter(cohort_definition_id == "2") %>%
-    #                          dplyr::pull("subject_id")))))
-
    # clean up
-   CDMConnector::dropTable(cdm, dplyr::starts_with(prefix))
+   CDMConnector::dropTable(cdm, dplyr::contains("gibleed"))
 
-    # test temp tables
-   withr::local_options("CDMConnector.cohort_as_temp" = TRUE)
 
-   cdm <- generateConceptCohortSet(cdm = cdm,
-                                   conceptSet = list(gibleed = 80809),
-                                   name = "gibleed",
-                                   overwrite = TRUE)
-
-   # TODO clean up dbplyr tables that are supposed to be temp (intermediate)
-
-   # tables shouldn´t have been created
-   # failing test
-   # TODO fix this
-   # expect_false(any(tables %in% listTables(con = con, schema = write_schema)))
-   # expect_true(all(tables %in% listTables(con = con, schema = NULL)))
 }
-
 
 test_capr_concept_cohort <- function(con,
                                      cdm_schema,
@@ -116,6 +60,7 @@ test_capr_concept_cohort <- function(con,
   test_prefix_rand <- paste0("test_",
                              paste0(sample(letters, size = 5, replace = TRUE),
                                     collapse = ""))
+  withr::local_options("CDMConnector.cohort_as_temp" = FALSE)
 
   gibleed_cs <- Capr::cs(80809, name = "gibleed")
   gibleed_desc_cs <- Capr::cs(Capr::descendants(80809), name = "gibleed_desc")
@@ -125,41 +70,177 @@ test_capr_concept_cohort <- function(con,
                       write_schema = c(schema = write_schema,
                                        prefix = test_prefix_rand))
 
-  attr(cdm, "cohort_as_temp") <- FALSE
-
   # single concept set
   expect_no_error(cdm <- generateConceptCohortSet(cdm = cdm,
-                                  conceptSet = gibleed_cs,
-                                  name = "gibleed",
-                                  overwrite = TRUE))
+                                                  conceptSet = gibleed_cs,
+                                                  name = "gibleed",
+                                                  overwrite = TRUE))
 
   # list of concept sets
   expect_no_error(cdm <- generateConceptCohortSet(cdm = cdm,
-                                  conceptSet = list("gibleed" = gibleed_cs,
-                                                    "gibleed_desc" = gibleed_desc_cs),
-                                  name = "gibleed",
-                                  overwrite = TRUE))
+                                                  conceptSet = list("gibleed" = gibleed_cs,
+                                                                    "gibleed_desc" = gibleed_desc_cs),
+                                                  name = "gibleed",
+                                                  overwrite = TRUE))
 
   # clean up
-  CDMConnector::dropTable(cdm = cdm,
-                          name = dplyr::starts_with(test_prefix_rand))
+  CDMConnector::dropTable(cdm, dplyr::contains("gibleed"))
+
+}
+
+test_concept_cohort_mock <- function(con,
+                                     cdm_schema,
+                                     write_schema){
+
+  test_prefix_rand <- paste0("test_",
+                             paste0(sample(letters, size = 5, replace = TRUE),
+                                    collapse = ""))
+
+  # mock cdm
+  # 3 individuals
+  # 1 event outside of observation period
+
+  # person table
+  personTable <- tibble::tibble(
+    person_id = c("1", "2", "3"),
+    gender_concept_id = rep("8507", 3),
+    year_of_birth = 2000,
+    month_of_birth = 01,
+    day_of_birth = 01
+  )
+
+  # obs period table
+  observationPeriodTable <- tibble::tibble(
+    observation_period_id = c("1", "2", "3"),
+    person_id = c("1", "2", "3"),
+    observation_period_start_date = c(as.Date("2000-01-01"),
+                                      as.Date("2000-01-01"),
+                                      as.Date("2010-01-01")),
+    observation_period_end_date = c(as.Date("2015-06-01"),
+                                    as.Date("2015-06-01"),
+                                    as.Date("2015-06-01"))
+  )
+
+  # concept
+  concept <- data.frame(
+    concept_id = 1:3,
+    concept_name = c(
+      "Arthritis",
+      "Adalimumab",
+      "Knee replacement"
+    ),
+    domain_id = c("Condition", "Drug", "Procedure"),
+    vocabulary_id = c("SNOMED", "RxNorm", "CPT4"
+    ),
+    standard_concept =  rep("S", 3),
+    concept_class_id = c("Clinical Finding", "Ingredient", "Procedure"),
+    concept_code = "1234",
+    valid_start_date = NA,
+    valid_end_date = NA,
+    invalid_reason = NA
+  )
+
+  # condition occurrence
+  conditionOccurrence <- dplyr::tibble(
+    condition_occurrence_id = c(1,2),
+    person_id = c(1,3),
+    condition_concept_id = 1,
+    condition_start_date = as.Date("2005-01-01"),
+    condition_end_date = as.Date("2005-01-04")
+  )
+
+  # drug_exposure
+  drugExposure <- data.frame(
+      drug_exposure_id = 1,
+      person_id = 2,
+      drug_concept_id = 2,
+      drug_exposure_start_date = as.Date("2007-01-01"),
+      drug_exposure_end_date = as.Date("2008-01-01"),
+      quantity = 1
+    )
+
+
+
+  # copy to cdm
+  cdm_mock <- list(person = personTable,
+                   observation_period = observationPeriodTable,
+                   condition_occurrence = conditionOccurrence,
+                   drug_exposure = drugExposure,
+                   concept = concept)
+  class(cdm_mock) <-"cdm_reference"
+  attr(cdm_mock, "cdm_version") <- "5.3"
+  attr(cdm_mock,"cdm_name") <- "mock"
+ cdm <-  copyCdmTo(con = con,
+            prefix = test_prefix_rand,
+            cdm = cdm_mock,
+            schema = cdm_schema,
+            overwrite = TRUE)
+ attr(cdm, "write_schema") <- write_schema
+
+ cdm <- generateConceptCohortSet(cdm,overwrite = TRUE,
+                                 name ="arthritis",
+                                 conceptSet = 1)
+  # check we ignore events outside of observation time
+  # we shouldn't see person 3 because their record was before their
+  # observation start date
+  expect_true(cdm$arthritis %>% dplyr::pull("subject_id") == 1)
+
+  # check for concept cohort based on multiple domains
+  cdm <- generateConceptCohortSet(cdm,overwrite = TRUE,
+                                  name ="arthritis_adalimumab",
+                                  conceptSet = c(1,2))
+
+  expect_true(all(c(1,2) %in% (cdm$arthritis_adalimumab %>%
+                dplyr::pull("subject_id"))))
+  expect_true(!all(c(3) %in% (cdm$arthritis_adalimumab %>%
+                                 dplyr::pull("subject_id"))))
+
+  # expected errors
+  # requiring concept from another domain not in the cdm ref
+  expect_error(generateConceptCohortSet(cdm,
+                           overwrite = TRUE,
+                           name ="arthritis_adalimumab",
+                           conceptSet = c(1, 2, 3)))
+
+  # clean up
+  CDMConnector::dropTable(cdm, dplyr::contains("arthritis"))
+
 }
 
 
+
+# # test temp tables
+# # test temp tables
+# withr::local_options("CDMConnector.cohort_as_temp" = TRUE)
+#
+# cdm <- generateConceptCohortSet(cdm = cdm,
+#                                 conceptSet = list(gibleed = 80809),
+#                                 name = "gibleed",
+#                                 overwrite = TRUE)
+#
+# # TODO clean up dbplyr tables that are supposed to be temp (intermediate)
+#
+# # tables shouldn´t have been created
+# # failing test
+# # TODO fix this
+# # expect_false(any(tables %in% listTables(con = con, schema = write_schema)))
+# # expect_true(all(tables %in% listTables(con = con, schema = NULL)))
+
+
+
+
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - generateCohortSet"), {
+  test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_concept_cohort_perm(con, cdm_schema, write_schema)
+    test_concept_cohort_mock(con, cdm_schema, write_schema)
     disconnect(con)
   })
-}
 
-for (dbtype in dbToTest) {
-  # cohort from capr concept set
-  test_that(glue::glue("{dbtype} - generateCohortSet"), {
+  test_that(glue::glue("{dbtype} - concept cohort with capr"), {
     skip_if_not_installed("Capr", minimum_version = "2.0.5")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
@@ -170,6 +251,8 @@ for (dbtype in dbToTest) {
                              write_schema = write_schema)
     disconnect(con)
   })
+
+
 }
 
 

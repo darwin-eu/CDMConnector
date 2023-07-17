@@ -34,7 +34,7 @@ generateConceptCohortSet <- function(cdm,
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
 
-  if (isFALSE(attr(cdm, "cohort_as_temp"))) {
+  if (isFALSE(getOption("CDMConnector.cohort_as_temp", FALSE))){
     assert_write_schema(cdm)
   }
 
@@ -107,55 +107,43 @@ generateConceptCohortSet <- function(cdm,
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
 
-  get_domain <- function(domain) {
-    df <- dplyr::tribble(
-      ~domain_id,    ~table_name,            ~concept_id,              ~start_date,                  ~end_date,
-      "condition",   "condition_occurrence", "condition_concept_id",   "condition_start_date",       "condition_end_date",
-      "drug",        "drug_exposure",        "drug_concept_id",        "drug_exposure_start_date",   "drug_exposure_end_date",
-      "procedure",   "procedure_occurrence", "procedure_concept_id",   "procedure_date",             "procedure_date",
-      "observation", "observation",          "observation_concept_id", "observation_date",           "observation_date",
-      "measurement", "measurement",          "measurement_concept_id", "measurement_date",           "measurement_date",
-      "visit",       "visit_occurrence",     "visit_concept_id",       "visit_start_date",           "visit_end_date",
-      "device",      "device_exposure",      "device_concept_id",      "device_exposure_start_date", "device_exposure_end_date"
-    ) %>% dplyr::filter(.data$domain_id == domain)
 
-    if (nrow(df) != 1) {
-      return(NULL)
-    }
-
-    if (!(df$table_name %in% names(cdm))) {
-      rlang::warn(glue::glue("Concept set contains {domain} concepts but the {df$table_name} table is missing from the cdm"))
-      return(NULL)
-    }
-
-    CDMConnector::assert_tables(cdm, df$table_name, empty.ok = TRUE)
-
-    by <- c("concept_id") %>% rlang::set_names(df[["concept_id"]])
-
-    cdm[[df$table_name]] %>%
-      dplyr::inner_join(concepts, by = local(by)) %>%
-      dplyr::transmute(.data$cohort_definition_id,
-                       subject_id = .data$person_id,
-                       cohort_start_date = !!rlang::parse_expr(df$start_date),
-                       cohort_end_date = dplyr::coalesce(!!rlang::parse_expr(df$end_date),
-                                                         !!rlang::parse_expr(df$start_date)))
-  }
+# check we have references to all required tables
+missing_tables <- setdiff(table_refs(domain_id = domains) %>%
+            dplyr::pull("table_name"),
+          names(cdm))
+if(length(missing_tables)>0){
+  cli::cli_abort("Concepts included from the {.missing_tables {missing_tables}} table{?s} but table{?s} not found in the cdm reference")
+}
 
   # rowbind results
-  if (!any(is.na(domains)) && length(domains) > 0) {
-    cohort <- purrr::map(domains, get_domain) %>% purrr::reduce(dplyr::union_all)
-  } else {
-    # create the base cohort table
-    cohort <- dplyr::transmute(
-      cdm$observation_period,
-      cohort_definition_id = 0L,
-      subject_id = .data$person_id,
-      cohort_start_date = .data$observation_period_start_date,
-      cohort_end_date = .data$observation_period_end_date) %>%
-      dplyr::filter(1 == 0) %>%
-      computeQuery(temporary = TRUE)
-  }
-# browser()
+  cohort <- purrr::map(domains, get_domain,
+                         cdm = cdm,
+                         concepts = concepts) %>%
+      purrr::reduce(dplyr::union_all)
+
+  # drop any outside of an observation period
+  cohort <- cohort  %>%
+    dplyr::inner_join(
+      cdm[["observation_period"]] %>%
+        dplyr::rename("subject_id" = "person_id") %>%
+        dplyr::select(
+          "subject_id",
+          "observation_period_start_date",
+          "observation_period_end_date"
+        ),
+      by = "subject_id"
+    ) %>%
+    dplyr::mutate(in_observation = dplyr::if_else(
+                  .data$observation_period_start_date <=
+                    .data$cohort_start_date  &
+                    .data$observation_period_end_date >=
+                    .data$cohort_start_date,1,0)) %>%
+    dplyr::filter(.data$in_observation == 1) %>%
+    dplyr::select("cohort_definition_id", "subject_id",
+                  "cohort_start_date", "cohort_end_date") %>%
+    dplyr::distinct()
+
   cohortRef <- cohort %>%
     cohort_collapse() %>%
     computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
@@ -205,4 +193,34 @@ generateConceptCohortSet <- function(cdm,
     cohortCountRef = cohortCountRef)
 
   return(cdm)
+}
+
+
+get_domain <- function(domain, cdm, concepts) {
+  df <- table_refs(domain_id = domain)
+
+  CDMConnector::assert_tables(cdm, df$table_name, empty.ok = TRUE)
+
+  by <- c("concept_id") %>% rlang::set_names(df[["concept_id"]])
+
+  cdm[[df$table_name]] %>%
+    dplyr::inner_join(concepts, by = local(by)) %>%
+    dplyr::transmute(.data$cohort_definition_id,
+                     subject_id = .data$person_id,
+                     cohort_start_date = !!rlang::parse_expr(df$start_date),
+                     cohort_end_date = dplyr::coalesce(!!rlang::parse_expr(df$end_date),
+                                                       !!rlang::parse_expr(df$start_date)))
+}
+
+table_refs <- function(domain_id){
+  dplyr::tribble(
+    ~domain_id,    ~table_name,            ~concept_id,              ~start_date,                  ~end_date,
+    "condition",   "condition_occurrence", "condition_concept_id",   "condition_start_date",       "condition_end_date",
+    "drug",        "drug_exposure",        "drug_concept_id",        "drug_exposure_start_date",   "drug_exposure_end_date",
+    "procedure",   "procedure_occurrence", "procedure_concept_id",   "procedure_date",             "procedure_date",
+    "observation", "observation",          "observation_concept_id", "observation_date",           "observation_date",
+    "measurement", "measurement",          "measurement_concept_id", "measurement_date",           "measurement_date",
+    "visit",       "visit_occurrence",     "visit_concept_id",       "visit_start_date",           "visit_end_date",
+    "device",      "device_exposure",      "device_concept_id",      "device_exposure_start_date", "device_exposure_end_date"
+  ) %>% dplyr::filter(.data$domain_id %in% .env$domain_id)
 }
