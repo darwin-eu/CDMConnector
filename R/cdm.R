@@ -560,11 +560,14 @@ cdm_from_files <- function(path,
     })
   )
 
-  # Try to get the cdm name if not supplied
-  if (is.null(cdm_name) && ("cdm_source" %in% names(cdm))) {
-      cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source", dbms(con)))
+  names(cdm) <- cdm_tables
 
-    cdm_source <- cdm_source %>%
+  # Try to get the cdm name if not supplied
+  if (is.null(cdm_name) &&
+      !is.null(names(cdm)) &&
+      ("cdm_source" %in% names(cdm))) {
+
+    cdm_source <- cdm[["cdm_source"]] %>%
       head() %>%
       dplyr::collect() %>%
       dplyr::rename_all(tolower)
@@ -578,7 +581,6 @@ cdm_from_files <- function(path,
   }
 
 
-  names(cdm) <- cdm_tables
   class(cdm) <- "cdm_reference"
 
   attr(cdm, "cdm_schema") <- NULL
