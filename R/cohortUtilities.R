@@ -1,7 +1,6 @@
 #' Create or update the GeneratedCohortSet attributes to a cohort object
 #'
-#' @param cohort Cohort in the cdm.
-#' @param name Name of the cohort table.
+#' @param cohort A generated cohort set
 #' @param attritionReason The reason for attrition as a character string.
 #' @param cohortSet tbl to update the cohort_set attribute.
 #'
@@ -37,10 +36,13 @@
 #' }
 #'
 appendCohortAttributes <- function(cohort,
-                                   name = uniqueTableName(),
                                    attritionReason = "Qualifying initial records",
                                    cohortSet = cohortSet(cohort)) {
-  # initial checks
+
+  checkmate::assertClass(cohort, "GeneratedCohortSet")
+  name <- attr(cohort, "tbl_name")
+  checkmate::assertCharacter(name, len = 1, min.chars = 1)
+
   checkmate::assertCharacter(
     attritionReason, min.chars = 1, len = 1, any.missing = FALSE
   )

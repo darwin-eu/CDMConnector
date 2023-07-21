@@ -528,11 +528,18 @@ new_generated_cohort_set <- function(cohort_ref,
                             "number_subjects"),
                           choices = colnames(cohort_count_ref))
 
+  name <- as.character(cohort_ref[[2]]$x)
+  name <- stringr::str_split(name, "\\.")[[1]]
+  name <- name[length(name)]
+
+  checkmate::assertCharacter(name, len = 1, min.chars = 1)
+
   # create the object
   class(cohort_ref) <- c("GeneratedCohortSet", class(cohort_ref))
   attr(cohort_ref, "cohort_set") <- cohort_set_ref
   attr(cohort_ref, "cohort_attrition") <- cohort_attrition_ref
   attr(cohort_ref, "cohort_count") <- cohort_count_ref
+  attr(cohort_ref, "tbl_name") <- name
 
   return(cohort_ref)
 }

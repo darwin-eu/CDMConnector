@@ -108,19 +108,20 @@ generateConceptCohortSet <- function(cdm,
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
 
 
-# check we have references to all required tables
-missing_tables <- setdiff(table_refs(domain_id = domains) %>%
-            dplyr::pull("table_name"),
-          names(cdm))
-if(length(missing_tables)>0){
-  cli::cli_abort("Concepts included from the {.missing_tables {missing_tables}} table{?s} but table{?s} not found in the cdm reference")
-}
+  # check we have references to all required tables
+  missing_tables <- setdiff(table_refs(domain_id = domains) %>% dplyr::pull("table_name"),
+                            names(cdm))
+
+  if (length(missing_tables)>0) {
+    cli::cli_abort("Concepts included from the {.missing_tables {missing_tables}} table{?s} but table{?s} not found in the cdm reference")
+  }
 
   # rowbind results
-  cohort <- purrr::map(domains, get_domain,
-                         cdm = cdm,
-                         concepts = concepts) %>%
-      purrr::reduce(dplyr::union_all)
+  cohort <- purrr::map(domains,
+                       get_domain,
+                       cdm = cdm,
+                       concepts = concepts) %>%
+    purrr::reduce(dplyr::union_all)
 
   # drop any outside of an observation period
   cohort <- cohort  %>%

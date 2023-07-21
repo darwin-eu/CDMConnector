@@ -36,7 +36,7 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 #   # ,"bigquery" # issue with bigquery tbl
 # )
 
-dbtype = "duckdb"
+# dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - cdm_from_con"), {
     if (dbtype != "duckdb") skip_on_ci()

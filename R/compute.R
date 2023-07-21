@@ -266,6 +266,7 @@ computeQuery <- function(x,
   attr(out, "cohort_attrition") <- attr(x, "cohort_attrition")
   attr(out, "cohort_count") <- attr(x, "cohort_count")
   attr(out, "cdm_reference") <- attr(x, "cdm_reference")
+  attr(out, "tbl_name") <- attr(x, "tbl_name")
 
   return(out)
 }
