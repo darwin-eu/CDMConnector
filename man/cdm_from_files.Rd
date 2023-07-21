@@ -14,7 +14,13 @@ cdm_from_files(
   as_data_frame = TRUE
 )
 
-cdmFromFiles(path, format = "auto", asDataFrame = TRUE)
+cdmFromFiles(
+  path,
+  format = "auto",
+  cdmVersion = "5.3",
+  cdmName = NULL,
+  asDataFrame = TRUE
+)
 }
 \arguments{
 \item{path}{A folder where an OMOP CDM v5.4 instance is located.}
@@ -22,9 +28,9 @@ cdmFromFiles(path, format = "auto", asDataFrame = TRUE)
 \item{format}{What is the file format to be read in? Must be "auto"
 (default), "parquet", "csv", "feather".}
 
-\item{cdm_version}{The version of the cdm (5.3 or 5.4)}
+\item{cdm_version, cdmVersion}{The version of the cdm (5.3 or 5.4)}
 
-\item{cdm_name}{A name to use for the cdm.}
+\item{cdm_name, cdmName}{A name to use for the cdm.}
 
 \item{as_data_frame, asDataFrame}{TRUE (default) will read files into R as dataframes.
 FALSE will read files into R as Arrow Datasets.}

@@ -3,7 +3,6 @@ library(dplyr, warn.conflicts = FALSE)
 
 ### CDM object DBI drivers ------
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
-  # debugonce(cdm_from_con)
   cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
   expect_s3_class(cdm, "cdm_reference")
   expect_error(assert_tables(cdm, "person"), NA)

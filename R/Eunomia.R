@@ -2,16 +2,18 @@
 #'
 #' Download the Eunomia data files from https://github.com/darwin-eu/EunomiaDatasets
 #'
-#' @param dataset_name,datasetName   The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
-#'                      data set name corresponds to the folder with the data set ZIP files
-#' @param cdm_version,cdmVersion    The OMOP CDM version. This version will appear in the suffix of the data file,
-#'                      for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'
+#' @param dataset_name,datasetName The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
+#'  data set name corresponds to the folder with the data set ZIP files
+#' @param cdm_version,cdmVersion The OMOP CDM version. This version will appear in the suffix of the data file,
+#'  for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'
 #' @param path_to_data,pathToData    The path where the Eunomia data is stored on the file system., By default the
-#'                      value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
-#' @param overwrite     Control whether the existing archive file will be overwritten should it already
-#'                      exist.
+#'  value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
+#' @param overwrite Control whether the existing archive file will be overwritten should it already exist.
 #' @return
 #' Invisibly returns the destination if the download was successful.
+#'
+#' @importFrom utils download.file
+#'
 #' @examples
 #' \dontrun{
 #' downloadEunomiaData("GiBleed")
@@ -21,52 +23,93 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
                                 cdmVersion = "5.3",
                                 pathToData = Sys.getenv("EUNOMIA_DATA_FOLDER"),
                                 overwrite = FALSE) {
+
+  # checkmate::assertChoice(datasetName, choices = exampleDatasets))
+
+  if (cdmVersion != "5.3") {
+    rlang::abort("Only CDM v5.3 is supported currently!")
+  }
+
   if (is.null(pathToData) || is.na(pathToData) || pathToData == "") {
     stop("The pathToData argument must be specified. Consider setting the EUNOMIA_DATA_FOLDER environment variable, for example in the .Renviron file.")
   }
 
-  if (is.null(datasetName) || is.na(datasetName) || datasetName == "") {
-    stop("The datasetName argument must be specified.")
-  }
+  if (!dir.exists(pathToData)) { dir.create(pathToData, recursive = TRUE) }
 
-  if (pathToData != Sys.getenv("EUNOMIA_DATA_FOLDER")) {
-    rlang::inform(paste0(
-      "Consider adding `EUNOMIA_DATA_FOLDER='",
-      pathToData,
-      "'` to ",
-      path.expand("~/.Renviron"),
-      " and restarting R."
-    ))
-  }
-
-  if (!dir.exists(pathToData)) {
-    dir.create(pathToData, recursive = TRUE)
-  }
-
-  datasetNameVersion <- paste0(datasetName, "_", cdmVersion)
-  zipName <- paste0(datasetNameVersion, ".zip")
+  zipName <- glue::glue("{datasetName}_{cdmVersion}.zip")
 
   if (file.exists(file.path(pathToData, zipName)) && !overwrite) {
-    cat(paste0(
-      "Dataset already exists (",
-      file.path(pathToData, zipName),
-      "). Specify overwrite=T to overwrite existing zip archive."
+    rlang::inform(glue::glue(
+      "Dataset already exists ({file.path(pathToData, zipName)})
+      Specify `overwrite = TRUE` to overwrite existing zip archive"
     ))
-    invisible()
-  } else {
-    # downloads the file from github
-    baseUrl <- "https://raw.githubusercontent.com/darwin-eu/EunomiaDatasets/main/datasets"
-    result <- utils::download.file(
-      url = paste(baseUrl, datasetName, zipName, sep = "/"),
-      destfile = file.path(
-        pathToData,
-        zipName
-      )
-    )
-
-    invisible(pathToData)
+    return(invisible(pathToData))
   }
+
+  pb <- cli::cli_progress_bar(format = "[:bar] :percent :elapsed",
+                              type = "download")
+
+  withr::with_options(list(timeout = 5000), {
+    utils::download.file(
+      url = glue::glue("https://example-data.ohdsi.dev/{datasetName}.zip"),
+      destfile = file.path(pathToData, zipName),
+      mode = "wb",
+      method = "auto",
+      quiet = FALSE,
+      extra = list(progressfunction = function(downloaded, total) {
+        # Calculate the progress and update the progress bar
+        progress <- min(1, downloaded / total)
+        cli::cli_progress_update(id = pb, set = progress)
+      })
+    )
+  })
+
+  cli::cli_progress_done(id = pb)
+  cat("\nDownload completed!\n")
+  return(invisible(pathToData))
 }
+
+#' List the available example CDM datasets
+#'
+#' @return A character vector with example CDM dataset identifiers
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' exampleDatasets()[1]
+#' #> [1] "GiBleed"
+#'
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
+#' cdm <- cdm_from_con(con)
+#' }
+exampleDatasets <- function() {
+  c("GiBleed",
+    "synthea-allergies-10k",
+    "synthea-anemia-10k",
+    "synthea-breast_cancer-10k",
+    "synthea-contraceptives-10k",
+    "synthea-covid19-10k",
+    "synthea-covid19-200k",
+    "synthea-dermatitis-10k",
+    "synthea-heart-10k",
+    "synthea-hiv-10k",
+    "synthea-lung_cancer-10k",
+    "synthea-medications-10k",
+    "synthea-metabolic_syndrome-10k",
+    "synthea-opioid_addiction-10k",
+    "synthea-rheumatoid_arthritis-10k",
+    "synthea-snf-10k",
+    "synthea-surgery-10k",
+    "synthea-total_joint_replacement-10k",
+    "synthea-veteran_prostate_cancer-10k",
+    "synthea-veterans-10k",
+    "synthea-weight_loss-10k")
+}
+
+#' @export
+#' @rdname exampleDatasets
+example_datasets <- exampleDatasets
 
 
 #' @rdname downloadEunomiaData
@@ -81,201 +124,145 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
                       overwrite = overwrite)
 }
 
-
-# Extract the Eunomia data files and load into a SQLite or duckdb database
-#
-# Extract files from a .ZIP file and creates a SQLite or duckdb OMOP CDM database that is then stored in the
-# same directory as the .ZIP file.
-#
-# @param from The path to the .ZIP file that contains the csv CDM source files
-# @param to The path to the .sqlite or .duckdb file that will be created
-# @param dbms The file based database system to use: 'sqlite' (default) or 'duckdb'
-# @param verbose Print progress notes? TRUE or FALSE
-# @importFrom tools file_ext
-extractLoadData <- function(from, to, dbms = "sqlite", verbose = FALSE) {
-  stopifnot(dbms == "sqlite" || dbms == "duckdb", is.logical(verbose), length(verbose) == 1)
-  stopifnot(is.character(from), length(from) == 1, nchar(from) > 0)
-  stopifnot(is.character(to), length(to) == 1, nchar(from) > 0)
-  if (tools::file_ext(from) != "zip") stop("Source must be a .zip file")
-  if (!file.exists(from)) stop(paste0("zipped csv archive '", from, "' not found!"))
-
-  tempFileLocation <- tempfile()
-  if (verbose) cli::cat_line(paste0("Unzipping ", from))
-  utils::unzip(zipfile = from, exdir = tempFileLocation)
-
-
-  # get list of files in directory and load them into the SQLite database
-  dataFiles <- sort(list.files(path = tempFileLocation, pattern = "*.csv"))
-  if (length(dataFiles) <= 0) {
-    stop("Data file does not contain .CSV files to load into the database.")
-  }
-  databaseFileName <- paste0(tools::file_path_sans_ext(basename(from)), ".", dbms)
-  databaseFilePath <- file.path(tempFileLocation, databaseFileName)
-
-  if (dbms == "sqlite") {
-    rlang::check_installed("RSQLite")
-    connection <- DBI::dbConnect(RSQLite::SQLite(), dbname = databaseFilePath)
-    on.exit(DBI::dbDisconnect(connection), add = TRUE)
-  } else if (dbms == "duckdb") {
-    rlang::check_installed("duckdb")
-    connection <- DBI::dbConnect(duckdb::duckdb(), dbdir = databaseFilePath)
-    # If the function is successful dbDisconnect will be called twice generating a warning.
-    # If this function is unsuccessful, still close connection on exit.
-    on.exit(suppressWarnings(DBI::dbDisconnect(connection, shutdown = TRUE)), add = TRUE)
-  }
-
-  on.exit(unlink(tempFileLocation), add = TRUE)
-
-  if(verbose) {
-    cli::cat_rule(paste0("Loading database ", databaseFileName), col = "grey")
-  }
-
-  for (i in seq_len(length(dataFiles))) {
-    # TODO use DDL to instantiate tables. Then fill them.
-    tableData <- readr::read_csv(
-      file = file.path(tempFileLocation, dataFiles[i]),
-      col_types = readr::cols(),
-      guess_max = 2e6,
-      lazy = FALSE) %>%
-      dplyr::mutate(dplyr::across(dplyr::matches("date$"), as.Date)) %>%
-      dplyr::mutate(dplyr::across(dplyr::matches("person_id$|concept_id$"), as.integer)) %>%
-      dplyr::mutate(dplyr::across(dplyr::matches("_datetime$"), ~as.POSIXct(., origin = "1970-01-01")))
-
-    # CDM table and column names should be lowercase: https://github.com/OHDSI/CommonDataModel/issues/509#issuecomment-1315754238
-    names(tableData) <- tolower(names(tableData))
-    tableName <- tools::file_path_sans_ext(tolower(dataFiles[i]))
-    DBI::dbWriteTable(conn = connection, name = tableName, value = tableData)
-    if (verbose) {
-      cli::cat_bullet(tableName, bullet = 1)
-    }
-  }
-  # An open duckdb database file cannot be copied on windows
-  if (dbms == "duckdb") {
-    DBI::dbDisconnect(connection, shutdown = TRUE)
-  }
-  rc <- file.copy(from = databaseFilePath, to = to, overwrite = TRUE)
-  if (isFALSE(rc)) {
-    rlang::abort(paste("File copy from", databaseFilePath, "to", to, "failed!"))
-  }
-  if (verbose) {
-    cli::cat_line("Database load complete", col = "grey")
-  }
-}
-
-#' Create a copy of a Eunomia dataset
+#' Create a copy of an example OMOP CDM dataset
 #'
 #' @description
 #' Creates a copy of a Eunomia database, and returns the path to the new database file.
 #' If the dataset does not yet exist on the user's computer it will attempt to download the source data
 #' to the the path defined by the EUNOMIA_DATA_FOLDER environment variable.
 #'
-#' @param datasetName    The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
-#'                       data set name corresponds to the folder with the data set ZIP files
-#' @param cdmVersion     The OMOP CDM version. This version will appear in the suffix of the data file,
-#'                       for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'
-#' @param pathToData     The path where the Eunomia data is stored on the file system., By default the
-#'                       value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
-#' @param dbms           The database system to use. "sqlite" or "duckdb" (default)
-#' @param databaseFile   The path where the database file will be copied to. By default, the database
-#'                       will be copied to a temporary folder, and will be deleted at the end of the R
-#'                       session.
+#' @param datasetName,dataset_name One of "GiBleed" (default),
+#' "synthea-allergies-10k",
+#' "synthea-anemia-10k",
+#' "synthea-breast_cancer-10k",
+#' "synthea-contraceptives-10k",
+#' "synthea-covid19-10k",
+#' "synthea-covid19-200k",
+#' "synthea-dermatitis-10k",
+#' "synthea-heart-10k",
+#' "synthea-hiv-10k",
+#' "synthea-lung_cancer-10k",
+#' "synthea-medications-10k",
+#' "synthea-metabolic_syndrome-10k",
+#' "synthea-opioid_addiction-10k",
+#' "synthea-rheumatoid_arthritis-10k",
+#' "synthea-snf-10k",
+#' "synthea-surgery-10k",
+#' "synthea-total_joint_replacement-10k",
+#' "synthea-veteran_prostate_cancer-10k",
+#' "synthea-veterans-10k",
+#' "synthea-weight_loss-10k"
+#'
+#' @param cdmVersion,cdm_version The OMOP CDM version. Currently only "5.3" is supported.
+#' @param databaseFile,database_file The full path to the new copy of the example CDM dataset.
 #'
 #' @return The file path to the new Eunomia dataset copy
 #' @examples
 #' \dontrun{
-#'  conn <- DBI::dbConnect(RSQLite::SQLite(), eunomiaDir("GiBleed"))
-#'  DBI::dbDisconnect(conn)
-#'
-#'  conn <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed", dbms = "duckdb"))
-#'  DBI::dbDisconnect(conn, shutdown = TRUE)
-#'
-#'  conn <- DatabaseConnector::connect(dbms = "sqlite", server = eunomiaDir("GiBleed"))
-#'  DatabaseConnector::disconnect(conn)
+#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
+#'  DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 #'
 eunomiaDir <- function(datasetName = "GiBleed",
                        cdmVersion = "5.3",
-                       pathToData = Sys.getenv("EUNOMIA_DATA_FOLDER"),
-                       dbms = "duckdb",
-                       databaseFile = tempfile(fileext = paste0(".", dbms))) {
+                       databaseFile = tempfile(fileext = ".duckdb")) {
 
-  if (is.null(pathToData) || is.na(pathToData) || pathToData == "") {
-    stop("The pathToData argument must be specified. Consider setting the EUNOMIA_DATA_FOLDER environment variable, for example in the .Renviron file.")
+  if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {
+    rlang::abort("Set the `EUNOMIA_DATA_FOLDER` environment variable in your .Renviron file.")
   }
+  checkmate::assertChoice(cdmVersion, c("5.3"))
+  rlang::check_installed("duckdb")
 
-  stopifnot(is.character(dbms), length(dbms) == 1, dbms %in% c("sqlite", "duckdb"))
-  stopifnot(is.character(cdmVersion), length(cdmVersion) == 1, cdmVersion %in% c("5.3", "5.4"))
+  checkmate::assertChoice(datasetName, choices = exampleDatasets())
 
-  if (dbms == "duckdb") {
-    rlang::check_installed("duckdb")
-    # duckdb database are tied to a specific version of duckdb until it reaches v1.0
-    duckdbVersion <- substr(utils::packageVersion("duckdb"), 1, 3)
-    datasetFileName <- paste0(datasetName, "_", cdmVersion, "_", duckdbVersion, ".", dbms)
-  } else {
-    datasetFileName <- paste0(datasetName, "_", cdmVersion, ".", dbms)
-  }
+  # duckdb database are tied to a specific version of duckdb until it reaches v1.0
+  duckdbVersion <- substr(utils::packageVersion("duckdb"), 1, 3)
 
-  # cached sqlite or duckdb file to be copied
-  datasetLocation <- file.path(pathToData, datasetFileName)
+  datasetLocation <- file.path(Sys.getenv("EUNOMIA_DATA_FOLDER"),
+                               glue::glue("{datasetName}_{cdmVersion}_{duckdbVersion}.duckdb"))
   datasetAvailable <- file.exists(datasetLocation)
 
-  # zip archive of csv source files
-  archiveName <- paste0(datasetName, "_", cdmVersion, ".zip")
-  archiveLocation <- file.path(pathToData, archiveName)
+  archiveLocation <- file.path(Sys.getenv("EUNOMIA_DATA_FOLDER"),
+                               glue::glue("{datasetName}_{cdmVersion}.zip"))
   archiveAvailable <- file.exists(archiveLocation)
 
   if (!datasetAvailable && !archiveAvailable) {
-    writeLines(paste("attempting to download", datasetName))
+    rlang::inform(paste("Downloading", datasetName))
     downloadEunomiaData(datasetName = datasetName, cdmVersion = cdmVersion)
-    archiveAvailable <- TRUE
+    archiveAvailable <- file.exists(archiveLocation)
+    if (isFALSE(archiveAvailable)) rlang::abort("Dataset download failed!")
   }
 
   if (!datasetAvailable && archiveAvailable) {
-    writeLines(paste("attempting to extract and load", archiveLocation))
-    extractLoadData(from = archiveLocation, to = datasetLocation, dbms = dbms)
-    datasetAvailable <- TRUE
+    rlang::inform(paste("Creating CDM database", archiveLocation))
+    tempFileLocation <- tempfile()
+    utils::unzip(zipfile = archiveLocation, exdir = tempFileLocation)
+
+    unzipLocation <- file.path(tempFileLocation, glue::glue("{datasetName}"))
+    dataFiles <- sort(list.files(path = unzipLocation, pattern = "*.parquet"))
+
+    if (isFALSE(length(dataFiles) > 0)) {
+      rlang::abort("Data file does not contain any .parquet files to load into the database!")
+    }
+
+    con <- DBI::dbConnect(duckdb::duckdb(), dbdir = datasetLocation)
+    # If the function is successful dbDisconnect will be called twice generating a warning.
+    # If this function is unsuccessful, still close connection on exit.
+    on.exit(suppressWarnings(DBI::dbDisconnect(con, shutdown = TRUE)), add = TRUE)
+    on.exit(unlink(tempFileLocation), add = TRUE)
+
+    specs <- spec_cdm_field[[cdmVersion]] %>%
+      dplyr::mutate(cdmDatatype = dplyr::if_else(.data$cdmDatatype == "varchar(max)", "varchar(2000)", .data$cdmDatatype)) %>%
+      dplyr::mutate(cdmFieldName = dplyr::if_else(.data$cdmFieldName == '"offset"', "offset", .data$cdmFieldName)) %>%
+      dplyr::mutate(cdmDatatype = dplyr::case_when(
+        dbms(con) == "postgresql" & .data$cdmDatatype == "datetime" ~ "timestamp",
+        dbms(con) == "redshift" & .data$cdmDatatype == "datetime" ~ "timestamp",
+        TRUE ~ cdmDatatype)) %>%
+      tidyr::nest(col = -"cdmTableName") %>%
+      dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
+
+    files <- tools::file_path_sans_ext(basename(list.files(unzipLocation)))
+    tables <- specs$cdmTableName
+
+    for (i in cli::cli_progress_along(tables)) {
+      if (isFALSE(tables[i] %in% files)) next
+
+      fields <- specs %>%
+        dplyr::filter(.data$cdmTableName == specs$cdmTableName[i]) %>%
+        dplyr::pull(.data$col) %>%
+        unlist()
+
+      DBI::dbCreateTable(con,
+                         inSchema("main", specs$cdmTableName[i], dbms = dbms(con)),
+                         fields = fields)
+
+      cols <- paste(glue::glue('"{names(fields)}"'), collapse = ", ")
+
+      table_path <- file.path(unzipLocation, paste0(specs$cdmTableName[i], ".parquet"))
+      sql <- glue::glue("INSERT INTO main.{tables[i]}({cols})
+                         SELECT {cols} FROM '{table_path}'")
+      DBI::dbExecute(con, sql)
+    }
+
+    DBI::dbDisconnect(con, shutdown = TRUE)
   }
 
   rc <- file.copy(from = datasetLocation, to = databaseFile)
   if (isFALSE(rc)) {
-    stop(paste("File copy from", datasetLocation, "to", databaseFile, "failed!"))
+    rlang::abort(glue::glue("File copy from {datasetLocation} to {databaseFile} failed!"))
   }
   return(databaseFile)
 }
 
-#' Create a new Eunomia CDM
-#'
-#' Create a copy of the duckdb Eunomia CDM and return the file path
-#'
-#' @param exdir Enclosing directory where the Eunomia CDM should be created.
-#' If NULL (default) then a temp folder is created.
-#'
-#' @return The full path to the new Eunomia CDM that can be passed to `dbConnect()`
 #' @export
-#' @importFrom utils untar download.file menu
-#' @examples
-#' \dontrun{
-#' library(DBI)
-#' library(CDMConnector)
-#' con <- dbConnect(duckdb::duckdb(), dbdir = getEunomiaPath())
-#' dbListTables(con)
-#' dbDisconnect(con)
-#' }
-eunomia_dir <- function(exdir = NULL) {
-  rlang::check_installed("duckdb")
-  if (!eunomia_is_available()) {
-    rlang::abort("The Eunomia example dataset is not available. Download it by running `CDMConnector::downloadEunomiaData()`")
-  }
-  if (is.null(exdir)) exdir <- file.path(tempdir(TRUE), paste(sample(letters, 8, replace = TRUE), collapse = ""))
+#' @rdname eunomiaDir
+eunomia_dir <- function(dataset_name = "GiBleed",
+                        cdm_version = "5.3",
+                        database_file = tempfile(fileext = ".duckdb")) {
 
-  path <- eunomiaDir(datasetName = "GiBleed",
-                     cdmVersion = "5.3",
-                     pathToData = Sys.getenv("EUNOMIA_DATA_FOLDER"),
-                     dbms = "duckdb",
-                     databaseFile = exdir)
-
-  if (!file.exists(path)) rlang::abort("Error creating Eunomia CDM")
-  return(path)
+  eunomiaDir(datasetName = dataset_name,
+             cdmVersion = cdm_version,
+             databaseFile = database_file)
 }
 
 #' Has the Eunomia dataset been cached?

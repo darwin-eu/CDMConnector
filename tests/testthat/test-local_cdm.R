@@ -15,6 +15,10 @@ test_that("assertTables works with local cdms", {
   path <- tempfile()
   dir.create(path)
   stow(cdm, path)
+
+  cdm2 <- cdm_from_files(path, cdm_name = "test", as_data_frame = TRUE)
+  expect_s3_class(cdm2, "cdm_reference")
+
   cdm_arrow <- cdm_from_files(path, cdm_name = "test", as_data_frame = FALSE)
   attr(cdm_arrow, "cdm_version")
 
@@ -22,6 +26,6 @@ test_that("assertTables works with local cdms", {
   expect_error(assertTables(cdm_arrow, "blah"))
 
   DBI::dbDisconnect(con, shutdown = T)
-
 })
+
 

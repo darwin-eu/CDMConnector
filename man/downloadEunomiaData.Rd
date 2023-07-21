@@ -20,8 +20,7 @@ download_eunomia_data(
 )
 }
 \arguments{
-\item{overwrite}{Control whether the existing archive file will be overwritten should it already
-exist.}
+\item{overwrite}{Control whether the existing archive file will be overwritten should it already exist.}
 
 \item{dataset_name, datasetName}{The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
 data set name corresponds to the folder with the data set ZIP files}

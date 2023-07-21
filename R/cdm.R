@@ -513,8 +513,8 @@ stow <- function(cdm, path, format = "parquet") {
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
 #' @param format What is the file format to be read in? Must be "auto"
 #'   (default), "parquet", "csv", "feather".
-#' @param cdm_version The version of the cdm (5.3 or 5.4)
-#' @param cdm_name A name to use for the cdm.
+#' @param cdm_version,cdmVersion The version of the cdm (5.3 or 5.4)
+#' @param cdm_name,cdmName A name to use for the cdm.
 #' @param as_data_frame,asDataFrame TRUE (default) will read files into R as dataframes.
 #'   FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
@@ -528,7 +528,7 @@ cdm_from_files <- function(path,
   checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
   checkmate::assert_true(file.exists(path))
 
-  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
+  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4"))
   checkmate::assert_character(cdm_name, null.ok = TRUE)
 
   path <- path.expand(path)
@@ -560,7 +560,23 @@ cdm_from_files <- function(path,
     })
   )
 
-  names(cdm) <- cdm_tables
+  # Try to get the cdm name if not supplied
+  if (is.null(cdm_name) && ("cdm_source" %in% names(cdm))) {
+
+    cdm_source <- cdm$cdm_source %>%
+      head() %>%
+      dplyr::collect() %>%
+      dplyr::rename_all(tolower)
+
+    cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[1],
+                                cdm_source$cdm_source_abbreviation[1])
+  }
+
+  if (is.null(cdm_name)) {
+    rlang::abort("cdm_name must be supplied!")
+  }
+
+  names(cdm) <- tolower(cdm_tables)
 
   # Try to get the cdm name if not supplied
   if (is.null(cdm_name) &&
@@ -596,9 +612,13 @@ cdm_from_files <- function(path,
 #' @export
 cdmFromFiles <- function(path,
                          format = "auto",
+                         cdmVersion = "5.3",
+                         cdmName = NULL,
                          asDataFrame = TRUE) {
   cdm_from_files(path = path,
                  format = format,
+                 cdm_version = cdmVersion,
+                 cdm_name = cdmName,
                  as_data_frame = asDataFrame)
 }
 

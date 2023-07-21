@@ -234,3 +234,26 @@ listTables <- list_tables
 #' @importFrom dbplyr dbplyr_edition
 #' @export
 dbplyr_edition.BigQueryConnection<- function(con) 2L
+
+# Create the cdm tables in a database
+execute_ddl <- function(con, cdm_schema, cdm_version = "5.3", dbms = "duckdb", tables = tbl_group("all"), prefix = "") {
+
+  specs <- spec_cdm_field[[cdm_version]] %>%
+    dplyr::mutate(cdmDatatype = dplyr::if_else(.data$cdmDatatype == "varchar(max)", "varchar(2000)", .data$cdmDatatype)) %>%
+    dplyr::mutate(cdmFieldName = dplyr::if_else(.data$cdmFieldName == '"offset"', "offset", .data$cdmFieldName)) %>%
+    dplyr::mutate(cdmDatatype = dplyr::case_when(
+      dbms(con) == "postgresql" & .data$cdmDatatype == "datetime" ~ "timestamp",
+      dbms(con) == "redshift" & .data$cdmDatatype == "datetime" ~ "timestamp",
+      TRUE ~ cdmDatatype)) %>%
+    tidyr::nest(col = -"cdmTableName") %>%
+    dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
+
+  for (i in cli::cli_progress_along(tables)) {
+    fields <- specs %>%
+      dplyr::filter(.data$cdmTableName == tables[i]) %>%
+      dplyr::pull(.data$col) %>%
+      unlist()
+
+    DBI::dbCreateTable(con, inSchema(cdm_schema, paste0(prefix, tables[i]), dbms = dbms(con)), fields = fields)
+  }
+}

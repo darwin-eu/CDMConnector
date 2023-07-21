@@ -4,8 +4,6 @@
 #' @param name Name of the cohort table.
 #' @param attritionReason The reason for attrition as a character string.
 #' @param cohortSet tbl to update the cohort_set attribute.
-#' @param cdm A cdm_reference object. If not provided the one linked to cohort
-#' will be used.
 #'
 #' @return The cohort object with the attributes created or updated.
 #'
@@ -39,28 +37,31 @@
 #' }
 #'
 appendCohortAttributes <- function(cohort,
-                                   name = sprintf("dbplyr_%03i", getOption("dbplyr_table_name", 0)),
+                                   name = uniqueTableName(),
                                    attritionReason = "Qualifying initial records",
-                                   cohortSet = attr(cohort, "cohort_set"),
-                                   cdm = attr(cohort, "cdm_reference")) {
+                                   cohortSet = cohortSet(cohort)) {
   # initial checks
   checkmate::assertCharacter(
     attritionReason, min.chars = 1, len = 1, any.missing = FALSE
   )
   checkmate::assertClass(cohortSet, "tbl", null.ok = TRUE)
+  cdm <- attr(cohort, "cdm_reference")
   checkmate::assertClass(cdm, "cdm_reference")
   if (!is.null(cohortSet)) {
     checkmate::assertTRUE(all(
       c("cohort_definition_id", "cohort_name") %in% colnames(cohortSet)
     ))
+
     if (!("tbl_sql" %in% class(cohortSet))) {
-      ref <- inSchema(
-        schema = attr(cdm, "write_schema"), name = paste0(name, "_set")
-      )
+      ref <- inSchema(schema = attr(cdm, "write_schema"),
+                      table = paste0(name, "_set"))
+
       DBI::dbWriteTable(
-        conn = attr(cdm, "dbcon"), name = ref, value = cohortSet,
-        overwrite = TRUE
-      )
+        conn = attr(cdm, "dbcon"),
+        name = ref,
+        value = cohortSet,
+        overwrite = TRUE)
+
       cohortSet <- dplyr::tbl(attr(cdm, "dbcon"), ref)
     }
   } else {

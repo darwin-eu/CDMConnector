@@ -1,12 +1,12 @@
-dbToTest <- c(
-  "duckdb"
-  ,"postgres"
-  # ,"redshift"
-  # ,"sqlserver"
-  # ,"oracle"
-  # ,"snowflake"
-  # ,"bigquery"
-)
+# dbToTest <- c(
+#   "duckdb"
+#   # ,"postgres"
+#   # ,"redshift"
+#   # ,"sqlserver"
+#   # ,"oracle"
+#   # ,"snowflake"
+#   # ,"bigquery"
+# )
 
 test_concept_cohort_perm <- function(con,
                                      cdm_schema,
@@ -21,6 +21,7 @@ test_concept_cohort_perm <- function(con,
                                        prefix = prefix))
 
   # create permanent cohort tables
+  # debugonce(generateConceptCohortSet)
   cdm <- generateConceptCohortSet(cdm = cdm,
                                   conceptSet = list(gibleed = 80809),
                                   name = "gibleed",
@@ -49,9 +50,19 @@ test_concept_cohort_perm <- function(con,
 
    # clean up
    CDMConnector::dropTable(cdm, dplyr::contains("gibleed"))
-
-
 }
+
+for (dbtype in dbToTest) {
+  test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
+    con <- get_connection(dbtype)
+    cdm_schema <- get_cdm_schema(dbtype)
+    write_schema <- get_write_schema(dbtype)
+    skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
+    test_concept_cohort_perm(con, cdm_schema, write_schema)
+    disconnect(con)
+  })
+}
+
 
 test_capr_concept_cohort <- function(con,
                                      cdm_schema,
@@ -251,8 +262,6 @@ for (dbtype in dbToTest) {
                              write_schema = write_schema)
     disconnect(con)
   })
-
-
 }
 
 

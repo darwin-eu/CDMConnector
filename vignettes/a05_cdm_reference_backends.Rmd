@@ -72,7 +72,7 @@ CDMConnector::stow(cdm, dOut, format = "parquet")
 
 And now we can create a `cdm_reference` to the files
 ```{r, message=FALSE, warning=FALSE}
-cdm_arrow <- cdm_from_files(dOut, as_data_frame = FALSE)
+cdm_arrow <- cdm_from_files(dOut, as_data_frame = FALSE, cdm_name = "GiBleed")
 
 cdm_arrow$person %>%
   nrow()

@@ -6,10 +6,9 @@
 \usage{
 appendCohortAttributes(
   cohort,
-  name = sprintf("dbplyr_\%03i", getOption("dbplyr_table_name", 0)),
+  name = uniqueTableName(),
   attritionReason = "Qualifying initial records",
-  cohortSet = attr(cohort, "cohort_set"),
-  cdm = attr(cohort, "cdm_reference")
+  cohortSet = cohortSet(cohort)
 )
 }
 \arguments{
@@ -20,9 +19,6 @@ appendCohortAttributes(
 \item{attritionReason}{The reason for attrition as a character string.}
 
 \item{cohortSet}{tbl to update the cohort_set attribute.}
-
-\item{cdm}{A cdm_reference object. If not provided the one linked to cohort
-will be used.}
 }
 \value{
 The cohort object with the attributes created or updated.

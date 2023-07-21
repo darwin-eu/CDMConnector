@@ -2,31 +2,47 @@
 % Please edit documentation in R/Eunomia.R
 \name{eunomiaDir}
 \alias{eunomiaDir}
-\title{Create a copy of a Eunomia dataset}
+\alias{eunomia_dir}
+\title{Create a copy of an example OMOP CDM dataset}
 \usage{
 eunomiaDir(
   datasetName = "GiBleed",
   cdmVersion = "5.3",
-  pathToData = Sys.getenv("EUNOMIA_DATA_FOLDER"),
-  dbms = "duckdb",
-  databaseFile = tempfile(fileext = paste0(".", dbms))
+  databaseFile = tempfile(fileext = ".duckdb")
+)
+
+eunomia_dir(
+  dataset_name = "GiBleed",
+  cdm_version = "5.3",
+  database_file = tempfile(fileext = ".duckdb")
 )
 }
 \arguments{
-\item{datasetName}{The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
-data set name corresponds to the folder with the data set ZIP files}
+\item{datasetName, dataset_name}{One of "GiBleed" (default),
+"synthea-allergies-10k",
+"synthea-anemia-10k",
+"synthea-breast_cancer-10k",
+"synthea-contraceptives-10k",
+"synthea-covid19-10k",
+"synthea-covid19-200k",
+"synthea-dermatitis-10k",
+"synthea-heart-10k",
+"synthea-hiv-10k",
+"synthea-lung_cancer-10k",
+"synthea-medications-10k",
+"synthea-metabolic_syndrome-10k",
+"synthea-opioid_addiction-10k",
+"synthea-rheumatoid_arthritis-10k",
+"synthea-snf-10k",
+"synthea-surgery-10k",
+"synthea-total_joint_replacement-10k",
+"synthea-veteran_prostate_cancer-10k",
+"synthea-veterans-10k",
+"synthea-weight_loss-10k"}
 
-\item{cdmVersion}{The OMOP CDM version. This version will appear in the suffix of the data file,
-for example: {datasetName}_{cdmVersion}.zip. Default: '5.3'}
+\item{cdmVersion, cdm_version}{The OMOP CDM version. Currently only "5.3" is supported.}
 
-\item{pathToData}{The path where the Eunomia data is stored on the file system., By default the
-value of the environment variable "EUNOMIA_DATA_FOLDER" is used.}
-
-\item{dbms}{The database system to use. "sqlite" or "duckdb" (default)}
-
-\item{databaseFile}{The path where the database file will be copied to. By default, the database
-will be copied to a temporary folder, and will be deleted at the end of the R
-session.}
+\item{databaseFile, database_file}{The full path to the new copy of the example CDM dataset.}
 }
 \value{
 The file path to the new Eunomia dataset copy
@@ -38,14 +54,8 @@ to the the path defined by the EUNOMIA_DATA_FOLDER environment variable.
 }
 \examples{
 \dontrun{
- conn <- DBI::dbConnect(RSQLite::SQLite(), eunomiaDir("GiBleed"))
- DBI::dbDisconnect(conn)
-
- conn <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed", dbms = "duckdb"))
- DBI::dbDisconnect(conn, shutdown = TRUE)
-
- conn <- DatabaseConnector::connect(dbms = "sqlite", server = eunomiaDir("GiBleed"))
- DatabaseConnector::disconnect(conn)
+ con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
+ DBI::dbDisconnect(con, shutdown = TRUE)
 }
 
 }
