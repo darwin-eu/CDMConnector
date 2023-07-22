@@ -80,11 +80,13 @@ cdm_from_con <- function(con,
   # Handle uppercase table names in the database
   if (all(dbTables == toupper(dbTables))) {
     cdm_tables <- toupper(cdm_tables)
+  } else if (!all(dbTables == tolower(dbTables))) {
+    rlang::abort("CDM database tables should be either all upppercase or all lowercase!")
   }
 
   cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con)), check_from = FALSE) %>%
                     dplyr::rename_all(tolower)) %>%
-    rlang::set_names(cdm_tables)
+    rlang::set_names(tolower(cdm_tables))
 
   if (!is.null(write_schema)) {
     verify_write_access(con, write_schema = write_schema)
