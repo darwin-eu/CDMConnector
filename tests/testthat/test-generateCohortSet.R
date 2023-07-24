@@ -9,6 +9,8 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
 
   # test read cohort set with a cohortsToCreate.csv
+  expect_error(readCohortSet(path = "does_not_exist"))
+  expect_error(readCohortSet(path = paste0(tempdir(), "/not_a_dir")))
   withr::with_dir(inst_dir, {
     cohortSet <- readCohortSet("cohorts1")
   })
@@ -25,8 +27,17 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
                            name = "chrt0",
                            overwrite = TRUE,
                            computeAttrition = TRUE)
+  expect_error(
+    generateCohortSet(cdm,
+                      cohortSet = "not a cohort")
+  )
+
   # check already exists
   expect_error(generateCohortSet(cdm, cohortSet, name = "chrt0", overwrite = FALSE))
+  expect_no_error(cdm <- generate_cohort_set(cdm,
+                             cohort_set =  cohortSet,
+                           name = "chrt0",
+                           overwrite = TRUE))
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
 
@@ -57,9 +68,9 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
 # dbToTest <- c(
 #   "duckdb"
-#   # ,"postgres"
-#   # ,"redshift"
-#   # ,"sqlserver"
+#   ,"postgres"
+#   ,"redshift"
+#   ,"sqlserver"
 #   # ,"oracle"  # requires development version of dbplyr
 #   # ,"snowflake" invalid identifier 'COHORT_DEFINITION_ID'
 #   # ,"bigquery" Type not found: VARCHAR at [4:10] [invalidQuery]
@@ -85,8 +96,6 @@ test_that("duckdb cohort generation", {
   skip_if_not(eunomia_is_available())
   skip_if_not_installed("CirceR")
   skip_if_not_installed("SqlRender")
-
-  skip("failing test")
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 

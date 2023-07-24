@@ -99,11 +99,7 @@ readCohortSet <- read_cohort_set
 #' as a prefix for the cohort attribute tables.
 #' @param cohort_set,cohortSet Can be a cohortSet object created with `readCohortSet()`,
 #' a single Capr cohort definition,
-#' a named list of Capr cohort definitions,
-#' a numeric vector interpreted as a concept set,
-#' a named list of numeric vectors,
-#' a Capr concept set,
-#' or a named list of Capr concept sets.
+#' or a named list of Capr cohort definitions.
 #' @param compute_attrition,computeAttrition Should attrition be computed? TRUE (default) or FALSE
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE or FALSE (default)
@@ -145,17 +141,6 @@ generateCohortSet <- function(cdm,
   checkmate::assertLogical(overwrite, len = 1)
   checkmate::assert_true(DBI::dbIsValid(con))
   assert_write_schema(cdm) # required for now
-
-  if (is.numeric(cohortSet) ||
-      (!is.data.frame(cohortSet) && is.list(cohortSet) && is.numeric(cohortSet[[1]])) ||
-      methods::is(cohortSet, "ConceptSet") ||
-      (!is.data.frame(cohortSet) && is.list(cohortSet) && is.numeric(cohortSet[[1]]))) {
-
-    return(generateConceptCohortSet(cdm = cdm,
-                                    conceptSet = cohortSet,
-                                    name = name,
-                                    overwrite = overwrite))
-  }
 
   if (methods::is(cohortSet, "Cohort")) {
     cohortSet <- list("unnamed cohort" = cohortSet)
@@ -254,22 +239,22 @@ generateCohortSet <- function(cdm,
     format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
   cli::cli_progress_update(set = 0)
 
-  cdm_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = ".")
-  write_schema <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
+  cdm_schema_sql <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = ".")
+  write_schema_sql <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
   target_cohort_table <- glue::glue_sql(DBI::dbQuoteIdentifier(con, name))
 
   for (i in seq_len(nrow(cohortSet))) {
 
     sql <- cohortSet$sql[i] %>%
       SqlRender::render(
-        cdm_database_schema = cdm_schema,
-        vocabulary_database_schema = cdm_schema,
-        target_database_schema = write_schema,
-        results_database_schema.cohort_inclusion = paste0(write_schema, ".", name, "_inclusion"),
-        results_database_schema.cohort_inclusion_result = paste0(write_schema, ".", name, "_inclusion_result"),
-        results_database_schema.cohort_summary_stats = paste0(write_schema, ".", name, "_summary_stats"),
-        results_database_schema.cohort_censor_stats = paste0(write_schema, ".", name, "_censor_stats"),
-        results_database_schema.cohort_inclusion = paste0(write_schema, ".", name, "_inclusion"),
+        cdm_database_schema = cdm_schema_sql,
+        vocabulary_database_schema = cdm_schema_sql,
+        target_database_schema = write_schema_sql,
+        results_database_schema.cohort_inclusion = paste0(write_schema_sql, ".", name, "_inclusion"),
+        results_database_schema.cohort_inclusion_result = paste0(write_schema_sql, ".", name, "_inclusion_result"),
+        results_database_schema.cohort_summary_stats = paste0(write_schema_sql, ".", name, "_summary_stats"),
+        results_database_schema.cohort_censor_stats = paste0(write_schema_sql, ".", name, "_censor_stats"),
+        results_database_schema.cohort_inclusion = paste0(write_schema_sql, ".", name, "_inclusion"),
         target_cohort_table = target_cohort_table,
         target_cohort_id = cohortSet$cohort_definition_id[i],
         warnOnMissingParameters = FALSE
