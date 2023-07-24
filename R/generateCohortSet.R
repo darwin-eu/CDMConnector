@@ -57,7 +57,6 @@ read_cohort_set <- function(path) {
   return(cohortsToCreate)
 }
 
-
 #' @export
 #' @rdname read_cohort_set
 readCohortSet <- read_cohort_set
@@ -127,27 +126,30 @@ generateCohortSet <- function(cdm,
                               computeAttrition = TRUE,
                               overwrite = FALSE) {
 
-  # check inputs ----
-  write_schema <- attr(cdm, "write_schema")
-  con <- attr(cdm, "dbcon")
+  rlang::check_installed("CirceR")
+  rlang::check_installed("SqlRender")
+
   checkmate::assertClass(cdm, "cdm_reference")
-  checkmate::assert_character(write_schema,
-                              min.chars = 1,
-                              min.len = 1,
-                              max.len = 2,
-                              null.ok = FALSE)
+  con <- attr(cdm, "dbcon")
+  checkmate::assertTRUE(DBI::dbIsValid(con))
+  assert_write_schema(cdm) # required for now
 
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
-  checkmate::assert_true(DBI::dbIsValid(con))
-  assert_write_schema(cdm) # required for now
 
-  if (methods::is(cohortSet, "Cohort")) {
-    cohortSet <- list("unnamed cohort" = cohortSet)
+  write_schema <- attr(cdm, "write_schema")
+  checkmate::assert_character(write_schema,
+                              min.chars = 1,
+                              min.len = 1,
+                              max.len = 3,
+                              null.ok = FALSE)
+
+  if ("prefix" %in% names(write_schema)) {
+    prefix <- unname(write_schema["prefix"])
+    # write_schema <- write_schema[-which(names(write_schema) == "prefix")]
+  } else {
+    prefix <- ""
   }
-
-  rlang::check_installed("CirceR")
-  rlang::check_installed("SqlRender")
 
   if (!is.data.frame(cohortSet)) {
     if (!is.list(cohortSet)) {
@@ -163,7 +165,7 @@ generateCohortSet <- function(cdm,
     cohortSet <- dplyr::tibble(
       cohort_definition_id = seq_along(cohortSet),
       cohort_name = names(cohortSet),
-      cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)), #TODO implement as.list in Capr
+      cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)),
       json = purrr::map_chr(cohortSet, generics::compile)
     )
     class(cohortSet) <- c("CohortSet", class(cohortSet))
@@ -194,23 +196,17 @@ generateCohortSet <- function(cdm,
   checkmate::assertNames(colnames(cohortSet),
                          must.include = c("cohort_definition_id", "cohort_name", "json"))
 
-  checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE, pattern = "[a-z_]+")
-  name_without_prefix <- name
-  if (!is.null(attr(cdm, "write_prefix"))) {
-    name <- paste0(attr(cdm, "write_prefix"), name)
+  # check name -----
+  checkmate::assertCharacter(name, len = 1, min.chars = 1, pattern = "[a-z_]+")
+
+  if (paste0(prefix, name) != tolower(paste0(prefix, name))) {
+    rlang::abort(glue::glue("Cohort table name `{paste0(prefix, name)}` must be lowercase!"))
   }
-  checkmate::assertCharacter(name, len = 1, min.chars = 1, null.ok = FALSE, pattern = "[a-z_]+")
-
-  if (name != tolower(name)) {
-    rlang::abort("Cohort table names must be lowercase.")
-  }
-
-
 
   existingTables <- CDMConnector::listTables(con, write_schema)
 
-  if ((name %in% existingTables) && isFALSE(overwrite)) {
-    rlang::abort(glue::glue("The cohort table {name} already exists.
+  if ((paste0(prefix, name) %in% existingTables) && isFALSE(overwrite)) {
+    rlang::abort(glue::glue("The cohort table {paste0(prefix, name)} already exists.
                             \nSpecify overwrite = TRUE to overwrite it."))
   }
 
@@ -239,9 +235,26 @@ generateCohortSet <- function(cdm,
     format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
   cli::cli_progress_update(set = 0)
 
-  cdm_schema_sql <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "cdm_schema")), sep = ".")
-  write_schema_sql <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, attr(cdm, "write_schema")), sep = ".")
-  target_cohort_table <- glue::glue_sql(DBI::dbQuoteIdentifier(con, name))
+
+  cdm_schema <- attr(cdm, "cdm_schema")
+  checkmate::assertCharacter(cdm_schema, max.len = 3, min.len = 1, min.chars = 1)
+  if ("prefix" %in% names(cdm_schema)) {
+    cdm_schema_sql <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, cdm_schema[-which(names(cdm_schema) == "prefix")]), sep = ".")
+  } else {
+    cdm_schema_sql <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, cdm_schema), sep = ".")
+  }
+
+  if ("prefix" %in% names(write_schema)) {
+    write_schema_sql <- paste(DBI::dbQuoteIdentifier(con, write_schema[-which(names(write_schema) == "prefix")]), collapse = ".")
+  } else {
+    write_schema_sql <- paste(DBI::dbQuoteIdentifier(con, write_schema), collapse = ".")
+  }
+
+  target_cohort_table <- as.character(DBI::dbQuoteIdentifier(con, paste0(prefix, name)))
+
+  dropTempTableIfExists <- function(con, table) {
+    DBI::dbExecute(con, SqlRender::translate(glue::glue("IF OBJECT_ID('#{table}', 'U') IS NOT NULL DROP TABLE #{table};"), targetDialect = dbms(con)))
+  }
 
   for (i in seq_len(nrow(cohortSet))) {
 
@@ -250,11 +263,11 @@ generateCohortSet <- function(cdm,
         cdm_database_schema = cdm_schema_sql,
         vocabulary_database_schema = cdm_schema_sql,
         target_database_schema = write_schema_sql,
-        results_database_schema.cohort_inclusion = paste0(write_schema_sql, ".", name, "_inclusion"),
-        results_database_schema.cohort_inclusion_result = paste0(write_schema_sql, ".", name, "_inclusion_result"),
-        results_database_schema.cohort_summary_stats = paste0(write_schema_sql, ".", name, "_summary_stats"),
-        results_database_schema.cohort_censor_stats = paste0(write_schema_sql, ".", name, "_censor_stats"),
-        results_database_schema.cohort_inclusion = paste0(write_schema_sql, ".", name, "_inclusion"),
+        results_database_schema.cohort_inclusion        = paste0(write_schema_sql, ".", prefix, name, "_inclusion"),
+        results_database_schema.cohort_inclusion_result = paste0(write_schema_sql, ".", prefix, name, "_inclusion_result"),
+        results_database_schema.cohort_summary_stats    = paste0(write_schema_sql, ".", prefix, name, "_summary_stats"),
+        results_database_schema.cohort_censor_stats     = paste0(write_schema_sql, ".", prefix, name, "_censor_stats"),
+        results_database_schema.cohort_inclusion        = paste0(write_schema_sql, ".", prefix, name, "_inclusion"),
         target_cohort_table = target_cohort_table,
         target_cohort_id = cohortSet$cohort_definition_id[i],
         warnOnMissingParameters = FALSE
@@ -268,7 +281,9 @@ generateCohortSet <- function(cdm,
       sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
     }
 
-    tempEmulationSchema <- getOption("sqlRenderTempEmulationSchema") %||% write_schema
+    tempEmulationSchema <- getOption("sqlRenderTempEmulationSchema") %||%
+      write_schema %>%
+      paste(collapse = ".")
 
     sql <- SqlRender::translate(sql,
                                 targetDialect = CDMConnector::dbms(con),
@@ -280,17 +295,19 @@ generateCohortSet <- function(cdm,
       sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
     }
 
-    if (dbms(con) == "oracle") {
-      sql <- SqlRender::translate("IF OBJECT_ID('#Codesets', 'U') IS NOT NULL DROP TABLE #Codesets;",
-                                  targetDialect = "oracle")
-      DBI::dbExecute(con, sql)
-    }
+    dropTempTableIfExists(con, "Codesets")
+    dropTempTableIfExists(con, "qualified_events")
+    dropTempTableIfExists(con, "cohort_rows")
+    dropTempTableIfExists(con, "Inclusion")
+    dropTempTableIfExists(con, "inclusion_events")
+    dropTempTableIfExists(con, "included_events")
+    dropTempTableIfExists(con, "final_cohort")
 
     purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
     cli::cli_progress_update(set = i)
   }
 
-  toupperIfOracle <- function(x) if(dbms(con) == "oracle") toupper(x) else x
+  toupperIfOracle <- function(x) if (dbms(con) == "oracle") toupper(x) else x
 
   cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name))
 
@@ -334,7 +351,7 @@ generateCohortSet <- function(cdm,
                  overwrite = TRUE)
 
   # Create the object. Let the constructor handle getting the counts.----
-  cdm[[name_without_prefix]] <- new_generated_cohort_set(
+  cdm[[name]] <- new_generated_cohort_set(
     cohort_ref = cohort_ref,
     cohort_set_ref = cohort_set_ref,
     cohort_attrition_ref = cohort_attrition_ref,

@@ -147,12 +147,11 @@ cohortUnion <- cohort_union
 # }
 
 
-#' Keep only the earliest record for each person in a cohort
-#'
-#' @param x A generated cohort set
-#'
-#' @return A lazy query on a generated cohort set
-#' @export
+# Keep only the earliest record for each person in a cohort
+#
+# @param x A generated cohort set
+#
+# @return A lazy query on a generated cohort set
 cohort_first <- function(x) {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
   checkmate::assert_subset(colnames(x), cols)
@@ -163,12 +162,11 @@ cohort_first <- function(x) {
     dplyr::ungroup()
 }
 
-#' Keep only the latest record for each person in a cohort
-#'
-#' @param x A generated cohort set
-#'
-#' @return A lazy query on a generated cohort set
-#' @export
+# Keep only the latest record for each person in a cohort
+#
+# @param x A generated cohort set
+#
+# @return A lazy query on a generated cohort set
 cohort_last <- function(x) {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
   checkmate::assert_subset(colnames(x), cols)
@@ -179,14 +177,13 @@ cohort_last <- function(x) {
     dplyr::ungroup()
 }
 
-#' Add or subtract days from the start or end of a cohort set
-#'
-#' @param x A generated cohort set table reference
-#' @param days The number of days to add. Can by any positive or negative integer
-#' @param from Reference date to add or subtract days to. "start" or "end" (default)
-#'
-#' @return A lazy tbl query on a the cohort table
-#' @export
+# Add or subtract days from the start or end of a cohort set
+#
+# @param x A generated cohort set table reference
+# @param days The number of days to add. Can by any positive or negative integer
+# @param from Reference date to add or subtract days to. "start" or "end" (default)
+#
+# @return A lazy tbl query on a the cohort table
 cohort_pad_end <- function(x, days = NULL, from = "end") {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
   checkmate::assert_subset(colnames(x), cols)
@@ -210,14 +207,13 @@ cohort_pad_end <- function(x, days = NULL, from = "end") {
     dplyr::filter(.data$cohort_start_date <= .data$cohort_end_date)
 }
 
-#' Add or subtract days from the start or end of a cohort set
-#'
-#' @param x A generated cohort set table reference
-#' @param days The number of days to add. Can by any positive or negative integer
-#' @param from Reference date to add or subtract days to. "start" or "end" (default)
-#'
-#' @return A lazy tbl query on a the cohort table
-#' @export
+# Add or subtract days from the start or end of a cohort set
+#
+# @param x A generated cohort set table reference
+# @param days The number of days to add. Can by any positive or negative integer
+# @param from Reference date to add or subtract days to. "start" or "end" (default)
+#
+# @return A lazy tbl query on a the cohort table
 cohort_pad_start <- function(x, days = NULL, from = "start") {
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
   checkmate::assert_subset(colnames(x), cols)

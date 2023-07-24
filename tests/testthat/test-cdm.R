@@ -49,8 +49,9 @@ for (dbtype in dbToTest) {
   })
 }
 
-
 test_that("Uppercase tables are stored as lowercase in cdm", {
+  skip_if_not(eunomia_is_available())
+  # create a test cdm with upppercase table names
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
   for (name in list_tables(con, "main")) {
@@ -62,6 +63,8 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
   }
 
   expect_true(all(list_tables(con, "main") == toupper(list_tables(con, "main"))))
+
+  # check that names in cdm are lowercase
   cdm <- cdm_from_con(con, "main")
   expect_true(all(names(cdm) == tolower(names(cdm))))
 

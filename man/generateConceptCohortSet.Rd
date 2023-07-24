@@ -2,21 +2,38 @@
 % Please edit documentation in R/generateConceptCohortSet.R
 \name{generateConceptCohortSet}
 \alias{generateConceptCohortSet}
+\alias{generate_concept_cohort_set}
 \title{Internal function to create a new generated cohort set from a list of concept sets}
 \usage{
 generateConceptCohortSet(
   cdm,
   conceptSet = NULL,
   name = "cohort",
+  end = "observation_period_end_date",
+  overwrite = FALSE
+)
+
+generate_concept_cohort_set(
+  cdm,
+  concept_set = NULL,
+  name = "cohort",
+  end = "observation_period_end_date",
   overwrite = FALSE
 )
 }
 \arguments{
 \item{cdm}{A cdm reference object created by \code{CDMConnector::cdmFromCon} or \code{CDMConnector::cdm_from_con}}
 
-\item{conceptSet}{A named list of numeric vectors or Capr concept sets}
+\item{conceptSet, concept_set}{A named list of numeric vectors or Capr concept sets}
 
 \item{name}{The name of the new generated cohort table as a character string}
+
+\item{end}{How should the \code{cohort_end_date} be defined?
+\itemize{
+\item{"observation_period_end_date" (default): The earliest observation_period_end_date after the event start date}
+\item{numeric scalar: A fixed number of days from the event start date}
+\item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
+}}
 
 \item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE or FALSE}
 }

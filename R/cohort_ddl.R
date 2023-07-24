@@ -161,15 +161,23 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     );}:{}
     ")
 
+    if ("prefix" %in% names(writeSchema)) {
+      prefix <- writeSchema["prefix"]
+      cohort_database_schema <- paste0(writeSchema[-which(names(writeSchema) == "prefix")], collapse = ".")
+    } else {
+      prefix <- ""
+      cohort_database_schema <- paste0(writeSchema, collapse = ".")
+    }
+
     sql <- SqlRender::render(sql = sql,
-                             cohort_database_schema = writeSchema,
-                             cohort_table = toupper(name),
+                             cohort_database_schema = toupper(cohort_database_schema),
+                             cohort_table = toupper(paste0(prefix, name)),
                              computeAttrition = computeAttrition,
-                             cohort_inclusion_table        = toupper(paste0(name, "_inclusion")),
-                             cohort_inclusion_result_table = toupper(paste0(name, "_inclusion_result")),
-                             cohort_inclusion_stats_table  = toupper(paste0(name, "_inclusion_stats")),
-                             cohort_summary_stats_table    = toupper(paste0(name, "_summary_stats")),
-                             cohort_censor_stats_table     = toupper(paste0(name, "_censor_stats")),
+                             cohort_inclusion_table        = toupper(paste0(prefix, name, "_inclusion")),
+                             cohort_inclusion_result_table = toupper(paste0(prefix, name, "_inclusion_result")),
+                             cohort_inclusion_stats_table  = toupper(paste0(prefix, name, "_inclusion_stats")),
+                             cohort_summary_stats_table    = toupper(paste0(prefix, name, "_summary_stats")),
+                             cohort_censor_stats_table     = toupper(paste0(prefix, name, "_censor_stats")),
                              warnOnMissingParameters = TRUE)
     sql <- SqlRender::translate(sql, "oracle", tempEmulationSchema = writeSchema)
     sql <- SqlRender::splitSql(sql)

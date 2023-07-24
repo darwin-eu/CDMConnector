@@ -19,8 +19,14 @@
 #' observation domains, the the start date will be used as the end date.
 #'
 #' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
-#' @param conceptSet A named list of numeric vectors or Capr concept sets
+#' @param conceptSet,concept_set A named list of numeric vectors or Capr concept sets
 #' @param name The name of the new generated cohort table as a character string
+#' @param end How should the `cohort_end_date` be defined?
+#' \itemize{
+#'  \item{"observation_period_end_date" (default): The earliest observation_period_end_date after the event start date}
+#'  \item{numeric scalar: A fixed number of days from the event start date}
+#'  \item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
+#' }
 #' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE
 #'
 #' @return A cdm reference object with the new generated cohort set table added
@@ -28,11 +34,22 @@
 generateConceptCohortSet <- function(cdm,
                                      conceptSet = NULL,
                                      name = "cohort",
+                                     end = "observation_period_end_date",
                                      overwrite = FALSE) {
 
   checkmate::checkClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+  assertTables(cdm, "observation_period", empty.ok = FALSE)
+
+  if (is.numeric(end)) {
+    checkmate::assertIntegerish(end, lower = 0L, len = 1)
+  } else if (is.character(end)) {
+    checkmate::assertCharacter(end, len = 1)
+    checkmate::assertChoice(end, choices = c("observation_period_end_date", "event_end_date"))
+  } else {
+    rlang::abort('`end` must be a natural number of days from start, "observation_period_end_date", or "event_end_date"')
+  }
 
   if (isFALSE(getOption("CDMConnector.cohort_as_temp", FALSE))){
     assert_write_schema(cdm)
@@ -103,45 +120,33 @@ generateConceptCohortSet <- function(cdm,
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
 
-
   # check we have references to all required tables
   missing_tables <- setdiff(table_refs(domain_id = domains) %>% dplyr::pull("table_name"),
                             names(cdm))
 
-  if (length(missing_tables)>0) {
+  if (length(missing_tables) > 0) {
     cli::cli_abort("Concepts included from the {.missing_tables {missing_tables}} table{?s} but table{?s} not found in the cdm reference")
   }
 
   # rowbind results
-  cohort <- purrr::map(domains,
-                       get_domain,
-                       cdm = cdm,
-                       concepts = concepts) %>%
+  cohort <- purrr::map(domains, ~get_domain(., cdm = cdm, concepts = concepts)) %>%
     purrr::reduce(dplyr::union_all)
 
   # drop any outside of an observation period
-  cohort <- cohort  %>%
-    dplyr::inner_join(
-      cdm[["observation_period"]] %>%
-        dplyr::rename("subject_id" = "person_id") %>%
-        dplyr::select(
-          "subject_id",
-          "observation_period_start_date",
-          "observation_period_end_date"
-        ),
-      by = "subject_id"
-    ) %>%
-    dplyr::mutate(in_observation = dplyr::if_else(
-                  .data$observation_period_start_date <=
-                    .data$cohort_start_date  &
-                    .data$observation_period_end_date >=
-                    .data$cohort_start_date,1,0)) %>%
-    dplyr::filter(.data$in_observation == 1) %>%
-    dplyr::select("cohort_definition_id", "subject_id",
-                  "cohort_start_date", "cohort_end_date") %>%
-    dplyr::distinct()
+  obs_period <- cdm[["observation_period"]] %>%
+    dplyr::select("subject_id" = "person_id",
+                  "observation_period_start_date",
+                  "observation_period_end_date")
 
   cohortRef <- cohort %>%
+    dplyr::inner_join(obs_period, by = "subject_id") %>%
+    # TODO fix dplyr::between sql translation
+    dplyr::filter(
+      .data$observation_period_start_date <= .data$cohort_start_date  &
+      .data$cohort_start_date <= .data$observation_period_end_date) %>%
+    {if (end == "observation_period_end_date") dplyr::mutate(., cohort_end_date = .data$observation_period_end_date) else .} %>%
+    {if (is.numeric(end)) dplyr::mutate(., cohort_end_date = !!dateadd("cohort_start_date", end)) else .} %>%
+    dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     cohort_collapse() %>%
     computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
                  schema = attr(cdm, "write_schema"),
@@ -192,6 +197,20 @@ generateConceptCohortSet <- function(cdm,
   return(cdm)
 }
 
+#' @rdname generateConceptCohortSet
+#' @export
+generate_concept_cohort_set <- function(cdm,
+                                        concept_set = NULL,
+                                        name = "cohort",
+                                        end = "observation_period_end_date",
+                                        overwrite = FALSE) {
+  generateConceptCohortSet(cdm = cdm,
+                           conceptSet = concept_set,
+                           name = name,
+                           end = end,
+                           overwrite = overwrite)
+
+}
 
 get_domain <- function(domain, cdm, concepts) {
   df <- table_refs(domain_id = domain)
@@ -209,7 +228,7 @@ get_domain <- function(domain, cdm, concepts) {
                                                        !!rlang::parse_expr(df$start_date)))
 }
 
-table_refs <- function(domain_id){
+table_refs <- function(domain_id) {
   dplyr::tribble(
     ~domain_id,    ~table_name,            ~concept_id,              ~start_date,                  ~end_date,
     "condition",   "condition_occurrence", "condition_concept_id",   "condition_start_date",       "condition_end_date",

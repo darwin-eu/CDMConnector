@@ -6,15 +6,12 @@
 \usage{
 appendCohortAttributes(
   cohort,
-  name = uniqueTableName(),
   attritionReason = "Qualifying initial records",
   cohortSet = cohortSet(cohort)
 )
 }
 \arguments{
-\item{cohort}{Cohort in the cdm.}
-
-\item{name}{Name of the cohort table.}
+\item{cohort}{A generated cohort set}
 
 \item{attritionReason}{The reason for attrition as a character string.}
 
