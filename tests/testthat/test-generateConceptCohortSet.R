@@ -83,7 +83,7 @@ test_capr_concept_cohort <- function(con,
 
   # single concept set
   expect_no_error(cdm <- generateConceptCohortSet(cdm = cdm,
-                                                  conceptSet = gibleed_cs,
+                                                  conceptSet = list("gibleed" = gibleed_cs),
                                                   name = "gibleed",
                                                   overwrite = TRUE))
 
@@ -190,7 +190,7 @@ test_concept_cohort_mock <- function(con,
 
  cdm <- generateConceptCohortSet(cdm,overwrite = TRUE,
                                  name ="arthritis",
-                                 conceptSet = 1)
+                                 conceptSet = list("arthritis" = 1))
   # check we ignore events outside of observation time
   # we shouldn't see person 3 because their record was before their
   # observation start date
@@ -199,7 +199,7 @@ test_concept_cohort_mock <- function(con,
   # check for concept cohort based on multiple domains
   cdm <- generateConceptCohortSet(cdm,overwrite = TRUE,
                                   name ="arthritis_adalimumab",
-                                  conceptSet = c(1,2))
+                                  conceptSet = list("arthritis_adalimumab" = c(1,2)))
 
   expect_true(all(c(1,2) %in% (cdm$arthritis_adalimumab %>%
                 dplyr::pull("subject_id"))))
@@ -211,7 +211,7 @@ test_concept_cohort_mock <- function(con,
   expect_error(generateConceptCohortSet(cdm,
                            overwrite = TRUE,
                            name ="arthritis_adalimumab",
-                           conceptSet = c(1, 2, 3)))
+                           conceptSet = list("arthritis_adalimumab" = c(1, 2, 3))))
 
   # clean up
   CDMConnector::dropTable(cdm, dplyr::contains("arthritis"))

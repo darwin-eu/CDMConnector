@@ -38,10 +38,6 @@ generateConceptCohortSet <- function(cdm,
     assert_write_schema(cdm)
   }
 
-  if (!is.list(conceptSet) || methods::is(conceptSet, "ConceptSet")) {
-    conceptSet <- list("unnamed cohort" = conceptSet)
-  }
-
   checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet"), names = "named")
   checkmate::assertList(conceptSet, min.len = 1, names = "named")
   CDMConnector::assert_tables(cdm, "concept")
