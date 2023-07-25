@@ -55,7 +55,6 @@ test_that("getFullTableNameQuoted", {
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  # debugonce(cdm_from_con)
   cdm <- cdm_from_con(con, "main")
 
   result <- getFullTableNameQuoted(x = cdm$person, name = "myTable", schema = NULL)

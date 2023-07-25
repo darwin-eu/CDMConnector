@@ -1,12 +1,12 @@
-dbToTest <- c(
-  "duckdb"
-  ,"postgres"
-  ,"redshift"
-  ,"sqlserver"
-  # ,"oracle"
-  # ,"snowflake"
-  # ,"bigquery"
-)
+# dbToTest <- c(
+#   "duckdb"
+#   ,"postgres"
+#   ,"redshift"
+#   ,"sqlserver"
+#   # ,"oracle"
+#   # ,"snowflake"
+#   # ,"bigquery"
+# )
 
 prepare_cdm <- function(con,
                         write_schema,
@@ -18,10 +18,10 @@ prepare_cdm <- function(con,
     cdm_select_tbl("person", "observation_period")
 
  cdm <- copyCdmTo(con = con,
-              prefix = write_prefix,
-              cdm = eunomia_cdm,
-              schema = write_schema,
-              overwrite = TRUE)
+                  prefix = write_prefix,
+                  cdm = eunomia_cdm,
+                  schema = write_schema,
+                  overwrite = TRUE)
 
  return(cdm)
 

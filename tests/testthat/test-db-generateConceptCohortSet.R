@@ -2,12 +2,11 @@
 test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   skip_if_not_installed("CirceR")
 
-  prefix <- paste0("test", as.integer(Sys.time()), "_")
-
   withr::local_options("CDMConnector.cohort_as_temp" = FALSE)
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
-                      write_schema = c(schema = write_schema, prefix = prefix))
+                      write_schema = write_schema)
+
 
   cdm <- generateConceptCohortSet(cdm = cdm,
                                   conceptSet = list(gibleed = 192671),
@@ -39,7 +38,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
 
   # check tables we expected have been created
-  tables <- paste0(prefix, "gibleed", c("", "_attrition", "_count", "_set"))
+  tables <- paste0("gibleed", c("", "_attrition", "_count", "_set"))
   # failing in testthat
   expect_true(all(tables %in%
                     listTables(con = con, schema = write_schema)))

@@ -41,6 +41,7 @@ generateConceptCohortSet <- function(cdm,
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
   assertTables(cdm, "observation_period", empty.ok = FALSE)
+  assertWriteSchema(cdm)
 
   if (is.numeric(end)) {
     checkmate::assertIntegerish(end, lower = 0L, len = 1)
@@ -49,10 +50,6 @@ generateConceptCohortSet <- function(cdm,
     checkmate::assertChoice(end, choices = c("observation_period_end_date", "event_end_date"))
   } else {
     rlang::abort('`end` must be a natural number of days from start, "observation_period_end_date", or "event_end_date"')
-  }
-
-  if (isFALSE(getOption("CDMConnector.cohort_as_temp", FALSE))){
-    assert_write_schema(cdm)
   }
 
   checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet"), names = "named")
@@ -148,7 +145,7 @@ generateConceptCohortSet <- function(cdm,
     {if (is.numeric(end)) dplyr::mutate(., cohort_end_date = !!dateadd("cohort_start_date", end)) else .} %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     cohort_collapse() %>%
-    computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
+    computeQuery(temporary = FALSE,
                  schema = attr(cdm, "write_schema"),
                  name = name,
                  overwrite = overwrite)
@@ -188,11 +185,12 @@ generateConceptCohortSet <- function(cdm,
                    name = paste0(name, "_attrition"),
                    overwrite = overwrite)
 
-  cdm[[name]] <- CDMConnector::newGeneratedCohortSet(
+  cdm[[name]] <- newGeneratedCohortSet(
     cohortRef = cohortRef,
     cohortSetRef = cohortSetRef,
     cohortAttritionRef = cohortAttritionRef,
-    cohortCountRef = cohortCountRef)
+    cohortCountRef = cohortCountRef,
+    writeSchema = attr(cdm, "write_schema"))
 
   return(cdm)
 }

@@ -3,20 +3,28 @@
 \name{new_generated_cohort_set}
 \alias{new_generated_cohort_set}
 \alias{newGeneratedCohortSet}
-\title{Low level constructor for GeneratedCohortSet objects for package developers}
+\title{Constructor for GeneratedCohortSet objects}
 \usage{
 new_generated_cohort_set(
   cohort_ref,
   cohort_set_ref = NULL,
   cohort_attrition_ref = NULL,
-  cohort_count_ref = NULL
+  cohort_count_ref = NULL,
+  con = NULL,
+  name = "cohort",
+  write_schema = NULL,
+  overwrite = FALSE
 )
 
 newGeneratedCohortSet(
   cohortRef,
   cohortSetRef = NULL,
   cohortAttritionRef = NULL,
-  cohortCountRef = NULL
+  cohortCountRef = NULL,
+  con = NULL,
+  name = "cohort",
+  writeSchema = NULL,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -36,6 +44,14 @@ table in a remote database with the first column being cohort_definition_id.}
 \item{cohort_count_ref, cohortCountRef}{A \code{tbl_sql} object that points to a cohort_count
 table in a remote database with columns cohort_definition_id, cohort_entries,
 cohort_subjects.}
+
+\item{con}{A DBI database connection. Required if cohort_ref is a local dataframe and ignored otherwise.}
+
+\item{name}{The base cohort name to use. Required if if cohort_ref is a local dataframe and ignored otherwise.}
+
+\item{write_schema, writeSchema}{A schema where the user has write access in the database. Required if any data needs to be uploaded to a database.}
+
+\item{overwrite}{Should tables be overwritten if they already exist? TRUE or FALSE (default)}
 }
 \value{
 A \code{generatedCohortSet} object that is a \code{tbl_sql} reference
@@ -43,9 +59,7 @@ to a cohort table in the write_schema of an OMOP CDM
 }
 \description{
 This constructor function is to be used by analytic package developers to
-create \code{generatedCohortSet} objects. Users should never need to call this
-function. The use of this function ensures that all \code{generatedCohortSet}
-have a valid structure.
+create \code{generatedCohortSet} objects.
 }
 \details{
 A \code{generatedCohort} is a set of person-time from an OMOP CDM database.

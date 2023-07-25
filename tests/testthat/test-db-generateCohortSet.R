@@ -21,32 +21,31 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_equal(nrow(cohortSet), 3)
   expect_s3_class(cohortSet, "CohortSet")
 
-  # debugonce(generateCohortSet)
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
                            overwrite = TRUE,
                            computeAttrition = TRUE)
-  expect_error(
-    generateCohortSet(cdm,
-                      cohortSet = "not a cohort")
-  )
+
+  expect_true(methods::is(cdm$chrt0, "GeneratedCohortSet"))
+
+  expect_error(generateCohortSet(cdm, cohortSet = "not a cohort"))
 
   # check already exists
   expect_error(generateCohortSet(cdm, cohortSet, name = "chrt0", overwrite = FALSE))
   expect_no_error(cdm <- generate_cohort_set(cdm,
-                             cohort_set =  cohortSet,
-                           name = "chrt0",
-                           overwrite = TRUE))
+                                             cohort_set =  cohortSet,
+                                             name = "chrt0",
+                                             overwrite = TRUE))
 
   expect_true("chrt0" %in% listTables(con, schema = write_schema))
 
   expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
+
   df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% colnames(df)))
 
-  # expect_s3_class(dplyr::collect(attrition(cdm$chrt0)), "data.frame")
   expect_true(all(c("cohort_set", "cohort_count", "cohort_attrition") %in% names(attributes(cdm$chrt0))))
   attrition_df <- cohortAttrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
@@ -62,7 +61,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   # empty data
   expect_error(generateCohortSet(cdm, cohortSet %>% head(0), name = "cohorts", overwrite = TRUE))
-  drop_table(cdm, starts_with("chrt0_"))
+  drop_table(cdm, dplyr::starts_with("chrt0_"))
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
 
@@ -120,7 +119,6 @@ test_that("duckdb cohort generation", {
   expect_equal(nrow(cohortSet), 3)
   expect_s3_class(cohortSet, "CohortSet")
 
-  # debugonce(generateCohortSet)
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",

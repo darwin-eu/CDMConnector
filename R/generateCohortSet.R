@@ -61,7 +61,6 @@ read_cohort_set <- function(path) {
 #' @rdname read_cohort_set
 readCohortSet <- read_cohort_set
 
-
 #' Generate a cohort set on a cdm object
 #'
 #' @description
@@ -193,8 +192,7 @@ generateCohortSet <- function(cdm,
     cohortSet$cohort <- cohortColumn
   }
 
-  checkmate::assertNames(colnames(cohortSet),
-                         must.include = c("cohort_definition_id", "cohort_name", "json"))
+  checkmate::assertTRUE(all(c("cohort_definition_id", "cohort_name", "json") %in% colnames(cohortSet)))
 
   # check name -----
   checkmate::assertCharacter(name, len = 1, min.chars = 1, pattern = "[a-z_]+")
@@ -378,12 +376,10 @@ generate_cohort_set <- function(cdm,
 }
 
 
-#' Low level constructor for GeneratedCohortSet objects for package developers
+#' Constructor for GeneratedCohortSet objects
 #'
 #' This constructor function is to be used by analytic package developers to
-#' create `generatedCohortSet` objects. Users should never need to call this
-#' function. The use of this function ensures that all `generatedCohortSet`
-#' have a valid structure.
+#' create `generatedCohortSet` objects.
 #'
 #' @details
 #' A `generatedCohort` is a set of person-time from an OMOP CDM database.
@@ -445,6 +441,10 @@ generate_cohort_set <- function(cdm,
 #' @param cohort_count_ref,cohortCountRef A `tbl_sql` object that points to a cohort_count
 #' table in a remote database with columns cohort_definition_id, cohort_entries,
 #' cohort_subjects.
+#' @param con A DBI database connection. Required if cohort_ref is a local dataframe and ignored otherwise.
+#' @param name The base cohort name to use. Required if if cohort_ref is a local dataframe and ignored otherwise.
+#' @param write_schema,writeSchema A schema where the user has write access in the database. Required if any data needs to be uploaded to a database.
+#' @param overwrite Should tables be overwritten if they already exist? TRUE or FALSE (default)
 #'
 #' @return A `generatedCohortSet` object that is a `tbl_sql` reference
 #' to a cohort table in the write_schema of an OMOP CDM
@@ -491,24 +491,88 @@ generate_cohort_set <- function(cdm,
 new_generated_cohort_set <- function(cohort_ref,
                                      cohort_set_ref = NULL,
                                      cohort_attrition_ref = NULL,
-                                     cohort_count_ref = NULL) {
+                                     cohort_count_ref = NULL,
+                                     con = NULL,
+                                     name = "cohort",
+                                     write_schema = NULL,
+                                     overwrite = FALSE) {
 
-  if (is.data.frame(cohort_ref)) rlang::abort("cohort_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
-  if (is.data.frame(cohort_set_ref)) rlang::abort("cohort_set_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
-  if (is.data.frame(cohort_attrition_ref)) rlang::abort("cohort_attrition_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
-  if (is.data.frame(cohort_count_ref)) rlang::abort("cohort_count_ref must be a remote table reference, not a dataframe. Upload your table to the database.")
 
-  checkmate::assertClass(cohort_ref, classes = c("tbl_sql"), null.ok = FALSE)
-  checkmate::assertClass(cohort_set_ref, classes = c("tbl_sql"), null.ok = FALSE)
-  checkmate::assertClass(cohort_count_ref, classes = c("tbl_sql"), null.ok = FALSE)
-  checkmate::assertClass(cohort_attrition_ref, classes = c("tbl_sql"), null.ok = TRUE)
+  if (any(
+    is.data.frame(cohort_ref),
+    is.data.frame(cohort_set_ref),
+    is.data.frame(cohort_attrition_ref),
+    is.data.frame(cohort_count_ref),
+    is.null(cohort_set_ref),
+    is.null(cohort_set_ref),
+    is.null(cohort_attrition_ref)
+  )) {
+    # we need to verify write access
+    checkmate::assert_character(write_schema, min.len = 1, max.len = 3, min.chars = 1)
+    if (methods::is(cohort_ref, "tbl_sql")) {
+      con <- cohort_ref[[1]]$con
+    }
 
-  checkmate::assertSubset(
-    c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"),
-    choices = colnames(cohort_ref))
+    checkmate::assertTRUE(DBI::dbIsValid(con))
+    verify_write_access(con, write_schema = write_schema)
+  }
 
-    stopifnot(colnames(cohort_set_ref)[1] == "cohort_definition_id",
-              colnames(cohort_set_ref)[2] == "cohort_name")
+  # cohort table ----
+  if (is.data.frame(cohort_ref)) {
+    checkmate::assertTRUE(DBI::dbIsValid(con))
+    DBI::dbWriteTable(con, name = inSchema(write_schema, name, dbms = dbms(con)), cohort_ref, overwrite = overwrite)
+    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name, dbms = dbms(con)))
+  }
+
+  {
+    if (!methods::is(cohort_ref, "tbl_sql")) {
+      rlang::abort("cohort_ref must be a dataframe or a remote table reference")
+    }
+
+    columns <- c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
+    if (!all(tolower(colnames(cohort_ref))[1:4] == columns)) {
+      rlang::abort(glue::glue("cohort_set column names should be {paste(columns, collapse = ', ')} but are {paste(colnames(cohort_set_ref), collapse = ', ')}!"))
+    }
+
+    # get the table name from the cohort table. name argument will be ignored.
+    name <- rev(stringr::str_split(as.character(cohort_ref[[2]]$x), "\\.")[[1]])[1]
+    checkmate::assertCharacter(name, len = 1, min.chars = 1)
+  }
+
+  cohort_ids <- dplyr::distinct(cohort_ref, .data$cohort_definition_id) %>% dplyr::pull()
+
+  # cohort_set table ----
+  if (is.data.frame(cohort_set_ref)) {
+
+    DBI::dbWriteTable(con, name = inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)), cohort_set_ref, overwrite = overwrite)
+    cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)))
+
+  } else if (is.null(cohort_set_ref)) {
+
+    # create the cohort_set table
+    cohort_set_ref <- cohort_ref %>%
+      dplyr::distinct(.data$cohort_definition_id) %>%
+      dplyr::mutate(cohort_name = paste0("cohort_", .data$cohort_definition_id)) %>%
+      computeQuery(
+        name = paste0(name, "_set"),
+        temporary = FALSE,
+        schema = write_schema,
+        overwrite = overwrite)
+  }
+
+  {
+    if (!methods::is(cohort_set_ref, "tbl_sql")) {
+      rlang::abort("cohort_set_ref must be a dataframe or a remote table reference")
+    }
+
+    nm <- rev(stringr::str_split(as.character(cohort_set_ref[[2]]$x), "\\.")[[1]])[1]
+    if (nm != paste0(name, "_set")) {
+      rlang::abort(glue::glue("cohort_set_ref database table name is {nm} but should be {name}_set!"))
+    }
+
+    if (!all(tolower(colnames(cohort_set_ref))[1:2] == c("cohort_definition_id", "cohort_name"))) {
+      rlang::abort(glue::glue("cohort_set column names should be `cohort_definition_id` `cohort_name` but are {paste(colnames(cohort_set_ref), collapse = ', ')}!"))
+    }
 
     # primary key check
     one <- cohort_set_ref %>%
@@ -517,27 +581,106 @@ new_generated_cohort_set <- function(cohort_ref,
       dplyr::pull("one")
 
     if (!(length(one) == 1 && one == 1)) {
-      rlang::abort("cohort_definition_id is not a primary key on cohort_set_ref")
+      rlang::abort("cohort_definition_id is not a primary key on cohort_set_ref!")
     }
 
-  if (!is.null(cohort_attrition_ref)) {
-    checkmate::assertSubset(c("cohort_definition_id"),
-                            choices = colnames(cohort_attrition_ref))
+    cohort_set_ids <- dplyr::pull(cohort_set_ref, "cohort_definition_id")
+    if (!all(cohort_ids %in% cohort_set_ids)) {
+      diff <- dplyr::setdiff(cohort_ids, cohort_set_ids) %>% paste(collapse = ", ")
+      rlang::abort(glue::glue("cohort IDs {diff} are in the cohort table but not in the cohort_set table!"))
+    }
   }
 
-  checkmate::assertSubset(c("cohort_definition_id",
-                            "number_records",
-                            "number_subjects"),
-                          choices = colnames(cohort_count_ref))
+  # cohort_count_table ----
+  if (is.data.frame(cohort_count_ref)) {
 
-  name <- as.character(cohort_ref[[2]]$x)
-  name <- stringr::str_split(name, "\\.")[[1]]
-  name <- name[length(name)]
+    DBI::dbWriteTable(con, name = inSchema(write_schema, paste0(name, "_count"), dbms = dbms(con)), cohort_count_ref, overwrite = overwrite)
+    cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_count"), dbms = dbms(con)))
 
-  checkmate::assertCharacter(name, len = 1, min.chars = 1)
+  } else if (is.null(cohort_count_ref)) {
+    # create the cohort_count table
+    cohort_count_ref <- cohort_ref %>%
+      dplyr::group_by(.data$cohort_definition_id) %>%
+      dplyr::summarise(
+        number_records = dplyr::n(),
+        number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
+      dplyr::right_join(
+        dplyr::select(cohort_set_ref, "cohort_definition_id"),
+        by = "cohort_definition_id") %>%
+      dplyr::mutate(
+        number_records = dplyr::coalesce(.data$number_records, 0),
+        number_subjects = dplyr::coalesce(.data$number_subjects, 0)) %>%
+      computeQuery(
+        name = paste0(name, "_count"),
+        temporary = FALSE,
+        schema = write_schema,
+        overwrite = overwrite)
+  }
 
-  # create the object
-  class(cohort_ref) <- c("GeneratedCohortSet", class(cohort_ref))
+  {
+    checkmate::assert_class(cohort_count_ref, "tbl_sql")
+
+    nm <- rev(stringr::str_split(as.character(cohort_count_ref[[2]]$x), "\\.")[[1]])[1]
+    if (nm != paste0(name, "_count")) {
+      rlang::abort(glue::glue("cohort_count_ref database table name is {nm} but should be {name}_count!"))
+    }
+
+    expected_columns <- paste(c("cohort_definition_id", "number_records", "number_subjects"), collapse = ", ")
+    actual_columns <- paste(tolower(colnames(cohort_count_ref))[1:3], collapse = ", ")
+    if (actual_columns != expected_columns) {
+      rlang::abort(glue::glue("cohort_set column names should be {expected_columns} but are {actual_columns}!"))
+    }
+  }
+
+  # cohort_attrition table ----
+  if (is.data.frame(cohort_attrition_ref)) {
+
+    DBI::dbWriteTable(con, name = inSchema(write_schema, paste0(name, "_attrition"), dbms = dbms(con)), cohort_attrition_ref, overwrite = overwrite)
+    cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_attrition"), dbms = dbms(con)))
+
+  } else if (is.null(cohort_attrition_ref)) {
+
+    # create a brand new attrition table
+    cohort_attrition_ref <- cohort_count_ref %>%
+      dplyr::mutate(
+        reason = "Qualifying initial records",
+        number_records = dplyr::coalesce(.data$number_records, 0),
+        number_subjects = dplyr::coalesce(.data$number_subjects, 0),
+        reason_id = 1, excluded_records = 0, excluded_subjects = 0) %>%
+        dplyr::select(
+          "cohort_definition_id", "number_records", "number_subjects",
+          "reason_id", "reason", "excluded_records", "excluded_subjects") %>%
+        computeQuery(
+          name = paste0(name, "_attrition"),
+          temporary = FALSE,
+          schema = write_schema,
+          overwrite = overwrite
+        )
+  }
+
+
+  {
+    checkmate::assert_class(cohort_attrition_ref, "tbl_sql")
+
+    nm <- rev(stringr::str_split(as.character(cohort_attrition_ref[[2]]$x), "\\.")[[1]])[1]
+    if (nm != paste0(name, "_attrition")) {
+      rlang::abort(glue::glue("cohort_attrition_ref database table name is {nm} but should be {name}_attrition!"))
+    }
+
+    expected_columns <- paste(c("cohort_definition_id", "number_records", "number_subjects",
+                                "reason_id", "reason", "excluded_records", "excluded_subjects"), collapse = ", ")
+    actual_columns <- paste(tolower(colnames(cohort_attrition_ref))[1:7], collapse = ", ")
+
+    if (actual_columns != expected_columns) {
+      rlang::abort(glue::glue("cohort_set column names should be {expected_columns} but are {actual_columns}!"))
+    }
+  }
+
+  # create the GeneratedCohortSet object ----
+  if (!("GeneratedCohortSet" %in% class(cohort_ref))) {
+    class(cohort_ref) <- c("GeneratedCohortSet", class(cohort_ref))
+  }
+
   attr(cohort_ref, "cohort_set") <- cohort_set_ref
   attr(cohort_ref, "cohort_attrition") <- cohort_attrition_ref
   attr(cohort_ref, "cohort_count") <- cohort_count_ref
@@ -552,11 +695,18 @@ new_generated_cohort_set <- function(cohort_ref,
 newGeneratedCohortSet <- function(cohortRef,
                                   cohortSetRef = NULL,
                                   cohortAttritionRef = NULL,
-                                  cohortCountRef = NULL) {
+                                  cohortCountRef = NULL,
+                                  con = NULL,
+                                  name = "cohort",
+                                  writeSchema = NULL,
+                                  overwrite = FALSE) {
   new_generated_cohort_set(cohort_ref = cohortRef,
                            cohort_set_ref = cohortSetRef,
                            cohort_attrition_ref = cohortAttritionRef,
-                           cohort_count_ref = cohortCountRef
+                           cohort_count_ref = cohortCountRef,
+                           con = con,
+                           write_schema = writeSchema,
+                           overwrite = overwrite
   )
 }
 
@@ -811,5 +961,123 @@ caprConceptToDataframe <- function(x) {
     isExcluded = purrr::map_lgl(x@Expression, "isExcluded"),
     includeMapped = purrr::map_lgl(x@Expression, "includeMapped")
   )
-
 }
+
+#' Add attrition reason to a GeneratedCohortSet object
+#'
+#' Update the cohort attrition table with new counts and a reason for attrition.
+#'
+#' @param cohort A generated cohort set
+#' @param reason The reason for attrition as a character string
+#'
+#' @return The cohort object with the attributes created or updated.
+#'
+#' `r lifecycle::badge("experimental")`
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' library(dplyr)
+#'
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' cdm <- cdm_from_con(con = con, cdm_schema = "main", write_schema = "main")
+#' cdm <- generateConceptCohortSet(
+#'   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
+#' )
+#'
+#' cohortSet(cdm$new_cohort)
+#' cohortCount(cdm$new_cohort)
+#' cohortAttrition(cdm$new_cohort)
+#'
+#' cdm$new_cohort <- cdm$new_cohort %>%
+#'   filter(cohort_start_date >= as.Date("2010-01-01"))
+#'
+#' cdm$new_cohort <- updateCohortAttributes(
+#'   cohort = cdm$new_cohort, reason = "Only events after 2010"
+#' )
+#'
+#' cohortSet(cdm$new_cohort)
+#' cohortCount(cdm$new_cohort)
+#' cohortAttrition(cdm$new_cohort)
+#' }
+recordCohortAttrition <- function(cohort,
+                                  reason) {
+
+  checkmate::assertClass(cohort, "GeneratedCohortSet")
+  name <- attr(cohort, "tbl_name")
+  checkmate::assertCharacter(name, len = 1, min.chars = 1)
+  checkmate::assertCharacter(reason, len = 1, min.chars = 1, any.missing = FALSE)
+
+  cdm <- attr(cohort, "cdm_reference")
+  checkmate::assertClass(cdm, "cdm_reference")
+
+  # update cohort_count ----
+  attr(cohort, "cohort_count") <- cohort %>%
+    dplyr::group_by(.data$cohort_definition_id) %>%
+    dplyr::summarise(
+      number_records = dplyr::n(),
+      number_subjects = dplyr::n_distinct(.data$subject_id)
+    ) %>%
+    dplyr::right_join(
+      attr(cohort, "cohort_set") %>% dplyr::select("cohort_definition_id"),
+      by = "cohort_definition_id"
+    ) %>%
+    dplyr::mutate(
+      number_records = dplyr::coalesce(.data$number_records, 0),
+      number_subjects = dplyr::coalesce(.data$number_subjects, 0)) %>%
+    computeQuery(
+      name = paste0(name, "_count"),
+      temporary = getOption("cohort_as_temp", FALSE),
+      schema = attr(cdm, "write_schema"), overwrite = TRUE
+    )
+
+  # update cohort_attrition ----
+  reasonId <- max(cohortAttrition(cohort)$reason_id)
+
+  newAttritionRow <- attr(cohort, "cohort_attrition") %>%
+    dplyr::select("cohort_definition_id",
+                  "reason_id",
+                  "previous_records" = "number_records",
+                  "previous_subjects" = "number_subjects") %>%
+    dplyr::filter(.data$reason_id == .env$reasonId) %>%
+    dplyr::inner_join(attr(cohort, "cohort_count"), by = c("cohort_definition_id")) %>%
+    dplyr::mutate(
+      reason_id = local(reasonId + 1),
+      reason = .env$reason,
+      excluded_records = .data$previous_records - .data$number_records,
+      excluded_subjects = .data$previous_subjects - .data$number_subjects) %>%
+      dplyr::select(
+        "cohort_definition_id", "number_records", "number_subjects",
+        "reason_id", "reason", "excluded_records", "excluded_subjects") %>%
+      computeQuery(
+        temporary = getOption("intermediate_as_temp", TRUE),
+        schema = attr(cdm, "write_schema"))
+
+    tempCohortAttrition <- attr(cohort, "cohort_attrition") %>%
+      computeQuery(
+        temporary = getOption("intermediate_as_temp", TRUE),
+        schema = attr(cdm, "write_schema"))
+
+  # note that overwrite will drop the table that is needed for the query.
+  # TODO support overwrite existing table using rename in computeQuery. Cross platform table rename is needed for this though.
+  attr(cohort, "cohort_attrition")  <- tempCohortAttrition %>%
+    dplyr::union_all(newAttritionRow) %>%
+    computeQuery(
+      name = paste0(name, "_attrition"),
+      temporary = getOption("cohort_as_temp", FALSE),
+      schema = attr(cdm, "write_schema"),
+      overwrite = TRUE)
+
+  cohort <- newGeneratedCohortSet(cohort,
+                                  cohortSetRef = attr(cohort, "cohort_set"),
+                                  cohortAttritionRef = attr(cohort, "cohort_attrition"),
+                                  cohortCountRef = attr(cohort, "cohort_count"))
+
+  return(cohort)
+}
+
+#' @export
+#' @rdname recordCohortAttrition
+record_cohort_attrition <- recordCohortAttrition

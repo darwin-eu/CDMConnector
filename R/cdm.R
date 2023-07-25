@@ -156,7 +156,8 @@ cdm_from_con <- function(con,
         cohort_ref = cohort_ref,
         cohort_set_ref = cohort_set_ref,
         cohort_count_ref = cohort_count_ref,
-        cohort_attrition_ref = cohort_attrition_ref)
+        cohort_attrition_ref = cohort_attrition_ref,
+        write_schema = write_schema)
     }
   }
 
