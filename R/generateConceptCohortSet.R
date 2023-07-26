@@ -44,7 +44,7 @@ generateConceptCohortSet <- function(cdm,
   assertTables(cdm, "observation_period", empty.ok = FALSE)
   assertWriteSchema(cdm)
 
-  existingTables <- listTables(con, inSchema(attr(cdm, "write_schema"), name, dbms = dbms(con)))
+  existingTables <- listTables(con, attr(cdm, "write_schema"))
 
   if (name %in% existingTables && !overwrite) {
     rlang::abort(glue::glue("{name} already exists in the CDM write_schema and overwrite is FALSE!"))
@@ -103,7 +103,7 @@ generateConceptCohortSet <- function(cdm,
   if (any(df$include_descendants)) {
     CDMConnector::assert_tables(cdm, "concept_ancestor")
   }
-
+browser()
   # realize full list of concepts
   concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"),
                                                       tempName,

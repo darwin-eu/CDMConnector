@@ -148,7 +148,7 @@ list_tables <- function(con, schema = NULL) {
   if ("prefix" %in% names(schema)) {
     prefix <- schema["prefix"]
     checkmate::assert_character(prefix, min.chars = 1, len = 1)
-    schema <- schema[!names(schema) == "prefix"]
+    schema <- schema[names(schema) != "prefix"]
 
     process_prefix <- function(x) {
       stringr::str_subset(x, paste0("^", prefix)) %>% stringr::str_remove(paste0("^", prefix))

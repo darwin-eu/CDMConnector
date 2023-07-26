@@ -586,4 +586,22 @@
 # })
 #
 #
-#
+
+test_that("summarise_quantile works", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con, "main")
+
+  result1 <- cdm$person %>%
+    summarise_quantile(x = year_of_birth, probs = 0.5) %>%
+    dplyr::pull()
+
+  result2 <- cdm$person %>%
+    summariseQuantile(x = year_of_birth, probs = 0.5) %>%
+    dplyr::pull()
+
+  expect_equal(result1, 1961)
+  expect_equal(result1, result2)
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+

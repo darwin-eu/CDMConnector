@@ -117,8 +117,9 @@ summariseQuantile <- function(.data,
                               x = NULL,
                               probs,
                               nameSuffix = "value") {
+  x <- rlang::enexpr(x)
   summarise_quantile(.data = .data,
-                     x = x,
+                     x = !!x,
                      probs = probs,
                      name_suffix = nameSuffix)
 }

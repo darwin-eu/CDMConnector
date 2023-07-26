@@ -7,13 +7,9 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                       cdm_schema = cdm_schema,
                       write_schema = write_schema)
 
-  # gibleed_concepts <- cdm$concept_ancestor %>%
-  #   dplyr::filter(.data$ancestor_concept_id == 192671) %>%
-  #   dplyr::pull("descendant_concept_id")
-
   # make sure we are not including descendants for this test
 
-
+debugonce(generateConceptCohortSet)
   cdm <- generateConceptCohortSet(cdm = cdm,
                                   conceptSet = list(gibleed = 192671),
                                   name = "gibleed",
@@ -88,7 +84,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
    CDMConnector::dropTable(cdm, dplyr::contains("gibleed"))
 }
 
-# dbtype = "postgres"
+# dbtype = "sqlserver"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     con <- get_connection(dbtype)
