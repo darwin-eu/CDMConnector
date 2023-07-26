@@ -40,8 +40,15 @@ generateConceptCohortSet <- function(cdm,
   checkmate::checkClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+
   assertTables(cdm, "observation_period", empty.ok = FALSE)
   assertWriteSchema(cdm)
+
+  existingTables <- listTables(con, inSchema(attr(cdm, "write_schema"), name, dbms = dbms(con)))
+
+  if (name %in% existingTables && !overwrite) {
+    rlang::abort(glue::glue("{name} already exists in the CDM write_schema and overwrite is FALSE!"))
+  }
 
   if (is.numeric(end)) {
     checkmate::assertIntegerish(end, lower = 0L, len = 1)

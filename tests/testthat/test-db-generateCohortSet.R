@@ -20,7 +20,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
   expect_equal(nrow(cohortSet), 3)
   expect_s3_class(cohortSet, "CohortSet")
-
+# debugonce(new_generated_cohort_set)
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
@@ -75,7 +75,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 #   # ,"bigquery" Type not found: VARCHAR at [4:10] [invalidQuery]
 # )
 
-# dbtype = "duckdb"
+dbtype = "postgres"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     if (dbtype != "duckdb") skip_on_ci()

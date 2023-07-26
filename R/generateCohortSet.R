@@ -251,7 +251,14 @@ generateCohortSet <- function(cdm,
   target_cohort_table <- as.character(DBI::dbQuoteIdentifier(con, paste0(prefix, name)))
 
   dropTempTableIfExists <- function(con, table) {
-    DBI::dbExecute(con, SqlRender::translate(glue::glue("IF OBJECT_ID('#{table}', 'U') IS NOT NULL DROP TABLE #{table};"), targetDialect = dbms(con)))
+    suppressMessages(
+      DBI::dbExecute(
+        con,
+        SqlRender::translate(
+          glue::glue("IF OBJECT_ID('#{table}', 'U') IS NOT NULL DROP TABLE #{table};"),
+          targetDialect = dbms(con))
+        )
+    )
   }
 
   for (i in seq_len(nrow(cohortSet))) {
@@ -535,7 +542,8 @@ new_generated_cohort_set <- function(cohort_ref,
     }
 
     # get the table name from the cohort table. name argument will be ignored.
-    name <- rev(stringr::str_split(as.character(cohort_ref[[2]]$x), "\\.")[[1]])[1]
+    name <- rev(stringr::str_split(as.character(cohort_ref[[2]]$x), "\\.")[[1]])[1] %>%
+      stringr::str_remove_all("[^a-z0-9_]")
     checkmate::assertCharacter(name, len = 1, min.chars = 1)
   }
 
@@ -565,7 +573,8 @@ new_generated_cohort_set <- function(cohort_ref,
       rlang::abort("cohort_set_ref must be a dataframe or a remote table reference")
     }
 
-    nm <- rev(stringr::str_split(as.character(cohort_set_ref[[2]]$x), "\\.")[[1]])[1]
+    nm <- rev(stringr::str_split(as.character(cohort_set_ref[[2]]$x), "\\.")[[1]])[1] %>%
+      stringr::str_remove_all("[^a-z0-9_]")
     if (nm != paste0(name, "_set")) {
       rlang::abort(glue::glue("cohort_set_ref database table name is {nm} but should be {name}_set!"))
     }
@@ -620,7 +629,8 @@ new_generated_cohort_set <- function(cohort_ref,
   {
     checkmate::assert_class(cohort_count_ref, "tbl_sql")
 
-    nm <- rev(stringr::str_split(as.character(cohort_count_ref[[2]]$x), "\\.")[[1]])[1]
+    nm <- rev(stringr::str_split(as.character(cohort_count_ref[[2]]$x), "\\.")[[1]])[1] %>%
+      stringr::str_remove_all("[^a-z0-9_]")
     if (nm != paste0(name, "_count")) {
       rlang::abort(glue::glue("cohort_count_ref database table name is {nm} but should be {name}_count!"))
     }
@@ -662,7 +672,8 @@ new_generated_cohort_set <- function(cohort_ref,
   {
     checkmate::assert_class(cohort_attrition_ref, "tbl_sql")
 
-    nm <- rev(stringr::str_split(as.character(cohort_attrition_ref[[2]]$x), "\\.")[[1]])[1]
+    nm <- rev(stringr::str_split(as.character(cohort_attrition_ref[[2]]$x), "\\.")[[1]])[1] %>%
+      stringr::str_remove_all("[^a-z0-9_]")
     if (nm != paste0(name, "_attrition")) {
       rlang::abort(glue::glue("cohort_attrition_ref database table name is {nm} but should be {name}_attrition!"))
     }

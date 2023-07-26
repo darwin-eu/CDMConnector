@@ -100,17 +100,6 @@ test_date_functions <- function(con, write_schema) {
   expect_equal(df$day, 1)
 }
 
-# dbToTest <- c(
-#   "duckdb"
-#   ,"postgres"
-#   ,"redshift"
-#   ,"sqlserver"
-#   ,"oracle"
-#   ,"snowflake"
-#   # ,"bigquery"
-# )
-
-# dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
     if (dbtype != "duckdb") skip_on_ci()

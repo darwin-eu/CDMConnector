@@ -141,6 +141,10 @@ list_tables <- function(con, schema = NULL) {
 
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
+  if (methods::is(schema, "Id")) {
+    schema <- schema@name
+  }
+
   if ("prefix" %in% names(schema)) {
     prefix <- schema["prefix"]
     checkmate::assert_character(prefix, min.chars = 1, len = 1)
@@ -164,7 +168,8 @@ list_tables <- function(con, schema = NULL) {
   }
 
   if (methods::is(con, "PqConnection") || methods::is(con, "RedshiftConnection")) {
-    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
+
+    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {unname(schema[1])};", .con = con)
     out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
     return(process_prefix(out))
   }
