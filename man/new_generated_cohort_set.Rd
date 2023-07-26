@@ -10,8 +10,6 @@ new_generated_cohort_set(
   cohort_set_ref = NULL,
   cohort_attrition_ref = NULL,
   cohort_count_ref = NULL,
-  con = NULL,
-  name = "cohort",
   write_schema = NULL,
   overwrite = FALSE
 )
@@ -21,8 +19,6 @@ newGeneratedCohortSet(
   cohortSetRef = NULL,
   cohortAttritionRef = NULL,
   cohortCountRef = NULL,
-  con = NULL,
-  name = "cohort",
   writeSchema = NULL,
   overwrite = FALSE
 )
@@ -44,10 +40,6 @@ table in a remote database with the first column being cohort_definition_id.}
 \item{cohort_count_ref, cohortCountRef}{A \code{tbl_sql} object that points to a cohort_count
 table in a remote database with columns cohort_definition_id, cohort_entries,
 cohort_subjects.}
-
-\item{con}{A DBI database connection. Required if cohort_ref is a local dataframe and ignored otherwise.}
-
-\item{name}{The base cohort name to use. Required if if cohort_ref is a local dataframe and ignored otherwise.}
 
 \item{write_schema, writeSchema}{A schema where the user has write access in the database. Required if any data needs to be uploaded to a database.}
 

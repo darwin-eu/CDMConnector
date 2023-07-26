@@ -448,8 +448,6 @@ generate_cohort_set <- function(cdm,
 #' @param cohort_count_ref,cohortCountRef A `tbl_sql` object that points to a cohort_count
 #' table in a remote database with columns cohort_definition_id, cohort_entries,
 #' cohort_subjects.
-#' @param con A DBI database connection. Required if cohort_ref is a local dataframe and ignored otherwise.
-#' @param name The base cohort name to use. Required if if cohort_ref is a local dataframe and ignored otherwise.
 #' @param write_schema,writeSchema A schema where the user has write access in the database. Required if any data needs to be uploaded to a database.
 #' @param overwrite Should tables be overwritten if they already exist? TRUE or FALSE (default)
 #'
@@ -695,15 +693,12 @@ newGeneratedCohortSet <- function(cohortRef,
                                   cohortSetRef = NULL,
                                   cohortAttritionRef = NULL,
                                   cohortCountRef = NULL,
-                                  con = NULL,
-                                  name = "cohort",
                                   writeSchema = NULL,
                                   overwrite = FALSE) {
   new_generated_cohort_set(cohort_ref = cohortRef,
                            cohort_set_ref = cohortSetRef,
                            cohort_attrition_ref = cohortAttritionRef,
                            cohort_count_ref = cohortCountRef,
-                           con = con,
                            write_schema = writeSchema,
                            overwrite = overwrite
   )

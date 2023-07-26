@@ -9,6 +9,7 @@ generateConceptCohortSet(
   cdm,
   conceptSet = NULL,
   name = "cohort",
+  limit = "first",
   end = "observation_period_end_date",
   overwrite = FALSE
 )
@@ -27,6 +28,12 @@ generate_concept_cohort_set(
 \item{conceptSet, concept_set}{A named list of numeric vectors or Capr concept sets}
 
 \item{name}{The name of the new generated cohort table as a character string}
+
+\item{limit}{"first" (default) or "all".
+\itemize{
+\item{"first" will include only the first occurrence of any event in the concept set in the cohort.}
+\item{"all" will include all occurrences of the events defined by the concept set in the cohort.}
+}}
 
 \item{end}{How should the \code{cohort_end_date} be defined?
 \itemize{
