@@ -503,7 +503,7 @@ new_generated_cohort_set <- function(cohort_ref,
                                      overwrite = FALSE) {
 
   if (!methods::is(cohort_ref, "tbl_sql")) {
-    rlang::abort("cohort_ref must be a dataframe or a remote table reference")
+    rlang::abort("cohort_ref must be a remote database table reference (tbl_sql)")
   }
 
   con <- cohort_ref[[1]]$con
@@ -524,7 +524,7 @@ new_generated_cohort_set <- function(cohort_ref,
   # cohort table ----
   {
     expected_columns <- paste(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), collapse = ", ")
-    actual_columns <- paste(tolower(colnames(cohort_set_ref))[1:4], collapse = ', ')
+    actual_columns <- paste(tolower(colnames(cohort_ref))[1:4], collapse = ', ')
     if (expected_columns != actual_columns) {
       rlang::abort(glue::glue("cohort table column names should be {expected_columns} but are {actual_columns}!"))
     }
