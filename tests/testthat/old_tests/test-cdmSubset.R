@@ -378,7 +378,6 @@
 #   cdm <- cdm_from_con(con,
 #                       cdm_schema = cdm_schema,
 #                       write_schema = write_schema)
-# debugonce(cdmSample)
 #   cdm2 <- cdmSample(cdm, n = 10)
 #
 #   expect_equal(nrow(dplyr::collect(cdm2$person)), 10)

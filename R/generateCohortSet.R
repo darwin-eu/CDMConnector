@@ -499,46 +499,34 @@ new_generated_cohort_set <- function(cohort_ref,
                                      cohort_set_ref = NULL,
                                      cohort_attrition_ref = NULL,
                                      cohort_count_ref = NULL,
-                                     con = NULL,
-                                     name = "cohort",
                                      write_schema = NULL,
                                      overwrite = FALSE) {
 
+  if (!methods::is(cohort_ref, "tbl_sql")) {
+    rlang::abort("cohort_ref must be a dataframe or a remote table reference")
+  }
+
+  con <- cohort_ref[[1]]$con
+  checkmate::assertTRUE(DBI::dbIsValid(con))
 
   if (any(
-    is.data.frame(cohort_ref),
     is.data.frame(cohort_set_ref),
     is.data.frame(cohort_attrition_ref),
     is.data.frame(cohort_count_ref),
     is.null(cohort_set_ref),
-    is.null(cohort_set_ref),
-    is.null(cohort_attrition_ref)
+    is.null(cohort_attrition_ref),
+    is.null(cohort_count_ref)
   )) {
-    # we need to verify write access
     checkmate::assert_character(write_schema, min.len = 1, max.len = 3, min.chars = 1)
-    if (methods::is(cohort_ref, "tbl_sql")) {
-      con <- cohort_ref[[1]]$con
-    }
-
-    checkmate::assertTRUE(DBI::dbIsValid(con))
     verify_write_access(con, write_schema = write_schema)
   }
 
   # cohort table ----
-  if (is.data.frame(cohort_ref)) {
-    checkmate::assertTRUE(DBI::dbIsValid(con))
-    DBI::dbWriteTable(con, name = inSchema(write_schema, name, dbms = dbms(con)), cohort_ref, overwrite = overwrite)
-    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name, dbms = dbms(con)))
-  }
-
   {
-    if (!methods::is(cohort_ref, "tbl_sql")) {
-      rlang::abort("cohort_ref must be a dataframe or a remote table reference")
-    }
-
-    columns <- c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
-    if (!all(tolower(colnames(cohort_ref))[1:4] == columns)) {
-      rlang::abort(glue::glue("cohort_set column names should be {paste(columns, collapse = ', ')} but are {paste(colnames(cohort_set_ref), collapse = ', ')}!"))
+    expected_columns <- paste(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), collapse = ", ")
+    actual_columns <- paste(tolower(colnames(cohort_set_ref))[1:4], collapse = ', ')
+    if (expected_columns != actual_columns) {
+      rlang::abort(glue::glue("cohort table column names should be {expected_columns} but are {actual_columns}!"))
     }
 
     # get the table name from the cohort table. name argument will be ignored.
@@ -547,6 +535,7 @@ new_generated_cohort_set <- function(cohort_ref,
     checkmate::assertCharacter(name, len = 1, min.chars = 1)
   }
 
+  # we will check that cohort_set contains all the ids in the cohort table
   cohort_ids <- dplyr::distinct(cohort_ref, .data$cohort_definition_id) %>% dplyr::pull()
 
   # cohort_set table ----
@@ -667,7 +656,6 @@ new_generated_cohort_set <- function(cohort_ref,
           overwrite = overwrite
         )
   }
-
 
   {
     checkmate::assert_class(cohort_attrition_ref, "tbl_sql")

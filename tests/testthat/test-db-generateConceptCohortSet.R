@@ -9,7 +9,6 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   # make sure we are not including descendants for this test
 
-debugonce(generateConceptCohortSet)
   cdm <- generateConceptCohortSet(cdm = cdm,
                                   conceptSet = list(gibleed = 192671),
                                   name = "gibleed",

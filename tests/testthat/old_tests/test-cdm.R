@@ -206,7 +206,6 @@
 #   expect_true(is.character(listTables(con, schema = cdm_schema)))
 #   expect_true(is.character(listTables(con, schema = write_schema)))
 #
-#   debugonce(cdm_from_con)
 #   cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
 #
 #   expect_error(assert_tables(cdm, "cost"))
@@ -348,7 +347,6 @@
 #   expect_true(version(cdm) %in% c("5.3", "5.4"))
 #   expect_s3_class(snapshot(cdm), "data.frame")
 #
-#   # debugonce(verify_write_access)
 #   expect_true(is.null(verify_write_access(con, write_schema = "scratch")))
 #
 #   expect_true("concept" %in% names(cdm))
@@ -377,7 +375,6 @@
 #   expect_true(version(cdm) %in% c("5.3", "5.4"))
 #   expect_s3_class(snapshot(cdm), "data.frame")
 #
-#   # debugonce(verify_write_access)
 #   expect_true(is.null(verify_write_access(con, write_schema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"))))
 #
 #   expect_true("concept" %in% names(cdm))
@@ -407,7 +404,6 @@
 #   expect_true(version(cdm) %in% c("5.3", "5.4"))
 #   expect_s3_class(snapshot(cdm), "data.frame")
 #
-#   # debugonce(verify_write_access)
 #   expect_true(is.null(verify_write_access(con, write_schema = Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA"))))
 #
 #   expect_true("concept" %in% names(cdm))
