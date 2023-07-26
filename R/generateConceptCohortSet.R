@@ -103,7 +103,7 @@ generateConceptCohortSet <- function(cdm,
   if (any(df$include_descendants)) {
     CDMConnector::assert_tables(cdm, "concept_ancestor")
   }
-browser()
+
   # realize full list of concepts
   concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"),
                                                       tempName,
