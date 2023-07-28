@@ -1,3 +1,3 @@
 cohortId,cohortName,jsonPath
-1,cerebralVenousSinusThrombosis01,cohorts1/cerebralVenousSinusThrombosis01.json
-2,deepVeinThrombosis01,cohorts1/deepVeinThrombosis01.json
+1,cerebralVenousSinusThrombosis01,./cerebralVenousSinusThrombosis01.json
+2,deepVeinThrombosis01,./deepVeinThrombosis01.json
