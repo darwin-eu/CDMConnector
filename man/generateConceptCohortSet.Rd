@@ -3,13 +3,14 @@
 \name{generateConceptCohortSet}
 \alias{generateConceptCohortSet}
 \alias{generate_concept_cohort_set}
-\title{Internal function to create a new generated cohort set from a list of concept sets}
+\title{Create a new generated cohort set from a list of concept sets}
 \usage{
 generateConceptCohortSet(
   cdm,
   conceptSet = NULL,
   name = "cohort",
   limit = "first",
+  requiredObservation = c(0, 0),
   end = "observation_period_end_date",
   overwrite = FALSE
 )
@@ -29,11 +30,14 @@ generate_concept_cohort_set(
 
 \item{name}{The name of the new generated cohort table as a character string}
 
-\item{limit}{"first" (default) or "all".
+\item{limit}{Include "first" (default) or "all" occurrences of events in the cohort
 \itemize{
 \item{"first" will include only the first occurrence of any event in the concept set in the cohort.}
 \item{"all" will include all occurrences of the events defined by the concept set in the cohort.}
 }}
+
+\item{requiredObservation}{A numeric vector of length 2 that specifies the number of days of
+required observation time prior to index and post index for an event to be included in the cohort.}
 
 \item{end}{How should the \code{cohort_end_date} be defined?
 \itemize{

@@ -162,7 +162,7 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #'  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
 #'  DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-#'
+#' @export
 eunomiaDir <- function(datasetName = "GiBleed",
                        cdmVersion = "5.3",
                        databaseFile = tempfile(fileext = ".duckdb")) {

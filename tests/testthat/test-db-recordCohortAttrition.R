@@ -13,7 +13,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
   expect_no_error(cdm$new_cohort <- recordCohortAttrition(cdm$new_cohort, reason = "a reason"))
   # running again will produce an error if no new reason is given
-  expect_error(cdm$new_cohort <- updateCohortAttributes(cdm$new_cohort))
+  expect_error(cdm$new_cohort <- recordCohortAttrition(cdm$new_cohort))
 
   expect_s3_class(cohortAttrition(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")

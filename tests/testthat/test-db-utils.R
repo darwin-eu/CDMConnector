@@ -1,7 +1,9 @@
 
 # inSchema ----------
+# test prefix option
 
 test_in_schema <- function(con, write_schema, cdm_schema) {
+
   # upload a table to the database
   if (is.null(con) || is.null(write_schema)) { return(invisible(NULL)) }
 
@@ -9,7 +11,18 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
     DBI::dbRemoveTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)))
   }
 
-  DBI::dbWriteTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)), cars, overwrite = TRUE)
+  expect_no_error(
+    DBI::dbWriteTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)), cars)
+  )
+
+  if (dbms(con) != "snowflake") {
+    # overwrite does not work on snowflake
+    expect_no_error(
+      DBI::dbWriteTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)), cars, overwrite = TRUE)
+    )
+  }
+
+  expect_true("temp_test" %in% list_tables(con, write_schema))
 
   # <BigQueryConnection> uses an old dbplyr interface
   # i Please install a newer version of the package or contact the maintainer
@@ -27,18 +40,37 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
   })
   expect_equal(df, dplyr::arrange(cars, .data$speed, .data$dist))
 
-  tables <- list_tables(con, cdm_schema) %>% tolower
+  tables <- list_tables(con, cdm_schema) %>% tolower()
   expect_true(all(c("person", "observation_period") %in% tables))
 
   DBI::dbRemoveTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)))
+  expect_false("temp_test" %in% list_tables(con, write_schema))
 }
 
-test_that("duckdb - inSchema", {
-  con <- get_connection("duckdb")
-  test_in_schema(con, "main", "main")
-  disconnect(con)
-})
 
+# dbToTest <- c(
+#   "duckdb"
+#   ,"postgres"
+#   ,"redshift"
+#   ,"sqlserver"
+#   # ,"oracle" # not compatible with requested type: [type=character; target=double].
+#   ,"snowflake"
+#   ,"bigquery"
+# )
+
+# dbtype = "oracle"
+for (dbtype in dbToTest) {
+  test_that(glue::glue("{dbtype} - cdm_from_con"), {
+    if (dbtype != "duckdb") skip_on_ci()
+    con <- get_connection(dbtype)
+    cdm_schema <- get_cdm_schema(dbtype)
+
+    write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
+    skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
+    test_in_schema(con, cdm_schema = cdm_schema, write_schema = write_schema)
+    disconnect(con)
+  })
+}
 
 
 # test_that("oracle - list_tables only", {
@@ -48,7 +80,6 @@ test_that("duckdb - inSchema", {
 #   expect_true(all(c("person", "observation_period") %in% tables))
 #   disconnect(con)
 # })
-
 
 test_that("getFullTableNameQuoted", {
   skip_if_not_installed("duckdb")
@@ -100,48 +131,3 @@ test_that("inSchema", {
   expect_equal(tableSchemaNames[2], "dbo")
   expect_equal(tableSchemaNames[3], "myTable")
 })
-
-test_that("normalize_schema works", {
-  library(zeallot)
-  c(schema, prefix) %<-% normalize_schema("asdf")
-  expect_true(schema == "asdf" & is.null(prefix))
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(c(schema = "asdf"))
-  expect_true(schema == "asdf" & is.null(prefix))
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(DBI::Id(schema = "asdf"))
-  expect_true(schema == "asdf" & is.null(prefix))
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(c(schema = "asdf", prefix = "prefix"))
-  expect_true(schema == "asdf" & prefix == "prefix")
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(DBI::Id(schema = "asdf", prefix = "prefix"))
-  expect_true(schema == "asdf" & prefix == "prefix")
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema("asdf.dbo")
-  expect_true(all(schema == c("asdf", "dbo")) & is.null(prefix))
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(c(catalog = "asdf", schema = "dbo"))
-  expect_true(all(schema == c("asdf", "dbo")) & is.null(prefix))
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(DBI::Id(catalog = "asdf", schema = "dbo"))
-  expect_true(all(schema == c("asdf", "dbo")) & is.null(prefix))
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(c(catalog = "asdf", schema = "dbo", prefix = "prefix"))
-  expect_true(all(schema == c("asdf", "dbo")) & prefix == "prefix")
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-
-  c(schema, prefix) %<-% normalize_schema(DBI::Id(catalog = "asdf", schema = "dbo", prefix = "prefix"))
-  expect_true(all(schema == c("asdf", "dbo")) & prefix == "prefix")
-  expect_true(is.null(names(schema)) & is.null(names(prefix)))
-})
-
-

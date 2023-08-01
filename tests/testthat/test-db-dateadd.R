@@ -72,7 +72,7 @@ test_date_functions <- function(con, write_schema) {
 
   # test creation of date from parts
   if (dbms(con) != "bigquery") {
-    # paste0 translation incorrect on bigquery
+    # TODO paste0 translation incorrect on bigquery
     df <- date_tbl %>%
       dplyr::transmute(date_from_parts = paste0(
         as.character(.data$y), "-",
@@ -100,8 +100,9 @@ test_date_functions <- function(con, write_schema) {
   expect_equal(df$day, 1)
 }
 
+# dbtype = "bigquery"
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - dbi"), {
+  test_that(glue::glue("{dbtype} - date functions"), {
     if (dbtype != "duckdb") skip_on_ci()
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == ""))
@@ -119,18 +120,6 @@ for (dbtype in dbToTest) {
 #   .data$month_of_birth1, "/",
 #   .data$day_of_birth1
 # )))
-
-# test_that("bigquery - date functions", {
-#   write_schema <- get_write_schema("bigquery")
-#   skip_if(write_schema == "")
-#   con <- get_connection("bigquery")
-#   suppressWarnings({
-#     # Warning: <BigQueryConnection> uses an old dbplyr interface
-#     # https://github.com/r-dbi/bigrquery/issues/508
-#     test_date_functions(con, write_schema)
-#   })
-#   disconnect(con)
-# })
 
 test_that('dateadd works without pipe', {
   skip("failing test")

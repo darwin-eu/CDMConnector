@@ -1,13 +1,21 @@
 # Test DBI functions we rely on
 
 test_dbi <- function(con, cdm_schema, write_schema) {
-  df <- dplyr::tibble(logical = TRUE, char = "a", int = 1L, float = 1.5)
+  df <- dplyr::tibble(
+    logical = TRUE,
+    char = "a",
+    int = 1L,
+    float = 1.5
+  )
 
   if ("temp_test" %in% list_tables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
   }
 
   # DBI::dbWriteTable(con, DBI::Id(schema = write_schema, table = "temp_test"), df)
+  # DBI::dbWriteTable(con, "cars", head(cars, 3), overwrite = T)
+  # dplyr::tbl(con, "cars")
+
   DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df)
   expect_true("temp_test" %in% list_tables(con, schema = write_schema))
 
@@ -45,15 +53,16 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 #   ,"postgres"
 #   ,"redshift"
 #   ,"sqlserver"
-#   ,"oracle"
+#   # ,"oracle" # ?? dbWriteTable failing with Error: Not compatible with requested type: [type=character; target=double].
 #   ,"snowflake"
-#   # ,"bigquery"
+#   ,"bigquery"
 # )
 
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
-    if (dbtype != "duckdb") skip_on_ci()
+    if (dbtype == "duckdb") skip_if_not_installed("duckdb") else skip_on_ci()
+
     write_schema <- get_write_schema(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     con <- get_connection(dbtype)
@@ -63,5 +72,4 @@ for (dbtype in dbToTest) {
   })
 }
 
-
-#TODO test dplyr::copy_to with temp and non-temp tables as well as the overwrite argument of dbWriteTable
+# TODO test dplyr::copy_to with temp and non-temp tables as well as the overwrite argument of dbWriteTable

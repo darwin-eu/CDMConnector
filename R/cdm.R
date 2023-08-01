@@ -341,10 +341,9 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   withr::with_options(list(databaseConnectorIntegerAsNumeric = FALSE), {
     df2 <- dplyr::tbl(con, inSchema(write_schema, tablename, dbms = dbms(con))) %>%
       dplyr::collect() %>%
-      dplyr::select("chr_col", "numeric_col") %>%  # bigquery can reorder columns
-      as.data.frame()
-
-    colnames(df2) <- tolower(colnames(df2))
+      as.data.frame() %>%
+      dplyr::rename_all(tolower) %>% # dbWriteTable can create uppercase column names on snowflake
+      dplyr::select("chr_col", "numeric_col") # bigquery can reorder columns
   })
 
   DBI::dbRemoveTable(con, inSchema(write_schema, tablename, dbms = dbms(con)))

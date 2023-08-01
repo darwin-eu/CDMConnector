@@ -48,7 +48,7 @@ get_connection <- function(dbms) {
                           UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
                           PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
                           TrustServerCertificate="yes",
-                          Port     = 1433))
+                          Port     = Sys.getenv("CDM5_SQL_SERVER_PORT")))
   }
 
   if (dbms == "oracle" && "OracleODBC-19" %in% odbc::odbcListDataSources()$name) {
@@ -94,7 +94,7 @@ get_cdm_schema <- function(dbms) {
   return(s)
 }
 
-get_write_schema <- function(dbms) {
+get_write_schema <- function(dbms, prefix = NULL) {
   s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
           "local" = Sys.getenv("LOCAL_POSTGRESQL_SCRATCH_SCHEMA"),
@@ -108,6 +108,15 @@ get_write_schema <- function(dbms) {
           NULL
   )
   if (length(s) == 0) s <- ""
+
+  if (!is.null(prefix)) {
+    if (length(s) == 1) {
+      s <- c(schema = s[1], prefix = prefix)
+    } else {
+      s <- c(catalog = s[1], schema = s[2], prefix = prefix)
+    }
+  }
+
   return(s)
 }
 
@@ -125,11 +134,11 @@ disconnect <- function(con) {
 dbToTest <- c(
   "duckdb"
   ,"postgres"
-  # ,"redshift"
-  # ,"sqlserver"
-  # ,"snowflake"
+  ,"redshift"
+  ,"sqlserver"
+  ,"snowflake"
 
   # ,"spark"
   # ,"oracle"
-  # ,"bigquery"
+  ,"bigquery"
 )

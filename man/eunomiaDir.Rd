@@ -57,5 +57,4 @@ to the the path defined by the EUNOMIA_DATA_FOLDER environment variable.
  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
  DBI::dbDisconnect(con, shutdown = TRUE)
 }
-
 }

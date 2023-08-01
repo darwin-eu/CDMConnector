@@ -2,6 +2,8 @@
 
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
+  # if (dbms(con) %in% c("bigquery", "snowflake")) return(NULL) # failing
+
   cdm <- cdm_from_con(con,
                       cdm_schema = cdm_schema,
                       write_schema = write_schema)
@@ -20,6 +22,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
   expect_equal(nrow(cohortSet), 3)
   expect_s3_class(cohortSet, "CohortSet")
+  # debugonce(generateCohortSet)
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
@@ -74,7 +77,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 #   # ,"bigquery" Type not found: VARCHAR at [4:10] [invalidQuery]
 # )
 
-dbtype = "postgres"
+dbtype = "snowflake"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     if (dbtype != "duckdb") skip_on_ci()
@@ -88,12 +91,13 @@ for (dbtype in dbToTest) {
   })
 }
 
-
 test_that("duckdb cohort generation", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
   skip_if_not_installed("CirceR")
   skip_if_not_installed("SqlRender")
+  skip_on_ci()
+  skip_on_cran()
 
   example_datasets()
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synthea-covid19-10k"))

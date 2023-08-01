@@ -1,7 +1,9 @@
 
 createCohortTables <- function(con, writeSchema, name, computeAttrition) {
 
-  if (dbms(con) != "oracle") {
+  # oracle and snowflake use uppercase table names by default which causes
+  # issues when switching between ohdsi-sql (unquoted identifiers) and dbplyr sql (quoted identifiers)
+  if (!(dbms(con) %in% c("oracle", "snowflake"))) {
     existingTables <- list_tables(con, writeSchema)
 
     if (name %in% existingTables) {
@@ -163,7 +165,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
 
     if ("prefix" %in% names(writeSchema)) {
       prefix <- writeSchema["prefix"]
-      cohort_database_schema <- paste0(writeSchema[-which(names(writeSchema) == "prefix")], collapse = ".")
+      cohort_database_schema <- paste0(writeSchema[names(writeSchema) != "prefix"], collapse = ".")
     } else {
       prefix <- ""
       cohort_database_schema <- paste0(writeSchema, collapse = ".")
@@ -179,7 +181,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
                              cohort_summary_stats_table    = toupper(paste0(prefix, name, "_summary_stats")),
                              cohort_censor_stats_table     = toupper(paste0(prefix, name, "_censor_stats")),
                              warnOnMissingParameters = TRUE)
-    sql <- SqlRender::translate(sql, "oracle", tempEmulationSchema = writeSchema)
+    sql <- SqlRender::translate(sql, dbms(con), tempEmulationSchema = toupper(cohort_database_schema))
     sql <- SqlRender::splitSql(sql)
     purrr::walk(sql, ~DBI::dbExecute(con, ., immediate = TRUE))
   }

@@ -25,15 +25,15 @@ test_copy_cdm_to <- function(con, schema) {
   DBI::dbDisconnect(con1, shutdown = T)
 }
 
-# dbToTest <- c(
-#   "duckdb"
-#   ,"postgres"
-#   ,"redshift"
-#   # ,"sqlserver"
-#   # ,"oracle" # requires development dbplyr version to work
-#   # ,"snowflake"
-#   # ,"bigquery" # issue with bigquery tbl
-# )
+dbToTest <- c(
+  "duckdb"
+  ,"postgres"
+  ,"redshift"
+  ,"sqlserver"
+  # ,"oracle" # requires development dbplyr version to work
+  # ,"snowflake"
+  # ,"bigquery"
+)
 
 # dbtype = "redshift"
 for (dbtype in dbToTest) {

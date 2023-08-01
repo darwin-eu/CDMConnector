@@ -85,7 +85,8 @@ check_summarise_dplyr <- function(cdm){
                    colnames(cdm$person %>%
                              dplyr::summarise(min = min(year_of_birth, na.rm = TRUE),
                                               mean = mean(year_of_birth, na.rm = TRUE),
-                                              max = max(year_of_birth, na.rm = TRUE)) %>%
+                                              max = max(year_of_birth, na.rm = TRUE),
+                                              .groups = "drop") %>%
                                dplyr::collect())))
 
 
@@ -95,7 +96,8 @@ check_summarise_dplyr <- function(cdm){
     dplyr::group_by(gender_concept_id, month_of_birth) %>%
     dplyr::summarise(min = min(year_of_birth, na.rm = TRUE),
                      mean = mean(year_of_birth, na.rm = TRUE),
-                     max = max(year_of_birth, na.rm = TRUE)) %>%
+                     max = max(year_of_birth, na.rm = TRUE),
+                     .groups = "drop") %>%
     dplyr::ungroup() %>%
     dplyr::collect())))
 
@@ -251,28 +253,30 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
-checks <- dplyr::bind_rows(checks)
-plot_levels <- rev(colnames(checks))
-plot <- checks %>%
-  tidyr::pivot_longer(
-    cols = !dbtype,
-    names_to = "check",
-    values_to = "value",
-    cols_vary = 'slowest',
-  ) %>%
-  dplyr::mutate(check=factor(check,
-                          levels = plot_levels)) %>%
-  ggplot2::ggplot(ggplot2::aes(x = dbtype,
-           y = check,
-           fill = as.character(value))) +
-  ggplot2::geom_tile(colour="grey", alpha=0.8, width=1) +
-  ggplot2::xlab(label = "Sample")+
-  ggplot2::theme_bw() +
-  ggplot2::theme(legend.position="none") +
-  ggplot2::scale_x_discrete(expand=c(0,0))+
-  ggplot2::scale_y_discrete(expand=c(0,0)) +
-  ggplot2::scale_fill_manual(values = c("red", "green"))+
-  ggplot2::xlab("DBMS")+
-  ggplot2::ylab("")+
-  ggplot2::ggtitle("Analytic functionality checked in continuous integration")
-ggplot2::ggsave("dbms_coverage/tests.png", plot)
+# checks <- dplyr::bind_rows(checks)
+# plot_levels <- rev(colnames(checks))
+
+# plot <- checks %>%
+#   tidyr::pivot_longer(
+#     cols = !dbtype,
+#     names_to = "check",
+#     values_to = "value",
+#     cols_vary = 'slowest',
+#   ) %>%
+#   dplyr::mutate(check=factor(check,
+#                           levels = plot_levels)) %>%
+#   ggplot2::ggplot(ggplot2::aes(x = dbtype,
+#            y = check,
+#            fill = as.character(value))) +
+#   ggplot2::geom_tile(colour="grey", alpha=0.8, width=1) +
+#   ggplot2::xlab(label = "Sample")+
+#   ggplot2::theme_bw() +
+#   ggplot2::theme(legend.position="none") +
+#   ggplot2::scale_x_discrete(expand=c(0,0))+
+#   ggplot2::scale_y_discrete(expand=c(0,0)) +
+#   ggplot2::scale_fill_manual(values = c("red", "green"))+
+#   ggplot2::xlab("DBMS")+
+#   ggplot2::ylab("")+
+#   ggplot2::ggtitle("Analytic functionality checked in continuous integration")
+
+# ggplot2::ggsave("dbms_coverage/tests.png", plot)

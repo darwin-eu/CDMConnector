@@ -132,6 +132,13 @@ generateCohortSet <- function(cdm,
   checkmate::assertClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(con))
+
+  withr::local_options(list("cli.progress_show_after" = 0))
+  cli::cli_progress_bar(
+    total = nrow(cohortSet),
+    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
+  cli::cli_progress_update(set = 0)
+
   assert_write_schema(cdm) # required for now
 
   checkmate::assertLogical(computeAttrition, len = 1)
@@ -222,18 +229,37 @@ generateCohortSet <- function(cdm,
                                           options = CirceR::createGenerateOptions(
                                             generateStats = computeAttrition))
     cohortSet$sql[i] <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE)
-  }
 
+    if (dbms(con) == "snowflake") {
+      # a hack because we are using lowercase column names for cohort tables
+      q <- function(x) DBI::dbQuoteIdentifier(con, x)
+      r <- "DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;"
+      r2 <- glue::glue("DELETE FROM @target_database_schema.@target_cohort_table where {q('cohort_definition_id')} = @target_cohort_id;")
+      if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
+      cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
+
+      if (computeAttrition) {
+        r <- "delete from @results_database_schema.cohort_censor_stats where cohort_definition_id = @target_cohort_id;"
+        r2 <- glue::glue("delete from @results_database_schema.cohort_censor_stats where {q('cohort_definition_id')} = @target_cohort_id;")
+        if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
+        cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
+      }
+
+      r <- "INSERT INTO @target_database_schema.@target_cohort_table \\(cohort_definition_id, subject_id, cohort_start_date, cohort_end_date\\)"
+      r2 <- "INSERT INTO @target_database_schema.@target_cohort_table "
+      if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
+      cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
+
+      # r <- "select @target_cohort_id as cohort_definition_id, person_id, start_date, end_date "
+      # r2 <- glue::glue("select @target_cohort_id as {q('cohort_definition_id')}, person_id, start_date, end_date ")
+      # if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
+      # cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
+    }
+  }
+# cat(cohortSet$sql[1])
   # Create the cohort tables ----
   createCohortTables(con, write_schema, name, computeAttrition)
-
   # Run the OHDSI-SQL ----
-
-  cli::cli_progress_bar(
-    total = nrow(cohortSet),
-    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
-  cli::cli_progress_update(set = 0)
-
 
   cdm_schema <- attr(cdm, "cdm_schema")
   checkmate::assertCharacter(cdm_schema, max.len = 3, min.len = 1, min.chars = 1)
@@ -261,6 +287,8 @@ generateCohortSet <- function(cdm,
         )
     )
   }
+
+
 
   for (i in seq_len(nrow(cohortSet))) {
 
@@ -301,19 +329,27 @@ generateCohortSet <- function(cdm,
       sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
     }
 
-    dropTempTableIfExists(con, "Codesets")
-    dropTempTableIfExists(con, "qualified_events")
-    dropTempTableIfExists(con, "cohort_rows")
-    dropTempTableIfExists(con, "Inclusion")
-    dropTempTableIfExists(con, "inclusion_events")
-    dropTempTableIfExists(con, "included_events")
-    dropTempTableIfExists(con, "final_cohort")
+    if (dbms(con) != "snowflake") {
+      # TODO: issue dropping temp tables on snowflake which is using tempEmulation
+      # Error: nanodbc/nanodbc.cpp:1526: 00000: Cannot perform DROP.
+      # This session does not have a current schema. Call 'USE SCHEMA', or use a qualified name.
+      dropTempTableIfExists(con, "Codesets")
+      dropTempTableIfExists(con, "qualified_events")
+      dropTempTableIfExists(con, "cohort_rows")
+      dropTempTableIfExists(con, "Inclusion")
+      dropTempTableIfExists(con, "inclusion_events")
+      dropTempTableIfExists(con, "included_events")
+      dropTempTableIfExists(con, "final_cohort")
+    }
 
-    purrr::walk(sql, ~DBI::dbExecute(con, .x, immediate = TRUE))
+    for (j in seq_along(sql)) {
+      DBI::dbExecute(con, sql[j], immediate = TRUE)
+    }
+
     cli::cli_progress_update(set = i)
   }
 
-  toupperIfOracle <- function(x) if (dbms(con) == "oracle") toupper(x) else x
+  toupperIfOracle <- function(x) if (dbms(con) %in% c("oracle", "snowflake")) toupper(x) else x
 
   cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name))
 
@@ -338,6 +374,8 @@ generateCohortSet <- function(cdm,
                     overwrite = TRUE)
 
   cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, toupperIfOracle(paste0(name, "_set"))))
+
+
 
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
