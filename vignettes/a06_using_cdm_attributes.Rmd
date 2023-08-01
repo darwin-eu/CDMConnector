@@ -1,0 +1,159 @@
+---
+title: "Using CDM attributes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using CDM attributes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, include = FALSE}
+library(CDMConnector)
+if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") Sys.setenv("EUNOMIA_DATA_FOLDER" = file.path(tempdir(), "eunomia"))
+if (!dir.exists(Sys.getenv("EUNOMIA_DATA_FOLDER"))) dir.create(Sys.getenv("EUNOMIA_DATA_FOLDER"))
+if (!eunomia_is_available()) downloadEunomiaData()
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Set up
+Let's again load required packages and connect to our Eunomia dataset in duckdb.
+
+```{r, message=FALSE, warning=FALSE}
+library(CDMConnector)
+library(dplyr)
+
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+```
+
+## CDM reference attributes
+
+Our cdm reference has various attributes associated with it. These can be useful both when programming and when developing analytic packages on top of CDMConnector.  
+
+### CDM name
+It's a requirement that every cdm reference has name associated with it. This is particularly useful for network studies so that we can associate results with a particular cdm. We can access this attribute like so 
+```{r}
+attr(cdm, "cdm_name")
+```
+
+Because it is so regularly used, to make getting the cdm name even easier, we can also use `cdmName` (or it's snake case equivalent `cdm_name`)
+```{r}
+cdmName(cdm)
+cdm_name(cdm)
+```
+
+### CDM version
+The OMOP CDM has various versions. We also have an attribute giving the version of the cdm we have connected to.
+```{r}
+attr(cdm, "cdm_version")
+```
+
+### Database connection
+We also have an attribute identifying the database connection underlying the cdm reference.
+```{r}
+attr(cdm, "dbcon")
+```
+
+This can be useful, for example, if we want to make use of DBI functions to work with the database. For example we could use `dbListTables` to list the names of remote tables accessible through the connection, `dbListFields` to list the field names of a specific remote table, and `dbGetQuery` to returns the result of a query 
+```{r}
+DBI::dbListTables(attr(cdm, "dbcon"))
+DBI::dbListFields(attr(cdm, "dbcon"), "person")
+DBI::dbGetQuery(attr(cdm, "dbcon"), "SELECT * FROM person LIMIT 5")
+```
+
+## Cohort attributes
+### Generated cohort set
+When we generate a cohort in addition to the cohort table itself we also have various attributes that can be useful for subsequent analysis.
+
+Here we create a cohort table with a single cohort.
+```{r}
+cdm <- generateConceptCohortSet(cdm = cdm, 
+                         conceptSet = list("gi_bleed" = c(192671),
+                                           "celecoxib" = c(1118084)), 
+                         name = "study_cohorts")
+cdm$study_cohorts %>% 
+  glimpse()
+```
+
+We have a cohort set attribute that gives details on the settings associated with the cohorts (along with utility functions to make it easier to access this attribute).
+```{r}
+attr(cdm$study_cohorts, "cohort_set")
+```
+
+```{r, eval=FALSE}
+cohortSet(cdm$study_cohorts)
+cohort_set(cdm$study_cohorts) 
+```
+
+We have a cohort_count attribute with counts for each of the cohorts.
+```{r}
+attr(cdm$study_cohorts, "cohort_count")
+```
+
+```{r, eval=FALSE}
+cohortCount(cdm$study_cohorts)
+cohort_count(cdm$study_cohorts)
+```
+
+And we also have an attribute, cohort attrition, with a summary of attrition when creating the cohorts.
+
+```{r, eval=FALSE}
+attr(cdm$study_cohorts, "cohort_attrition")
+```
+
+```{r, eval=FALSE}
+cohortAttrition(cdm$study_cohorts)
+cohort_attrition(cdm$study_cohorts)
+```
+
+In addition, we also have the cdm reference itself as an attribute of the cohorts. This is particularly useful when developing analytic packages on top of CDMConnector.
+```{r}
+attr(cdm$study_cohorts, "cdm_reference")
+```
+
+### Creating a bespoke cohort
+Say we create a custom GI bleed cohort with the standard cohort structure
+```{r}
+cdm$GI_bleed <- cdm$condition_occurrence %>% 
+  filter(condition_concept_id == 192671) %>% 
+  mutate(cohort_definition_id = 1) %>% 
+  select(cohort_definition_id, person_id,
+         condition_start_date, condition_end_date) %>% 
+  rename("subject_id" = "person_id", 
+         "cohort_start_date" = "condition_start_date", 
+         "cohort_end_date" = "condition_end_date")
+cdm$GI_bleed %>% 
+  glimpse()
+```
+
+We can add the required attributes using the `newGeneratedCohortSet` function. The minimum requirement for this is that we also define the cohort set to associate with our set of custom cohorts.
+
+```{r}
+GI_bleed_cohort_ref <- data.frame(cohort_definition_id = 1,
+                                  cohort_name = "custom_gi_bleed")
+
+cdm$GI_bleed <- newGeneratedCohortSet(cohortRef = cdm$GI_bleed, 
+                      cohortSetRef = GI_bleed_cohort_ref, 
+                      writeSchema = attr(cdm, "write_schema"), 
+                      overwrite = TRUE)
+```
+
+Now our custom cohort GI_bleed has the same attributes associated with it as if it had been created by generateConceptCohortSet. This will mean that it can be used by analytic packages designed to work with cdm cohorts.
+
+```{r}
+cohort_set(cdm$GI_bleed)
+cohort_count(cdm$GI_bleed)
+cohort_attrition(cdm$GI_bleed)
+attr(cdm$GI_bleed, "cdm_reference")
+```
