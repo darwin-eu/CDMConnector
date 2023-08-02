@@ -1002,6 +1002,8 @@ caprConceptToDataframe <- function(x) {
 #'
 #' @param cohort A generated cohort set
 #' @param reason The reason for attrition as a character string
+#' @param cohortId Cohort definition id of the cohort you want to update the
+#' attrition
 #'
 #' @return The cohort object with the attributes created or updated.
 #'
@@ -1036,23 +1038,37 @@ caprConceptToDataframe <- function(x) {
 #' cohortAttrition(cdm$new_cohort)
 #' }
 recordCohortAttrition <- function(cohort,
-                                  reason) {
-
+                                  reason,
+                                  cohortId = NULL) {
   checkmate::assertClass(cohort, "GeneratedCohortSet")
   name <- attr(cohort, "tbl_name")
   checkmate::assertCharacter(name, len = 1, min.chars = 1)
   checkmate::assertCharacter(reason, len = 1, min.chars = 1, any.missing = FALSE)
+  checkmate::assertIntegerish(cohortId, any.missing = FALSE, null.ok = TRUE)
 
   cdm <- attr(cohort, "cdm_reference")
   checkmate::assertClass(cdm, "cdm_reference")
 
+  if (is.null(cohortId)) {
+    cohortId <- attr(cohort, "cohort_set") %>%
+      dplyr::pull("cohort_definition_id")
+  }
+
+  tempCohortCount <- attr(cohort, "cohort_count") %>%
+    dplyr::filter(!(.data$cohort_definition_id %in% .env$cohortId)) %>%
+    computeQuery(
+      temporary = getOption("intermediate_as_temp", TRUE),
+      schema = attr(cdm, "write_schema"))
+
   # update cohort_count ----
   attr(cohort, "cohort_count") <- cohort %>%
+    dplyr::filter(.data$cohort_definition_id %in% .env$cohortId) %>%
     dplyr::group_by(.data$cohort_definition_id) %>%
     dplyr::summarise(
       number_records = dplyr::n(),
       number_subjects = dplyr::n_distinct(.data$subject_id)
     ) %>%
+    dplyr::union_all(tempCohortCount) %>%
     dplyr::right_join(
       attr(cohort, "cohort_set") %>% dplyr::select("cohort_definition_id"),
       by = "cohort_definition_id"
@@ -1062,36 +1078,37 @@ recordCohortAttrition <- function(cohort,
       number_subjects = dplyr::coalesce(.data$number_subjects, 0)) %>%
     computeQuery(
       name = paste0(name, "_count"),
-      temporary = getOption("cohort_as_temp", FALSE),
+      temporary = getOption("cohort_as_temp", TRUE),
       schema = attr(cdm, "write_schema"), overwrite = TRUE
     )
 
   # update cohort_attrition ----
-  reasonId <- max(cohortAttrition(cohort)$reason_id)
-
   newAttritionRow <- attr(cohort, "cohort_attrition") %>%
+    dplyr::filter(.data$cohort_definition_id %in% .env$cohortId) %>%
     dplyr::select("cohort_definition_id",
                   "reason_id",
                   "previous_records" = "number_records",
                   "previous_subjects" = "number_subjects") %>%
-    dplyr::filter(.data$reason_id == .env$reasonId) %>%
+    dplyr::group_by(.data$cohort_definition_id) %>%
+    dplyr::filter(.data$reason_id == max(.data$reason_id, na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
     dplyr::inner_join(attr(cohort, "cohort_count"), by = c("cohort_definition_id")) %>%
     dplyr::mutate(
-      reason_id = local(reasonId + 1),
+      reason_id = .data$reason_id + 1,
       reason = .env$reason,
       excluded_records = .data$previous_records - .data$number_records,
       excluded_subjects = .data$previous_subjects - .data$number_subjects) %>%
-      dplyr::select(
-        "cohort_definition_id", "number_records", "number_subjects",
-        "reason_id", "reason", "excluded_records", "excluded_subjects") %>%
-      computeQuery(
-        temporary = getOption("intermediate_as_temp", TRUE),
-        schema = attr(cdm, "write_schema"))
+    dplyr::select(
+      "cohort_definition_id", "number_records", "number_subjects",
+      "reason_id", "reason", "excluded_records", "excluded_subjects") %>%
+    computeQuery(
+      temporary = getOption("intermediate_as_temp", TRUE),
+      schema = attr(cdm, "write_schema"))
 
-    tempCohortAttrition <- attr(cohort, "cohort_attrition") %>%
-      computeQuery(
-        temporary = getOption("intermediate_as_temp", TRUE),
-        schema = attr(cdm, "write_schema"))
+  tempCohortAttrition <- attr(cohort, "cohort_attrition") %>%
+    computeQuery(
+      temporary = getOption("intermediate_as_temp", TRUE),
+      schema = attr(cdm, "write_schema"))
 
   # note that overwrite will drop the table that is needed for the query.
   # TODO support overwrite existing table using rename in computeQuery. Cross platform table rename is needed for this though.

@@ -5,14 +5,17 @@
 \alias{record_cohort_attrition}
 \title{Add attrition reason to a GeneratedCohortSet object}
 \usage{
-recordCohortAttrition(cohort, reason)
+recordCohortAttrition(cohort, reason, cohortId = NULL)
 
-record_cohort_attrition(cohort, reason)
+record_cohort_attrition(cohort, reason, cohortId = NULL)
 }
 \arguments{
 \item{cohort}{A generated cohort set}
 
 \item{reason}{The reason for attrition as a character string}
+
+\item{cohortId}{Cohort definition id of the cohort you want to update the
+attrition}
 }
 \value{
 The cohort object with the attributes created or updated.

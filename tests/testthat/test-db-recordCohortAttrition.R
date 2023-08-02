@@ -3,13 +3,13 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
 
   cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema) %>%
-    generateConceptCohortSet(conceptSet = list(pharyngitis = 4112343),
+    generateConceptCohortSet(conceptSet = list(pharyngitis = 4112343, bronchitis = 260139),
                              name = "new_cohort",
                              overwrite = TRUE)
 
   oldAttrition <- cohortAttrition(cdm$new_cohort)
   oldCounts <- cohortCount(cdm$new_cohort)
-  expect_true(nrow(cohortSet(cdm$new_cohort)) == 1)
+  expect_true(nrow(cohortSet(cdm$new_cohort)) == 2)
 
   expect_no_error(cdm$new_cohort <- recordCohortAttrition(cdm$new_cohort, reason = "a reason"))
   # running again will produce an error if no new reason is given
@@ -19,7 +19,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortSet(cdm$new_cohort), "data.frame")
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
-  expect_equal(nrow(cohortAttrition(cdm$new_cohort)), 2)
+  expect_equal(nrow(cohortAttrition(cdm$new_cohort)), 4)
   expect_equal(cohortCount(cdm$new_cohort), oldCounts)
 
   cdm$new_cohort <- cdm$new_cohort %>%
@@ -36,8 +36,71 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_s3_class(cohortSet(cdm$new_cohort), "data.frame")
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
-  expect_true(nrow(cohortAttrition(cdm$new_cohort)) == 3)
-  expect_true(nrow(cohortCount(cdm$new_cohort)) == 1)
+  expect_true(nrow(cohortAttrition(cdm$new_cohort)) == 6)
+  expect_true(nrow(cohortCount(cdm$new_cohort)) == 2)
+  oldCounts <- cohortCount(cdm$new_cohort)
+
+  cdm$new_cohort <- cdm$new_cohort %>%
+    dplyr::filter(
+      cohort_definition_id != 1 | cohort_start_date <= as.Date("2015-01-01")
+    )
+
+  expect_no_error({
+    cdm$new_cohort <- recordCohortAttrition(
+      cohort = cdm$new_cohort,
+      reason = "Only events before 2020",
+      cohortId = 1)
+  })
+
+  expect_s3_class(cohortAttrition(cdm$new_cohort), "data.frame")
+  expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
+  expect_s3_class(cohortSet(cdm$new_cohort), "data.frame")
+  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+
+  expect_true(nrow(cohortAttrition(cdm$new_cohort)) == 7)
+  expect_true(nrow(cohortCount(cdm$new_cohort)) == 2)
+  expect_true(
+    cdm$new_cohort %>%
+      cohortAttrition() %>%
+      filter(cohort_definition_id == 1) %>%
+      nrow() == 4
+  )
+  expect_true(
+    cdm$new_cohort %>%
+      cohortAttrition() %>%
+      filter(cohort_definition_id == 2) %>%
+      nrow() == 3
+  )
+  expect_equal(
+    cdm$new_cohort %>% cohortCount() %>% filter(cohort_definition_id == 2),
+    oldCounts %>% filter(cohort_definition_id == 2)
+  )
+
+  cdm$new_cohort <- cdm$new_cohort %>%
+    dplyr::filter(!!datepart("cohort_start_date", "month") == 1)
+
+  expect_no_error({
+    cdm$new_cohort <- recordCohortAttrition(
+      cohort = cdm$new_cohort,
+      reason = "Only January events")
+  })
+  expect_true(nrow(cohortAttrition(cdm$new_cohort)) == 9)
+  expect_true(nrow(cohortCount(cdm$new_cohort)) == 2)
+  expect_true(
+    cdm$new_cohort %>%
+      cohortAttrition() %>%
+      filter(cohort_definition_id == 1) %>%
+      pull("reason_id") %>%
+      max() == 5
+  )
+  expect_true(
+    cdm$new_cohort %>%
+      cohortAttrition() %>%
+      filter(cohort_definition_id == 2) %>%
+      pull("reason_id") %>%
+      max() == 4
+  )
+
 }
 
 
