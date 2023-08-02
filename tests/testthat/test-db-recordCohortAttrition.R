@@ -22,12 +22,11 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_equal(nrow(cohortAttrition(cdm$new_cohort)), 4)
   expect_equal(cohortCount(cdm$new_cohort), oldCounts)
 
-# currently causing test to fail
-#   cdm$new_cohort <- cdm$new_cohort %>%
-#     dplyr::filter(cohort_start_date >= as.Date("2010-01-01")) %>%
-#     computeQuery(temporary = FALSE,
-#                  schema = attr(cdm, "write_schema"))
-#   class(cdm$new_cohort) <- c(class(cdm$new_cohort), "GeneratedCohortSet")
+  cdm$new_cohort <- cdm$new_cohort %>%
+    dplyr::filter(cohort_start_date >= as.Date("2010-01-01")) %>%
+    computeQuery(temporary = FALSE,
+                 schema = attr(cdm, "write_schema"))
+  class(cdm$new_cohort) <- c(class(cdm$new_cohort), "GeneratedCohortSet")
 
   expect_no_error({
     cdm$new_cohort <- recordCohortAttrition(
@@ -44,10 +43,10 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_true(nrow(cohortCount(cdm$new_cohort)) == 2)
   oldCounts <- cohortCount(cdm$new_cohort)
 
-  # cdm$new_cohort <- cdm$new_cohort %>%
-  #   dplyr::filter(
-  #     cohort_definition_id != 1 | cohort_start_date <= as.Date("2015-01-01")
-  #   )
+  cdm$new_cohort <- cdm$new_cohort %>%
+    dplyr::filter(
+      cohort_definition_id != 1 | cohort_start_date <= as.Date("2015-01-01")
+    )
 
   expect_no_error({
     cdm$new_cohort <- recordCohortAttrition(
@@ -80,8 +79,8 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
     oldCounts %>% filter(cohort_definition_id == 2)
   )
 
-  # cdm$new_cohort <- cdm$new_cohort %>%
-  #   dplyr::filter(!!datepart("cohort_start_date", "month") == 1)
+  cdm$new_cohort <- cdm$new_cohort %>%
+    dplyr::filter(!!datepart("cohort_start_date", "month") == 1)
 
   expect_no_error({
     cdm$new_cohort <- recordCohortAttrition(
