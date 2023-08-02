@@ -150,33 +150,37 @@ check_joins <- function(cdm){
 
 check_dates <- function(cdm){
 
-  expect_no_error(cdm$observation_period %>%
+  d1 <- cdm$observation_period %>%
     dplyr::mutate(date_var = !!dateadd("observation_period_start_date",
-      1,
-      interval = "year"
-    )) %>%
-    dplyr::pull("date_var"))
-
-  expect_no_error(
-    cdm$observation_period %>%
-    dplyr::mutate(date_var = !!dateadd("observation_period_start_date",
-      1,
-      interval = "day"
+                                       1,
+                                       interval = "year"
     )) %>%
     dplyr::pull("date_var")
-    )
+  expect_true(inherits(d1, c("Date", "POSIXt")))
 
-  expect_no_error(cdm$observation_period %>%
+  d2 <-  cdm$observation_period %>%
+    dplyr::mutate(date_var = !!dateadd("observation_period_start_date",
+                                       1,
+                                       interval = "day"
+    )) %>%
+    dplyr::pull("date_var")
+  expect_true(inherits(d2, c("Date", "POSIXt")))
+
+  d3 <- cdm$observation_period %>%
     dplyr::mutate(date_var = !!datediff("observation_period_start_date",
                                         "observation_period_end_date"
     )) %>%
-    dplyr::pull("date_var"))
+    dplyr::pull("date_var")
+  expect_true(is.integer(d3) || is.numeric(d3))
 
-  expect_no_error(cdm$observation_period %>%
+  d4 <- cdm$observation_period %>%
     dplyr::mutate(year = !!datepart("observation_period_start_date", "year"),
                   month = !!datepart("observation_period_start_date", "month"),
                   day = !!datepart("observation_period_start_date", "day")) %>%
-    dplyr::collect())
+    dplyr::collect()
+  expect_true(is.integer(d4$year) || is.numeric(d3))
+  expect_true(is.integer(d4$month) || is.numeric(d3))
+  expect_true(is.integer(d4$day) || is.numeric(d3))
 
 }
 
@@ -218,7 +222,7 @@ for (dbtype in dbToTest) {
     check_summarise_dplyr(cdm)
     check_summarise_quantiles(cdm)
     check_joins(cdm)
-    # check_dates(cdm) # error: base::get(".", envir = parent.frame())
+    check_dates(cdm)
     check_row_number(cdm)
 
     checks[[dbtype]] <<- dplyr::tibble(dbtype = dbtype,
