@@ -92,6 +92,30 @@ cdm_from_con <- function(con,
     verify_write_access(con, write_schema = write_schema)
   }
 
+  if (!is.null(write_schema) && dbms(con) == "snowflake") {
+    # for snowflake specify where to create temp tables
+    if(is.null(names(write_schema)) && length(write_schema) == 1) {
+      DBI::dbGetQuery(con,
+                      paste0("USE SCHEMA ", write_schema))
+    } else if("schema" %in% names(write_schema) &&
+       !"catalog" %in% names(write_schema)){
+      DBI::dbGetQuery(con,
+                      paste0("USE SCHEMA ",
+                             write_schema[["schema"]]))
+    } else if (all(c("schema","catalog") %in% names(write_schema))){
+      DBI::dbGetQuery(con,
+                      paste0("USE SCHEMA ",
+                             paste0(c(write_schema[["schema"]],
+                                      write_schema[["catalog"]]),
+                                    collapse = ".")))
+    } else if ((is.null(names(write_schema)) && length(write_schema) == 2)){
+      DBI::dbGetQuery(con,
+                      paste0("USE SCHEMA ",
+                             paste0(write_schema,
+                                    collapse = ".")))
+    }
+  }
+
   # Add existing GeneratedCohortSet objects to cdm object
   if (!is.null(cohort_tables)) {
     if (is.null(write_schema)) {
