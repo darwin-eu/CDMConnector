@@ -219,6 +219,10 @@ generateConceptCohortSet <- function(cdm,
                  name = name,
                  overwrite = overwrite)
 
+  cohortRef <- cohortRef %>%
+    dplyr::mutate(cohort_start_date = as.Date(.data$cohort_start_date),
+                  cohort_end_date = as.Date(.data$cohort_end_date))
+
   cohortSetRef <- concepts %>%
     dplyr::distinct(.data$cohort_definition_id, .data$cohort_name) %>%
     CDMConnector::computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
