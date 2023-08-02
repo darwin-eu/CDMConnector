@@ -12,7 +12,6 @@
 #
 # internal function
 .computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
-
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
   schema <- unname(schema)
   checkmate::assertCharacter(name, len = 1)
@@ -36,11 +35,19 @@
                  to use .computePermanent with spark.")
   }
 
-  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "oracle")) {
-    sql <- dbplyr::build_sql("CREATE TABLE ",
-             if (!is.null(schema)) dbplyr::ident(schema),
-             if (!is.null(schema)) dbplyr::sql("."), dbplyr::ident(name),
-             " AS ", dbplyr::sql_render(x), con = x$src$con)
+  if (CDMConnector::dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake")) {
+
+    if (length(schema) == 2) {
+      sql <- dbplyr::build_sql("CREATE TABLE ",
+                               dbplyr::ident(schema[1]), dbplyr::sql("."),
+                               dbplyr::ident(schema[2]), dbplyr::sql("."), dbplyr::ident(name),
+                               " AS ", dbplyr::sql_render(x), con = x$src$con)
+    } else {
+      sql <- dbplyr::build_sql("CREATE TABLE ",
+               if (!is.null(schema)) dbplyr::ident(schema),
+               if (!is.null(schema)) dbplyr::sql("."), dbplyr::ident(name),
+               " AS ", dbplyr::sql_render(x), con = x$src$con)
+    }
 
   } else if (CDMConnector::dbms(x$src$con) == "spark") {
     sql <- dbplyr::build_sql("CREATE ",

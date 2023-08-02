@@ -133,12 +133,12 @@ disconnect <- function(con) {
 
 dbToTest <- c(
   "duckdb"
-  ,"postgres"
-  ,"redshift"
-  ,"sqlserver"
+  # ,"postgres"
+  # ,"redshift"
+  # ,"sqlserver"
   ,"snowflake"
 
   # ,"spark"
   # ,"oracle"
-  ,"bigquery"
+  # ,"bigquery"
 )

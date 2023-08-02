@@ -40,7 +40,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
                                              name = "chrt0",
                                              overwrite = TRUE))
 
-  expect_true("chrt0" %in% listTables(con, schema = write_schema))
+  expect_true("chrt0" %in% tolower(listTables(con, schema = write_schema)))
 
   expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
 
@@ -77,7 +77,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 #   # ,"bigquery" Type not found: VARCHAR at [4:10] [invalidQuery]
 # )
 
-dbtype = "snowflake"
+# dbtype = "snowflake"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     if (dbtype != "duckdb") skip_on_ci()
@@ -99,7 +99,7 @@ test_that("duckdb cohort generation", {
   skip_on_ci()
   skip_on_cran()
 
-  example_datasets()
+  # example_datasets()
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synthea-covid19-10k"))
 
   write_schema <- "main"
@@ -129,7 +129,7 @@ test_that("duckdb cohort generation", {
   # check already exists
   expect_error(generateCohortSet(cdm, cohortSet, name = "chrt0", overwrite = FALSE))
 
-  expect_true("chrt0" %in% listTables(con, schema = write_schema))
+  expect_true("chrt0" %in% tolower(listTables(con, schema = write_schema)))
 
   expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
   df <- cdm$chrt0 %>% head() %>% dplyr::collect()
@@ -150,7 +150,7 @@ test_that("duckdb cohort generation", {
 
   # drop tables
   DBI::dbRemoveTable(con, DBI::Id(schema = "main", table = "chrt0"))
-  expect_false("chrt0" %in% listTables(con, schema = write_schema))
+  expect_false("chrt0" %in% tolower(listTables(con, schema = write_schema)))
 
   DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_count"))
   DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "chrt0_set"))

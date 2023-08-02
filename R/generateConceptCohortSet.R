@@ -144,6 +144,7 @@ generateConceptCohortSet <- function(cdm,
   concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"),
                                                       tempName,
                                                       dbms = dbms(con))) %>%
+    dplyr::rename_all(tolower) %>%
     { if (any(df$include_descendants)) {
       dplyr::filter(., .data$include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%

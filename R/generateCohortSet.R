@@ -230,31 +230,31 @@ generateCohortSet <- function(cdm,
                                             generateStats = computeAttrition))
     cohortSet$sql[i] <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE)
 
-    if (dbms(con) == "snowflake") {
+    # if (dbms(con) == "snowflake") {
       # a hack because we are using lowercase column names for cohort tables
-      q <- function(x) DBI::dbQuoteIdentifier(con, x)
-      r <- "DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;"
-      r2 <- glue::glue("DELETE FROM @target_database_schema.@target_cohort_table where {q('cohort_definition_id')} = @target_cohort_id;")
-      if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
-      cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
-
-      if (computeAttrition) {
-        r <- "delete from @results_database_schema.cohort_censor_stats where cohort_definition_id = @target_cohort_id;"
-        r2 <- glue::glue("delete from @results_database_schema.cohort_censor_stats where {q('cohort_definition_id')} = @target_cohort_id;")
-        if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
-        cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
-      }
-
-      r <- "INSERT INTO @target_database_schema.@target_cohort_table \\(cohort_definition_id, subject_id, cohort_start_date, cohort_end_date\\)"
-      r2 <- "INSERT INTO @target_database_schema.@target_cohort_table "
-      if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
-      cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
+      # q <- function(x) DBI::dbQuoteIdentifier(con, x)
+      # r <- "DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;"
+      # r2 <- glue::glue("DELETE FROM @target_database_schema.@target_cohort_table where {q('cohort_definition_id')} = @target_cohort_id;")
+      # if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
+      # cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
+      #
+      # if (computeAttrition) {
+      #   r <- "delete from @results_database_schema.cohort_censor_stats where cohort_definition_id = @target_cohort_id;"
+      #   r2 <- glue::glue("delete from @results_database_schema.cohort_censor_stats where {q('cohort_definition_id')} = @target_cohort_id;")
+      #   if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
+      #   cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
+      # }
+      #
+      # r <- "INSERT INTO @target_database_schema.@target_cohort_table \\(cohort_definition_id, subject_id, cohort_start_date, cohort_end_date\\)"
+      # r2 <- "INSERT INTO @target_database_schema.@target_cohort_table "
+      # if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
+      # cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
 
       # r <- "select @target_cohort_id as cohort_definition_id, person_id, start_date, end_date "
       # r2 <- glue::glue("select @target_cohort_id as {q('cohort_definition_id')}, person_id, start_date, end_date ")
       # if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
       # cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
-    }
+    # }
   }
 # cat(cohortSet$sql[1])
   # Create the cohort tables ----
@@ -275,7 +275,11 @@ generateCohortSet <- function(cdm,
     write_schema_sql <- paste(DBI::dbQuoteIdentifier(con, write_schema), collapse = ".")
   }
 
-  target_cohort_table <- as.character(DBI::dbQuoteIdentifier(con, paste0(prefix, name)))
+  if (!(dbms(con) %in% c("snowflake", "oracle"))) {
+    target_cohort_table <- as.character(DBI::dbQuoteIdentifier(con, paste0(prefix, name)))
+  } else {
+    target_cohort_table <- paste0(prefix, name)
+  }
 
   dropTempTableIfExists <- function(con, table) {
     suppressMessages(
@@ -329,7 +333,7 @@ generateCohortSet <- function(cdm,
       sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
     }
 
-    if (dbms(con) != "snowflake") {
+    if (!(dbms(con) %in% c("snowflake", "oracle"))) {
       # TODO: issue dropping temp tables on snowflake which is using tempEmulation
       # Error: nanodbc/nanodbc.cpp:1526: 00000: Cannot perform DROP.
       # This session does not have a current schema. Call 'USE SCHEMA', or use a qualified name.
@@ -351,7 +355,8 @@ generateCohortSet <- function(cdm,
 
   toupperIfOracle <- function(x) if (dbms(con) %in% c("oracle", "snowflake")) toupper(x) else x
 
-  cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name))
+  cohort_ref <- dplyr::tbl(con, inSchema(write_schema, toupperIfOracle(name))) %>%
+    dplyr::rename_all(tolower)
 
   # Create attrition attribute ----
   if (computeAttrition) {
@@ -364,18 +369,17 @@ generateCohortSet <- function(cdm,
   }
 
   # Create cohort_set attribute -----
-  if (paste0(name, "_set") %in% existingTables) {
+  if (toupperIfOracle(paste0(name, "_set")) %in% existingTables) {
     DBI::dbRemoveTable(con, inSchema(write_schema, toupperIfOracle(paste0(name, "_set"))))
   }
 
+  # overwrite not working on snowflake
   DBI::dbWriteTable(con,
                     name = inSchema(write_schema, toupperIfOracle(paste0(name, "_set"))),
                     value = as.data.frame(cohortSet[,c("cohort_definition_id", "cohort_name")]),
                     overwrite = TRUE)
 
   cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, toupperIfOracle(paste0(name, "_set"))))
-
-
 
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
@@ -389,7 +393,7 @@ generateCohortSet <- function(cdm,
     dplyr::select("cohort_definition_id",
                   "number_records",
                   "number_subjects") %>%
-    computeQuery(name = paste0(name, "_count"),
+    computeQuery(name = toupperIfOracle(paste0(name, "_count")),
                  schema = attr(cdm, "write_schema"),
                  temporary = FALSE,
                  overwrite = TRUE)
@@ -568,7 +572,7 @@ new_generated_cohort_set <- function(cohort_ref,
 
     # get the table name from the cohort table. name argument will be ignored.
     name <- rev(stringr::str_split(as.character(cohort_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^a-z0-9_]")
+      stringr::str_remove_all("[^A-Za-z0-9_]")
     checkmate::assertCharacter(name, len = 1, min.chars = 1)
   }
 
@@ -579,7 +583,8 @@ new_generated_cohort_set <- function(cohort_ref,
   if (is.data.frame(cohort_set_ref)) {
 
     DBI::dbWriteTable(con, name = inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)), cohort_set_ref, overwrite = overwrite)
-    cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)))
+    cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con))) %>%
+      dplyr::rename_all(tolower)
 
   } else if (is.null(cohort_set_ref)) {
 
@@ -600,8 +605,8 @@ new_generated_cohort_set <- function(cohort_ref,
     }
 
     nm <- rev(stringr::str_split(as.character(cohort_set_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^a-z0-9_]")
-    if (nm != paste0(name, "_set")) {
+      stringr::str_remove_all("[^A-Za-z0-9_]")
+    if (tolower(nm) != tolower(paste0(name, "_set"))) {
       rlang::abort(glue::glue("cohort_set_ref database table name is {nm} but should be {name}_set!"))
     }
 
@@ -630,7 +635,8 @@ new_generated_cohort_set <- function(cohort_ref,
   if (is.data.frame(cohort_count_ref)) {
 
     DBI::dbWriteTable(con, name = inSchema(write_schema, paste0(name, "_count"), dbms = dbms(con)), cohort_count_ref, overwrite = overwrite)
-    cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_count"), dbms = dbms(con)))
+    cohort_count_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_count"), dbms = dbms(con))) %>%
+      dplyr::rename_all(tolower)
 
   } else if (is.null(cohort_count_ref)) {
     # create the cohort_count table
@@ -656,8 +662,8 @@ new_generated_cohort_set <- function(cohort_ref,
     checkmate::assert_class(cohort_count_ref, "tbl_sql")
 
     nm <- rev(stringr::str_split(as.character(cohort_count_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^a-z0-9_]")
-    if (nm != paste0(name, "_count")) {
+      stringr::str_remove_all("[^A-Za-z0-9_]")
+    if (tolower(nm) != tolower(paste0(name, "_count"))) {
       rlang::abort(glue::glue("cohort_count_ref database table name is {nm} but should be {name}_count!"))
     }
 
@@ -672,7 +678,8 @@ new_generated_cohort_set <- function(cohort_ref,
   if (is.data.frame(cohort_attrition_ref)) {
 
     DBI::dbWriteTable(con, name = inSchema(write_schema, paste0(name, "_attrition"), dbms = dbms(con)), cohort_attrition_ref, overwrite = overwrite)
-    cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_attrition"), dbms = dbms(con)))
+    cohort_attrition_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_attrition"), dbms = dbms(con))) %>%
+      dplyr::rename_all(tolower)
 
   } else if (is.null(cohort_attrition_ref)) {
 
@@ -698,8 +705,8 @@ new_generated_cohort_set <- function(cohort_ref,
     checkmate::assert_class(cohort_attrition_ref, "tbl_sql")
 
     nm <- rev(stringr::str_split(as.character(cohort_attrition_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^a-z0-9_]")
-    if (nm != paste0(name, "_attrition")) {
+      stringr::str_remove_all("[^A-Za-z0-9_]")
+    if (tolower(nm) != tolower(paste0(name, "_attrition"))) {
       rlang::abort(glue::glue("cohort_attrition_ref database table name is {nm} but should be {name}_attrition!"))
     }
 
@@ -841,7 +848,7 @@ computeAttritionTable <- function(cdm,
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
   inclusionResultTableName <- paste0(cohortStem, "_inclusion_result")
-  if (dbms(attr(cdm, "dbcon")) == "oracle") inclusionResultTableName <- toupper(inclusionResultTableName)
+  if (dbms(attr(cdm, "dbcon")) %in% c("oracle", "snowflake")) inclusionResultTableName <- toupper(inclusionResultTableName)
   schema <- attr(cdm, "write_schema")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, min.chars = 1)
 
@@ -952,7 +959,8 @@ computeAttritionTable <- function(cdm,
                     name = inSchema(schema, paste0(cohortStem, "_attrition")),
                     value = attrition)
 
-  dplyr::tbl(con, inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con)))
+  dplyr::tbl(con, inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con))) %>%
+    dplyr::rename_all(tolower)
 }
 
 getInclusionMaskId <- function(numberInclusion) {
