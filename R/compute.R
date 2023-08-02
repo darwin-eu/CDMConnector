@@ -267,6 +267,8 @@ computeQuery <- function(x,
     }
   }
 
+  class(out) <- class(x)
+
   return(out)
 }
 
