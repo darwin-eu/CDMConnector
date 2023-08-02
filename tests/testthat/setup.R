@@ -67,7 +67,8 @@ get_connection <- function(dbms) {
   }
 
   if (dbms == "snowflake" && "Snowflake" %in% odbc::odbcListDataSources()$name) {
-    return(DBI::dbConnect(odbc::odbc(), "Snowflake"))
+    return(DBI::dbConnect(odbc::odbc(), "Snowflake",
+                          pwd = Sys.getenv("SNOWFLAKE_PASSWORD")))
   }
 
   if (dbms == "spark" && "Databricks" %in% odbc::odbcListDataSources()$name) {
