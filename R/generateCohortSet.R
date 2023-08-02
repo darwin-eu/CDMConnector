@@ -1120,11 +1120,6 @@ recordCohortAttrition <- function(cohort,
       schema = attr(cdm, "write_schema"),
       overwrite = TRUE)
 
-  cohort <- newGeneratedCohortSet(cohort,
-                                  cohortSetRef = attr(cohort, "cohort_set"),
-                                  cohortAttritionRef = attr(cohort, "cohort_attrition"),
-                                  cohortCountRef = attr(cohort, "cohort_count"))
-
   return(cohort)
 }
 
