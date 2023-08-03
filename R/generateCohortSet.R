@@ -550,17 +550,11 @@ new_generated_cohort_set <- function(cohort_ref,
   con <- cohort_ref[[1]]$con
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
-  if (any(
-    is.data.frame(cohort_set_ref),
-    is.data.frame(cohort_attrition_ref),
-    is.data.frame(cohort_count_ref),
-    is.null(cohort_set_ref),
-    is.null(cohort_attrition_ref),
-    is.null(cohort_count_ref)
-  )) {
-    checkmate::assert_character(write_schema, min.len = 1, max.len = 3, min.chars = 1)
-    verify_write_access(con, write_schema = write_schema)
+  if (is.null(write_schema)) {
+    write_schema <- attr(attr(cohort_ref, "cdm_reference"), "write_schema")
   }
+  checkmate::assert_character(write_schema, min.len = 1, max.len = 3, min.chars = 1)
+  verify_write_access(con, write_schema = write_schema)
 
   # cohort table ----
   {
@@ -573,6 +567,13 @@ new_generated_cohort_set <- function(cohort_ref,
     # get the table name from the cohort table. name argument will be ignored.
     name <- rev(stringr::str_split(as.character(cohort_ref[[2]]$x), "\\.")[[1]])[1] %>%
       stringr::str_remove_all("[^A-Za-z0-9_]")
+    write_prefix <- write_schema["prefix"]
+    if (!is.na(write_prefix)) {
+      if (substr(name, 1, nchar(write_prefix)) != write_prefix) {
+        rlang::abort(glue::glue("cohort_ref ({name}) does not have the same prefix than the write_schema ({write_prefix})"))
+      }
+      name <- substr(name, nchar(write_prefix) + 1, nchar(name))
+    }
     checkmate::assertCharacter(name, len = 1, min.chars = 1)
   }
 
@@ -606,8 +607,15 @@ new_generated_cohort_set <- function(cohort_ref,
 
     nm <- rev(stringr::str_split(as.character(cohort_set_ref[[2]]$x), "\\.")[[1]])[1] %>%
       stringr::str_remove_all("[^A-Za-z0-9_]")
-    if (tolower(nm) != tolower(paste0(name, "_set"))) {
-      rlang::abort(glue::glue("cohort_set_ref database table name is {nm} but should be {name}_set!"))
+    if (!is.na(write_prefix)) {
+      if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
+        rlang::abort(glue::glue("cohort_set_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))
+      }
+      nm <- substr(nm, nchar(write_prefix) + 1, nchar(nm))
+    }
+    name_set <- paste0(name, "_set")
+    if (nm != name_set) {
+      rlang::abort(glue::glue("cohort_set_ref database table name is {nm} but should be {name_set}!"))
     }
 
     if (!all(tolower(colnames(cohort_set_ref))[1:2] == c("cohort_definition_id", "cohort_name"))) {
@@ -663,8 +671,15 @@ new_generated_cohort_set <- function(cohort_ref,
 
     nm <- rev(stringr::str_split(as.character(cohort_count_ref[[2]]$x), "\\.")[[1]])[1] %>%
       stringr::str_remove_all("[^A-Za-z0-9_]")
-    if (tolower(nm) != tolower(paste0(name, "_count"))) {
-      rlang::abort(glue::glue("cohort_count_ref database table name is {nm} but should be {name}_count!"))
+    if (!is.na(write_prefix)) {
+      if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
+        rlang::abort(glue::glue("cohort_count_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))
+      }
+      nm <- substr(nm, nchar(write_prefix) + 1, nchar(nm))
+    }
+    name_count <- paste0(name, "_count")
+    if (nm != name_count) {
+      rlang::abort(glue::glue("cohort_count_ref database table name is {nm} but should be {name_count}!"))
     }
 
     expected_columns <- paste(c("cohort_definition_id", "number_records", "number_subjects"), collapse = ", ")
@@ -706,8 +721,15 @@ new_generated_cohort_set <- function(cohort_ref,
 
     nm <- rev(stringr::str_split(as.character(cohort_attrition_ref[[2]]$x), "\\.")[[1]])[1] %>%
       stringr::str_remove_all("[^A-Za-z0-9_]")
-    if (tolower(nm) != tolower(paste0(name, "_attrition"))) {
-      rlang::abort(glue::glue("cohort_attrition_ref database table name is {nm} but should be {name}_attrition!"))
+    if (!is.na(write_prefix)) {
+      if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
+        rlang::abort(glue::glue("cohort_attrition_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))
+      }
+      nm <- substr(nm, nchar(write_prefix) + 1, nchar(nm))
+    }
+    name_attrition <- paste0(name, "_attrition")
+    if (nm != name_attrition) {
+      rlang::abort(glue::glue("cohort_attrition_ref database table name is {nm} but should be {name_attrition}!"))
     }
 
     expected_columns <- paste(c("cohort_definition_id", "number_records", "number_subjects",

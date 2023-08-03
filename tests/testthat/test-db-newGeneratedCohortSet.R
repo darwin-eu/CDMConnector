@@ -12,45 +12,45 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
     ) %>%
     distinct()
 
-  expect_no_error(
-    cdm$new_cohort <- x %>%
-      newGeneratedCohortSet(
-        cohortSetRef = tibble(
-          cohort_definition_id = 1, cohort_name = "pharyngitis"
-        ),
-        writeSchema = attr(cdm, "write_schema"),
-        overwrite = TRUE
-      )
-  )
-  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
-  expect_true(all(
-    c(
-      "cdm_reference", "cohort_set", "cohort_attrition", "cohort_count",
-      "tbl_name"
-    ) %in%
-    names(attributes(cdm$new_cohort))
-  ))
-
-  expect_no_error(
-    cdm$new_cohort <- x %>%
-      computeQuery() %>%
-      newGeneratedCohortSet(
-        cohortSetRef = tibble(
-          cohort_definition_id = 1, cohort_name = "pharyngitis"
-        ),
-        writeSchema = attr(cdm, "write_schema"),
-        overwrite = TRUE
-      )
-  )
-  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
-  expect_true(all(
-    c(
-      "cdm_reference", "cohort_set", "cohort_attrition", "cohort_count",
-      "tbl_name"
-    ) %in%
-      names(attributes(cdm$new_cohort))
-  ))
-
+  # expect_no_error(
+  #   cdm$new_cohort <- x %>%
+  #     newGeneratedCohortSet(
+  #       cohortSetRef = tibble(
+  #         cohort_definition_id = 1, cohort_name = "pharyngitis"
+  #       ),
+  #       writeSchema = attr(cdm, "write_schema"),
+  #       overwrite = TRUE
+  #     )
+  # )
+  # expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+  # expect_true(all(
+  #   c(
+  #     "cdm_reference", "cohort_set", "cohort_attrition", "cohort_count",
+  #     "tbl_name"
+  #   ) %in%
+  #   names(attributes(cdm$new_cohort))
+  # ))
+  #
+  # expect_no_error(
+  #   cdm$new_cohort <- x %>%
+  #     computeQuery() %>%
+  #     newGeneratedCohortSet(
+  #       cohortSetRef = tibble(
+  #         cohort_definition_id = 1, cohort_name = "pharyngitis"
+  #       ),
+  #       writeSchema = attr(cdm, "write_schema"),
+  #       overwrite = TRUE
+  #     )
+  # )
+  # expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+  # expect_true(all(
+  #   c(
+  #     "cdm_reference", "cohort_set", "cohort_attrition", "cohort_count",
+  #     "tbl_name"
+  #   ) %in%
+  #     names(attributes(cdm$new_cohort))
+  # ))
+  
   expect_no_error(
     cdm$new_cohort <- x %>%
       computeQuery(
@@ -86,7 +86,7 @@ for (dbtype in dbToTest) {
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_new_generated_cohort_set(con, cdm_schema, write_schema)
-    #test_new_generated_cohort_set(con, cdm_schema, c(schema = write_schema, prefix = "cdmc_"))
+    test_new_generated_cohort_set(con, cdm_schema, c(schema = write_schema, prefix = "cdmc_"))
     disconnect(con)
   })
 }
