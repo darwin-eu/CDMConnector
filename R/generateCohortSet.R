@@ -134,10 +134,10 @@ generateCohortSet <- function(cdm,
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
   withr::local_options(list("cli.progress_show_after" = 0))
-  cli::cli_progress_bar(
-    total = nrow(cohortSet),
-    format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
-  cli::cli_progress_update(set = 0)
+  # cli::cli_progress_bar(
+    # total = nrow(cohortSet),
+    # format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
+  # cli::cli_progress_update(set = 0)
 
   assert_write_schema(cdm) # required for now
 
@@ -350,7 +350,7 @@ generateCohortSet <- function(cdm,
       DBI::dbExecute(con, sql[j], immediate = TRUE)
     }
 
-    cli::cli_progress_update(set = i)
+    # cli::cli_progress_update(set = i)
   }
 
   toupperIfOracle <- function(x) if (dbms(con) %in% c("oracle", "snowflake")) toupper(x) else x

@@ -67,8 +67,15 @@ get_connection <- function(dbms) {
   }
 
   if (dbms == "snowflake" && "Snowflake" %in% odbc::odbcListDataSources()$name) {
-    return(DBI::dbConnect(odbc::odbc(), "Snowflake",
-                          pwd = Sys.getenv("SNOWFLAKE_PASSWORD")))
+    # return(DBI::dbConnect(odbc::odbc(), "Snowflake",
+                          # pwd = Sys.getenv("SNOWFLAKE_PASSWORD")))
+    return(DBI::dbConnect(odbc::odbc(),
+                          SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
+                          UID = Sys.getenv("SNOWFLAKE_USER"),
+                          PWD = Sys.getenv("SNOWFLAKE_PASSWORD"),
+                          DATABASE = Sys.getenv("SNOWFLAKE_DATABASE"),
+                          WAREHOUSE = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
+                          DRIVER = Sys.getenv("SNOWFLAKE_DRIVER")))
   }
 
   if (dbms == "spark" && "Databricks" %in% odbc::odbcListDataSources()$name) {
@@ -133,11 +140,12 @@ disconnect <- function(con) {
 
 
 dbToTest <- c(
-  "duckdb"
+  # "duckdb"
   # ,"postgres"
   # ,"redshift"
   # ,"sqlserver"
-  ,"snowflake"
+  # ,
+  "snowflake"
 
   # ,"spark"
   # ,"oracle"
