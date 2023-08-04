@@ -185,6 +185,12 @@ cdm_from_con <- function(con,
     }
   }
 
+  # add "cdm_tbl" as a class of every table in our cdm reference
+  cdm <- lapply(cdm, function(x) {
+    class(x) <- c("cdm_tbl", class(x))
+    return(x)
+  })
+
   # TODO use a cdm_reference constructor function
   class(cdm) <- "cdm_reference"
   attr(cdm, "cdm_schema") <- cdm_schema
@@ -677,6 +683,56 @@ collect.cdm_reference <- function(x, ...) {
   }
   x
 }
+
+##' @importFrom dplyr collect
+##' @export
+NULL
+
+#' Bring a remote CDM table into R
+#'
+#' This function calls collect on a lazy query and returns
+#' the result as a dataframe, ensuring that the column names are in lower case.
+#'
+#' @param x A cdm_tbl object.
+#' @param ... Not used. Included for compatibility.
+#'
+#' @return A cdm_tbl object that is a R dataframe.
+#' @importFrom dplyr collect
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' cdm <- cdm_from_con(con, "main")
+#'
+#' local_concept <- collect(cdm$concept)
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
+collect.cdm_tbl <- function(x, ..., n = Inf, warn_incomplete = TRUE, cte = FALSE) {
+
+  # the only difference to dbplyr´s collect.tbl_sql is that at the end
+  # we ensure column names are lower case after collecting
+
+    if (identical(n, Inf)) {
+      n <- -1
+    } else {
+      # Gives the query planner information that it might be able to take
+      # advantage of
+      x <- head(x, n)
+    }
+
+    sql <- dbplyr::db_sql_render(x$src$con, x, cte = cte)
+    tryCatch(
+      out <- dbplyr::db_collect(x$src$con, sql, n = n, warn_incomplete = warn_incomplete, ...),
+      error = function(cnd) {
+        cli_abort("Failed to collect lazy table.", parent = cnd)
+      }
+    )
+    dplyr::grouped_df(out, intersect(dbplyr::op_grps(x), names(out))) %>%
+      dplyr::rename_all(tolower)
+
+  }
+
 
 ##' @importFrom dplyr collect
 ##' @export
