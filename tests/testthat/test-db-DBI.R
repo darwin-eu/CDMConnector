@@ -73,3 +73,10 @@ for (dbtype in dbToTest) {
 }
 
 # TODO test dplyr::copy_to with temp and non-temp tables as well as the overwrite argument of dbWriteTable
+
+
+# DBI::dbexists table does not seem to work on snowflake with odbc using an Id
+
+# TODO test overwrite in dbWriteTable - seems to be failing for snowflake
+
+

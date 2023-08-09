@@ -221,7 +221,7 @@ computeQuery <- function(x,
   if (temporary) {
 
     # handle overwrite for temp tables
-    # TODO test this across all dbms
+    # TODO test overwrite of temp tables this across all dbms
     if (name %in% list_tables(con)) {
       if (isFALSE(overwrite)) {
         rlang::abort(glue::glue("table {name} already exists and overwrite is FALSE!"))
@@ -253,7 +253,13 @@ computeQuery <- function(x,
       DBI::dbExecute(con, sql)
       out <- dplyr::tbl(con, name)
     } else {
-      out <- dplyr::compute(x, name = name, temporary = temporary, ...)
+      if (dbms(con) == "sql server") {
+        suppressMessages({ # Suppress the "Created a temporary table named" message
+          out <- dplyr::compute(x, name = name, temporary = temporary, ...)
+        })
+      } else {
+        out <- dplyr::compute(x, name = name, temporary = temporary, ...)
+      }
     }
 
   } else {

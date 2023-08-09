@@ -63,7 +63,7 @@ generateConceptCohortSet <- function(cdm,
                                      overwrite = FALSE) {
 
   # check cdm ----
-  checkmate::checkClass(cdm, "cdm_reference")
+  checkmate::assertClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
 
@@ -129,7 +129,7 @@ generateConceptCohortSet <- function(cdm,
   }
 
   # upload concept data to the database ----
-  tempName <- uniqueTableName()
+  tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
   DBI::dbWriteTable(attr(cdm, "dbcon"),
                     name = inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con)),
@@ -151,7 +151,7 @@ generateConceptCohortSet <- function(cdm,
         dplyr::select("cohort_definition_id", "cohort_name", concept_id = "descendant_concept_id", "is_excluded") %>%
         dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
     } else . } %>%
-    dplyr::filter(!.data$is_excluded) %>%
+    dplyr::filter(.data$is_excluded == FALSE) %>%
     dplyr::left_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
     dplyr::select("cohort_definition_id", "cohort_name", "concept_id", "domain_id") %>%
     dplyr::distinct() %>%
@@ -231,10 +231,11 @@ generateConceptCohortSet <- function(cdm,
                                name = paste0(name, "_set"),
                                overwrite = overwrite)
 
+  cdm[[name]] <- cohortRef
+
   cdm[[name]] <- newGeneratedCohortSet(
-    cohortRef = cohortRef,
+    cohortRef = cdm[[name]],
     cohortSetRef = cohortSetRef,
-    writeSchema = attr(cdm, "write_schema"),
     overwrite = overwrite)
 
   return(cdm)

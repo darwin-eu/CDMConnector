@@ -144,8 +144,7 @@ dbToTest <- c(
   # ,"postgres"
   # ,"redshift"
   # ,"sqlserver"
-  # ,
-  "snowflake"
+  # ,"snowflake"
 
   # ,"spark"
   # ,"oracle"

@@ -11,18 +11,26 @@
 #'
 #' @param con A DBI datbase connection created by `DBI::dbConnect`
 #' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
-#' @param schema A schema name in the remote database where the user has write permission
-#' @param prefix A short prefix to add to the begining of all the CDM tables in the database.
-#' Must contain only letters, numbers, and underscores.
+#' @param schema schema name in the remote database where the user has write permission
 #' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)
 #'
 #' @return A cdm reference object pointing to the newly created cdm in the remote database
 #' @export
-copy_cdm_to <- function(con, cdm, schema, prefix = NULL, overwrite = FALSE) {
+copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
 
   checkmate::assertTRUE(DBI::dbIsValid(con))
   checkmate::assertClass(cdm, "cdm_reference")
-  checkmate::assertCharacter(prefix, len = 1, null.ok = TRUE, min.chars = 1, pattern = "[a-zA-Z0-9_]+")
+
+  if ("prefix" %in% names(schema)) {
+    prefix <- unname(schema["prefix"])
+    checkmate::assertCharacter(prefix, len = 1, min.chars = 1, pattern = "[a-zA-Z0-9_]+", any.missing = FALSE)
+
+    schema_without_prefix <- schema[names(schema) != "prefix"]
+    checkmate::assertCharacter(schema_without_prefix, min.len = 1, max.len = 2, pattern = "[a-zA-Z0-9_]+", any.missing = FALSE)
+  } else {
+    prefix = ""
+  }
+
   checkmate::assertLogical(overwrite, len = 1)
 
   tables_to_copy <- names(cdm)
@@ -34,6 +42,7 @@ copy_cdm_to <- function(con, cdm, schema, prefix = NULL, overwrite = FALSE) {
     dplyr::mutate(cdmDatatype = dplyr::case_when(
       dbms(con) == "postgresql" & .data$cdmDatatype == "datetime" ~ "timestamp",
       dbms(con) == "redshift" & .data$cdmDatatype == "datetime" ~ "timestamp",
+      dbms(con) == "bigquery" & stringr::str_detect(.data$cdmDatatype, "varchar") ~ "string",
       TRUE ~ cdmDatatype)) %>%
     tidyr::nest(col = -"cdmTableName") %>%
     dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
@@ -45,33 +54,37 @@ copy_cdm_to <- function(con, cdm, schema, prefix = NULL, overwrite = FALSE) {
     table_name_prefixed <- paste0(prefix, table_name)
     local_tbl <- dplyr::collect(cdm[[table_name]])
 
-    # TODO fix this in eunomia dataset
-    if ("reveue_code_source_value" %in% colnames(local_tbl)) {
-      local_tbl <- dplyr::rename(local_tbl, revenue_code_source_value = "reveue_code_source_value")
-    }
-
     fields <- specs %>%
       dplyr::filter(.data$cdmTableName == table_name) %>%
       dplyr::pull(.data$col) %>%
       unlist()
 
-    if (table_name_prefixed %in% tables_in_database) {
+    # TODO truncate character columns to max length based on specification
+
+    if (table_name %in% tables_in_database) {
       if (overwrite) {
-        DBI::dbRemoveTable(con, inSchema(schema, table_name_prefixed, dbms = dbms(con)))
+        DBI::dbRemoveTable(con, inSchema(schema, table_name, dbms = dbms(con)))
       } else {
         rlang::abort(glue::glue("{table_name_prefixed} already exists in the database!"))
       }
     }
 
-    DBI::dbCreateTable(con, inSchema(schema, table_name_prefixed, dbms = dbms(con)), fields = fields)
+    if (dbms(con) != "snowflake") {
+      DBI::dbCreateTable(con, inSchema(schema, table_name, dbms = dbms(con)), fields = fields)
 
-    if (nrow(local_tbl) > 0) {
-      DBI::dbAppendTable(con, inSchema(schema, table_name_prefixed, dbms = dbms(con)), value = local_tbl)
+      # note that dbExists table is not working on snowflake with DBI::Id
+      # dbAppendTable calls dbExists
+      if (nrow(local_tbl) > 0) {
+        DBI::dbAppendTable(con, inSchema(schema, table_name, dbms = dbms(con)), value = local_tbl)
+      }
+    } else {
+      # TODO fix dbExists so dbAppend works with snowflake
+      DBI::dbWriteTable(con, inSchema(schema, table_name, dbms = dbms(con)), value = local_tbl)
     }
   }
 
   cdm_from_con(con,
-               cdm_schema = c(prefix = prefix, schema = schema),
+               cdm_schema = schema,
                cdm_version = attr(cdm, "cdm_version"),
                cdm_name = attr(cdm, "cdm_name"))
 }

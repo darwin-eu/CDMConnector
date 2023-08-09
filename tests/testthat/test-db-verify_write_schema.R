@@ -11,9 +11,9 @@
 #   ,"bigquery"
 # )
 
-# dbtype = "sqlserver"
+# dbtype = "oracle"
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - dbi"), {
+  test_that(glue::glue("{dbtype} - verify_write_access"), {
     if (dbtype != "duckdb") skip_on_ci()
     write_schema <- get_write_schema(dbtype)
     con <- get_connection(dbtype)
@@ -22,3 +22,4 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
+

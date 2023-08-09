@@ -16,3 +16,4 @@ LICENSE
 ^_pkgdown\.yml$
 ^pkgdown$
 ^vignettes2/*
+^a/*

@@ -92,29 +92,38 @@ cdm_from_con <- function(con,
     verify_write_access(con, write_schema = write_schema)
   }
 
-  if (!is.null(write_schema) && dbms(con) == "snowflake") {
-    # for snowflake specify where to create temp tables
-    if(is.null(names(write_schema)) && length(write_schema) == 1) {
-      DBI::dbGetQuery(con,
-                      paste0("USE SCHEMA ", write_schema))
-    } else if("schema" %in% names(write_schema) &&
-       !"catalog" %in% names(write_schema)){
-      DBI::dbGetQuery(con,
-                      paste0("USE SCHEMA ",
-                             write_schema[["schema"]]))
-    } else if (all(c("schema","catalog") %in% names(write_schema))){
-      DBI::dbGetQuery(con,
-                      paste0("USE SCHEMA ",
-                             paste0(c(write_schema[["schema"]],
-                                      write_schema[["catalog"]]),
-                                    collapse = ".")))
-    } else if ((is.null(names(write_schema)) && length(write_schema) == 2)){
-      DBI::dbGetQuery(con,
-                      paste0("USE SCHEMA ",
-                             paste0(write_schema,
-                                    collapse = ".")))
+  if (dbms(con) == "snowflake") {
+
+    s <- write_schema %||% cdm_schema
+
+    # Assign temp table schema
+    if ("prefix" %in% names(s)) {
+      s <- s[names(s) != "prefix"]
     }
+
+    if ("catalog" %in% names(s)) {
+      stopifnot("schema" %in% names(s))
+      s <- c(unname(s["catalog"]), unname(s["schema"]))
+    }
+
+    if (length(s) == 2) {
+      s2 <- glue::glue_sql("{DBI::dbQuoteIdentifier(con, s[1])}.{DBI::dbQuoteIdentifier(con, s[2])}")
+    } else {
+      s2 <- DBI::dbQuoteIdentifier(con, s[1])
+    }
+
+    DBI::dbExecute(con, glue::glue_sql("USE SCHEMA {s2}"))
   }
+
+  # add class info -----
+
+  # TODO use a cdm_reference constructor function
+  class(cdm) <- "cdm_reference"
+  attr(cdm, "cdm_schema") <- cdm_schema
+  attr(cdm, "write_schema") <- write_schema
+  attr(cdm, "dbcon") <- con
+  attr(cdm, "cdm_version") <- cdm_version
+  attr(cdm, "cdm_name") <- cdm_name
 
   # Add existing GeneratedCohortSet objects to cdm object
   if (!is.null(cohort_tables)) {
@@ -176,20 +185,21 @@ cdm_from_con <- function(con,
       }
 
       # Note: use name without prefix (i.e. `cohort_tables[i]`) in the cdm object
+      cdm[[cohort_table]] <- cohort_ref
+
       cdm[[cohort_table]] <- new_generated_cohort_set(
-        cohort_ref = cohort_ref,
+        cohort_ref = cdm[[cohort_table]],
         cohort_set_ref = cohort_set_ref,
         cohort_count_ref = cohort_count_ref,
-        cohort_attrition_ref = cohort_attrition_ref,
-        write_schema = write_schema)
+        cohort_attrition_ref = cohort_attrition_ref)
     }
   }
 
   # add "cdm_tbl" as a class of every table in our cdm reference
-  cdm <- lapply(cdm, function(x) {
-    class(x) <- c("cdm_tbl", class(x))
-    return(x)
-  })
+  # cdm <- lapply(cdm, function(x) {
+  #   class(x) <- c("cdm_tbl", class(x))
+  #   return(x)
+  # })
 
   # TODO use a cdm_reference constructor function
   class(cdm) <- "cdm_reference"
@@ -198,6 +208,7 @@ cdm_from_con <- function(con,
   attr(cdm, "dbcon") <- con
   attr(cdm, "cdm_version") <- cdm_version
   attr(cdm, "cdm_name") <- cdm_name
+
   return(cdm)
 }
 
@@ -351,16 +362,19 @@ print.cdm_reference <- function(x, ...) {
 # write_schema = schema with write access
 # add = checkmate collection
 verify_write_access <- function(con, write_schema, add = NULL) {
+
   checkmate::assert_character(
     write_schema,
     min.len = 1,
-    max.len = 2,
-    min.chars = 1
+    max.len = 3,
+    min.chars = 1,
+    any.missing = FALSE
   )
+
   checkmate::assert_class(add, "AssertCollection", null.ok = TRUE)
   checkmate::assert_true(.dbIsValid(con))
 
-  tablename <- paste(c(sample(letters, 12, replace = TRUE), "_test_table"), collapse = "")
+  tablename <- paste(c(sample(letters, 5, replace = TRUE), "_test_table"), collapse = "")
   df1 <- data.frame(chr_col = "a", numeric_col = 1, stringsAsFactors = FALSE)
   # Note: ROracle does not support integer round trip
   DBI::dbWriteTable(con,
@@ -677,66 +691,11 @@ cdmFromFiles <- function(path,
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 collect.cdm_reference <- function(x, ...) {
-
   for (nm in names(x)) {
     x[[nm]] <- dplyr::collect(x[[nm]])
   }
   x
 }
-
-##' @importFrom dplyr collect
-##' @export
-NULL
-
-#' Bring a remote CDM table into R
-#'
-#' This function calls collect on a lazy query and returns
-#' the result as a dataframe, ensuring that the column names are in lower case.
-#'
-#' @param x A cdm_tbl object.
-#' @param ... Not used. Included for compatibility.
-#'
-#' @return A cdm_tbl object that is a R dataframe.
-#' @importFrom dplyr collect
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
-#'
-#' local_concept <- collect(cdm$concept)
-#' DBI::dbDisconnect(con, shutdown = TRUE)
-#' }
-collect.cdm_tbl <- function(x, ..., n = Inf, warn_incomplete = TRUE, cte = FALSE) {
-
-  # the only difference to dbplyr´s collect.tbl_sql is that at the end
-  # we ensure column names are lower case after collecting
-
-    if (identical(n, Inf)) {
-      n <- -1
-    } else {
-      # Gives the query planner information that it might be able to take
-      # advantage of
-      x <- head(x, n)
-    }
-
-    sql <- dbplyr::db_sql_render(x$src$con, x, cte = cte)
-    tryCatch(
-      out <- dbplyr::db_collect(x$src$con, sql, n = n, warn_incomplete = warn_incomplete, ...),
-      error = function(cnd) {
-        cli_abort("Failed to collect lazy table.", parent = cnd)
-      }
-    )
-    dplyr::grouped_df(out, intersect(dbplyr::op_grps(x), names(out))) %>%
-      dplyr::rename_all(tolower)
-
-  }
-
-
-##' @importFrom dplyr collect
-##' @export
-NULL
 
 #' Extract CDM metadata
 #'
@@ -896,7 +855,7 @@ cdm_select_tbl <- function(cdm, ...) {
 #' @return A single cdm table reference
 #' @export
 `$.cdm_reference` <- function(x, name) {
-  x[[name]]
+ x[[name]]
 }
 
 #' Subset a cdm reference object
@@ -918,13 +877,13 @@ cdm_select_tbl <- function(cdm, ...) {
 #' @return A single cdm table reference
 #' @export
 `[[.cdm_reference` <- function(x, i) {
-  x_raw <- unclass(x)
-  tbl <- x_raw[[i]]
+ x_raw <- unclass(x)
+ tbl <- x_raw[[i]]
 
-  if(is.null(tbl)) return(NULL)
+ if(is.null(tbl)) return(NULL)
 
-  attr(tbl, "cdm_reference") <- x
-  return(tbl)
+ attr(tbl, "cdm_reference") <- x
+ return(tbl)
 }
 
 

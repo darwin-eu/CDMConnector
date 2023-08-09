@@ -264,3 +264,10 @@
 # })
 #
 #
+
+
+# TODO not operator on a column does not work on sqlserver
+# dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"),
+#                                         tempName,
+#                                         dbms = dbms(con))) %>%
+#   dplyr::filter(!.data$is_excluded)

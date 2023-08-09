@@ -1,7 +1,5 @@
 
 test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
-
-
   cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema) %>%
     generateConceptCohortSet(conceptSet = list(pharyngitis = 4112343, bronchitis = 260139),
                              name = "new_cohort",
@@ -20,13 +18,17 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_s3_class(cohortSet(cdm$new_cohort), "data.frame")
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
   expect_equal(nrow(cohortAttrition(cdm$new_cohort)), 4)
-  expect_equal(cohortCount(cdm$new_cohort), oldCounts)
+  expect_equal(cohortCount(cdm$new_cohort) %>% dplyr::arrange(.data$cohort_definition_id),
+               oldCounts %>% dplyr::arrange(.data$cohort_definition_id))
 
   cdm$new_cohort <- cdm$new_cohort %>%
     dplyr::filter(cohort_start_date >= as.Date("2010-01-01")) %>%
     computeQuery(temporary = FALSE,
-                 schema = attr(cdm, "write_schema"))
-  class(cdm$new_cohort) <- c(class(cdm$new_cohort), "GeneratedCohortSet")
+                 name = "temp_test",
+                 schema = attr(cdm, "write_schema"),
+                 overwrite = TRUE)
+
+  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
   expect_no_error({
     cdm$new_cohort <- recordCohortAttrition(
@@ -65,18 +67,20 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_true(
     cdm$new_cohort %>%
       cohortAttrition() %>%
-      filter(cohort_definition_id == 1) %>%
+      dplyr::filter(.data$cohort_definition_id == 1) %>%
       nrow() == 4
   )
+
   expect_true(
     cdm$new_cohort %>%
       cohortAttrition() %>%
-      filter(cohort_definition_id == 2) %>%
+      dplyr::filter(cohort_definition_id == 2) %>%
       nrow() == 3
   )
+
   expect_equal(
-    cdm$new_cohort %>% cohortCount() %>% filter(cohort_definition_id == 2),
-    oldCounts %>% filter(cohort_definition_id == 2)
+    cdm$new_cohort %>% cohortCount() %>% dplyr::filter(cohort_definition_id == 2),
+    oldCounts %>% dplyr::filter(cohort_definition_id == 2)
   )
 
   cdm$new_cohort <- cdm$new_cohort %>%
@@ -87,27 +91,28 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
       cohort = cdm$new_cohort,
       reason = "Only January events")
   })
+
   expect_true(nrow(cohortAttrition(cdm$new_cohort)) == 9)
   expect_true(nrow(cohortCount(cdm$new_cohort)) == 2)
+
   expect_true(
     cdm$new_cohort %>%
       cohortAttrition() %>%
-      filter(cohort_definition_id == 1) %>%
-      pull("reason_id") %>%
+      dplyr::filter(cohort_definition_id == 1) %>%
+      dplyr::pull("reason_id") %>%
       max() == 5
   )
+
   expect_true(
     cdm$new_cohort %>%
       cohortAttrition() %>%
-      filter(cohort_definition_id == 2) %>%
-      pull("reason_id") %>%
+      dplyr::filter(cohort_definition_id == 2) %>%
+      dplyr::pull("reason_id") %>%
       max() == 4
   )
-
 }
 
-
-# dbtype = "duckdb"
+# dbtype = "postgres"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
     con <- get_connection(dbtype)

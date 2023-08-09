@@ -5,19 +5,16 @@
 \alias{copyCdmTo}
 \title{Copy a cdm object from one database to another}
 \usage{
-copy_cdm_to(con, cdm, schema, prefix = NULL, overwrite = FALSE)
+copy_cdm_to(con, cdm, schema, overwrite = FALSE)
 
-copyCdmTo(con, cdm, schema, prefix = NULL, overwrite = FALSE)
+copyCdmTo(con, cdm, schema, overwrite = FALSE)
 }
 \arguments{
 \item{con}{A DBI datbase connection created by \code{DBI::dbConnect}}
 
 \item{cdm}{A cdm reference object created by \code{CDMConnector::cdmFromCon} or \code{CDMConnector::cdm_from_con}}
 
-\item{schema}{A schema name in the remote database where the user has write permission}
-
-\item{prefix}{A short prefix to add to the begining of all the CDM tables in the database.
-Must contain only letters, numbers, and underscores.}
+\item{schema}{schema name in the remote database where the user has write permission}
 
 \item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)}
 }

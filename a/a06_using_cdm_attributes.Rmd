@@ -79,9 +79,10 @@ When we generate a cohort in addition to the cohort table itself we also have va
 Here we create a cohort table with a single cohort.
 ```{r}
 cdm <- generateConceptCohortSet(cdm = cdm, 
-                         conceptSet = list("gi_bleed" = c(192671),
-                                           "celecoxib" = c(1118084)), 
-                         name = "study_cohorts")
+                                conceptSet = list("gi_bleed" = 192671,
+                                                  "celecoxib" = 1118084), 
+                                name = "study_cohorts")
+
 cdm$study_cohorts %>% 
   glimpse()
 ```
@@ -133,6 +134,7 @@ cdm$GI_bleed <- cdm$condition_occurrence %>%
   rename("subject_id" = "person_id", 
          "cohort_start_date" = "condition_start_date", 
          "cohort_end_date" = "condition_end_date")
+
 cdm$GI_bleed %>% 
   glimpse()
 ```
@@ -144,9 +146,8 @@ GI_bleed_cohort_ref <- data.frame(cohort_definition_id = 1,
                                   cohort_name = "custom_gi_bleed")
 
 cdm$GI_bleed <- newGeneratedCohortSet(cohortRef = cdm$GI_bleed, 
-                      cohortSetRef = GI_bleed_cohort_ref, 
-                      writeSchema = attr(cdm, "write_schema"), 
-                      overwrite = TRUE)
+                                      cohortSetRef = GI_bleed_cohort_ref, 
+                                      overwrite = TRUE)
 ```
 
 Now our custom cohort GI_bleed has the same attributes associated with it as if it had been created by generateConceptCohortSet. This will mean that it can be used by analytic packages designed to work with cdm cohorts.

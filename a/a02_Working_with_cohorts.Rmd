@@ -2,7 +2,7 @@
 title: "Working with cohorts"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Working_with_cohorts}
+  %\VignetteIndexEntry{Working with cohorts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -23,17 +23,6 @@ test_lowercase <- function(con, cdm_schema, write_schema) {
   DBI::dbRemoveTable(con, inSchema(write_schema, "cars", dbms = dbms(con)))
 }
 
-# dbToTest <- c(
-#   "duckdb"
-#   ,"postgres"
-#   ,"redshift"
-#   ,"sqlserver"
-#   # ,"oracle" # requires development dbplyr version to work
-#   ,"snowflake"
-#   ,"bigquery" # issue with bigquery tbl
-# )
-
-# dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - lowercase columns"), {
     if (dbtype != "duckdb") skip_on_ci()

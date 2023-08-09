@@ -10,7 +10,6 @@ new_generated_cohort_set(
   cohort_set_ref = NULL,
   cohort_attrition_ref = NULL,
   cohort_count_ref = NULL,
-  write_schema = NULL,
   overwrite = FALSE
 )
 
@@ -19,7 +18,6 @@ newGeneratedCohortSet(
   cohortSetRef = NULL,
   cohortAttritionRef = NULL,
   cohortCountRef = NULL,
-  writeSchema = NULL,
   overwrite = FALSE
 )
 }
@@ -40,8 +38,6 @@ table in a remote database with the first column being cohort_definition_id.}
 \item{cohort_count_ref, cohortCountRef}{A \code{tbl_sql} object that points to a cohort_count
 table in a remote database with columns cohort_definition_id, cohort_entries,
 cohort_subjects.}
-
-\item{write_schema, writeSchema}{A schema where the user has write access in the database. Required if any data needs to be uploaded to a database.}
 
 \item{overwrite}{Should tables be overwritten if they already exist? TRUE or FALSE (default)}
 }
@@ -128,15 +124,16 @@ will be created if not supplied.
    cohort_attrition_ref <- dplyr::tbl(con, paste0(name, "_attrition"))
    cohort_count_ref <- dplyr::tbl(con, paste0(name, "_count"))
 
+   # add to the cdm
+   cdm[[name]] <- cohort_ref
+
    # create the generated cohort set object using the constructor
-   generatedCohortSet <- new_generated_cohort_set(
-      cohort_ref,
+   cdm[[name]] <- new_generated_cohort_set(
+      cdm[[name]],
       cohort_set_ref = cohort_set_ref,
       cohort_attrition_ref = cohort_attrition_ref,
       cohort_count_ref = cohort_count_ref)
 
-.   # Add the generatedCohortSet to the cdm and return the cdm
-   cdm[[name]] <- generatedCohortSet
    return(cdm)
  }
 }

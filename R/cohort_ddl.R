@@ -1,6 +1,14 @@
 
 createCohortTables <- function(con, writeSchema, name, computeAttrition) {
 
+  checkmate::assertCharacter(writeSchema, min.len = 1, max.len = 3, any.missing = FALSE)
+  checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
+  checkmate::assertTRUE(DBI::dbIsValid(con))
+  checkmate::assertLogical(computeAttrition, len = 1, any.missing = FALSE)
+  if(name != tolower(name)) {
+    rlang::abort("cohort table name must be lowercase!")
+  }
+
   # oracle and snowflake use uppercase table names by default which causes
   # issues when switching between ohdsi-sql (unquoted identifiers) and dbplyr sql (quoted identifiers)
   if (!(dbms(con) %in% c("oracle", "snowflake"))) {
@@ -163,23 +171,31 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     );}:{}
     ")
 
+
     if ("prefix" %in% names(writeSchema)) {
-      prefix <- writeSchema["prefix"]
-      cohort_database_schema <- paste0(writeSchema[names(writeSchema) != "prefix"], collapse = ".")
+      name <- paste0(writeSchema["prefix"], name)
+      writeSchema <- writeSchema[names(writeSchema) != "prefix"]
+    }
+
+    if (length(writeSchema) == 2) {
+      cohort_database_schema <- paste(DBI::dbQuoteIdentifier(con, writeSchema[[1]]),
+                                      DBI::dbQuoteIdentifier(con, writeSchema[[2]]),
+                                      sep = ".")
+    } else if (length(writeSchema) == 1) {
+      cohort_database_schema <- DBI::dbQuoteIdentifier(con, writeSchema)
     } else {
-      prefix <- ""
-      cohort_database_schema <- paste0(writeSchema, collapse = ".")
+      rlang::abort("Write schema must be length 1 or 2. If you are using a table prefix then name each element of the schema `writeSchema = c(schema = 'myschema', prefix = 'myprefix_')`")
     }
 
     sql <- SqlRender::render(sql = sql,
-                             cohort_database_schema = toupper(cohort_database_schema),
-                             cohort_table = toupper(paste0(prefix, name)),
+                             cohort_database_schema = cohort_database_schema,
+                             cohort_table = name,
                              computeAttrition = computeAttrition,
-                             cohort_inclusion_table        = toupper(paste0(prefix, name, "_inclusion")),
-                             cohort_inclusion_result_table = toupper(paste0(prefix, name, "_inclusion_result")),
-                             cohort_inclusion_stats_table  = toupper(paste0(prefix, name, "_inclusion_stats")),
-                             cohort_summary_stats_table    = toupper(paste0(prefix, name, "_summary_stats")),
-                             cohort_censor_stats_table     = toupper(paste0(prefix, name, "_censor_stats")),
+                             cohort_inclusion_table        = paste0(name, "_inclusion"),
+                             cohort_inclusion_result_table = paste0(name, "_inclusion_result"),
+                             cohort_inclusion_stats_table  = paste0(name, "_inclusion_stats"),
+                             cohort_summary_stats_table    = paste0(name, "_summary_stats"),
+                             cohort_censor_stats_table     = paste0(name, "_censor_stats"),
                              warnOnMissingParameters = TRUE)
     sql <- SqlRender::translate(sql, dbms(con), tempEmulationSchema = toupper(cohort_database_schema))
     sql <- SqlRender::splitSql(sql)

@@ -84,6 +84,11 @@ jobs:
             print(list.files(path.expand("~")))
         shell: Rscript {0}
 
+      - name: Add options to .Rprofile
+        run: |
+            echo "options(rmarkdown.html_vignette.check_title = FALSE)" >> ~/.Rprofile
+        shell: bash
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true

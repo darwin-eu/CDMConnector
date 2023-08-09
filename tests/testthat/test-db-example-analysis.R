@@ -1,48 +1,37 @@
-# dbToTest <- c(
-#   "duckdb"
-#   ,"postgres"
-#   ,"redshift"
-#   ,"sqlserver"
-#   # ,"oracle"
-#   # ,"snowflake"
-#   # ,"bigquery"
-# )
 
-prepare_cdm <- function(con,
-                        write_schema,
-                        write_prefix) {
+prepare_cdm <- function(con, write_schema) {
 
   # eunomia cdm
   eunomia_con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
   eunomia_cdm <- cdm_from_con(eunomia_con, cdm_schema = "main") %>%
     cdm_select_tbl("person", "observation_period")
 
- cdm <- copyCdmTo(con = con,
-                  prefix = write_prefix,
-                  cdm = eunomia_cdm,
-                  schema = write_schema,
-                  overwrite = TRUE)
+  cdm <- copyCdmTo(con = con,
+                   cdm = eunomia_cdm,
+                   schema = write_schema,
+                   overwrite = TRUE)
 
- return(cdm)
-
+  return(cdm)
 }
 
-check_counts <- function(cdm){
+check_counts <- function(cdm) {
+  nm <- cdm$person %>%
+          dplyr::count() %>%
+          collect() %>%
+          colnames()
 
-    expect_true("n" %in%
-                colnames(cdm$person  %>%
-                           dplyr::count() %>%
-                               collect()))
+  expect_true("n" %in% nm)
 
-   expect_true(all(c("gender_concept_id", "month_of_birth", "n") %in%
-     colnames(cdm$person %>%
-    dplyr::group_by(gender_concept_id, month_of_birth) %>%
+  nm <- cdm$person %>%
+    dplyr::group_by(.data$gender_concept_id, .data$month_of_birth) %>%
     dplyr::count() %>%
-    collect())))
+    collect() %>%
+    colnames()
 
+   expect_true(all(c("gender_concept_id", "month_of_birth", "n") %in% nm))
 }
 
-check_mutate <- function(cdm){
+check_mutate <- function(cdm) {
 
   expect_true(unique(cdm$person %>%
     dplyr::mutate(new_var = 1L) %>%
@@ -204,19 +193,18 @@ check_row_number <-  function(cdm){
 
 }
 
+dbtype = "snowflake"
 checks <- list()
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - checking common usage"), {
 
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
-    write_schema <- get_write_schema(dbtype)
+    write_prefix <- paste0("test", as.integer(Sys.time()), "_")
+    write_schema <- get_write_schema(dbtype, prefix = write_prefix)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
 
-    write_prefix <- paste0("test", as.integer(Sys.time()), "_")
-
-
-    cdm <- prepare_cdm(con, write_schema, write_prefix)
+    cdm <- prepare_cdm(con, write_schema)
     check_counts(cdm)
     check_mutate(cdm)
     check_summarise_dplyr(cdm)
@@ -246,13 +234,14 @@ for (dbtype in dbToTest) {
                                       "dplyr::row_number"  = 1)
 
 
-   rm(cdm)
+    rm(cdm)
 
     # clean up
-   listTables(con = con, schema = write_schema)
-   cdm <- cdm_from_con(con,
+    cdm <- cdm_from_con(con,
                         cdm_schema = cdm_schema,
                         write_schema = write_schema)
+
+    expect_s3_class(cdm, "cdm_reference")
     CDMConnector::dropTable(cdm, dplyr::contains(write_prefix))
     disconnect(con)
   })
