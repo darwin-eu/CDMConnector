@@ -186,6 +186,7 @@ cdm_from_con <- function(con,
 
       # Note: use name without prefix (i.e. `cohort_tables[i]`) in the cdm object
       cdm[[cohort_table]] <- cohort_ref
+      class(cdm) <- "cdm_reference"
 
       cdm[[cohort_table]] <- new_generated_cohort_set(
         cohort_ref = cdm[[cohort_table]],
@@ -202,7 +203,7 @@ cdm_from_con <- function(con,
   # })
 
   # TODO use a cdm_reference constructor function
-  class(cdm) <- "cdm_reference"
+  # class(cdm) <- "cdm_reference"
   attr(cdm, "cdm_schema") <- cdm_schema
   attr(cdm, "write_schema") <- write_schema
   attr(cdm, "dbcon") <- con
