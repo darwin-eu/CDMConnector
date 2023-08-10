@@ -213,3 +213,8 @@ execute_ddl <- function(con, cdm_schema, cdm_version = "5.3", dbms = "duckdb", t
     DBI::dbCreateTable(con, inSchema(cdm_schema, paste0(prefix, tables[i]), dbms = dbms(con)), fields = fields)
   }
 }
+
+# get a unique prefix based on current time. internal function.
+unique_prefix <- function() {
+  as.integer((as.numeric(Sys.time())*10) %% 1e6)
+}

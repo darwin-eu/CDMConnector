@@ -61,7 +61,7 @@ Individual CDM table references can be accessed using \`\$\`.
 
 ```{r}
 cdm$person %>% 
-  glimpse()
+  dplyr::glimpse()
 
 ```
 
@@ -192,10 +192,9 @@ tbl_group("default")
 
 ## Subsetting a CDM
 
-Sometimes it is helpful to subset a CDM to a specific set of persons or simply down sample the data to a more reasonable size. Let's subset our cdm to just persons with a gastroint (concept_id 4112343). This works best then the number of persons in the subset is quite small and the database has indexes on the "person_id" columns of each table.
+Sometimes it is helpful to subset a CDM to a specific set of persons or simply down sample the data to a more reasonable size. Let's subset our cdm to just persons with a Pneumonia (concept_id 255848). This works best then the number of persons in the subset is quite small and the database has indexes on the "person_id" columns of each table.
 
 ```{r}
-
 person_ids <- cdm$condition_occurrence %>% 
   filter(condition_concept_id == 255848) %>% 
   distinct(person_id) %>% 
@@ -203,19 +202,34 @@ person_ids <- cdm$condition_occurrence %>%
 
 length(person_ids)
 
-# TODO make this faster...
-# cdm2 <- cdm %>% 
-  # cdm_subset(person_id = person_ids)
-# 
-# count(cdm2$person)
+cdm_pneumonia <- cdm %>%
+  cdm_subset(person_id = person_ids)
+
+tally(cdm_pneumonia$person) %>% 
+  pull(n)
+
+cdm_pneumonia$condition_occurrence %>% 
+  distinct(person_id) %>% 
+  tally() %>% 
+  pull(n)
+```
+
+Alternatively if we simply want a random sample of the entire CDM we can use `cdm_sample`.
+
+```{r}
+
+cdm_100person <- cdm_sample(cdm, n = 100)
+
+tally(cdm_100person$person) %>% pull("n")
+
 ```
 
 ## Saving a local copy of a CDM
 
-We have already seen how to `collect` the result of query into R. These query results can be saved using the usual R function for saving dataframes. If you would like to save a subset of the CDM and then restore it in R as a local CDM object, CDMConnector provides the `stow` and `cdm_from_files` functions to do this.
+We can use `collect` to bring the whole cdm object into R as dataframes. If you would like to save a subset of the CDM and then restore it in R as a local CDM object, CDMConnector provides the `stow` and `cdm_from_files` functions to do this.
 
 ```{r}
-local_cdm <- cdm %>% 
+local_cdm <- cdm_100person %>% 
   collect()
 
 # The cdm tables are now dataframes

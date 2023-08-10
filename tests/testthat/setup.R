@@ -140,7 +140,7 @@ disconnect <- function(con) {
 
 
 dbToTest <- c(
-  # "duckdb"
+  "duckdb"
   # ,"postgres"
   # ,"redshift"
   # ,"sqlserver"

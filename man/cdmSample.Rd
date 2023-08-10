@@ -5,9 +5,9 @@
 \alias{cdm_sample}
 \title{Subset a cdm object to a random sample of individuals}
 \usage{
-cdmSample(cdm, n = 1000)
+cdmSample(cdm, n)
 
-cdm_sample(cdm, n = 1000)
+cdm_sample(cdm, n)
 }
 \arguments{
 \item{cdm}{A cdm_reference object}

@@ -14,6 +14,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# internal function to add a filter query to all tables in a cdm
+# person_subset should be a tbl_sql reference to a
+# table in the database with one column "person_id".
+# There should be no duplicated rows in this table.
+# The person_subset table should be a temporary table in the database.
+# These requirements are not checked but assumed to be true.
+cdm_sample_person <- function(cdm, person_subset) {
+
+  checkmate::assert_class(cdm, "cdm_reference")
+  checkmate::assert_class(person_subset, "tbl_sql")
+
+  tables_to_subset <- spec_cdm_field[[attr(cdm, "cdm_version")]] %>%
+    dplyr::filter(.data$cdmFieldName == "person_id") %>%
+    dplyr::pull("cdmTableName") %>%
+    unique()
+
+  cdm2 <- purrr::map(names(cdm), function(nm) {
+    if (nm %in% tables_to_subset) {
+      dplyr::inner_join(cdm[[nm]], person_subset, by = "person_id")
+    } else if ("subject_id" %in% colnames(cdm[[nm]])) {
+      dplyr::inner_join(cdm[[nm]], person_subset, by = c("subject_id" = "person_id"))
+    } else {
+      cdm[[nm]]
+    }
+  })
+
+  # TODO: need to subset and copy cohort tables
+  attributes(cdm2) <- attributes(cdm)
+  cdm2
+}
 
 #' Subset a cdm to the individuals in one or more cohorts
 #'
@@ -87,14 +117,13 @@ cdmSubsetCohort <- function(cdm,
   checkmate::assertIntegerish(cohortId, min.len = 1, null.ok = TRUE)
   checkmate::assertLogical(verbose, len = 1)
 
-  if (!("subject_id" %in% colnames(cdm[[cohortTable]]))) {
-    m <- glue::glue("subject_id column not in cdm[['{cohortTable}']]")
-    rlang::abort(m)
+  cohort_colnames <- colnames(cdm[[cohortTable]])
+  if (!("subject_id" %in% cohort_colnames)) {
+    rlant::abort(glue::glue("subject_id column is not in cdm[['{cohortTable}']] table!"))
   }
 
-  if (!("cohort_definition_id" %in% colnames(cdm[[cohortTable]]))) {
-    n <- glue::glue("cohort_definition_id column not in cdm[['{cohortTable}']]")
-    rlang::abort(m)
+  if (!("cohort_definition_id" %in% cohort_colnames)) {
+    rlang::abort(glue::glue("cohort_definition_id column is not in cdm[['{cohortTable}']] table!"))
   }
 
   subjects <- cdm[[cohortTable]]
@@ -129,14 +158,16 @@ cdmSubsetCohort <- function(cdm,
        - N cohort subjects in cdm person table: {n_subjects_person_table}"))
   }
 
-  for (i in seq_along(cdm)) {
-    if ("person_id" %in% colnames(cdm[[i]])) {
-      cdm[[i]] <- cdm[[i]] %>%
-        dplyr::semi_join(subjects, by = c("person_id" = "subject_id"))
-    }
-  }
 
-  return(cdm)
+  prefix <- unique_prefix()
+
+  person_subset <- subjects %>%
+    dplyr::select(person_id = "subject_id") %>%
+    dplyr::distinct() %>%
+    compute_query(name = glue::glue("person_sample{prefix}_"),
+                  temporary = TRUE)
+
+  cdm_sample_person(cdm, person_subset)
 }
 
 #' @rdname cdmSubsetCohort
@@ -190,33 +221,27 @@ cdm_subset_cohort <- function(cdm,
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-cdmSample <- function(cdm,
-                      n = 1000) {
+cdmSample <- function(cdm, n) {
   checkmate::assertClass(cdm, "cdm_reference")
-  checkmate::assertIntegerish(n, len = 1, lower = 1, upper = 1e9)
+  checkmate::assertIntegerish(n, len = 1, lower = 1, upper = 1e9, null.ok = FALSE)
 
   assert_tables(cdm, "person")
 
+
   # take a random sample from the person table
-  personSample <- cdm[["person"]] %>%
+
+  prefix <- unique_prefix()
+
+  # Note temporary = TRUE in dbWriteTable does not work on all dbms but we want a temp table here.
+  person_subset <- cdm[["person"]] %>%
     dplyr::select("person_id") %>%
     dplyr::distinct() %>%
     dplyr::slice_sample(n = n) %>%
-    computeQuery()
+    dplyr::rename_all(tolower) %>%
+    computeQuery(name = glue::glue("person_subset_{prefix}"),
+                 temporary = TRUE)
 
-  for (i in seq_along(cdm)) {
-    if ("person_id" %in% colnames(cdm[[i]])) {
-      cdm[[i]] <- cdm[[i]] %>%
-        dplyr::inner_join(personSample, by = "person_id")
-    } else if ("subject_id" %in% colnames(cdm[[i]])) {
-      cdm[[i]] <- cdm[[i]] %>%
-        dplyr::inner_join(personSample, by = c("subject_id" = "person_id"))
-    }
-  }
-
-  cdm[["person_sample"]] <- personSample
-
-  return(cdm)
+  cdm_sample_person(cdm, person_subset)
 }
 
 
@@ -265,37 +290,43 @@ cdm_sample <- cdmSample
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-cdmSubset <- function(cdm,
-                      personId) {
+cdmSubset <- function(cdm, personId) {
 
   checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertIntegerish(personId,
                               min.len = 1,
-                              max.len = 1e5,
+                              max.len = 1e6,
                               null.ok = FALSE)
 
-  personId <- as.integer(personId)
+  writeSchema <- attr(cdm, "write_schema")
+  if (is.null(writeSchema)) rlang::abort("write_schema is required for subsetting a cdm!")
+  assertWriteSchema(cdm)
+  con <- attr(cdm, "dbcon")
 
-  for (i in seq_along(cdm)) {
-    if ("person_id" %in% colnames(cdm[[i]])) {
-      cdm[[i]] <- cdm[[i]] %>%
-        dplyr::filter(.data$person_id %in% .env$personId)
-    } else if ("subject_id" %in% colnames(cdm[[i]])) {
-      cdm[[i]] <- cdm[[i]] %>%
-        dplyr::filter(.data$subject_id %in% .env$personId)
-    }
-  }
+  prefix <- unique_prefix()
+  DBI::dbWriteTable(con,
+                    name = inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)),
+                    value = data.frame(person_id = as.integer(personId)),
+                    overwrite = TRUE)
 
-  return(cdm)
+  # Note temporary = TRUE in dbWriteTable does not work on all dbms but we want a temp table here.
+
+  person_subset <- dplyr::tbl(con, inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con))) %>%
+    dplyr::rename_all(tolower) %>% # just in case
+    computeQuery(name = glue::glue("person_subset_{prefix}"),
+                 temporary = TRUE)
+
+  DBI::dbRemoveTable(con, inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)))
+
+  cdm_sample_person(cdm, person_subset)
 }
+
 
 
 #' @rdname cdmSubset
 #' @export
-cdm_subset <- function(cdm,
-                       person_id){
-  cdmSubset(cdm = cdm,
-            personId = person_id)
+cdm_subset <- function(cdm, person_id){
+  cdmSubset(cdm = cdm, personId = person_id)
 }
 
 
