@@ -11,6 +11,7 @@ vignette: >
 
 knitr::opts_chunk$set(
   collapse = TRUE,
+  # eval = FALSE,
   comment = "#>"
 )
 
@@ -99,7 +100,6 @@ cdm$gibleed %>%
 readr::read_rds(system.file("rds", "gibleed.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
   glimpse()
 ```
-
 
 
 ## Cohort attributes
