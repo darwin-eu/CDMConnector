@@ -224,6 +224,19 @@ tally(cdm_100person$person) %>% pull("n")
 
 ```
 
+# Flatten a CDM
+
+An OMOP CDM is a relational data model. Sometimes it is helpful to flatten this
+relational structure into a "tidy" dataframe with one row per observation. This 
+transformation should only be done with a small number of persons and events.
+
+```{r}
+cdm_flatten(cdm_pneumonia,
+            domain = c("condition", "drug", "measurement")) %>% 
+  collect()
+```
+
+
 ## Saving a local copy of a CDM
 
 We can use `collect` to bring the whole cdm object into R as dataframes. If you would like to save a subset of the CDM and then restore it in R as a local CDM object, CDMConnector provides the `stow` and `cdm_from_files` functions to do this.
@@ -236,7 +249,7 @@ local_cdm <- cdm_100person %>%
 local_cdm$person[1:4, 1:4] 
 ```
 
-```{r}
+```{r, eval=FALSE}
 save_path <- file.path(tempdir(), "tmp")
 dir.create(save_path)
 
@@ -246,10 +259,22 @@ cdm %>%
 list.files(save_path)
 ```
 
+Restore a saved cdm object from files with `cdm_from_files`.
+
+```{r, eval=FALSE}
+cdm <- cdm_from_files(save_path, cdm_name = "GI Bleed example data")
+```
+
 ## Closing connections
 
-Close the database connection with `dbDisconnect`. After the connection is closed the cdm object can no longer be used.
+Close the database connection with `dbDisconnect`. After a connection is closed any 
+cdm objects created with that connection can no longer be used.
 
 ```{r}
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```
+
+
+## Summary
+
+CDMConnector provides an interface to working with observational health data in the OMOP CDM format from R. Check out the other vignettes for more details about the package.

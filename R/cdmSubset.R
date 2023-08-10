@@ -119,7 +119,7 @@ cdmSubsetCohort <- function(cdm,
 
   cohort_colnames <- colnames(cdm[[cohortTable]])
   if (!("subject_id" %in% cohort_colnames)) {
-    rlant::abort(glue::glue("subject_id column is not in cdm[['{cohortTable}']] table!"))
+    rlang::abort(glue::glue("subject_id column is not in cdm[['{cohortTable}']] table!"))
   }
 
   if (!("cohort_definition_id" %in% cohort_colnames)) {
