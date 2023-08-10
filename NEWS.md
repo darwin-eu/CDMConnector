@@ -1,3 +1,11 @@
+# CDMConnector 1.1.0
+
+* add `copy_cdm_to`
+* add `generate_concept_cohort_set`
+* refactor cross database tests
+
+Released Aug 11, 2023
+
 # CDMConnector 1.0.0
 
 * remove `write_prefix` in `cdm_from_con` in favor of using the `write_schema` argument for prefixing
