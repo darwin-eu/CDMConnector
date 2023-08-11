@@ -12,7 +12,7 @@ specific schema. listTables will list tables in a schema."><!-- mathjax --><scri
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,10 +27,11 @@ specific schema. listTables will list tables in a schema."><!-- mathjax --><scri
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="../articles/a02_working_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
+    <a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a>
   </div>
 </li>
 <li class="nav-item">
@@ -53,7 +54,7 @@ specific schema. listTables will list tables in a schema."><!-- mathjax --><scri
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>List tables in a schema</h1>
-      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/HEAD/R/listTables.R" class="external-link"><code>R/listTables.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/HEAD/R/utils.R" class="external-link"><code>R/utils.R</code></a></small>
       <div class="d-none name"><code>list_tables.Rd</code></div>
     </div>
 
@@ -89,7 +90,7 @@ specific schema. <code>listTables</code> will list tables in a schema.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, dbdir <span class="op">=</span> <span class="fu"><a href="eunomia_dir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, dbdir <span class="op">=</span> <span class="fu"><a href="eunomiaDir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">listTables</span><span class="op">(</span><span class="va">con</span>, schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>

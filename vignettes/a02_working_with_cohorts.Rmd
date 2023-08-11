@@ -24,8 +24,7 @@ if (!eunomia_is_available()) downloadEunomiaData()
 
 ```
 
-<<<<<<< HEAD
-Cohort are a fundamental building block for observational health data analysis. A "cohort" is a set of persons satisfying a one or more inclusion criteria for a duration of time. If you are familiar with the idea of sets in math then a cohort can be nicely represented as a set of person-days. In the OMOP Common Data Model we represent cohorts using a table with four columns.
+Cohorts are a fundamental building block for observational health data analysis. A "cohort" is a set of persons satisfying a one or more inclusion criteria for a duration of time. If you are familiar with the idea of sets in math then a cohort can be nicely represented as a set of person-days. In the OMOP Common Data Model we represent cohorts using a table with four columns.
 
 | cohort_definition_id | subject_id | cohort_start_date | cohort_end_date |
 |----------------------|------------|-------------------|-----------------|
@@ -174,125 +173,8 @@ cohort_attrition(cdm$gibleed2)
 In the above example we built a cohort table from a concept set. The cohort essentially captures patient-time based off of the presence or absence of OMOP standard concept IDs. We then manually applied an inclusion criteria and recorded a new attrition record in the cohort. To learn more about this approach to building cohorts check out the [PatientProfiles](https://darwin-eu-dev.github.io/PatientProfiles/) R package.
 
 Cohort building is a fundamental building block of observational health analysis and CDMConnector supports different ways of creating cohorts. As long as your cohort table is has the required structure and columns you can add it to the cdm with the `new_generated_cohort_set` function and use it in any downstream OHDSI analytic packages.
-=======
-
-## Adding a cohort
-
-First, we'll load packages and create a cdm reference. In this case we'll be using the Eunomia "GI Bleed" dataset.
-
-```{r, warning=FALSE, message=FALSE}
-library(CDMConnector)
-library(dplyr)
-
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-
-cdm <- CDMConnector::cdm_from_con(
-  con = con,
-  cdm_schema = "main",
-  write_schema = "main"
-)
-```
-
-We can define a cohort for GI bleeding, where we exclude anyone with a record of rheumatoid arthritis at any time.
-
-```{r, eval=FALSE}
-# devtools::install_github("OHDSI/Capr")
-library(Capr)
-
-gibleed_cohort_definition <- cohort(
-  entry = condition(cs(descendants(192671))),
-  attrition = attrition(
-    "no RA" = withAll(
-      exactly(0,
-              condition(cs(descendants(80809))),
-              duringInterval(eventStarts(-Inf, Inf))))
-  )
-)
-
-# requires CirceR optional dependency
-cdm <- generateCohortSet(
-  cdm,
-  cohortSet = list(gibleed = gibleed_cohort_definition),
-  name = "gibleed",
-  computeAttrition = TRUE
-)
-```
-
-```{r, echo=FALSE, eval=FALSE}
-# save data in package. Only do this when editing vignette.
-cdm$gibleed %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed.rds"))
-
-cdm$gibleed %>% 
-  cohortCount() %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed_count.rds"))
-
-cdm$gibleed %>% 
-  cohortAttrition() %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed_attrition.rds"))
-
-cdm$gibleed %>% 
-  cohortSet() %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed_set.rds"))
-
-```
-
-
-We can see that we now have our cohort instantiated in the database with a reference to it added to the cdm reference.
-```{r, eval=FALSE}
-cdm$gibleed %>% 
-  glimpse()
-```
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
-```
-
-
-## Cohort attributes
-
-As well as the cohort itself, the cohort has a number of attributes. First, is a count of participants by cohort. We can use `cohortCount` to get these counts.
-
-```{r, eval=FALSE}
-cohortCount(cdm$gibleed) %>% 
-  glimpse()
-```
-
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed_count.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
-```
-
-We also have the attrition associated with entry into the cohort available via `cohortAttrition`.
-```{r, eval=FALSE}
-cohortAttrition(cdm$gibleed) %>% 
-  glimpse()
-```
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed_attrition.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
-```
-
-And lastly, we can also access the settings associated with the cohort using `cohortCount`.
-```{r, eval=FALSE}
-cohortSet(cdm$gibleed) %>% 
-  glimpse()
-```
-
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed_set.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
-```
->>>>>>> 160303c267824774ed84b87fa5eb2af6c2ddd5d7
 
 ```{r}
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```
-<<<<<<< HEAD
-=======
 
->>>>>>> 160303c267824774ed84b87fa5eb2af6c2ddd5d7

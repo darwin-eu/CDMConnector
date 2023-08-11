@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,10 +42,11 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="../articles/a02_working_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
+    <a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a>
   </div>
 </li>
 <li class="nav-item">
@@ -84,108 +85,402 @@
 
     
     
-<div class="section level2">
-<h2 id="creating-a-reference-to-the-omop-cdm">Creating a reference to the OMOP CDM<a class="anchor" aria-label="anchor" href="#creating-a-reference-to-the-omop-cdm"></a>
-</h2>
-<p>The CDMConnector package provides tools for working with OMOP Common
-Data Model (CDM) tables using familiar <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> syntax. After connecting to
-a database containing data mapped to the OMOP CDM, we can use
-<code>cdm_from_con</code> from CDMConnector to create a CDM reference.
-This CDM reference is a single object that contains table references
-along with specific metadata.</p>
-<p>For this example, we’ll use the Eunomia data contained in a <a href="https://duckdb.org/" class="external-link">duckdb</a> database. First, if you haven’t
-previously done so, we need to download the data. And once downloaded,
-add the path to our Renviron.</p>
+<p>The Observational Medical Outcomes Partnership (OMOP) Common Data
+Model (CDM) is a commonly used format for storing and analyzing
+observational health data derived from electronic health records,
+insurance claims, registries, and other sources. Source data is “mapped”
+into the OMOP CDM format providing researchers with a standardized
+interface for querying and analyzing observational health data. The
+CDMConnector package provides tools for working with OMOP Common Data
+Model (CDM) tables using familiar <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> syntax and using the <a href="https://design.tidyverse.org/" class="external-link">tidyverse design principles</a>
+popular in the R ecosystem.</p>
+<p>This vignette is for new users of CDMConnector who have access to
+data already mapped into the OMOP CDM format. However, CDMConnector does
+provide several example synthetic datasets in the OMOP CDM format. To
+learn more about the OMOP CDM or the mapping process check out these
+resources.</p>
+<ul>
+<li><p><a href="https://academy.ehden.eu/" class="external-link uri">https://academy.ehden.eu/</a></p></li>
+<li><p><a href="https://ohdsi.github.io/TheBookOfOhdsi/" class="external-link uri">https://ohdsi.github.io/TheBookOfOhdsi/</a></p></li>
+<li><p><a href="https://www.ohdsi.org/join-the-journey/" class="external-link uri">https://www.ohdsi.org/join-the-journey/</a></p></li>
+<li><p><a href="https://ohdsi.github.io/CommonDataModel/" class="external-link uri">https://ohdsi.github.io/CommonDataModel/</a></p></li>
+</ul>
+<div class="section level3">
+<h3 id="creating-a-reference-to-the-omop-cdm">Creating a reference to the OMOP CDM<a class="anchor" aria-label="anchor" href="#creating-a-reference-to-the-omop-cdm"></a>
+</h3>
+<p>Typically OMOP CDM datasets are stored in a database and can range in
+size from hundreds of patients with thousands of records to hundreds of
+millions of patients with billions of records. The Observational Health
+Data Science and Infromatics (OHDSI) community supports a selection of
+popular database platforms including Postgres, Microsoft SQL Server,
+Oracle, as well as cloud data platforms suchs as Amazon Redshift, Google
+Big Query, Databricks, and Snowflake. The first step in using
+CDMConnector is to create a connection to your database from R. This can
+take some effort the first time you set up drivers. See the “Database
+Connection Examples” vignette or check out the <a href="https://solutions.posit.co/connections/db/getting-started/connect-to-database/" class="external-link">Posit’s
+database documentation.</a></p>
+<p>In our example’s we will use some synthetic data from the <a href="https://synthetichealth.github.io/synthea/" class="external-link">Synthea project</a>
+that has been mapped to the OMOP CDM format. We’ll use the <a href="https://duckdb.org/" class="external-link">duckdb</a> database which is a file based
+database similar to SQLite but with better date type support. To see all
+the example datasets available run <code><a href="../reference/exampleDatasets.html">example_datasets()</a></code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/exampleDatasets.html">example_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "GiBleed"                             "synthea-allergies-10k"              </span></span>
+<span><span class="co">#&gt;  [3] "synthea-anemia-10k"                  "synthea-breast_cancer-10k"          </span></span>
+<span><span class="co">#&gt;  [5] "synthea-contraceptives-10k"          "synthea-covid19-10k"                </span></span>
+<span><span class="co">#&gt;  [7] "synthea-covid19-200k"                "synthea-dermatitis-10k"             </span></span>
+<span><span class="co">#&gt;  [9] "synthea-heart-10k"                   "synthea-hiv-10k"                    </span></span>
+<span><span class="co">#&gt; [11] "synthea-lung_cancer-10k"             "synthea-medications-10k"            </span></span>
+<span><span class="co">#&gt; [13] "synthea-metabolic_syndrome-10k"      "synthea-opioid_addiction-10k"       </span></span>
+<span><span class="co">#&gt; [15] "synthea-rheumatoid_arthritis-10k"    "synthea-snf-10k"                    </span></span>
+<span><span class="co">#&gt; [17] "synthea-surgery-10k"                 "synthea-total_joint_replacement-10k"</span></span>
+<span><span class="co">#&gt; [19] "synthea-veteran_prostate_cancer-10k" "synthea-veterans-10k"               </span></span>
+<span><span class="co">#&gt; [21] "synthea-weight_loss-10k"</span></span>
+<span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomia_dir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListTables.html" class="external-link">dbListTables</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "care_site"             "cdm_source"            "concept"              </span></span>
+<span><span class="co">#&gt;  [4] "concept_ancestor"      "concept_class"         "concept_relationship" </span></span>
+<span><span class="co">#&gt;  [7] "concept_synonym"       "condition_era"         "condition_occurrence" </span></span>
+<span><span class="co">#&gt; [10] "cost"                  "death"                 "device_exposure"      </span></span>
+<span><span class="co">#&gt; [13] "domain"                "dose_era"              "drug_era"             </span></span>
+<span><span class="co">#&gt; [16] "drug_exposure"         "drug_strength"         "fact_relationship"    </span></span>
+<span><span class="co">#&gt; [19] "location"              "measurement"           "metadata"             </span></span>
+<span><span class="co">#&gt; [22] "note"                  "note_nlp"              "observation"          </span></span>
+<span><span class="co">#&gt; [25] "observation_period"    "payer_plan_period"     "person"               </span></span>
+<span><span class="co">#&gt; [28] "procedure_occurrence"  "provider"              "relationship"         </span></span>
+<span><span class="co">#&gt; [31] "source_to_concept_map" "specimen"              "visit_detail"         </span></span>
+<span><span class="co">#&gt; [34] "visit_occurrence"      "vocabulary"</span></span></code></pre></div>
+<p>If you’re using CDMConnector for the first time you may get a message
+about adding an enviroment vairable <code>EUNOMIA_DATA_FOLDER</code> .
+To do this simply create a new text file in your home directory called
+.Renviron and add the line
+<code>EUNOMIA_DATA_FOLDER="path/to/folder/where/we/can/store/example/data"</code>.
+If you run <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code> this file will be
+created and opened for you and opened in RStudio.</p>
+<p>After connecting to a database containing data mapped to the OMOP
+CDM, use <code>cdm_from_con</code> to create a CDM reference. This CDM
+reference is a single object that contains dplyr table references to
+each CDM table along with metadata about the CDM instance.</p>
+<p>The cdm_schema is the schema in the database that contains the OMOP
+CDM tables and is required. All other arguments are optional.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/downloadEunomiaData.html">downloadEunomiaData</a></span><span class="op">(</span></span>
-<span>  pathToData <span class="op">=</span> <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html" class="external-link">here</a></span><span class="op">(</span><span class="op">)</span>, <span class="co"># change to the location you want to save the data</span></span>
-<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co"># once downloaded, save path to your Renviron: EUNOMIA_DATA_FOLDER="......"</span></span>
-<span><span class="co"># (and then restart R)</span></span></code></pre></div>
-<p>With the Eunomia data now downloaded, we can connect to the database
-and create our reference.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, dbdir <span class="op">=</span> <span class="fu"><a href="../reference/eunomia_dir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
 <span><span class="va">cdm</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, metadata, cdm_source, concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span></code></pre></div>
-<p>Individual CDM table references can be accessed using <code>$</code>
-and piped to dplyr verbs.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, metadata, cdm_source, concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span>
+<span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.observation_period&gt; [?? x 5]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpvQXwCl/file113fc4989a6bc.duckdb]</span></span></span>
+<span><span class="co">#&gt;    observation_period_id person_id observation_period_s…¹ observation_period_e…²</span></span>
+<span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31             2007-02-06            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    13        13 2009-04-26             2019-04-14            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    27        27 2002-01-30             2018-11-21            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    16        16 1971-10-14             2017-11-02            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    55        55 2009-05-30             2019-03-23            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    60        60 1990-11-21             2019-01-23            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    42        42 1909-11-03             2019-03-13            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    33        33 1986-05-12             2018-09-10            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    18        18 1965-11-17             2018-11-07            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    25        25 2007-03-18             2019-04-07            </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ abbreviated names: ¹​observation_period_start_date,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   ²​observation_period_end_date</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: period_type_concept_id &lt;int&gt;</span></span></span></code></pre></div>
+<p>Individual CDM table references can be accessed using `$`.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 18</span></span>
-<span><span class="co">#&gt; Database: DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpIzdzmV/ngtnxnjn]</span></span>
-<span><span class="co">#&gt; $ person_id                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…</span></span>
-<span><span class="co">#&gt; $ gender_concept_id           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …</span></span>
-<span><span class="co">#&gt; $ year_of_birth               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …</span></span>
-<span><span class="co">#&gt; $ month_of_birth              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 12, 4, 10, 10, 3, 1, 11, 7, 11, 5, 8, 3, 3…</span></span>
-<span><span class="co">#&gt; $ day_of_birth                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 31, 12, 7, 13, 31, 5, 2, 23, 17, 2, 19, 13…</span></span>
+<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpvQXwCl/file113fc4989a6bc.duckdb]</span></span>
+<span><span class="co">#&gt; $ person_id                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…</span></span>
+<span><span class="co">#&gt; $ gender_concept_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …</span></span>
+<span><span class="co">#&gt; $ year_of_birth               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …</span></span>
+<span><span class="co">#&gt; $ month_of_birth              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 12, 4, 10, 10, 3, 1, 11, 7, 11, 5, 8, 3, 3…</span></span>
+<span><span class="co">#&gt; $ day_of_birth                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 31, 12, 7, 13, 31, 5, 2, 23, 17, 2, 19, 13…</span></span>
 <span><span class="co">#&gt; $ birth_datetime              <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span> 1963-12-31, 1950-04-12, 1974-10-07, 1971-…</span></span>
-<span><span class="co">#&gt; $ race_concept_id             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 8516, 8527, 8527, 8527, 8516, 8527, 8527, …</span></span>
-<span><span class="co">#&gt; $ ethnicity_concept_id        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
-<span><span class="co">#&gt; $ location_id                 <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
-<span><span class="co">#&gt; $ provider_id                 <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
-<span><span class="co">#&gt; $ care_site_id                <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
+<span><span class="co">#&gt; $ race_concept_id             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 8516, 8527, 8527, 8527, 8516, 8527, 8527, …</span></span>
+<span><span class="co">#&gt; $ ethnicity_concept_id        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ location_id                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
+<span><span class="co">#&gt; $ provider_id                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
+<span><span class="co">#&gt; $ care_site_id                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
 <span><span class="co">#&gt; $ person_source_value         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "001f4a87-70d0-435c-a4b9-1425f6928d33", "0…</span></span>
 <span><span class="co">#&gt; $ gender_source_value         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "F", "M", "M", "F", "F", "F", "F", "M", "F…</span></span>
-<span><span class="co">#&gt; $ gender_source_concept_id    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ gender_source_concept_id    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
 <span><span class="co">#&gt; $ race_source_value           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "black", "white", "white", "white", "black…</span></span>
-<span><span class="co">#&gt; $ race_source_concept_id      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ race_source_concept_id      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
 <span><span class="co">#&gt; $ ethnicity_source_value      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "west_indian", "italian", "polish", "ameri…</span></span>
-<span><span class="co">#&gt; $ ethnicity_source_concept_id <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span></code></pre></div>
+<span><span class="co">#&gt; $ ethnicity_source_concept_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span></code></pre></div>
+<p>You can then use dplyr to query the cdm tables just as you would an R
+dataframe. The difference is that the data stays in the database and SQL
+code is dynamically generated and set to the database backend. The goal
+is to allow users to not think too much about the database or SQL and
+instead use familiar R syntax to work with these large tables.
+<code>collect</code> will bring the data from the database into R. Be
+careful not to request a gigantic result set! In general it is better to
+aggregate data in the database, if possible, before bringing data into
+R.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">year_of_birth</span>, <span class="va">gender_concept_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>sex <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="va">gender_concept_id</span> <span class="op">==</span> <span class="fl">8532</span> <span class="op">~</span> <span class="st">"Female"</span>,</span>
+<span>    <span class="va">gender_concept_id</span> <span class="op">==</span> <span class="fl">8507</span> <span class="op">~</span> <span class="st">"Male"</span></span>
+<span>  <span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">n</span>, x <span class="op">=</span> <span class="va">year_of_birth</span>, fill <span class="op">=</span> <span class="va">sex</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>stat <span class="op">=</span> <span class="st">"identity"</span>, position <span class="op">=</span> <span class="st">"dodge"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Year of birth"</span>, </span>
+<span>       y <span class="op">=</span> <span class="st">"Person count"</span>, </span>
+<span>       title <span class="op">=</span> <span class="st">"Age Distribution"</span>,</span>
+<span>       subtitle <span class="op">=</span> <span class="fu"><a href="../reference/cdmName.html">cdm_name</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>,</span>
+<span>       fill <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="a01_getting-started_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 </div>
-<div class="section level2">
-<h2 id="selecting-a-subset-of-cdm-tables">Selecting a subset of CDM tables<a class="anchor" aria-label="anchor" href="#selecting-a-subset-of-cdm-tables"></a>
-</h2>
+<div class="section level3">
+<h3 id="joining-tables">Joining tables<a class="anchor" aria-label="anchor" href="#joining-tables"></a>
+</h3>
+<p>Since the OMOP CDM is a relational data model joins are very common
+in analytic code. All of the events in the OMOP CDM are recorded using
+integers representing standard “concepts”. To see the text description
+of a concept researchers need to join clinical tables to the concept
+vocabulary table. Every OMOP CDM should have a copy of the vocabulary
+used to map the data to the OMOP CDM format.</p>
+<p>Here is an example query looking at the most common conditions in the
+CDM.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">condition_concept_id</span>, sort <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condition_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="st">"condition_concept_id"</span>, <span class="st">"concept_name"</span>, <span class="st">"n"</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 80 × 3</span></span></span>
+<span><span class="co">#&gt;    condition_concept_id concept_name                                 n</span></span>
+<span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>              4<span style="text-decoration: underline;">112</span>343 Acute viral pharyngitis                  <span style="text-decoration: underline;">10</span>217</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>               <span style="text-decoration: underline;">192</span>671 Gastrointestinal hemorrhage                479</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                <span style="text-decoration: underline;">28</span>060 Streptococcal sore throat                 <span style="text-decoration: underline;">2</span>656</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>               <span style="text-decoration: underline;">378</span>001 Concussion with no loss of consciousness  <span style="text-decoration: underline;">1</span>013</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>               <span style="text-decoration: underline;">257</span>012 Chronic sinusitis                          825</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>              4<span style="text-decoration: underline;">134</span>304 Fracture subluxation of wrist              493</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>             40<span style="text-decoration: underline;">481</span>087 Viral sinusitis                          <span style="text-decoration: underline;">17</span>268</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>               <span style="text-decoration: underline;">372</span>328 Otitis media                              <span style="text-decoration: underline;">3</span>605</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>               <span style="text-decoration: underline;">260</span>139 Acute bronchitis                          <span style="text-decoration: underline;">8</span>184</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                <span style="text-decoration: underline;">78</span>272 Sprain of wrist                            770</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 70 more rows</span></span></span></code></pre></div>
+<p>Let’s look at the most common drugs used by patients with “Acute
+viral pharyngitis”.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">4112343</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">drug_exposure</span>, by <span class="op">=</span> <span class="st">"person_id"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">drug_concept_id</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drug_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="st">"concept_name"</span>, <span class="st">"n"</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 113 × 2</span></span></span>
+<span><span class="co">#&gt;    concept_name                                                                n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> poliovirus vaccine, inactivated                                          <span style="text-decoration: underline;">7</span>654</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> zoster vaccine, live                                                     <span style="text-decoration: underline;">2</span>082</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> celecoxib                                                                <span style="text-decoration: underline;">1</span>788</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Aspirin 81 MG Oral Tablet                                                <span style="text-decoration: underline;">4</span>305</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> hepatitis A vaccine, adult dosage                                        <span style="text-decoration: underline;">3</span>090</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Acetaminophen 325 MG Oral Tablet                                         <span style="text-decoration: underline;">9</span>125</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Acetaminophen 21.7 MG/ML / Dextromethorphan Hydrobromide 1 MG/ML / dox…  <span style="text-decoration: underline;">1</span>934</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Amoxicillin 250 MG / Clavulanate 125 MG Oral Tablet                      <span style="text-decoration: underline;">3</span>738</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Penicillin V Potassium 500 MG Oral Tablet                                <span style="text-decoration: underline;">1</span>060</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Phenazopyridine hydrochloride 100 MG Oral Tablet                          779</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 103 more rows</span></span></span></code></pre></div>
+<p>To inspect the generated SQL use <code>show_query</code> from
+dplyr.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">4112343</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">drug_exposure</span>, by <span class="op">=</span> <span class="st">"person_id"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">drug_concept_id</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drug_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span></span></span>
+<span><span class="co">#&gt;   LHS.*,</span></span>
+<span><span class="co">#&gt;   concept_name,</span></span>
+<span><span class="co">#&gt;   domain_id,</span></span>
+<span><span class="co">#&gt;   vocabulary_id,</span></span>
+<span><span class="co">#&gt;   concept_class_id,</span></span>
+<span><span class="co">#&gt;   standard_concept,</span></span>
+<span><span class="co">#&gt;   concept_code,</span></span>
+<span><span class="co">#&gt;   valid_start_date,</span></span>
+<span><span class="co">#&gt;   valid_end_date,</span></span>
+<span><span class="co">#&gt;   invalid_reason</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> (</span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">SELECT</span> drug_concept_id, COUNT(*)<span style="color: #0000BB;"> AS </span>n</span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">FROM</span> (</span></span>
+<span><span class="co">#&gt;     <span style="color: #0000BB;">SELECT</span></span></span>
+<span><span class="co">#&gt;       LHS.person_id<span style="color: #0000BB;"> AS </span>person_id,</span></span>
+<span><span class="co">#&gt;       drug_exposure_id,</span></span>
+<span><span class="co">#&gt;       drug_concept_id,</span></span>
+<span><span class="co">#&gt;       drug_exposure_start_date,</span></span>
+<span><span class="co">#&gt;       drug_exposure_start_datetime,</span></span>
+<span><span class="co">#&gt;       drug_exposure_end_date,</span></span>
+<span><span class="co">#&gt;       drug_exposure_end_datetime,</span></span>
+<span><span class="co">#&gt;       verbatim_end_date,</span></span>
+<span><span class="co">#&gt;       drug_type_concept_id,</span></span>
+<span><span class="co">#&gt;       stop_reason,</span></span>
+<span><span class="co">#&gt;       refills,</span></span>
+<span><span class="co">#&gt;       quantity,</span></span>
+<span><span class="co">#&gt;       days_supply,</span></span>
+<span><span class="co">#&gt;       sig,</span></span>
+<span><span class="co">#&gt;       route_concept_id,</span></span>
+<span><span class="co">#&gt;       lot_number,</span></span>
+<span><span class="co">#&gt;       provider_id,</span></span>
+<span><span class="co">#&gt;       visit_occurrence_id,</span></span>
+<span><span class="co">#&gt;       visit_detail_id,</span></span>
+<span><span class="co">#&gt;       drug_source_value,</span></span>
+<span><span class="co">#&gt;       drug_source_concept_id,</span></span>
+<span><span class="co">#&gt;       route_source_value,</span></span>
+<span><span class="co">#&gt;       dose_unit_source_value</span></span>
+<span><span class="co">#&gt;     <span style="color: #0000BB;">FROM</span> (</span></span>
+<span><span class="co">#&gt;       <span style="color: #0000BB;">SELECT DISTINCT</span> person_id</span></span>
+<span><span class="co">#&gt;       <span style="color: #0000BB;">FROM</span> main.condition_occurrence</span></span>
+<span><span class="co">#&gt;       <span style="color: #0000BB;">WHERE</span> (condition_concept_id = 4112343.0)</span></span>
+<span><span class="co">#&gt;     ) LHS</span></span>
+<span><span class="co">#&gt;     <span style="color: #0000BB;">INNER JOIN</span> main.drug_exposure<span style="color: #0000BB;"> AS </span>"main.drug_exposure"</span></span>
+<span><span class="co">#&gt;       <span style="color: #0000BB;">ON</span> (LHS.person_id = "main.drug_exposure".person_id)</span></span>
+<span><span class="co">#&gt;   ) q01</span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">GROUP BY</span> drug_concept_id</span></span>
+<span><span class="co">#&gt; ) LHS</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">LEFT JOIN</span> main.concept<span style="color: #0000BB;"> AS </span>"main.concept"</span></span>
+<span><span class="co">#&gt;   <span style="color: #0000BB;">ON</span> (LHS.drug_concept_id = "main.concept".concept_id)</span></span></code></pre></div>
+<p>These are a few simple queries. More complex queries can be built by
+combining simple queries like the ones above and other analytic packages
+provide functions that implement common analytic use cases.</p>
+<p>For example a “cohort definition” is a set of criteria that persons
+must satisfy that can be quite complex. The “Working with Cohorts”
+vignette describes creating and using cohorts with CDMConnector.</p>
+</div>
+<div class="section level3">
+<h3 id="saving-query-results-to-the-database">Saving query results to the database<a class="anchor" aria-label="anchor" href="#saving-query-results-to-the-database"></a>
+</h3>
+<p>Sometime it is helpful to save query results to the database instead
+of reading the result into R. dplyr provides the <code>compute</code>
+function but due to differences between database systems CDMConnector
+has needed to export a wrapper that handles the slight differences.
+CDMConnector’s <code>compute_query</code> function works similarly but
+is tested across the OHDSI supported database platforms. It also has a
+few more options than <code>dplyr::compute.</code></p>
+<p>If we are writing data to the CDM database we need to add one more
+argument when creating our cdm reference object, the “write_schema”.
+This is a schema in the database where you have write permissions.
+Typically this should be a separate schema from the “cdm_schema”.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"create schema scratch;"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span>, write_schema <span class="op">=</span> <span class="st">"scratch"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">drugs</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">4112343</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">inner_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">drug_exposure</span>, by <span class="op">=</span> <span class="st">"person_id"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">drug_concept_id</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drug_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="../reference/computeQuery.html">compute_query</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"test"</span>,</span>
+<span>                temporary <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                schema <span class="op">=</span> <span class="st">"scratch"</span>,</span>
+<span>                overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">drugs</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;SQL&gt;</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> *</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> scratch.test</span></span>
+<span></span>
+<span><span class="va">drugs</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;scratch.test&gt; [?? x 11]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpvQXwCl/file113fc4989a6bc.duckdb]</span></span></span>
+<span><span class="co">#&gt;    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id</span></span>
+<span><span class="co">#&gt;              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">213</span>160  <span style="text-decoration: underline;">7</span>654 poliovirus va… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        40<span style="text-decoration: underline;">213</span>260  <span style="text-decoration: underline;">2</span>082 zoster vaccin… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>         1<span style="text-decoration: underline;">118</span>084  <span style="text-decoration: underline;">1</span>788 celecoxib      Drug      RxNorm        Ingredient      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        19<span style="text-decoration: underline;">059</span>056  <span style="text-decoration: underline;">4</span>305 Aspirin 81 MG… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        40<span style="text-decoration: underline;">213</span>296  <span style="text-decoration: underline;">3</span>090 hepatitis A v… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>         1<span style="text-decoration: underline;">127</span>433  <span style="text-decoration: underline;">9</span>125 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        40<span style="text-decoration: underline;">229</span>134  <span style="text-decoration: underline;">1</span>934 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>         1<span style="text-decoration: underline;">713</span>671  <span style="text-decoration: underline;">3</span>738 Amoxicillin 2… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        19<span style="text-decoration: underline;">133</span>905  <span style="text-decoration: underline;">1</span>060 Penicillin V … Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        40<span style="text-decoration: underline;">236</span>824   779 Phenazopyridi… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: standard_concept &lt;chr&gt;, concept_code &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   valid_start_date &lt;date&gt;, valid_end_date &lt;date&gt;, invalid_reason &lt;chr&gt;</span></span></span></code></pre></div>
+<p>We can see that the query has been saved to a new table in the
+scratch schema. <code>compute_query</code> returns a dplyr reference to
+this table.</p>
+</div>
+<div class="section level3">
+<h3 id="selecting-a-subset-of-cdm-tables">Selecting a subset of CDM tables<a class="anchor" aria-label="anchor" href="#selecting-a-subset-of-cdm-tables"></a>
+</h3>
 <p>If you do not need references to all tables you can easily select
 only a subset of tables to include in the CDM reference. The
-<code>cdm_select_tbl</code> function supports the <a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect
-selection language</a> and provides a new selection helper:
-<code>tbl_group</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code>cdm_select_tbl</code> function supports the <a href="%5Bhttps://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect
+selection language</a>](<a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link uri">https://tidyselect.r-lib.org/reference/language.html</a>))
+and provides a new selection helper: <code>tbl_group</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span> <span class="co"># quoted names</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: person, observation_period</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="va">person</span>, <span class="va">observation_period</span><span class="op">)</span> <span class="co"># unquoted names </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: person, observation_period</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"concept"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that start with 'concept'</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: concept, concept_class, concept_relationship, concept_synonym, concept_ancestor</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"era"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that contain the substring 'era'</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: drug_era, dose_era, condition_era</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">"person|period"</span><span class="op">)</span><span class="op">)</span> <span class="co"># regular expression</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: person, observation_period, payer_plan_period</span></span></code></pre></div>
 <p>Predefined sets of tables can also be selected using
 <code>tbl_group</code> which supports several subsets of the CDM: “all”,
 “clinical”, “vocab”, “derived”, and “default”.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># pre-defined groups</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="../reference/tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"clinical"</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship</span></span>
 <span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="../reference/tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"vocab"</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; <span style="color: #949494;"># OMOP CDM reference (tbl_duckdb_connection)</span></span></span>
+<span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Tables: concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span></code></pre></div>
 <p>The default set of CDM tables included in a CDM object is:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/tbl_group.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "person"               "observation_period"   "visit_occurrence"    </span></span>
 <span><span class="co">#&gt;  [4] "condition_occurrence" "drug_exposure"        "procedure_occurrence"</span></span>
@@ -196,84 +491,120 @@ selection language</a> and provides a new selection helper:
 <span><span class="co">#&gt; [19] "concept_relationship" "concept_synonym"      "concept_ancestor"    </span></span>
 <span><span class="co">#&gt; [22] "drug_strength"</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="including-existing-cohort-tables-in-the-cdm-reference">Including existing cohort tables in the CDM reference<a class="anchor" aria-label="anchor" href="#including-existing-cohort-tables-in-the-cdm-reference"></a>
-</h2>
-<p>It is common to use one or more cohort tables along with the CDM. We
-can include existing cohort tables by specifying the schema in which
-they reside and their name like so:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
-<span>                    write_schema <span class="op">=</span> <span class="st">"write_schema"</span>,</span>
-<span>                    cohort_tables <span class="op">=</span> <span class="st">"cohort"</span><span class="op">)</span> </span>
+<div class="section level3">
+<h3 id="subsetting-a-cdm">Subsetting a CDM<a class="anchor" aria-label="anchor" href="#subsetting-a-cdm"></a>
+</h3>
+<p>Sometimes it is helpful to subset a CDM to a specific set of persons
+or simply down sample the data to a more reasonable size. Let’s subset
+our cdm to just persons with a Pneumonia (concept_id 255848). This works
+best then the number of persons in the subset is quite small and the
+database has indexes on the “person_id” columns of each table.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">person_ids</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">255848</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;write_schema.cohort&gt; [2 x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpIzdzmV/ngtnxnjn]</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1          1 2023-06-08        2023-06-08     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    1          2 2020-02-03        2020-11-04</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">person_ids</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 52</span></span>
+<span></span>
+<span><span class="va">cdm_pneumonia</span> <span class="op">&lt;-</span> <span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="../reference/cdmSubset.html">cdm_subset</a></span><span class="op">(</span>person_id <span class="op">=</span> <span class="va">person_ids</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="va">cdm_pneumonia</span><span class="op">$</span><span class="va">person</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 52</span></span>
+<span></span>
+<span><span class="va">cdm_pneumonia</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 52</span></span></code></pre></div>
+<p>Alternatively if we simply want a random sample of the entire CDM we
+can use <code>cdm_sample</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">cdm_100person</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmSample.html">cdm_sample</a></span><span class="op">(</span><span class="va">cdm</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="va">cdm_100person</span><span class="op">$</span><span class="va">person</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="st">"n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 100</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extracting-data">Extracting data<a class="anchor" aria-label="anchor" href="#extracting-data"></a>
+<h2 id="flatten-a-cdm">Flatten a CDM<a class="anchor" aria-label="anchor" href="#flatten-a-cdm"></a>
 </h2>
-<p>There are two ways to extract subsets of the CDM.</p>
-<ul>
-<li><p><code>collect</code> pulls data into R</p></li>
-<li><p><code>stow</code> saves the cdm subset to a set of files on disk
-in either parquet, feather, or csv format</p></li>
-</ul>
-<p>Note, in either case, you should think carefully about the data you
-are extracting and make sure to only get the data that you require (and
-will fit into memory!)</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">local_cdm</span> <span class="op">&lt;-</span> <span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<p>An OMOP CDM is a relational data model. Sometimes it is helpful to
+flatten this relational structure into a “tidy” dataframe with one row
+per observation. This transformation should only be done with a small
+number of persons and events.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmFlatten.html">cdm_flatten</a></span><span class="op">(</span><span class="va">cdm_pneumonia</span>,</span>
+<span>            domain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condition"</span>, <span class="st">"drug"</span>, <span class="st">"measurement"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3,892 × 8</span></span></span>
+<span><span class="co">#&gt;    person_id observation_concept_id start_date end_date   type_concept_id domain</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 2008-08-15 2008-08-15            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">2</span>333                3<span style="text-decoration: underline;">006</span>322 1945-01-18 1945-01-18            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 1993-09-09 1993-09-09            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">2</span>333                3<span style="text-decoration: underline;">006</span>322 1921-12-27 1921-12-27            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 1957-09-25 1957-09-25            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      <span style="text-decoration: underline;">2</span>333                3<span style="text-decoration: underline;">006</span>322 1966-02-24 1966-02-24            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">1</span>162               40<span style="text-decoration: underline;">758</span>406 1963-01-19 1963-01-19            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 1946-06-25 1946-06-25            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">2</span>333               40<span style="text-decoration: underline;">758</span>406 1921-07-01 1921-07-01            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 1979-04-13 1979-04-13            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3,882 more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: observation_concept_name &lt;chr&gt;, type_concept_name &lt;chr&gt;</span></span></span></code></pre></div>
+<div class="section level3">
+<h3 id="saving-a-local-copy-of-a-cdm">Saving a local copy of a CDM<a class="anchor" aria-label="anchor" href="#saving-a-local-copy-of-a-cdm"></a>
+</h3>
+<p>We can use <code>collect</code> to bring the whole cdm object into R
+as dataframes. If you would like to save a subset of the CDM and then
+restore it in R as a local CDM object, CDMConnector provides the
+<code>stow</code> and <code>cdm_from_files</code> functions to do
+this.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">local_cdm</span> <span class="op">&lt;-</span> <span class="va">cdm_100person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The cdm tables are now dataframes</span></span>
 <span><span class="va">local_cdm</span><span class="op">$</span><span class="va">person</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> </span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt;   person_id gender_concept_id year_of_birth month_of_birth</span></span>
-<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         6              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>963             12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       123              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>950              4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       129              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>974             10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        16              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>971             10</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        72              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>947              7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       156              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>978             10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       173              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>968              3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       177              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>966              4</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">save_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"tmp"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">save_path</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="../reference/stow.html">stow</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">save_path</span>, format <span class="op">=</span> <span class="st">"parquet"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">save_path</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "care_site.parquet"             "cdm_source.parquet"           </span></span>
-<span><span class="co">#&gt;  [3] "cohort.parquet"                "concept_ancestor.parquet"     </span></span>
-<span><span class="co">#&gt;  [5] "concept_class.parquet"         "concept_relationship.parquet" </span></span>
-<span><span class="co">#&gt;  [7] "concept_synonym.parquet"       "concept.parquet"              </span></span>
-<span><span class="co">#&gt;  [9] "condition_era.parquet"         "condition_occurrence.parquet" </span></span>
-<span><span class="co">#&gt; [11] "cost.parquet"                  "death.parquet"                </span></span>
-<span><span class="co">#&gt; [13] "device_exposure.parquet"       "domain.parquet"               </span></span>
-<span><span class="co">#&gt; [15] "dose_era.parquet"              "drug_era.parquet"             </span></span>
-<span><span class="co">#&gt; [17] "drug_exposure.parquet"         "drug_strength.parquet"        </span></span>
-<span><span class="co">#&gt; [19] "fact_relationship.parquet"     "location.parquet"             </span></span>
-<span><span class="co">#&gt; [21] "measurement.parquet"           "metadata.parquet"             </span></span>
-<span><span class="co">#&gt; [23] "note_nlp.parquet"              "note.parquet"                 </span></span>
-<span><span class="co">#&gt; [25] "observation_period.parquet"    "observation.parquet"          </span></span>
-<span><span class="co">#&gt; [27] "payer_plan_period.parquet"     "person.parquet"               </span></span>
-<span><span class="co">#&gt; [29] "procedure_occurrence.parquet"  "provider.parquet"             </span></span>
-<span><span class="co">#&gt; [31] "relationship.parquet"          "source_to_concept_map.parquet"</span></span>
-<span><span class="co">#&gt; [33] "specimen.parquet"              "visit_detail.parquet"         </span></span>
-<span><span class="co">#&gt; [35] "visit_occurrence.parquet"      "vocabulary.parquet"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">save_path</span><span class="op">)</span></span></code></pre></div>
+<p>Restore a saved cdm object from files with
+<code>cdm_from_files</code>.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_files.html">cdm_from_files</a></span><span class="op">(</span><span class="va">save_path</span>, cdm_name <span class="op">=</span> <span class="st">"GI Bleed example data"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="closing-connections">Closing connections<a class="anchor" aria-label="anchor" href="#closing-connections"></a>
-</h2>
-<p>Close the database connection with <code>dbDisconnect</code>. After
-the connection is closed the cdm object can no longer be used.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="closing-connections">Closing connections<a class="anchor" aria-label="anchor" href="#closing-connections"></a>
+</h3>
+<p>Close the database connection with <code>dbDisconnect</code>. After a
+connection is closed any cdm objects created with that connection can no
+longer be used.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
+</h3>
+<p>CDMConnector provides an interface to working with observational
+health data in the OMOP CDM format from R. Check out the other vignettes
+for more details about the package.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

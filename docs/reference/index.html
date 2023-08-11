@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,10 +25,11 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="../articles/a02_working_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
+    <a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a>
   </div>
 </li>
 <li class="nav-item">
@@ -132,6 +133,11 @@ files</dd>
         <dd>Bring a remote CDM reference into R</dd>
       </dl><dl><dt>
           
+          <code><a href="copy_cdm_to.html">copy_cdm_to()</a></code> <code><a href="copy_cdm_to.html">copyCdmTo()</a></code> 
+        </dt>
+        <dd>Copy a cdm object from one database to another</dd>
+      </dl><dl><dt>
+          
           <code><a href="dropTable.html">dropTable()</a></code> <code><a href="dropTable.html">drop_table()</a></code> 
         </dt>
         <dd>Drop tables from write_schema of a cdm object</dd>
@@ -203,9 +209,24 @@ files</dd>
         <dd>Get cohort settings from a GeneratedCohortSet object</dd>
       </dl><dl><dt>
           
+          <code><a href="cohort_erafy.html">cohort_erafy()</a></code> <code><a href="cohort_erafy.html">cohortErafy()</a></code> 
+        </dt>
+        <dd>Collapse cohort records within a certain number of days</dd>
+      </dl><dl><dt>
+          
+          <code><a href="cohort_union.html">cohort_union()</a></code> <code><a href="cohort_union.html">cohortUnion()</a></code> 
+        </dt>
+        <dd>Union all cohorts in a cohort set with cohorts in a second cohort set</dd>
+      </dl><dl><dt>
+          
           <code><a href="generateCohortSet.html">generateCohortSet()</a></code> <code><a href="generateCohortSet.html">generate_cohort_set()</a></code> 
         </dt>
         <dd>Generate a cohort set on a cdm object</dd>
+      </dl><dl><dt>
+          
+          <code><a href="generateConceptCohortSet.html">generateConceptCohortSet()</a></code> <code><a href="generateConceptCohortSet.html">generate_concept_cohort_set()</a></code> 
+        </dt>
+        <dd>Create a new generated cohort set from a list of concept sets</dd>
       </dl><dl><dt>
           
           <code><a href="intersect_cohorts.html">intersect_cohorts()</a></code> <code><a href="intersect_cohorts.html">intersectCohorts()</a></code> 
@@ -215,12 +236,17 @@ files</dd>
           
           <code><a href="new_generated_cohort_set.html">new_generated_cohort_set()</a></code> <code><a href="new_generated_cohort_set.html">newGeneratedCohortSet()</a></code> 
         </dt>
-        <dd>Low level constructor for GeneratedCohortSet objects for package developers</dd>
+        <dd>Constructor for GeneratedCohortSet objects</dd>
       </dl><dl><dt>
           
           <code><a href="read_cohort_set.html">read_cohort_set()</a></code> <code><a href="read_cohort_set.html">readCohortSet()</a></code> 
         </dt>
         <dd>Read a set of cohort definitions into R</dd>
+      </dl><dl><dt>
+          
+          <code><a href="recordCohortAttrition.html">recordCohortAttrition()</a></code> <code><a href="recordCohortAttrition.html">record_cohort_attrition()</a></code> 
+        </dt>
+        <dd>Add attrition reason to a GeneratedCohortSet object</dd>
       </dl><dl><dt>
           
           <code><a href="union_cohorts.html">union_cohorts()</a></code> <code><a href="union_cohorts.html">unionCohorts()</a></code> 
@@ -322,19 +348,19 @@ connection</dd>
         <dd>Download Eunomia data files</dd>
       </dl><dl><dt>
           
-          <code><a href="eunomiaDir.html">eunomiaDir()</a></code> 
+          <code><a href="eunomiaDir.html">eunomiaDir()</a></code> <code><a href="eunomiaDir.html">eunomia_dir()</a></code> 
         </dt>
-        <dd>Create a copy of a Eunomia dataset</dd>
-      </dl><dl><dt>
-          
-          <code><a href="eunomia_dir.html">eunomia_dir()</a></code> 
-        </dt>
-        <dd>Create a new Eunomia CDM</dd>
+        <dd>Create a copy of an example OMOP CDM dataset</dd>
       </dl><dl><dt>
           
           <code><a href="eunomia_is_available.html">eunomia_is_available()</a></code> <code><a href="eunomia_is_available.html">eunomiaIsAvailable()</a></code> 
         </dt>
         <dd>Has the Eunomia dataset been cached?</dd>
+      </dl><dl><dt>
+          
+          <code><a href="exampleDatasets.html">exampleDatasets()</a></code> <code><a href="exampleDatasets.html">example_datasets()</a></code> 
+        </dt>
+        <dd>List the available example CDM datasets</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

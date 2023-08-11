@@ -25,6 +25,9 @@
     <loc>/articles/a05_cdm_reference_backends.html</loc>
   </url>
   <url>
+    <loc>/articles/a06_using_cdm_attributes.html</loc>
+  </url>
+  <url>
     <loc>/articles/index.html</loc>
   </url>
   <url>
@@ -100,6 +103,12 @@
     <loc>/reference/cohortSet.html</loc>
   </url>
   <url>
+    <loc>/reference/cohort_erafy.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cohort_union.html</loc>
+  </url>
+  <url>
     <loc>/reference/collect.cdm_reference.html</loc>
   </url>
   <url>
@@ -107,6 +116,9 @@
   </url>
   <url>
     <loc>/reference/computeQuery.html</loc>
+  </url>
+  <url>
+    <loc>/reference/copy_cdm_to.html</loc>
   </url>
   <url>
     <loc>/reference/dateadd.html</loc>
@@ -151,10 +163,16 @@
     <loc>/reference/eunomia_is_available.html</loc>
   </url>
   <url>
+    <loc>/reference/exampleDatasets.html</loc>
+  </url>
+  <url>
     <loc>/reference/extractLoadData.html</loc>
   </url>
   <url>
     <loc>/reference/generateCohortSet.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generateConceptCohortSet.html</loc>
   </url>
   <url>
     <loc>/reference/inSchema.html</loc>
@@ -188,6 +206,9 @@
   </url>
   <url>
     <loc>/reference/read_cohort_set.html</loc>
+  </url>
+  <url>
+    <loc>/reference/recordCohortAttrition.html</loc>
   </url>
   <url>
     <loc>/reference/snapshot.html</loc>

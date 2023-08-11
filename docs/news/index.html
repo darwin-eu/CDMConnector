@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,10 +25,11 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="../articles/a02_working_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
+    <a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -55,7 +56,20 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.0" id="cdmconnector-100">CDMConnector 1.0.0<a class="anchor" aria-label="anchor" href="#cdmconnector-100"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="cdmconnector-110">CDMConnector 1.1.0<a class="anchor" aria-label="anchor" href="#cdmconnector-110"></a></h2>
+<ul><li>add <code>copy_cdm_to</code>, <code>copyCdmTo</code>
+</li>
+<li>add <code>generate_concept_cohort_set</code>, <code>generateConceptCohortSet</code>
+</li>
+<li>add more example CDM datasets</li>
+<li>add <code>record_cohort_attrition</code>, <code>recordCohortAttrition</code>
+</li>
+<li>improve database test coverage</li>
+<li>update vignettes</li>
+</ul><p>Released Aug 11, 2023</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="cdmconnector-100">CDMConnector 1.0.0<a class="anchor" aria-label="anchor" href="#cdmconnector-100"></a></h2><p class="text-muted">CRAN release: 2023-06-12</p>
 <ul><li>remove <code>write_prefix</code> in <code>cdm_from_con</code> in favor of using the <code>write_schema</code> argument for prefixing</li>
 <li>remove <code>cdm_tables</code> argument from <code>cdm_from_con</code> in favor of <code>cdm_select_tbl</code> selection function</li>
 <li>add attributes to the cdm object to communicate downstream temp table preferences</li>

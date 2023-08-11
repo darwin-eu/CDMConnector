@@ -15,11 +15,11 @@ reference:
 - subtitle: CDM Object
   desc: Create or transform a CDM reference object. These accept and return cdm objects.
 - contents:
-  - matches("^cdm|stow|print.cdm_reference|snapshot|tbl_group|validate_cdm|validateCdm|collect.cdm_reference|assert_write_schema|assert_tables|version|dropTable|dropStemTables|cdm_reference")
+  - matches("^cdm|stow|print.cdm_reference|snapshot|tbl_group|validate_cdm|validateCdm|collect.cdm_reference|assert_write_schema|assert_tables|version|dropTable|dropStemTables|cdm_reference|copy_cdm_to")
 - subtitle: Cohort Creation and Transformation
   desc: A cohort is a set of person-days representing the time during which people in a CDM exhibited some observable characteristics. Cohorts are often the foundation of downstream analyses.
 - contents:
-  - matches("generateCohortSet|^cohort|readCohortSet|newGeneratedCohortSet|intersect|union")
+  - matches("generateCohortSet|^cohort|readCohortSet|newGeneratedCohortSet|intersect|union|generate|recordCohortAttrition")
 - subtitle: dbplyr workarounds
   desc: Functions that can be used in cross database dplyr pipelines
 - contents:
@@ -31,7 +31,7 @@ reference:
 - subtitle: Eunomia example CDM
   desc: Easily create and use example CDMs in a [duckdb](https://duckdb.org/) database
 - contents:
-  - matches("eunomia|downloadEunomiaData")
+  - matches("eunomia|downloadEunomiaData|exampleDatasets|example_datasets")
 
 
 
