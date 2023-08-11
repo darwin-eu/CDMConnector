@@ -19,6 +19,8 @@ generate_concept_cohort_set(
   cdm,
   concept_set = NULL,
   name = "cohort",
+  limit = "first",
+  required_observation = c(0, 0),
   end = "observation_period_end_date",
   overwrite = FALSE
 )
@@ -36,7 +38,7 @@ generate_concept_cohort_set(
 \item{"all" will include all occurrences of the events defined by the concept set in the cohort.}
 }}
 
-\item{requiredObservation}{A numeric vector of length 2 that specifies the number of days of
+\item{requiredObservation, required_observation}{A numeric vector of length 2 that specifies the number of days of
 required observation time prior to index and post index for an event to be included in the cohort.}
 
 \item{end}{How should the \code{cohort_end_date} be defined?
@@ -46,7 +48,7 @@ required observation time prior to index and post index for an event to be inclu
 \item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
 }}
 
-\item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE or FALSE}
+\item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)}
 }
 \value{
 A cdm reference object with the new generated cohort set table added

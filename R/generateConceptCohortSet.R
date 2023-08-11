@@ -42,7 +42,7 @@ table_refs <- function(domain_id) {
 #'  \item{"first" will include only the first occurrence of any event in the concept set in the cohort.}
 #'  \item{"all" will include all occurrences of the events defined by the concept set in the cohort.}
 #' }
-#' @param requiredObservation A numeric vector of length 2 that specifies the number of days of
+#' @param requiredObservation,required_observation A numeric vector of length 2 that specifies the number of days of
 #' required observation time prior to index and post index for an event to be included in the cohort.
 #' @param end How should the `cohort_end_date` be defined?
 #' \itemize{
@@ -50,7 +50,7 @@ table_refs <- function(domain_id) {
 #'  \item{numeric scalar: A fixed number of days from the event start date}
 #'  \item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
 #' }
-#' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE
+#' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)
 #'
 #' @return A cdm reference object with the new generated cohort set table added
 #' @export
@@ -246,14 +246,17 @@ generateConceptCohortSet <- function(cdm,
 generate_concept_cohort_set <- function(cdm,
                                         concept_set = NULL,
                                         name = "cohort",
+                                        limit = "first",
+                                        required_observation = c(0,0),
                                         end = "observation_period_end_date",
                                         overwrite = FALSE) {
   generateConceptCohortSet(cdm = cdm,
                            conceptSet = concept_set,
                            name = name,
+                           limit = limit,
+                           requiredObservation = required_observation,
                            end = end,
                            overwrite = overwrite)
-
 }
 
 

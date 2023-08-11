@@ -24,120 +24,156 @@ if (!eunomia_is_available()) downloadEunomiaData()
 
 ```
 
+Cohort are a fundamental building block for observational health data analysis. A "cohort" is a set of persons satisfying a one or more inclusion criteria for a duration of time. If you are familiar with the idea of sets in math then a cohort can be nicely represented as a set of person-days. In the OMOP Common Data Model we represent cohorts using a table with four columns.
 
-## Adding a cohort
+| cohort_definition_id | subject_id | cohort_start_date | cohort_end_date |
+|----------------------|------------|-------------------|-----------------|
+| 1                    | 1000       | 2020-01-01        | 2020-05-01      |
+| 1                    | 1000       | 2021-06-01        | 2020-07-01      |
+| 1                    | 2000       | 2020-03-01        | 2020-09-01      |
+| 2                    | 1000       | 2020-02-01        | 2020-03-01      |
 
-First, we'll load packages and create a cdm reference. In this case we'll be using the Eunomia "GI Bleed" dataset.
+: An example cohort table
 
-```{r, warning=FALSE, message=FALSE}
-library(CDMConnector)
-library(dplyr)
+A cohort table can contain multiple cohorts and each cohort can have multiple persons. There can even be multiple records for the same person in a single cohort as long as the date ranges do not overlap. In the same way that an element is either in a set or not, a single person-day is either in a cohort or not. For a more comprehensive treatment of cohorts in OHDSI check out the Cohorts chapter in [The Book of OHDSI](https://ohdsi.github.io/TheBookOfOhdsi/Cohorts.html).
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+## Cohort Generation
 
-cdm <- CDMConnector::cdm_from_con(
-  con = con,
-  cdm_schema = "main",
-  write_schema = "main"
-)
+The $n*4$ cohort table is created through the process of cohort *generation*. To generate a cohort on a specific CDM dataset means that we combine a *cohort definition* with CDM to produce a cohort table. The standardization provided by the OMOP CDM allows researchers to generate the same cohort definition on any OMOP CDM dataset.
+
+A cohort definition is an expression of the rules goverining the inclusion/exclusion of person-days in the cohort. There are three common ways to create cohort definitions for the OMOP CDM.
+
+1.  The Atlas cohort builder
+
+2.  The Capr R package
+
+3.  Custom SQL and/or R code
+
+Atlas is a web application that provides a graphical user interface for creating cohort definitions. . To get started with Atlas check out the free course on [Ehden Academy](https://academy.ehden.eu/course/index.php) and the demo at <https://atlas-demo.ohdsi.org/>.
+
+Capr is an R package that provides a code-based interface for creating cohort definitions. The options available in Capr exactly match the options available in Atlas and the resulting cohort tables should be identical.
+
+There are times when more customization is needed and it is possible to use bespoke SQL or dplyr code to build a cohort. CDMConnector provides the `generate_concept_cohort_set` function for quickly building simple cohorts that can then be a starting point for further subsetting.
+
+Atlas cohorts are represented using json text files. To "generate" one or more Atlas cohorts on a cdm object use the `read_cohort_set` function to first read a folder of Atlas cohort json files into R. Then create the cohort table with `generate_cohort_set`. There can be an optional csv file called "CohortsToCreate.csv" in the folder that specifies the cohort IDs and names to use. If this file doesn't exist IDs will be assigned automatically using alphabetical order of the filenames.
+
+```{r}
+path_to_cohort_json_files <- system.file("cohorts1", package = "CDMConnector")
+list.files(path_to_cohort_json_files)
+
+readr::read_csv(file.path(path_to_cohort_json_files, "CohortsToCreate.csv"),
+                show_col_types = FALSE)
 ```
 
-We can define a cohort for GI bleeding, where we exclude anyone with a record of rheumatoid arthritis at any time.
+### Atlas cohort definitions
+
+First we need to create our CDM object. Note that we will need to specify a `write_schema` when creating the object. Cohort tables will go into the CDM's `write_schema`.
+
+```{r}
+library(CDMConnector)
+path_to_cohort_json_files <- system.file("example_cohorts", 
+                                         package = "CDMConnector")
+list.files(path_to_cohort_json_files)
+
+con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("GiBleed"))
+cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+cohort_set <- read_cohort_set(path_to_cohort_json_files)
+
+cohort_set
+
+cdm <- generate_cohort_set(cdm, 
+                           cohort_set,
+                           name = "study_cohorts")
+
+cdm$study_cohorts
+
+```
+
+The generated cohort has some associated metadata tables.
+
+```{r}
+cohort_count(cdm$study_cohorts)
+cohort_attrition(cdm$study_cohorts)
+cohort_set(cdm$study_cohorts)
+```
+
+Note the this cohort table is still in the database so it can be quite large. We can also join it to other CDM table or subset the entire cdm to just the persons in the cohort.
 
 ```{r, eval=FALSE}
-# devtools::install_github("OHDSI/Capr")
+cdm_gibleed <- cdm %>% 
+  cdm_subset_cohort(cohort_table = "study_cohorts")
+```
+
+### Capr cohort definitions
+
+Capr allows us to use R code to create the same cohorts that can be created in Atlas. This is helpful when you need to create a large number of similar cohort definitions. Below we create a single Cohort definition with one inclusion criteria
+
+`generate_cohort_set` will accept a named list of Capr
+
+```{r}
 library(Capr)
 
-gibleed_cohort_definition <- cohort(
-  entry = condition(cs(descendants(192671))),
-  attrition = attrition(
-    "no RA" = withAll(
-      exactly(0,
-              condition(cs(descendants(80809))),
-              duringInterval(eventStarts(-Inf, Inf))))
-  )
+gibleed_concept_set <- cs(192671, name = "gibleed")
+
+gibleed_definition <- cohort(
+  entry = conditionOccurrence(gibleed_concept_set)
 )
 
-# requires CirceR optional dependency
-cdm <- generateCohortSet(
+gibleed_male_definition <- cohort(
+  entry = conditionOccurrence(gibleed_concept_set, male())
+)
+
+# create a named list of Capr cohort definitions
+cohort_set = list(gibleed = gibleed_definition,
+                  gibleed_male = gibleed_male_definition)
+
+# generate cohorts
+cdm <- generate_cohort_set(
   cdm,
-  cohortSet = list(gibleed = gibleed_cohort_definition),
-  name = "gibleed",
-  computeAttrition = TRUE
+  cohort_set = cohort_set,
+  name = "gibleed" # name for the cohort table in the cdm
 )
-```
 
-```{r, echo=FALSE, eval=FALSE}
-# save data in package. Only do this when editing vignette.
-cdm$gibleed %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed.rds"))
+cdm$gibleed
 
-cdm$gibleed %>% 
-  cohortCount() %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed_count.rds"))
-
-cdm$gibleed %>% 
-  cohortAttrition() %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed_attrition.rds"))
-
-cdm$gibleed %>% 
-  cohortSet() %>% 
-  collect() %>% 
-  readr::write_rds(here::here("inst", "rds", "gibleed_set.rds"))
 
 ```
 
+We should get the exact same result from Capr and Atlas if the definitions are equivalent.
 
-We can see that we now have our cohort instantiated in the database with a reference to it added to the cdm reference.
-```{r, eval=FALSE}
-cdm$gibleed %>% 
-  glimpse()
-```
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
-```
+Learn more about Capr at the package website <https://ohdsi.github.io/Capr/>.
 
+### Custom Cohort Creation
 
-## Cohort attributes
+Sometimes you may want to create cohorts that cannot be easily expressed using Atlas or Capr. In these situations you can create implement cohort creation using SQL or R. See the chapter in [The Book of OHDSI](https://ohdsi.github.io/TheBookOfOhdsi/Cohorts.html#implementing-the-cohort-using-sql) for details on using SQL to create cohorts. CDMConnector provides a helper function to build simple cohorts from a list of OMOP concepts. `generate_concept_cohort_set` accepts a named list of concept sets and will create cohorts based on those concept sets. While this function does not allow for inclusion/exclusion criteria in the initial definition, additional criteria can be applied "manually" after the initial generation.
 
-As well as the cohort itself, the cohort has a number of attributes. First, is a count of participants by cohort. We can use `cohortCount` to get these counts.
+```{r}
 
-```{r, eval=FALSE}
-cohortCount(cdm$gibleed) %>% 
-  glimpse()
-```
+library(dplyr, warn.conflicts = FALSE)
 
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed_count.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
-```
+cdm <- generate_concept_cohort_set(
+  cdm, 
+  concept_set = list(gibleed = 192671), 
+  name = "gibleed2", # name of the cohort table
+  limit = "all", # use all occurrences of the concept instead of just the first
+  end = 10 # set explicit cohort end date 10 days after start
+)
 
-We also have the attrition associated with entry into the cohort available via `cohortAttrition`.
-```{r, eval=FALSE}
-cohortAttrition(cdm$gibleed) %>% 
-  glimpse()
-```
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed_attrition.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
+cdm$gibleed2 <- cdm$gibleed2 %>% 
+  semi_join(
+    filter(cdm$person, gender_concept_id == 8507), 
+    by = c("subject_id" = "person_id")
+  ) %>% 
+  record_cohort_attrition(reason = "Male")
+  
+cohort_attrition(cdm$gibleed2) 
 ```
 
-And lastly, we can also access the settings associated with the cohort using `cohortCount`.
-```{r, eval=FALSE}
-cohortSet(cdm$gibleed) %>% 
-  glimpse()
-```
+In the above example we built a cohort table from a concept set. The cohort essentially captures patient-time based off of the presence or absence of OMOP standard concept IDs. We then manually applied an inclusion criteria and recorded a new attrition record in the cohort. To learn more about this approach to building cohorts check out the [PatientProfiles](https://darwin-eu-dev.github.io/PatientProfiles/) R package.
 
-```{r, echo=FALSE}
-readr::read_rds(system.file("rds", "gibleed_set.rds", package = "CDMConnector", mustWork = TRUE)) %>% 
-  glimpse()
-```
+Cohort building is a fundamental building block of observational health analysis and CDMConnector supports different ways of creating cohorts. As long as your cohort table is has the required structure and columns you can add it to the cdm with the `new_generated_cohort_set` function and use it in any downstream OHDSI analytic packages.
 
 ```{r}
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```
-
