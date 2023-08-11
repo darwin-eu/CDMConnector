@@ -30,7 +30,7 @@
     
     <a class="navbar-brand me-2" href="index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,10 +46,11 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="articles/a02_Working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="articles/a02_working_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="articles/a05_cdm_reference_backends.html">CDM reference backends</a>
+    <a class="dropdown-item" href="articles/a06_using_cdm_attributes.html">Using CDM attributes</a>
   </div>
 </li>
 <li class="nav-item">
@@ -110,128 +111,128 @@
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>CDMConnector can be installed from CRAN:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"CDMConnector"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"CDMConnector"</span>)</span></code></pre></div>
 <p>The development version can be installed from GitHub:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("devtools")</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"darwin-eu/CDMConnector"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># install.packages("devtools")</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"darwin-eu/CDMConnector"</span>)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>Create a <code>cdm_reference</code> object from any DBI connection. Use the `cdm_schema argument to point to a particular schema in your database.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CDMConnector)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(duckdb<span class="sc">::</span><span class="fu">duckdb</span>(), <span class="at">dbdir =</span> <span class="fu">eunomia_dir</span>())</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>cdm <span class="ot">&lt;-</span> <span class="fu">cdm_from_con</span>(con, <span class="at">cdm_schema =</span> <span class="st">"main"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>cdm</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="do">## # OMOP CDM reference (tbl_duckdb_connection)</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, metadata, cdm_source, concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(CDMConnector)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>con <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(duckdb<span class="sc">::</span><span class="fu">duckdb</span>(), <span class="at">dbdir =</span> <span class="fu">eunomia_dir</span>())</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>cdm <span class="ot">&lt;-</span> <span class="fu">cdm_from_con</span>(con, <span class="at">cdm_schema =</span> <span class="st">"main"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>cdm</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="do">## # OMOP CDM reference (tbl_duckdb_connection)</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="do">## Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, metadata, cdm_source, concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span></code></pre></div>
 <p>A <code>cdm_reference</code> is a named list of table references:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr, <span class="at">warn.conflicts =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(cdm)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1] "person"                "observation_period"    "visit_occurrence"     </span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  [4] "visit_detail"          "condition_occurrence"  "drug_exposure"        </span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="do">##  [7] "procedure_occurrence"  "device_exposure"       "measurement"          </span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="do">## [10] "observation"           "death"                 "note"                 </span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## [13] "note_nlp"              "specimen"              "fact_relationship"    </span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">## [16] "location"              "care_site"             "provider"             </span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">## [19] "payer_plan_period"     "cost"                  "drug_era"             </span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## [22] "dose_era"              "condition_era"         "metadata"             </span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="do">## [25] "cdm_source"            "concept"               "vocabulary"           </span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="do">## [28] "domain"                "concept_class"         "concept_relationship" </span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="do">## [31] "relationship"          "concept_synonym"       "concept_ancestor"     </span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="do">## [34] "source_to_concept_map" "drug_strength"</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(dplyr, <span class="at">warn.conflicts =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">names</span>(cdm)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="do">##  [1] "person"                "observation_period"    "visit_occurrence"     </span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="do">##  [4] "visit_detail"          "condition_occurrence"  "drug_exposure"        </span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="do">##  [7] "procedure_occurrence"  "device_exposure"       "measurement"          </span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="do">## [10] "observation"           "death"                 "note"                 </span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="do">## [13] "note_nlp"              "specimen"              "fact_relationship"    </span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="do">## [16] "location"              "care_site"             "provider"             </span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="do">## [19] "payer_plan_period"     "cost"                  "drug_era"             </span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="do">## [22] "dose_era"              "condition_era"         "metadata"             </span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="do">## [25] "cdm_source"            "concept"               "vocabulary"           </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="do">## [28] "domain"                "concept_class"         "concept_relationship" </span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="do">## [31] "relationship"          "concept_synonym"       "concept_ancestor"     </span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="do">## [34] "source_to_concept_map" "drug_strength"</span></span></code></pre></div>
 <p>Use dplyr verbs with the table references.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tally</span>(cdm<span class="sc">$</span>person)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="do">## # Source:   SQL [1 x 1]</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpGP4CIq/xpjlsqnl]</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="do">##       n</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">tally</span>(cdm<span class="sc">$</span>person)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="do">## # Source:   SQL [1 x 1]</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpGP4CIq/xpjlsqnl]</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="do">##       n</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
 <p>Compose operations with the pipe.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>cdm<span class="sc">$</span>condition_era <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(cdm<span class="sc">$</span>concept, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"condition_concept_id"</span> <span class="ot">=</span> <span class="st">"concept_id"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(<span class="at">top_conditions =</span> concept_name, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpGP4CIq/xpjlsqnl]</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="do">##  1 Viral sinusitis                          17268</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="do">##  2 Acute viral pharyngitis                  10217</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="do">##  3 Acute bronchitis                          8184</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="do">##  4 Otitis media                              3561</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="do">##  5 Osteoarthritis                            2694</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="do">##  6 Streptococcal sore throat                 2656</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="do">##  7 Sprain of ankle                           1915</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="do">##  8 Concussion with no loss of consciousness  1013</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="do">##  9 Sinusitis                                 1001</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="do">## 10 Acute bacterial sinusitis                  939</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ more rows</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>cdm<span class="sc">$</span>condition_era <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">left_join</span>(cdm<span class="sc">$</span>concept, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"condition_concept_id"</span> <span class="ot">=</span> <span class="st">"concept_id"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">count</span>(<span class="at">top_conditions =</span> concept_name, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpGP4CIq/xpjlsqnl]</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="do">##  1 Viral sinusitis                          17268</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="do">##  2 Acute viral pharyngitis                  10217</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="do">##  3 Acute bronchitis                          8184</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="do">##  4 Otitis media                              3561</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="do">##  5 Osteoarthritis                            2694</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="do">##  6 Streptococcal sore throat                 2656</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="do">##  7 Sprain of ankle                           1915</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="do">##  8 Concussion with no loss of consciousness  1013</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="do">##  9 Sinusitis                                 1001</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="do">## 10 Acute bacterial sinusitis                  939</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="do">## # ℹ more rows</span></span></code></pre></div>
 <p>Run a simple quality check on a cdm.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>cdm <span class="ot">&lt;-</span> <span class="fu">cdm_from_con</span>(con, <span class="at">cdm_schema =</span> <span class="st">"main"</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">validate_cdm</span>(cdm)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">## ── CDM v5.3 validation (checking 35 tables) ────────────────────────────────────</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## visit_detail table expected columns[8:19] vs visit_detail table actual_colums[8:19]</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   "visit_detail_type_concept_id"</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="do">##   "provider_id"</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   "care_site_id"</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="do">## - "visit_detail_source_value"</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="do">## + "admitting_source_concept_id"</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="do">## - "visit_detail_source_concept_id"</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="do">## + "discharge_to_concept_id"</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="do">## - "admitting_source_value"</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="do">## + "preceding_visit_detail_id"</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="do">## - "admitting_source_concept_id"</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="do">## + "visit_detail_source_value"</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="do">## - "discharge_to_source_value"</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="do">## + "visit_detail_source_concept_id"</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="do">## - "discharge_to_concept_id"</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="do">## + "admitting_source_value"</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="do">## - "preceding_visit_detail_id"</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="do">## + "discharge_to_source_value"</span></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="do">## and 2 more ...</span></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="do">## condition_occurrence table expected columns[6:16] vs condition_occurrence table actual_colums[6:16]</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="do">##   "condition_end_date"</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="do">##   "condition_end_datetime"</span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="do">##   "condition_type_concept_id"</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="do">## - "condition_status_concept_id"</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="do">## + "stop_reason"</span></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="do">## - "stop_reason"</span></span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="do">## + "provider_id"</span></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="do">## - "provider_id"</span></span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="do">## + "visit_occurrence_id"</span></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="do">## - "visit_occurrence_id"</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="do">## + "visit_detail_id"</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="do">## - "visit_detail_id"</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="do">## + "condition_source_value"</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="do">## - "condition_source_value"</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="do">## + "condition_source_concept_id"</span></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="do">## - "condition_source_concept_id"</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="do">## + "condition_status_source_value"</span></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="do">## and 1 more ...</span></span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="do">##     note_nlp table expected columns | note_nlp table actual_colums    </span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="do">## [2] "note_id"                       | "note_id"                    [2]</span></span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="do">## [3] "section_concept_id"            | "section_concept_id"         [3]</span></span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="do">## [4] "snippet"                       | "snippet"                    [4]</span></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="do">## [5] "\"offset\""                    - "offset"                     [5]</span></span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="do">## [6] "lexical_variant"               | "lexical_variant"            [6]</span></span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="do">## [7] "note_nlp_concept_id"           | "note_nlp_concept_id"        [7]</span></span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="do">## [8] "note_nlp_source_concept_id"    | "note_nlp_source_concept_id" [8]</span></span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="do">##      cost table expected columns | cost table actual_colums       </span></span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="do">## [17] "payer_plan_period_id"      | "payer_plan_period_id"     [17]</span></span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="do">## [18] "amount_allowed"            | "amount_allowed"           [18]</span></span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="do">## [19] "revenue_code_concept_id"   | "revenue_code_concept_id"  [19]</span></span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="do">## [20] "revenue_code_source_value" - "reveue_code_source_value" [20]</span></span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a><span class="do">## [21] "drg_concept_id"            | "drg_concept_id"           [21]</span></span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="do">## [22] "drg_source_value"          | "drg_source_value"         [22]</span></span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a><span class="do">## • 17 empty CDM tables: visit_detail, device_exposure, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, dose_era, metadata, concept_class, source_to_concept_map, drug_strength</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>cdm <span class="ot">&lt;-</span> <span class="fu">cdm_from_con</span>(con, <span class="at">cdm_schema =</span> <span class="st">"main"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">validate_cdm</span>(cdm)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">## ── CDM v5.3 validation (checking 35 tables) ────────────────────────────────────</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">## visit_detail table expected columns[8:19] vs visit_detail table actual_colums[8:19]</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="do">##   "visit_detail_type_concept_id"</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="do">##   "provider_id"</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="do">##   "care_site_id"</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="do">## - "visit_detail_source_value"</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="do">## + "admitting_source_concept_id"</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="do">## - "visit_detail_source_concept_id"</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="do">## + "discharge_to_concept_id"</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="do">## - "admitting_source_value"</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="do">## + "preceding_visit_detail_id"</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="do">## - "admitting_source_concept_id"</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="do">## + "visit_detail_source_value"</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="do">## - "discharge_to_source_value"</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="do">## + "visit_detail_source_concept_id"</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="do">## - "discharge_to_concept_id"</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="do">## + "admitting_source_value"</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="do">## - "preceding_visit_detail_id"</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="do">## + "discharge_to_source_value"</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="do">## and 2 more ...</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="do">## condition_occurrence table expected columns[6:16] vs condition_occurrence table actual_colums[6:16]</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="do">##   "condition_end_date"</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="do">##   "condition_end_datetime"</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="do">##   "condition_type_concept_id"</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="do">## - "condition_status_concept_id"</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="do">## + "stop_reason"</span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="do">## - "stop_reason"</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="do">## + "provider_id"</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="do">## - "provider_id"</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="do">## + "visit_occurrence_id"</span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="do">## - "visit_occurrence_id"</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="do">## + "visit_detail_id"</span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="do">## - "visit_detail_id"</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="do">## + "condition_source_value"</span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="do">## - "condition_source_value"</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="do">## + "condition_source_concept_id"</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="do">## - "condition_source_concept_id"</span></span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="do">## + "condition_status_source_value"</span></span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="do">## and 1 more ...</span></span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="do">##     note_nlp table expected columns | note_nlp table actual_colums    </span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="do">## [2] "note_id"                       | "note_id"                    [2]</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="do">## [3] "section_concept_id"            | "section_concept_id"         [3]</span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a><span class="do">## [4] "snippet"                       | "snippet"                    [4]</span></span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="do">## [5] "\"offset\""                    - "offset"                     [5]</span></span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="do">## [6] "lexical_variant"               | "lexical_variant"            [6]</span></span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="do">## [7] "note_nlp_concept_id"           | "note_nlp_concept_id"        [7]</span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="do">## [8] "note_nlp_source_concept_id"    | "note_nlp_source_concept_id" [8]</span></span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="do">##      cost table expected columns | cost table actual_colums       </span></span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="do">## [17] "payer_plan_period_id"      | "payer_plan_period_id"     [17]</span></span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="do">## [18] "amount_allowed"            | "amount_allowed"           [18]</span></span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="do">## [19] "revenue_code_concept_id"   | "revenue_code_concept_id"  [19]</span></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="do">## [20] "revenue_code_source_value" - "reveue_code_source_value" [20]</span></span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="do">## [21] "drg_concept_id"            | "drg_concept_id"           [21]</span></span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="do">## [22] "drg_source_value"          | "drg_source_value"         [22]</span></span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="do">## • 17 empty CDM tables: visit_detail, device_exposure, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, dose_era, metadata, concept_class, source_to_concept_map, drug_strength</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="dbi-drivers">DBI Drivers<a class="anchor" aria-label="anchor" href="#dbi-drivers"></a>

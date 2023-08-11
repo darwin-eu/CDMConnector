@@ -1,0 +1,280 @@
+---
+title: "Getting Started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+library(CDMConnector)
+if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") Sys.setenv("EUNOMIA_DATA_FOLDER" = tempdir())
+if (!dir.exists(Sys.getenv("EUNOMIA_DATA_FOLDER"))) dir.create(Sys.getenv("EUNOMIA_DATA_FOLDER"))
+if (!eunomia_is_available()) downloadEunomiaData()
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The Observational Medical Outcomes Partnership (OMOP) Common Data Model (CDM) is a commonly used format for storing and analyzing observational health data derived from electronic health records, insurance claims, registries, and other sources. Source data is "mapped" into the OMOP CDM format providing researchers with a standardized interface for querying and analyzing observational health data. The CDMConnector package provides tools for working with OMOP Common Data Model (CDM) tables using familiar [dplyr](https://dplyr.tidyverse.org) syntax and using the [tidyverse design principles](https://design.tidyverse.org/) popular in the R ecosystem.
+
+This vignette is for new users of CDMConnector who have access to data already mapped into the OMOP CDM format. However, CDMConnector does provide several example synthetic datasets in the OMOP CDM format. To learn more about the OMOP CDM or the mapping process check out these resources.
+
+-   <https://academy.ehden.eu/>
+
+-   <https://ohdsi.github.io/TheBookOfOhdsi/>
+
+-   <https://www.ohdsi.org/join-the-journey/>
+
+-   <https://ohdsi.github.io/CommonDataModel/>
+
+## Creating a reference to the OMOP CDM
+
+Typically OMOP CDM datasets are stored in a database and can range in size from hundreds of patients with thousands of records to hundreds of millions of patients with billions of records. The Observational Health Data Science and Infromatics (OHDSI) community supports a selection of popular database platforms including Postgres, Microsoft SQL Server, Oracle, as well as cloud data platforms suchs as Amazon Redshift, Google Big Query, Databricks, and Snowflake. The first step in using CDMConnector is to create a connection to your database from R. This can take some effort the first time you set up drivers. See the "Database Connection Examples" vignette or check out the [Posit's database documentation.](https://solutions.posit.co/connections/db/getting-started/connect-to-database/)
+
+In our example's we will use some synthetic data from the [Synthea project](https://synthetichealth.github.io/synthea/) that has been mapped to the OMOP CDM format. We'll use the [duckdb](https://duckdb.org/) database which is a file based database similar to SQLite but with better date type support. To see all the example datasets available run `example_datasets()`.
+
+```{r}
+library(CDMConnector)
+example_datasets()
+
+con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("GiBleed"))
+DBI::dbListTables(con)
+```
+
+If you're using CDMConnector for the first time you may get a message about adding an enviroment vairable `EUNOMIA_DATA_FOLDER` . To do this simply create a new text file in your home directory called .Renviron and add the line `EUNOMIA_DATA_FOLDER="path/to/folder/where/we/can/store/example/data"`. If you run `usethis::edit_r_environ()` this file will be created and opened for you and opened in RStudio.
+
+After connecting to a database containing data mapped to the OMOP CDM, use `cdm_from_con` to create a CDM reference. This CDM reference is a single object that contains dplyr table references to each CDM table along with metadata about the CDM instance.
+
+The cdm_schema is the schema in the database that contains the OMOP CDM tables and is required. All other arguments are optional.
+
+```{r}
+cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm
+cdm$observation_period
+```
+
+Individual CDM table references can be accessed using \`\$\`.
+
+```{r}
+cdm$person %>% 
+  dplyr::glimpse()
+
+```
+
+You can then use dplyr to query the cdm tables just as you would an R dataframe. The difference is that the data stays in the database and SQL code is dynamically generated and set to the database backend. The goal is to allow users to not think too much about the database or SQL and instead use familiar R syntax to work with these large tables. `collect` will bring the data from the database into R. Be careful not to request a gigantic result set! In general it is better to aggregate data in the database, if possible, before bringing data into R.
+
+```{r, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+
+cdm$person %>% 
+  group_by(year_of_birth, gender_concept_id) %>% 
+  summarize(n = n(), .groups = "drop") %>% 
+  collect() %>% 
+  mutate(sex = case_when(
+    gender_concept_id == 8532 ~ "Female",
+    gender_concept_id == 8507 ~ "Male"
+  )) %>% 
+  ggplot(aes(y = n, x = year_of_birth, fill = sex)) +
+  geom_histogram(stat = "identity", position = "dodge") +
+  labs(x = "Year of birth", 
+       y = "Person count", 
+       title = "Age Distribution",
+       subtitle = cdm_name(cdm),
+       fill = NULL) +
+  theme_bw()
+```
+
+## Joining tables
+
+Since the OMOP CDM is a relational data model joins are very common in analytic code. All of the events in the OMOP CDM are recorded using integers representing standard "concepts". To see the text description of a concept researchers need to join clinical tables to the concept vocabulary table. Every OMOP CDM should have a copy of the vocabulary used to map the data to the OMOP CDM format.
+
+Here is an example query looking at the most common conditions in the CDM.
+
+```{r, warning=FALSE}
+cdm$condition_occurrence %>% 
+  count(condition_concept_id, sort = T) %>% 
+  left_join(cdm$concept, by = c("condition_concept_id" = "concept_id")) %>% 
+  collect() %>% 
+  select("condition_concept_id", "concept_name", "n") 
+```
+
+Let's look at the most common drugs used by patients with "Acute viral pharyngitis".
+
+```{r, warning=FALSE}
+cdm$condition_occurrence %>% 
+  filter(condition_concept_id == 4112343) %>% 
+  distinct(person_id) %>% 
+  inner_join(cdm$drug_exposure, by = "person_id") %>% 
+  count(drug_concept_id, sort = TRUE) %>% 
+  left_join(cdm$concept, by = c("drug_concept_id" = "concept_id")) %>% 
+  collect() %>% 
+  select("concept_name", "n") 
+```
+
+To inspect the generated SQL use `show_query` from dplyr.
+
+```{r, warning=FALSE}
+cdm$condition_occurrence %>% 
+  filter(condition_concept_id == 4112343) %>% 
+  distinct(person_id) %>% 
+  inner_join(cdm$drug_exposure, by = "person_id") %>% 
+  count(drug_concept_id, sort = TRUE) %>% 
+  left_join(cdm$concept, by = c("drug_concept_id" = "concept_id")) %>% 
+  show_query() 
+```
+
+These are a few simple queries. More complex queries can be built by combining simple queries like the ones above and other analytic packages provide functions that implement common analytic use cases.
+
+For example a "cohort definition" is a set of criteria that persons must satisfy that can be quite complex. The "Working with Cohorts" vignette describes creating and using cohorts with CDMConnector.
+
+## Saving query results to the database
+
+Sometime it is helpful to save query results to the database instead of reading the result into R. dplyr provides the `compute` function but due to differences between database systems CDMConnector has needed to export a wrapper that handles the slight differences. CDMConnector's `compute_query` function works similarly but is tested across the OHDSI supported database platforms. It also has a few more options than `dplyr::compute.`
+
+If we are writing data to the CDM database we need to add one more argument when creating our cdm reference object, the "write_schema". This is a schema in the database where you have write permissions. Typically this should be a separate schema from the "cdm_schema".
+
+```{r}
+
+DBI::dbExecute(con, "create schema scratch;")
+cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "scratch")
+```
+
+```{r, warning=FALSE}
+
+drugs <- cdm$condition_occurrence %>% 
+  filter(condition_concept_id == 4112343) %>% 
+  distinct(person_id) %>% 
+  inner_join(cdm$drug_exposure, by = "person_id") %>% 
+  count(drug_concept_id, sort = TRUE) %>% 
+  left_join(cdm$concept, by = c("drug_concept_id" = "concept_id")) %>% 
+  compute_query(name = "test",
+                temporary = FALSE,
+                schema = "scratch",
+                overwrite = TRUE)
+
+drugs %>% show_query()
+
+drugs
+```
+
+We can see that the query has been saved to a new table in the scratch schema. `compute_query` returns a dplyr reference to this table.
+
+## Selecting a subset of CDM tables
+
+If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_select_tbl` function supports the [tidyselect selection language](%5Bhttps://tidyselect.r-lib.org/reference/language.html)](<https://tidyselect.r-lib.org/reference/language.html>)) and provides a new selection helper: `tbl_group`.
+
+```{r}
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl("person", "observation_period") # quoted names
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(person, observation_period) # unquoted names 
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(starts_with("concept")) # tables that start with 'concept'
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(contains("era")) # tables that contain the substring 'era'
+cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(matches("person|period")) # regular expression
+```
+
+Predefined sets of tables can also be selected using `tbl_group` which supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
+
+```{r}
+# pre-defined groups
+cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("clinical")) 
+cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("vocab")) 
+```
+
+The default set of CDM tables included in a CDM object is:
+
+```{r}
+tbl_group("default")
+```
+
+## Subsetting a CDM
+
+Sometimes it is helpful to subset a CDM to a specific set of persons or simply down sample the data to a more reasonable size. Let's subset our cdm to just persons with a Pneumonia (concept_id 255848). This works best then the number of persons in the subset is quite small and the database has indexes on the "person_id" columns of each table.
+
+```{r}
+person_ids <- cdm$condition_occurrence %>% 
+  filter(condition_concept_id == 255848) %>% 
+  distinct(person_id) %>% 
+  pull(person_id)
+
+length(person_ids)
+
+cdm_pneumonia <- cdm %>%
+  cdm_subset(person_id = person_ids)
+
+tally(cdm_pneumonia$person) %>% 
+  pull(n)
+
+cdm_pneumonia$condition_occurrence %>% 
+  distinct(person_id) %>% 
+  tally() %>% 
+  pull(n)
+```
+
+Alternatively if we simply want a random sample of the entire CDM we can use `cdm_sample`.
+
+```{r}
+
+cdm_100person <- cdm_sample(cdm, n = 100)
+
+tally(cdm_100person$person) %>% pull("n")
+
+```
+
+# Flatten a CDM
+
+An OMOP CDM is a relational data model. Sometimes it is helpful to flatten this
+relational structure into a "tidy" dataframe with one row per observation. This 
+transformation should only be done with a small number of persons and events.
+
+```{r}
+cdm_flatten(cdm_pneumonia,
+            domain = c("condition", "drug", "measurement")) %>% 
+  collect()
+```
+
+
+## Saving a local copy of a CDM
+
+We can use `collect` to bring the whole cdm object into R as dataframes. If you would like to save a subset of the CDM and then restore it in R as a local CDM object, CDMConnector provides the `stow` and `cdm_from_files` functions to do this.
+
+```{r}
+local_cdm <- cdm_100person %>% 
+  collect()
+
+# The cdm tables are now dataframes
+local_cdm$person[1:4, 1:4] 
+```
+
+```{r, eval=FALSE}
+save_path <- file.path(tempdir(), "tmp")
+dir.create(save_path)
+
+cdm %>% 
+  stow(path = save_path, format = "parquet")
+
+list.files(save_path)
+```
+
+Restore a saved cdm object from files with `cdm_from_files`.
+
+```{r, eval=FALSE}
+cdm <- cdm_from_files(save_path, cdm_name = "GI Bleed example data")
+```
+
+## Closing connections
+
+Close the database connection with `dbDisconnect`. After a connection is closed any 
+cdm objects created with that connection can no longer be used.
+
+```{r}
+DBI::dbDisconnect(con, shutdown = TRUE)
+```
+
+
+## Summary
+
+CDMConnector provides an interface to working with observational health data in the OMOP CDM format from R. Check out the other vignettes for more details about the package.
