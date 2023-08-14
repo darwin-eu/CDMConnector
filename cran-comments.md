@@ -1,9 +1,9 @@
 ## R CMD check results
 
-This is a new mionr release.
+This is a new minor release.
 
 One NOTE is expected:
-Suggests or Enhances not in mainstream repositories: CirceR
+Suggests or Enhances not in mainstream repositories: CirceR, Capr
 
 RCMD check passed on the following platforms with 0 errors, 0 warnings, and 0 notes 
 
