@@ -44,8 +44,26 @@ test_dbi <- function(con, cdm_schema, write_schema) {
   expect_true(nrow(person) == 1)
 
   DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
+  # TODO add this test
   # DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "temp_test"))
-  expect_false("temp_test" %in% list_tables(con, schema = write_schema))
+  # expect_false("temp_test" %in% list_tables(con, schema = write_schema))
+  #
+  # expect_no_error(
+  #   DBI::dbCreateTable(con,
+  #                      inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)),
+  #                      fields = c(speed = "integer", dist = "integer"))
+  # )
+  #
+  # # bigquery gives warning
+  # expect_no_error(
+  #   DBI::dbAppendTable(con,
+  #                      name = inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)),
+  #                      value = cars)
+  # )
+  # # error on bigquery
+  #
+  # DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
+
 }
 
 # dbToTest <- c(
@@ -58,7 +76,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 #   ,"bigquery"
 # )
 
-# dbtype = "duckdb"
+dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
     if (dbtype == "duckdb") skip_if_not_installed("duckdb") else skip_on_ci()

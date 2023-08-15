@@ -20,6 +20,7 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
 
   checkmate::assertTRUE(DBI::dbIsValid(con))
   checkmate::assertClass(cdm, "cdm_reference")
+  if (dbms(con) == "bigquery") rlang::abort("copy_cdm_to on BigQuery is not yet supported!")
 
   if ("prefix" %in% names(schema)) {
     prefix <- unname(schema["prefix"])

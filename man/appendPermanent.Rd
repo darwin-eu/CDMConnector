@@ -28,7 +28,7 @@ Run a dplyr query and add the result set to an existing
 \dontrun{
 library(CDMConnector)
 
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 concept <- dplyr::tbl(con, "concept")
 
 # create a table

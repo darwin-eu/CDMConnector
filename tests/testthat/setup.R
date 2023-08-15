@@ -148,5 +148,6 @@ dbToTest <- c(
 
   # ,"spark"
   # ,"oracle"
-  # ,"bigquery"
+  # ,
+  ,"bigquery"
 )

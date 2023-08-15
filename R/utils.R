@@ -34,9 +34,17 @@ NULL
 #' @return A DBI::Id that represents a qualified table and schema
 #' @export
 inSchema <- function(schema, table, dbms = NULL) {
-  checkmate::assertCharacter(schema, min.len = 1, max.len = 3)
+  checkmate::assertCharacter(schema, min.len = 1, max.len = 3, null.ok = TRUE)
   checkmate::assertCharacter(table, len = 1)
   checkmate::assertCharacter(dbms, len = 1, null.ok = TRUE)
+
+  if (is.null(schema)) {
+    # return temp table name
+    if (dbms == "sql server") {
+      return(paste0("#", table))
+    }
+    return(table)
+  }
 
   if ("prefix" %in% names(schema)) {
     checkmate::assertCharacter(schema['prefix'], len = 1, min.chars = 1, pattern = "[a-zA-Z1-9_]+")
@@ -110,7 +118,25 @@ list_tables <- function(con, schema = NULL) {
 
   checkmate::assert_character(schema, null.ok = TRUE, min.len = 1, max.len = 2, min.chars = 1)
 
-  if (is.null(schema)) return(DBI::dbListTables(con))
+  if (is.null(schema)) {
+    if (dbms(con) == "sql server") {
+      # return temp tables
+      # tempdb.sys.objects
+      temp_tables <- DBI::dbGetQuery(con, "select * from tempdb..sysobjects")[[1]] %>%
+        stringr::str_remove("_________________________.*$") %>%
+        stringr::str_remove("^#+")
+
+      return(temp_tables)
+
+    } else if (dbms(con) == "snowflake") {
+      # return all tables including temp tables
+      return(DBI::dbGetQuery(con, "show terse tables;")$name)
+
+    } else {
+      return(DBI::dbListTables(con))
+    }
+  }
+
   withr::local_options(list(arrow.pull_as_vector = TRUE))
 
   if (methods::is(con, "DatabaseConnectorJdbcConnection")) {
@@ -154,9 +180,9 @@ list_tables <- function(con, schema = NULL) {
   if (methods::is(con, "OdbcConnection")) {
     if (length(schema) == 1) {
       out <- DBI::dbListTables(con, schema_name = schema)
-    } else {
+    } else if (length(schema) == 2) {
       out <- DBI::dbListTables(con, catalog_name = schema[[1]], schema_name = schema[[2]])
-    }
+    } else rlang::abort("schema missing!")
 
     return(process_prefix(out))
   }

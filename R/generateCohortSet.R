@@ -331,10 +331,11 @@ generateCohortSet <- function(cdm,
       sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
     }
 
-    if (!(dbms(con) %in% c("snowflake", "oracle"))) {
-      # TODO: issue dropping temp tables on snowflake which is using tempEmulation
+    if (!(dbms(con) %in% c("snowflake", "oracle", "bigquery"))) {
+      # TODO: issue dropping temp tables on dbms which are using tempEmulation
       # Error: nanodbc/nanodbc.cpp:1526: 00000: Cannot perform DROP.
       # This session does not have a current schema. Call 'USE SCHEMA', or use a qualified name.
+      # SqlRender::getTempTablePrefix()
       dropTempTableIfExists(con, "Codesets")
       dropTempTableIfExists(con, "qualified_events")
       dropTempTableIfExists(con, "cohort_rows")
@@ -342,6 +343,10 @@ generateCohortSet <- function(cdm,
       dropTempTableIfExists(con, "inclusion_events")
       dropTempTableIfExists(con, "included_events")
       dropTempTableIfExists(con, "final_cohort")
+    } else if (dbms(con) == "bigquery") {
+      tables <- c("codesets", "qualified_events", "cohort_rows", "inclusion", "inclusion_events", "included_events", "final_cohort")
+      sql <- glue::glue("drop table if exists {write_schema}.{SqlRender::getTempTablePrefix()}{tables}")
+      purrr::walk(sql, ~DBI::dbExecute(con, .))
     }
 
     for (j in seq_along(sql)) {
@@ -353,7 +358,7 @@ generateCohortSet <- function(cdm,
   if (dbms(con) %in% c("snowflake", "oracle")) {
     # make table lowercase
 
-    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(name))) %>%
+    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(name), dbms(con))) %>%
       dplyr::rename_all(tolower) %>%
       # compute_query() %>%
       compute_query(
@@ -363,7 +368,7 @@ generateCohortSet <- function(cdm,
         overwrite = TRUE
       )
   } else {
-    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name))
+    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name, dbms = dbms(con)))
   }
 
   # Create attrition attribute ----
@@ -378,16 +383,16 @@ generateCohortSet <- function(cdm,
 
   # Create cohort_set attribute -----
   if (paste0(name, "_set") %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(write_schema, paste0(name, "_set")))
+    DBI::dbRemoveTable(con, inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)))
   }
 
   # overwrite not working on snowflake
   DBI::dbWriteTable(con,
-                    name = inSchema(write_schema, paste0(name, "_set")),
+                    name = inSchema(write_schema, paste0(name, "_set"), dbms(con)),
                     value = as.data.frame(cohortSet[,c("cohort_definition_id", "cohort_name")]),
                     overwrite = TRUE)
 
-  cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_set")))
+  cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_set"), dbms(con)))
 
   # Create cohort_count attribute ----
   cohort_count_ref <- cohort_ref %>%
@@ -568,10 +573,10 @@ new_generated_cohort_set <- function(cohort_ref,
 
   # cohort table ----
   {
-    expected_columns <- paste(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), collapse = ", ")
-    actual_columns <- paste(tolower(colnames(cohort_ref))[1:4], collapse = ', ')
-    if (expected_columns != actual_columns) {
-      rlang::abort(glue::glue("cohort table column names should be {expected_columns} but are {actual_columns}!"))
+    expected_columns <- c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
+    actual_columns <- tolower(colnames(cohort_ref))[1:4]
+    if (!dplyr::setequal(expected_columns, actual_columns)) {
+      rlang::abort(glue::glue("cohort table column names should be {paste(expected_columns, collapse = ', ')} but are {paste(actual_columns, collapse = ', ')}!"))
     }
 
     # get the table name from the cohort table. name argument will be ignored.
@@ -632,8 +637,10 @@ new_generated_cohort_set <- function(cohort_ref,
       rlang::abort(glue::glue("cohort_set_ref database table name is {nm} but should be {name_set}!"))
     }
 
-    if (!all(tolower(colnames(cohort_set_ref))[1:2] == c("cohort_definition_id", "cohort_name"))) {
-      rlang::abort(glue::glue("cohort_set column names should be `cohort_definition_id` `cohort_name` but are {paste(colnames(cohort_set_ref), collapse = ', ')}!"))
+    expected_columns <- c("cohort_definition_id", "cohort_name")
+    actual_columns <- tolower(colnames(cohort_set_ref))[1:2]
+    if (!dplyr::setequal(expected_columns, actual_columns)) {
+      rlang::abort(glue::glue("cohort_set column names should be `cohort_definition_id` `cohort_name` but are {paste(actual_columns, collapse = ', ')}!"))
     }
 
     # primary key check
@@ -685,6 +692,7 @@ new_generated_cohort_set <- function(cohort_ref,
 
     nm <- rev(stringr::str_split(as.character(cohort_count_ref[[2]]$x), "\\.")[[1]])[1] %>%
       stringr::str_remove_all("[^A-Za-z0-9_]")
+
     if (!is.na(write_prefix)) {
       if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
         rlang::abort(glue::glue("cohort_count_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))
@@ -696,10 +704,10 @@ new_generated_cohort_set <- function(cohort_ref,
       rlang::abort(glue::glue("cohort_count_ref database table name is {nm} but should be {name_count}!"))
     }
 
-    expected_columns <- paste(c("cohort_definition_id", "number_records", "number_subjects"), collapse = ", ")
-    actual_columns <- paste(tolower(colnames(cohort_count_ref))[1:3], collapse = ", ")
-    if (actual_columns != expected_columns) {
-      rlang::abort(glue::glue("cohort_set column names should be {expected_columns} but are {actual_columns}!"))
+    expected_columns <- c("cohort_definition_id", "number_records", "number_subjects")
+    actual_columns <- tolower(colnames(cohort_count_ref))[1:3]
+    if (!dplyr::setequal(actual_columns, expected_columns)) {
+      rlang::abort(glue::glue("cohort_set column names should be {paste(expected_columns, collapse = ', ')} but are {paste(actual_columns, collapse = ', ')}!"))
     }
   }
 
@@ -746,12 +754,12 @@ new_generated_cohort_set <- function(cohort_ref,
       rlang::abort(glue::glue("cohort_attrition_ref database table name is {nm} but should be {name_attrition}!"))
     }
 
-    expected_columns <- paste(c("cohort_definition_id", "number_records", "number_subjects",
-                                "reason_id", "reason", "excluded_records", "excluded_subjects"), collapse = ", ")
-    actual_columns <- paste(tolower(colnames(cohort_attrition_ref))[1:7], collapse = ", ")
+    expected_columns <- c("cohort_definition_id", "number_records", "number_subjects",
+                          "reason_id", "reason", "excluded_records", "excluded_subjects")
+    actual_columns <- tolower(colnames(cohort_attrition_ref))[1:7]
 
-    if (actual_columns != expected_columns) {
-      rlang::abort(glue::glue("cohort_set column names should be {expected_columns} but are {actual_columns}!"))
+    if (!dplyr::setequal(actual_columns, expected_columns)) {
+      rlang::abort(glue::glue("cohort_attrition column names should be {paste(expected_columns, collapse = ', ')} but are {paste(actual_columns, collapse = ', ')}!"))
     }
   }
 
@@ -892,7 +900,7 @@ computeAttritionTable <- function(cdm,
 
   if (paste0(cohortStem, "_attrition") %in% listTables(con, schema = schema)) {
     if (overwrite) {
-      DBI::dbRemoveTable(con, inSchema(schema, paste0(cohortStem, "_attrition")))
+      DBI::dbRemoveTable(con, inSchema(schema, paste0(cohortStem, "_attrition"), dbms = dbms(con)))
     } else {
       rlang::abort(paste0(cohortStem, "_attrition already exists in the database. Set overwrite = TRUE."))
     }
@@ -994,7 +1002,7 @@ computeAttritionTable <- function(cdm,
 
   # upload attrition table to database
   DBI::dbWriteTable(con,
-                    name = inSchema(schema, paste0(cohortStem, "_attrition")),
+                    name = inSchema(schema, paste0(cohortStem, "_attrition"), dbms = dbms(con)),
                     value = attrition)
 
   dplyr::tbl(con, inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con))) %>%

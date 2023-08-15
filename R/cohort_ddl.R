@@ -11,15 +11,16 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
 
   # oracle and snowflake use uppercase table names by default which causes
   # issues when switching between ohdsi-sql (unquoted identifiers) and dbplyr sql (quoted identifiers)
-  if (!(dbms(con) %in% c("oracle", "snowflake"))) {
+  # dbAppendTable does not work using bigrquery https://github.com/r-dbi/bigrquery/issues/539
+  if (!(dbms(con) %in% c("oracle", "snowflake", "bigquery"))) {
     existingTables <- list_tables(con, writeSchema)
 
     if (name %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, name))
+      DBI::dbRemoveTable(con, inSchema(writeSchema, name, dbms(con)))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, name),
+                       name = inSchema(writeSchema, name, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
                          subject_id = "BIGINT",
@@ -34,26 +35,26 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       nm <- paste0(name, "_inclusion")
 
       if (nm %in% existingTables) {
-        DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+        DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
       }
 
       DBI::dbCreateTable(con,
-                         name = inSchema(writeSchema, nm),
+                         name = inSchema(writeSchema, nm, dbms(con)),
                          fields = c(
                            cohort_definition_id = "INT",
                            rule_sequence = "INT",
-                           name = "VARCHAR(255)",
-                           description = "VARCHAR(1000)")
+                           name = ifelse(dbms(con) == "bigquery", "STRING", "VARCHAR(255)"),
+                           description = ifelse(dbms(con) == "bigquery", "STRING", "VARCHAR(1000)"))
       )
 
       nm <- paste0(name, "_inclusion_result") # used for attrition
 
       if (nm %in% existingTables) {
-        DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+        DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
       }
 
       DBI::dbCreateTable(con,
-                         name = inSchema(writeSchema, nm),
+                         name = inSchema(writeSchema, nm, dbms(con)),
                          fields = c(
                            cohort_definition_id = "INT",
                            inclusion_rule_mask = "INT",
@@ -64,11 +65,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       nm <- paste0(name, "_inclusion_stats")
 
       if (nm %in% existingTables) {
-        DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+        DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
       }
 
       DBI::dbCreateTable(con,
-                         name = inSchema(writeSchema, nm),
+                         name = inSchema(writeSchema, nm, dbms(con)),
                          fields = c(
                            cohort_definition_id = "INT",
                            rule_sequence = "INT",
@@ -82,11 +83,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       nm <- paste0(name, "_summary_stats")
 
       if (nm %in% existingTables) {
-        DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+        DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
       }
 
       DBI::dbCreateTable(con,
-                         name = inSchema(writeSchema, nm),
+                         name = inSchema(writeSchema, nm, dbms(con)),
                          fields = c(
                            cohort_definition_id = "INT",
                            base_count = "INT",
@@ -97,11 +98,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       nm <- paste0(name, "_censor_stats")
 
       if (nm %in% existingTables) {
-        DBI::dbRemoveTable(con, inSchema(writeSchema, nm))
+        DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
       }
 
       DBI::dbCreateTable(con,
-                         name = inSchema(writeSchema, nm),
+                         name = inSchema(writeSchema, nm, dbms(con)),
                          fields = c(
                            cohort_definition_id = "INT",
                            lost_count = "INT")

@@ -31,7 +31,7 @@ write_schema
 \dontrun{
 library(CDMConnector)
 
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = CDMConnector::eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 
 # create two temporary tables in the remote database from a query with a common prefix

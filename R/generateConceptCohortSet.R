@@ -66,6 +66,7 @@ generateConceptCohortSet <- function(cdm,
   checkmate::assertClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+  if (dbms(con) == "bigquery") rlang::abort("generateConceptCohortSet is not yet supported on bigquery!")
 
   assertTables(cdm, "observation_period", empty.ok = FALSE)
   assertWriteSchema(cdm)
