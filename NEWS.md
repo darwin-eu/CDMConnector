@@ -1,3 +1,8 @@
+# CDMConnector 1.1.1
+
+* add some bigquery support
+
+
 # CDMConnector 1.1.0
 
 * add `copy_cdm_to`, `copyCdmTo`
@@ -7,7 +12,7 @@
 * improve database test coverage
 * update vignettes
 
-Released Aug 11, 2023
+Released Aug 17, 2023
 
 # CDMConnector 1.0.0
 

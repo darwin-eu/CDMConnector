@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a new minor release.
+This is a new patch release.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: CirceR, Capr

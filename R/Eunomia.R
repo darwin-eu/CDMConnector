@@ -202,7 +202,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
     dataFiles <- sort(list.files(path = unzipLocation, pattern = "*.parquet"))
 
     if (isFALSE(length(dataFiles) > 0)) {
-      rlang::abort("Data file does not contain any .parquet files to load into the database!")
+      rlang::abort(glue::glue("Data file does not contain any .parquet files to load into the database!\nTry removing the file {archiveLocation}."))
     }
 
     con <- DBI::dbConnect(duckdb::duckdb(), dbdir = datasetLocation)

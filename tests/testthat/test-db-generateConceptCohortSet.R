@@ -1,8 +1,8 @@
 
 test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
-  if (dbms(con) == "bigquery") return(skip("failing test"))
+  # if (dbms(con) == "bigquery") return(skip("failing test"))
 
-  skip_if_not_installed("CirceR")
+  if (dbms(con) == "bigquery") return(skip("failing test"))
 
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
   cdm <- cdm_from_con(con,
@@ -157,11 +157,9 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   CDMConnector::dropTable(cdm, dplyr::contains("gibleed"))
 }
 
-# snowflake, sqlserver, oracle, bigquery are all failing
-# duckdb, postgres, redshift pass.
-# dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
+    skip_if_not_installed("CirceR")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)

@@ -1,9 +1,13 @@
 
 test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema) %>%
-    generateConceptCohortSet(conceptSet = list(pharyngitis = 4112343, bronchitis = 260139),
-                             name = "new_cohort",
-                             overwrite = TRUE)
+
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+
+  cdm <- generateConceptCohortSet(
+    cdm,
+    conceptSet = list(pharyngitis = 4112343, bronchitis = 260139),
+    name = "new_cohort",
+    overwrite = TRUE)
 
   oldAttrition <- cohortAttrition(cdm$new_cohort)
   oldCounts <- cohortCount(cdm$new_cohort)
@@ -112,7 +116,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   )
 }
 
-# dbtype = "postgres"
+dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
     con <- get_connection(dbtype)
@@ -123,3 +127,30 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
+
+test_that("record_cohort_attrition works", {
+  skip_if_not_installed("CirceR")
+  skip_if_not(eunomia_is_available())
+
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+  cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
+
+  cdm <- generateCohortSet(cdm,
+                           cohortSet = cohort,
+                           name = "gibleed2",
+                           overwrite = TRUE)
+
+  cdm$gibleed2 <- cdm$gibleed2 %>%
+    dplyr::filter(cohort_start_date >= as.Date("2019-01-01")) %>%
+    record_cohort_attrition("After 2019-01-01")
+
+  df <- cohort_attrition(cdm$gibleed2) %>%
+    dplyr::filter(reason == "After 2019-01-01") %>%
+    dplyr::collect()
+
+  expect_true(nrow(df) >= 1)
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+

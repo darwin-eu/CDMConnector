@@ -34,8 +34,11 @@ Let's again load required packages and connect to our Eunomia dataset in duckdb.
 library(CDMConnector)
 library(dplyr)
 
+write_schema <- "main"
+cdm_schema <- "main"
+
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
 ```
 
 ## CDM reference attributes
@@ -79,10 +82,13 @@ When we generate a cohort in addition to the cohort table itself we also have va
 
 Here we create a cohort table with a single cohort.
 ```{r}
+
+# debugonce(generateConceptCohortSet)
 cdm <- generateConceptCohortSet(cdm = cdm, 
                                 conceptSet = list("gi_bleed" = 192671,
                                                   "celecoxib" = 1118084), 
-                                name = "study_cohorts")
+                                name = "study_cohorts",
+                                overwrite = TRUE)
 
 cdm$study_cohorts %>% 
   glimpse()
@@ -134,7 +140,10 @@ cdm$GI_bleed <- cdm$condition_occurrence %>%
          condition_start_date, condition_end_date) %>% 
   rename("subject_id" = "person_id", 
          "cohort_start_date" = "condition_start_date", 
-         "cohort_end_date" = "condition_end_date")
+         "cohort_end_date" = "condition_end_date") %>% 
+  compute_query(temporary = FALSE,
+                schema = write_schema,
+                overwrite = TRUE)
 
 cdm$GI_bleed %>% 
   glimpse()
@@ -151,7 +160,7 @@ cdm$GI_bleed <- newGeneratedCohortSet(cohortRef = cdm$GI_bleed,
                                       overwrite = TRUE)
 ```
 
-Now our custom cohort GI_bleed has the same attributes associated with it as if it had been created by generateConceptCohortSet. This will mean that it can be used by analytic packages designed to work with cdm cohorts.
+Now our custom cohort GI_bleed has the same attributes associated with it as if it had been created by `generateConceptCohortSet`. This will mean that it can be used by analytic packages designed to work with cdm cohorts.
 
 ```{r}
 cohort_set(cdm$GI_bleed)
@@ -159,3 +168,6 @@ cohort_count(cdm$GI_bleed)
 cohort_attrition(cdm$GI_bleed)
 attr(cdm$GI_bleed, "cdm_reference")
 ```
+
+
+<div style="margin-bottom:3cm;"></div>

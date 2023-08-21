@@ -66,7 +66,6 @@ generateConceptCohortSet <- function(cdm,
   checkmate::assertClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
-  if (dbms(con) == "bigquery") rlang::abort("generateConceptCohortSet is not yet supported on bigquery!")
 
   assertTables(cdm, "observation_period", empty.ok = FALSE)
   assertWriteSchema(cdm)
@@ -153,7 +152,8 @@ generateConceptCohortSet <- function(cdm,
         dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
     } else . } %>%
     dplyr::filter(.data$is_excluded == FALSE) %>%
-    dplyr::left_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
+    # Note that concepts that are not in the vocab will be silently ignored
+    dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
     dplyr::select("cohort_definition_id", "cohort_name", "concept_id", "domain_id") %>%
     dplyr::distinct() %>%
     CDMConnector::computeQuery(temporary = TRUE)
@@ -161,6 +161,8 @@ generateConceptCohortSet <- function(cdm,
   DBI::dbRemoveTable(attr(cdm, "dbcon"), name = inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con)))
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
+  domains <- domains[!is.na(domains)] # remove NAs
+  if (length(domains) == 0) rlang::abort("None of the input concept IDs are in the CDM concept table!")
 
   # check we have references to all required tables ----
   missing_tables <- dplyr::setdiff(table_refs(domain_id = domains) %>% dplyr::pull("table_name"), names(cdm))
@@ -216,14 +218,12 @@ generateConceptCohortSet <- function(cdm,
     # TODO order_by = .data$cohort_start_date
     {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
     cohort_collapse() %>%
+    dplyr::mutate(cohort_start_date = !!asDate(.data$cohort_start_date),
+                  cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
     computeQuery(temporary = FALSE,
                  schema = attr(cdm, "write_schema"),
                  name = name,
                  overwrite = overwrite)
-
-  cohortRef <- cohortRef %>%
-    dplyr::mutate(cohort_start_date = as.Date(.data$cohort_start_date),
-                  cohort_end_date = as.Date(.data$cohort_end_date))
 
   cohortSetRef <- concepts %>%
     dplyr::distinct(.data$cohort_definition_id, .data$cohort_name) %>%

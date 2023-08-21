@@ -562,6 +562,14 @@ new_generated_cohort_set <- function(cohort_ref,
     rlang::abort("cohort_ref must be a remote database table reference (tbl_sql)")
   }
 
+  q <- cohort_ref %>%
+    dbplyr::sql_render() %>%
+    as.character()
+
+  if (stringr::str_detect(q, "\\(") || stringr::str_detect(q, "^SELECT *", negate = TRUE)) {
+    rlang::abort("cohort_ref needs to be a computed table in the database. \nUse `compute_query()` before passing cohort_ref into `new_generated_cohort_set()`")
+  }
+
   con <- cohort_ref[[1]]$con
   checkmate::assertTRUE(DBI::dbIsValid(con))
   cdm <- attr(cohort_ref, "cdm_reference")

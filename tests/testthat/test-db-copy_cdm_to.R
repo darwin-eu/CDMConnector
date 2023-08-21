@@ -56,3 +56,38 @@ test_that("duckdb - copy_cdm_to without prefix", {
   DBI::dbDisconnect(con3, shutdown = T)
 })
 
+
+
+test_that("copy_to works locally", {
+  skip("manual test")
+
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synthea-covid19-200k"))
+  cdm <- cdm_from_con(con, "main")
+
+  con2 <- DBI::dbConnect(RPostgres::Postgres(),
+                         dbname = Sys.getenv("LOCAL_POSTGRESQL_DBNAME"),
+                         host = Sys.getenv("LOCAL_POSTGRESQL_HOST"),
+                         user = Sys.getenv("LOCAL_POSTGRESQL_USER"),
+                         password = Sys.getenv("LOCAL_POSTGRESQL_PASSWORD"))
+
+  # cdm_schema <- "cdm_covid19"
+  cdm_schema <- c(schema = "scratch", prefix = "test")
+
+  purrr::walk(
+    list_tables(con2, cdm_schema),
+    ~DBI::dbRemoveTable(con2, inSchema(cdm_schema, ., dbms = dbms(con))))
+
+  # takes 10 minutes or so
+  system.time({
+    cdm2 <- copy_cdm_to(con2, cdm, schema = cdm_schema)
+  })
+
+  expect_s3_class(cdm2, "cdm_reference")
+
+  purrr::walk(
+    list_tables(con2, cdm_schema),
+    ~DBI::dbRemoveTable(con2, inSchema(cdm_schema, ., dbms = dbms(con))))
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+  DBI::dbDisconnect(con2)
+})

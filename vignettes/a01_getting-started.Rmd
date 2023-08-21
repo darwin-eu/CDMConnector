@@ -273,3 +273,5 @@ DBI::dbDisconnect(con, shutdown = TRUE)
 ## Summary
 
 CDMConnector provides an interface to working with observational health data in the OMOP CDM format from R. Check out the other vignettes for more details about the package.
+
+<div style="margin-bottom:3cm;"></div>

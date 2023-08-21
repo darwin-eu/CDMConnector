@@ -20,7 +20,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector", mustWork = TRUE))
   expect_equal(nrow(cohortSet), 3)
   expect_s3_class(cohortSet, "CohortSet")
-  # debugonce(generateCohortSet)
+
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "chrt0",
@@ -202,5 +202,87 @@ test_that("duckdb - phenotype library generation", {
   DBI::dbDisconnect(con, shutdown = T)
 })
 
+
+
+test_that("TreatmentPatterns cohort works", {
+  skip_if_not_installed("TreatmentPatterns")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(
+    con = con,
+    cdm_schema = "main",
+    write_schema = "main"
+  )
+
+  cohortSet <- readCohortSet(
+    system.file(
+      package = "TreatmentPatterns",
+      "examples", "CDM", "cohorts", "ViralSinusitis", "JSON"))
+
+  cdm <- generateCohortSet(
+    cdm = cdm,
+    cohortSet = cohortSet,
+    name = "cohorttable",
+    overwrite = TRUE
+  )
+
+  expect_s3_class(cdm$cohorttable, "GeneratedCohortSet")
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+
+# Test from issue https://github.com/darwin-eu-dev/CDMConnector/issues/238
+# cdm <- cdm_from_con(con, cdm_schema, write_schema)
+#
+# gibleed_cohort_definition <- cohort(
+#   entry = Capr::conditionOccurrence(cs(descendants(192671), name = "test")),
+#   attrition = attrition(
+#     "no RA" = withAll(
+#       exactly(0,
+#               conditionOccurrence(cs(descendants(80809), name = "test")),
+#               duringInterval(eventStarts(-Inf, Inf))))
+#   )
+# )
+#
+# cdm <- generateCohortSet(
+#   cdm,
+#   list(gibleed = gibleed_cohort_definition),
+#   name = "gibleed",
+#   overwrite = TRUE
+# )
+#
+# cdm$gibleed
+# cohort_count(cdm$gibleed)
+
+test_that("newGeneratedCohortSet works with prefix", {
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+
+  write_schema <- c(schema = "main", prefix = "test_")
+  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = write_schema)
+
+  cdm$cohort <- cdm$condition_era %>%
+    head(1) %>%
+    dplyr::mutate(cohort_definition_id = 1L) %>%
+    dplyr::select(
+      cohort_definition_id,
+      subject_id = "person_id",
+      cohort_start_date = "condition_era_start_date",
+      cohort_end_date = "condition_era_end_date"
+    ) %>%
+    compute_query(name = "cohort",
+                  schema = write_schema,
+                  temporary = FALSE,
+                  overwrite = TRUE)
+
+  cdm$cohort <- new_generated_cohort_set(cdm$cohort)
+
+  expect_true("cohort" %in% list_tables(con, write_schema))
+  expect_true("test_cohort" %in% list_tables(con, "main"))
+
+  expect_s3_class(cohort_count(cdm$cohort), "data.frame")
+  expect_s3_class(cohort_set(cdm$cohort), "data.frame")
+  expect_s3_class(cohort_attrition(cdm$cohort), "data.frame")
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
 
 

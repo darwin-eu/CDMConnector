@@ -60,7 +60,16 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
       dplyr::pull(.data$col) %>%
       unlist()
 
-    # TODO truncate character columns to max length based on specification
+    # TODO truncate character columns to max length based on specification in example cdms
+    varchars <- fields[stringr::str_detect(fields, "varchar")]
+    cols <- names(varchars)
+    widths <- stringr::str_extract(varchars, "[0-9]+") %>% as.numeric()
+
+    for (j in seq_along(cols)) {
+      if (!is.na(widths[j])) {
+        local_tbl[[cols[j]]] <- stringr::str_trunc(local_tbl[[cols[j]]], widths[j], ellipsis = "")
+      }
+    }
 
     if (table_name %in% tables_in_database) {
       if (overwrite) {

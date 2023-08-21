@@ -172,9 +172,64 @@ cohort_attrition(cdm$gibleed2)
 
 In the above example we built a cohort table from a concept set. The cohort essentially captures patient-time based off of the presence or absence of OMOP standard concept IDs. We then manually applied an inclusion criteria and recorded a new attrition record in the cohort. To learn more about this approach to building cohorts check out the [PatientProfiles](https://darwin-eu-dev.github.io/PatientProfiles/) R package.
 
-Cohort building is a fundamental building block of observational health analysis and CDMConnector supports different ways of creating cohorts. As long as your cohort table is has the required structure and columns you can add it to the cdm with the `new_generated_cohort_set` function and use it in any downstream OHDSI analytic packages.
+You can also create a generated cohort set using any method you choose. As long as the table is in the CDM database and has the four required columns it can be added to the CDM object as a generated cohort set.
+
+
+Suppose for example our cohort table is
+
+```{r}
+cohort <- dplyr::tibble(
+  cohort_definition_id = 1L,
+  subject_id = 1L,
+  cohort_start_date = as.Date("1999-01-01"),
+  cohort_end_date = as.Date("2001-01-01")
+)
+
+cohort
+```
+First make sure the table is in the database and create a dplyr table reference to it and add it to the CDM object.
+
+```{r}
+DBI::dbWriteTable(con, inSchema("main", "cohort", dbms = dbms(con)), value = cohort)
+
+cdm$cohort <- tbl(con, inSchema("main", "cohort", dbms = dbms(con))) 
+```
+
+To make this a true generated cohort object use the `new_generated_cohort_set`
+
+```{r}
+cdm$cohort <- new_generated_cohort_set(cdm$cohort)
+```
+
+We can see that this cohort is now has the class "GeneratedCohortSet" as well as the various metadata tables.
+
+```{r}
+class(cdm$cohort)
+cohort_count(cdm$cohort)
+cohort_set(cdm$cohort)
+cohort_attrition(cdm$cohort)
+```
+If you would like to override the attribute tables then pass additional dataframes into new_generated_cohort_set. 
+
+```{r}
+DBI::dbWriteTable(con, inSchema("main", "cohort2", dbms = dbms(con)), value = cohort)
+
+cdm$cohort2 <- tbl(con, inSchema("main", "cohort2", dbms = dbms(con))) 
+
+cohort_set <- data.frame(cohort_definition_id = 1L,
+                         cohort_name = "made up cohort")
+
+cdm$cohort2 <- new_generated_cohort_set(cdm$cohort2,
+                                        cohort_set_ref = cohort_set)
+
+cohort_set(cdm$cohort2)
+```
 
 ```{r}
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```
+
+Cohort building is a fundamental building block of observational health analysis and CDMConnector supports different ways of creating cohorts. As long as your cohort table is has the required structure and columns you can add it to the cdm with the `new_generated_cohort_set` function and use it in any downstream OHDSI analytic packages.
+
+<div style="margin-bottom:3cm;"></div>
 

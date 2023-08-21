@@ -97,3 +97,25 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
+
+
+test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", {
+
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+  cohort_ref <- cdm$condition_occurrence %>%
+    dplyr::filter(condition_concept_id == 192671) %>%
+    dplyr::mutate(cohort_definition_id = 1) %>%
+    dplyr::select("cohort_definition_id",
+                  "person_id",
+                  "condition_start_date",
+                  "condition_end_date") %>%
+    dplyr::rename("subject_id" = "person_id",
+                  "cohort_start_date" = "condition_start_date",
+                  "cohort_end_date" = "condition_end_date")
+
+  expect_error(newGeneratedCohortSet(cohort_ref))
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})

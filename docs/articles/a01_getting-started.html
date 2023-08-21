@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -173,7 +173,7 @@ CDM tables and is required. All other arguments are optional.</p>
 <span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, metadata, cdm_source, concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.observation_period&gt; [?? x 5]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpvQXwCl/file113fc4989a6bc.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpErwovx/file866c47d4592f.duckdb]</span></span></span>
 <span><span class="co">#&gt;    observation_period_id person_id observation_period_s…¹ observation_period_e…²</span></span>
 <span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31             2007-02-06            </span></span>
@@ -196,7 +196,7 @@ CDM tables and is required. All other arguments are optional.</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 18</span></span>
-<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpvQXwCl/file113fc4989a6bc.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpErwovx/file866c47d4592f.duckdb]</span></span>
 <span><span class="co">#&gt; $ person_id                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…</span></span>
 <span><span class="co">#&gt; $ gender_concept_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …</span></span>
 <span><span class="co">#&gt; $ year_of_birth               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …</span></span>
@@ -417,7 +417,7 @@ Typically this should be a separate schema from the “cdm_schema”.</p>
 <span></span>
 <span><span class="va">drugs</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;scratch.test&gt; [?? x 11]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpvQXwCl/file113fc4989a6bc.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpErwovx/file866c47d4592f.duckdb]</span></span></span>
 <span><span class="co">#&gt;    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id</span></span>
 <span><span class="co">#&gt;              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">213</span>160  <span style="text-decoration: underline;">7</span>654 poliovirus va… Drug      CVX           CVX             </span></span>
@@ -442,9 +442,9 @@ this table.</p>
 </h3>
 <p>If you do not need references to all tables you can easily select
 only a subset of tables to include in the CDM reference. The
-<code>cdm_select_tbl</code> function supports the <a href="%5Bhttps://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect
-selection language</a>](<a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link uri">https://tidyselect.r-lib.org/reference/language.html</a>))
-and provides a new selection helper: <code>tbl_group</code>.</p>
+<code>cdm_select_tbl</code> function supports the <a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect
+selection language</a> and provides a new selection helper:
+<code>tbl_group</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdm_select_tbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span> <span class="co"># quoted names</span></span>
 <span><span class="co">#&gt; # OMOP CDM reference (tbl_duckdb_connection)</span></span>
@@ -572,10 +572,10 @@ this.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt;   person_id gender_concept_id year_of_birth month_of_birth</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        72              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>947              7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       156              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>978             10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       173              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>968              3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       177              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>966              4</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       186              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>971             11</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       685              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>966              2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       153              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>943              6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       755              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>947              7</span></span></code></pre></div>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">save_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"tmp"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">save_path</span><span class="op">)</span></span>
@@ -604,6 +604,9 @@ longer be used.</p>
 <p>CDMConnector provides an interface to working with observational
 health data in the OMOP CDM format from R. Check out the other vignettes
 for more details about the package.</p>
+<div style="margin-bottom:3cm;">
+
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

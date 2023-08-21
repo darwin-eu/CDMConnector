@@ -9,18 +9,16 @@ test_summarise_quantile <- function(con,
     cdm_select_tbl("person")
 
   person <- dplyr::collect(eunomia_cdm$person)
-
-  cdm <- copyCdmTo(con = con,
-                   cdm = eunomia_cdm,
-                   schema = write_schema,
-                   overwrite = TRUE)
-
   DBI::dbDisconnect(eunomia_con, shutdown = TRUE)
 
+  tempname <- paste0("temp", floor(10*as.numeric(Sys.Date()) %% 1e6), "_person")
 
+  DBI::dbWriteTable(con, inSchema(write_schema, tempname, dbms = dbms(con)), person)
+
+  person_ref <- dplyr::tbl(con, inSchema(write_schema, tempname, dbms = dbms(con)))
 
   # summariseQuantile without group by
-  actual <- cdm$person %>%
+  actual <- person_ref %>%
     summarise_quantile(year_of_birth,
                        probs = round(seq(0, 1, 0.05), 2),
                        name_suffix = "quant") %>%
@@ -36,7 +34,7 @@ test_summarise_quantile <- function(con,
   expect_equal(actual, expected)
 
 # summariseQuantile with group by
-  actual <- cdm$person %>%
+  actual <- person_ref %>%
     dplyr::group_by(gender_concept_id) %>%
     summarise_quantile(x = year_of_birth,
                     probs = 0.5) %>%
@@ -44,7 +42,7 @@ test_summarise_quantile <- function(con,
     dplyr::arrange(gender_concept_id) %>%
     dplyr::pull("p50_value")
 
-  expected <-  person %>%
+  expected <- person %>%
     dplyr::group_by(gender_concept_id) %>%
     dplyr::summarise(p50_value = quantile(year_of_birth, 0.5)) %>%
     dplyr::arrange(gender_concept_id) %>%
@@ -52,10 +50,10 @@ test_summarise_quantile <- function(con,
     unname()
 
   expect_equal(actual, expected)
-  DBI::dbRemoveTable(con, inSchema(write_schema, "person", dbms = dbms(con)))
+  DBI::dbRemoveTable(con, inSchema(write_schema, tempname, dbms = dbms(con)))
 }
 
-# dbtype = "snowflake"
+dbtype = "snowflake"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - summariseQuantile"), {
     con <- get_connection(dbtype)
