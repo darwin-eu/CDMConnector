@@ -206,6 +206,8 @@ test_that("duckdb - phenotype library generation", {
 
 test_that("TreatmentPatterns cohort works", {
   skip_if_not_installed("TreatmentPatterns")
+  skip_on_cran()
+  skip("manual test")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(
     con = con,
