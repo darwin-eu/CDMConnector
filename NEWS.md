@@ -1,7 +1,12 @@
+# CDMConnector 1.1.2
+
+* fix failing test on CRAN
+
 # CDMConnector 1.1.1
 
 * add some bigquery support
 
+August 22, 2023
 
 # CDMConnector 1.1.0
 
