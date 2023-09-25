@@ -30,12 +30,6 @@
     }
   }
 
-  if (dbms(x$src$con) == "spark" &&
-      !rlang::is_installed("SqlRender", version = "1.8.0")) {
-    rlang::abort("SqlRender version 1.8.0 or later is required
-                 to use .computePermanent with spark.")
-  }
-
   if (dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake", "bigquery")) {
 
     if (length(schema) == 2) {
@@ -59,8 +53,6 @@
   } else {
     sql <- glue::glue("SELECT * INTO {fullNameQuoted}
                       FROM ({dbplyr::sql_render(x)}) x")
-    sql <- SqlRender::translate(sql,
-                                targetDialect = dbms(x$src$con))
   }
 
   DBI::dbExecute(x$src$con, sql)
@@ -104,7 +96,7 @@
 #'
 #' }
 appendPermanent <- function(x, name, schema = NULL) {
-  checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
+  checkmate::assertCharacter(schema, min.len = 1, max.len = 3, null.ok = TRUE)
   checkmate::assertCharacter(name, len = 1)
   checkmate::assertClass(x, "tbl_sql")
 
@@ -118,8 +110,12 @@ appendPermanent <- function(x, name, schema = NULL) {
                              overwrite = FALSE))
   }
 
-  sql <- glue::glue("INSERT INTO {fullNameQuoted} {dbplyr::sql_render(x)}")
-  sql <- SqlRender::translate(sql, targetDialect = dbms(x$src$con))
+  if (dbms(x$src$con) == "bigquery") {
+    insertStatment <- "insert into"
+  } else {
+    insertStatment <- "INSERT INTO"
+  }
+  sql <- glue::glue("{insertStatment} {fullNameQuoted} {dbplyr::sql_render(x)}")
   DBI::dbExecute(x$src$con, sql)
   dplyr::tbl(x$src$con, inSchema(schema, name, dbms = dbms(x$src$con)))
 }
