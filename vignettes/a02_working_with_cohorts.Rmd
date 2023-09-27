@@ -190,7 +190,7 @@ cohort
 First make sure the table is in the database and create a dplyr table reference to it and add it to the CDM object.
 
 ```{r}
-DBI::dbWriteTable(con, inSchema("main", "cohort", dbms = dbms(con)), value = cohort)
+DBI::dbWriteTable(con, inSchema("main", "cohort", dbms = dbms(con)), value = cohort, overwrite = TRUE)
 
 cdm$cohort <- tbl(con, inSchema("main", "cohort", dbms = dbms(con))) 
 ```

@@ -1,13 +1,15 @@
-
 test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # if (dbms(con) == "bigquery") return(skip("failing test"))
 
-  if (dbms(con) == "bigquery") return(skip("failing test"))
+  if (dbms(con) == "bigquery") {
+    return(skip("failing test"))
+  }
 
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
   cdm <- cdm_from_con(con,
-                      cdm_schema = cdm_schema,
-                      write_schema = write_schema)
+    cdm_schema = cdm_schema,
+    write_schema = write_schema
+  )
 
   # check that we have records
   cdm$condition_occurrence %>%
@@ -17,10 +19,12 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     expect_gt(10)
 
   # default (no descendants) ----
-  cdm <- generateConceptCohortSet(cdm = cdm,
-                                  conceptSet = list(gibleed = 192671),
-                                  name = "gibleed",
-                                  overwrite = TRUE)
+  cdm <- generateConceptCohortSet(
+    cdm = cdm,
+    conceptSet = list(gibleed = 192671),
+    name = "gibleed",
+    overwrite = TRUE
+  )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
     dplyr::filter(cohort_name == "GiBleed_default") %>%
@@ -30,11 +34,11 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   expected <- dplyr::collect(cdm$gibleed2) %>%
     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-    dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
   actual <- dplyr::collect(cdm$gibleed) %>%
     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-    dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
   expect_true(nrow(expected) > 0)
   expect_true(nrow(actual) == nrow(expected))
@@ -48,20 +52,58 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   expect_error({
     # should be fail fast case
-    generateConceptCohortSet(cdm = cdm,
-                             conceptSet =  list(gibleed = 192671),
-                             name = "gibleed",
-                             overwrite = FALSE)
+    generateConceptCohortSet(
+      cdm = cdm,
+      conceptSet = list(gibleed = 192671),
+      name = "gibleed",
+      overwrite = FALSE
+    )
   })
+
+
+  cdm <- generateConceptCohortSet(cdm,
+    conceptSet = list(gibleed = 192671), name = "gibleed3",
+    requiredObservation = c(2, 2),
+    overwrite = TRUE
+  )
+
+  cdm <- generateConceptCohortSet(cdm,
+    conceptSet = list(gibleed = 192671), name = "gibleed4",
+    requiredObservation = c(2, 200),
+    overwrite = TRUE
+  )
+
+  expect_true({
+    cohort_count(cdm$gibleed3)$number_records >= cohort_count(cdm$gibleed4)$number_records
+  })
+
+  cdm <- generateConceptCohortSet(cdm,
+    cohortSet = cohort, name = "gibleed5",
+    requiredObservation = c(2, 2),
+    overwrite = TRUE
+  )
+
+  cdm <- generateConceptCohortSet(cdm,
+    cohortSet = cohort, name = "gibleed6",
+    requiredObservation = c(200, 2),
+    overwrite = TRUE
+  )
+
+  expect_true({
+    cohort_count(cdm$gibleed5)$number_records >= cohort_count(cdm$gibleed6)$number_records
+  })
+
 
   # default (with descendants) ----
   if (FALSE) {
-  # if (rlang::is_installed("Capr")) { # failing for some reason. gives different results.
+    # if (rlang::is_installed("Capr")) { # failing for some reason. gives different results.
     # we need Capr to include descendants
-    cdm <- generateConceptCohortSet(cdm = cdm,
-                                    conceptSet = list(gibleed = Capr::cs(Capr::descendants(192671), name = "gibleed")),
-                                    name = "gibleed",
-                                    overwrite = TRUE)
+    cdm <- generateConceptCohortSet(
+      cdm = cdm,
+      conceptSet = list(gibleed = Capr::cs(Capr::descendants(192671), name = "gibleed")),
+      name = "gibleed",
+      overwrite = TRUE
+    )
 
     cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
       dplyr::filter(cohort_name == "GiBleed_default_with_descendants") %>%
@@ -71,11 +113,11 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
     expected <- dplyr::collect(cdm$gibleed2) %>%
       dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-      dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+      dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
     actual <- dplyr::collect(cdm$gibleed) %>%
       dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-      dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+      dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
     # setdiff(unique(expected$subject_id), unique(actual$subject_id))
     # setdiff(unique(actual$subject_id), unique(expected$subject_id))
@@ -87,11 +129,13 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   }
 
   # all occurrences (no descendants) ----
-  cdm <- generateConceptCohortSet(cdm = cdm,
-                                  conceptSet = list(gibleed = 192671),
-                                  name = "gibleed",
-                                  limit = "all",
-                                  overwrite = TRUE)
+  cdm <- generateConceptCohortSet(
+    cdm = cdm,
+    conceptSet = list(gibleed = 192671),
+    name = "gibleed",
+    limit = "all",
+    overwrite = TRUE
+  )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
     dplyr::filter(cohort_name == "GiBleed_all") %>%
@@ -99,16 +143,18 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
 
-  expect_equal(as.integer(dplyr::pull(dplyr::tally(cdm$gibleed2), "n")),
-               as.integer(dplyr::pull(dplyr::tally(cdm$gibleed), "n")))
+  expect_equal(
+    as.integer(dplyr::pull(dplyr::tally(cdm$gibleed2), "n")),
+    as.integer(dplyr::pull(dplyr::tally(cdm$gibleed), "n"))
+  )
 
   expected <- dplyr::collect(cdm$gibleed2) %>%
     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-    dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
   actual <- dplyr::collect(cdm$gibleed) %>%
     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-    dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
   # setdiff(unique(expected$subject_id), unique(actual$subject_id))
   # setdiff(unique(actual$subject_id), unique(expected$subject_id))
@@ -120,12 +166,14 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_equal(actual, expected)
 
   # all occurrences (no descendants) fixed end date ----
-  cdm <- generateConceptCohortSet(cdm = cdm,
-                                  conceptSet = list(gibleed = 192671),
-                                  name = "gibleed",
-                                  limit = "all",
-                                  end = 10,
-                                  overwrite = TRUE)
+  cdm <- generateConceptCohortSet(
+    cdm = cdm,
+    conceptSet = list(gibleed = 192671),
+    name = "gibleed",
+    limit = "all",
+    end = 10,
+    overwrite = TRUE
+  )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
     dplyr::filter(cohort_name == "GiBleed_all_end10") %>%
@@ -133,16 +181,18 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
 
-  expect_equal(as.integer(dplyr::pull(dplyr::tally(cdm$gibleed2), "n")),
-               as.integer(dplyr::pull(dplyr::tally(cdm$gibleed),  "n")))
+  expect_equal(
+    as.integer(dplyr::pull(dplyr::tally(cdm$gibleed2), "n")),
+    as.integer(dplyr::pull(dplyr::tally(cdm$gibleed), "n"))
+  )
 
   expected <- dplyr::collect(cdm$gibleed2) %>%
     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-    dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
   actual <- dplyr::collect(cdm$gibleed) %>%
     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-    dplyr::mutate_if(~"integer64" %in% class(.), as.integer)
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
   # setdiff(unique(expected$subject_id), unique(actual$subject_id))
   # setdiff(unique(actual$subject_id), unique(expected$subject_id))

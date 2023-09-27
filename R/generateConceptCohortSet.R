@@ -156,7 +156,7 @@ generateConceptCohortSet <- function(cdm,
     dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
     dplyr::select("cohort_definition_id", "cohort_name", "concept_id", "domain_id") %>%
     dplyr::distinct() %>%
-    CDMConnector::computeQuery(temporary = TRUE)
+    CDMConnector::computeQuery(temporary = TRUE, overwrite = overwrite)
 
   DBI::dbRemoveTable(attr(cdm, "dbcon"), name = inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con)))
 
@@ -207,8 +207,10 @@ generateConceptCohortSet <- function(cdm,
     # TODO fix dplyr::between sql translation, also pmin.
     dplyr::filter(.data$observation_period_start_date <= .data$cohort_start_date  &
                   .data$cohort_start_date <= .data$observation_period_end_date) %>%
-    {if (requiredObservation[1] > 0) dplyr::filter(., !!dateadd("observation_period_start_date", requiredObservation[1]) <=.data$cohort_start_date) else .} %>%
-    {if (requiredObservation[2] > 0) dplyr::filter(., !!dateadd("cohort_start_date", requiredObservation[2]) >= .data$observation_period_end_date) else .} %>%
+    {if (requiredObservation[1] > 0) dplyr::filter(., !!dateadd("observation_period_start_date",
+                                                                requiredObservation[1]) <=.data$cohort_start_date) else .} %>%
+    {if (requiredObservation[2] > 0) dplyr::filter(., !!dateadd("cohort_start_date",
+                                                                requiredObservation[2]) <= .data$observation_period_end_date) else .} %>%
     {if (end == "observation_period_end_date") dplyr::mutate(., cohort_end_date = .data$observation_period_end_date) else .} %>%
     {if (is.numeric(end)) dplyr::mutate(., cohort_end_date = !!dateadd("cohort_start_date", end)) else .} %>%
     dplyr::mutate(cohort_end_date = dplyr::case_when(
