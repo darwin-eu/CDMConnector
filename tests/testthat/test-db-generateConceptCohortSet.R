@@ -218,3 +218,15 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
+
+
+test_that("missing domains produce warning", {
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, "main", "main") %>%
+    cdm_select_tbl(-drug_exposure)
+
+  expect_warning({
+    cdm <- generateConceptCohortSet(cdm, conceptSet = list(celecoxib = 1118084))
+  })
+})
+

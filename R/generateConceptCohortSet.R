@@ -162,7 +162,7 @@ generateConceptCohortSet <- function(cdm,
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs
-  if (length(domains) == 0) rlang::abort("None of the input concept IDs are in the CDM concept table!")
+  if (length(domains) == 0) cli::cli_abort("None of the input concept IDs are in the CDM concept table!")
 
   # check we have references to all required tables ----
   missing_tables <- dplyr::setdiff(table_refs(domain_id = domains) %>% dplyr::pull("table_name"), names(cdm))
@@ -171,14 +171,19 @@ generateConceptCohortSet <- function(cdm,
     s <- ifelse(length(missing_tables) > 1, "s", "")
     is <- ifelse(length(missing_tables) > 1, "are", "is")
     missing_tables <- paste(missing_tables, collapse = ", ")
-    cli::cli_abort("Concept set includes concepts from the {missing_tables} table{s} which {is} not found in the cdm reference!")
+    cli::cli_warn("Concept set includes concepts from the {missing_tables} table{s} which {is} not found in the cdm reference and will be skipped.")
+    table_refs(domain_id = domains) %>%
+      dplyr::filter(!(table_name %in% missing_tables)) %>%
+      dplyr::pull("table_name")
   }
 
   # rowbind results from clinical data tables ----
   get_domain <- function(domain, cdm, concepts) {
     df <- table_refs(domain_id = domain)
 
-    CDMConnector::assert_tables(cdm, df$table_name, empty.ok = TRUE)
+    if (isFALSE(df$table_name %in% names(cdm))) {
+      return(NULL)
+    }
 
     by <- rlang::set_names("concept_id", df[["concept_id"]])
 
