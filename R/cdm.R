@@ -886,6 +886,12 @@ cdm_select_tbl <- function(cdm, ...) {
 
  if(is.null(tbl)) return(NULL)
 
+ for (nm in names(x_raw)) {
+   tab <- x_raw[[nm]]
+   attr(tab, "cdm_reference") <- NULL
+   x[[nm]] <- tab
+ }
+
  attr(tbl, "cdm_reference") <- x
  return(tbl)
 }

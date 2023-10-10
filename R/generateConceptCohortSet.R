@@ -107,11 +107,20 @@ generateConceptCohortSet <- function(cdm,
                         cohort_name = names(conceptSet),
                         df = purrr::map(conceptSet, caprConceptToDataframe)) %>%
       tidyr::unnest(cols = df) %>%
-      dplyr::select("cohort_definition_id",
-                    "cohort_name",
-                    concept_id = "conceptId",
-                    include_descendants = "includeDescendants",
-                    is_excluded = "isExcluded")
+      dplyr::mutate(
+        "limit" = .env$limit,
+        "prior_observation" = .env$requiredObservation[1],
+        "future_observation" = .env$requiredObservation[2],
+        "end" = .env$end
+      ) %>%
+      dplyr::select(
+        "cohort_definition_id", "cohort_name", "concept_id" = "conceptId",
+        "include_descendants" = "includeDescendants",
+        "is_excluded" = "isExcluded",
+        dplyr::any_of(c(
+          "limit", "prior_observation", "future_observation", "end"
+        ))
+      )
 
   } else {
     # conceptSet must be a named list of integer-ish vectors
@@ -119,11 +128,19 @@ generateConceptCohortSet <- function(cdm,
 
     df <- dplyr::tibble(cohort_definition_id = seq_along(.env$conceptSet),
                         cohort_name = names(.env$conceptSet),
+                        limit = .env$limit,
+                        prior_observation = .env$requiredObservation[1],
+                        future_observation = .env$requiredObservation[2],
+                        end = .env$end,
                         concept_id = .env$conceptSet) %>%
       tidyr::unnest(cols = "concept_id") %>%
       dplyr::transmute(.data$cohort_definition_id,
                        .data$cohort_name,
                        .data$concept_id,
+                       .data$limit,
+                       .data$prior_observation,
+                       .data$future_observation,
+                       .data$end,
                        include_descendants = FALSE,
                        is_excluded = FALSE)
   }
@@ -148,13 +165,29 @@ generateConceptCohortSet <- function(cdm,
     { if (any(df$include_descendants)) {
       dplyr::filter(., .data$include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
-        dplyr::select("cohort_definition_id", "cohort_name", concept_id = "descendant_concept_id", "is_excluded") %>%
-        dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
+        dplyr::select(
+          "cohort_definition_id", "cohort_name",
+          "concept_id" = "descendant_concept_id", "is_excluded",
+          dplyr::any_of(c("limit", "prior_observation", "future_observation", "end"))
+        ) %>%
+        dplyr::union_all(
+          dplyr::tbl(
+            attr(cdm, "dbcon"),
+            inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con))
+          ) %>%
+          dplyr::select(dplyr::any_of(c(
+            "cohort_definition_id", "cohort_name", "concept_id", "is_excluded",
+            "limit", "prior_observation", "future_observation", "end"
+          )))
+        )
     } else . } %>%
     dplyr::filter(.data$is_excluded == FALSE) %>%
     # Note that concepts that are not in the vocab will be silently ignored
     dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
-    dplyr::select("cohort_definition_id", "cohort_name", "concept_id", "domain_id") %>%
+    dplyr::select(
+      "cohort_definition_id", "cohort_name", "concept_id", "domain_id",
+      dplyr::any_of(c("limit", "prior_observation", "future_observation", "end"))
+    ) %>%
     dplyr::distinct() %>%
     CDMConnector::computeQuery(temporary = TRUE, overwrite = overwrite)
 
@@ -233,7 +266,11 @@ generateConceptCohortSet <- function(cdm,
                  overwrite = overwrite)
 
   cohortSetRef <- concepts %>%
-    dplyr::distinct(.data$cohort_definition_id, .data$cohort_name) %>%
+    dplyr::select(dplyr::any_of(c(
+      "cohort_definition_id", "cohort_name", "limit", "prior_observation",
+      "future_observation", "end"
+    ))) %>%
+    dplyr::distinct() %>%
     CDMConnector::computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
                                schema = attr(cdm, "write_schema"),
                                name = paste0(name, "_set"),
