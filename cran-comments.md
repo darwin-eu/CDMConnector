@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a new patch release to fix a test error on CRAN servers.
+This is a new patch release to fix a error.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: CirceR, Capr
