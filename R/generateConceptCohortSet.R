@@ -232,38 +232,55 @@ generateConceptCohortSet <- function(cdm,
   cohort <- purrr::map(domains, ~get_domain(., cdm = cdm, concepts = concepts)) %>%
     purrr::reduce(dplyr::union_all)
 
-  # drop any outside of an observation period
-  obs_period <- cdm[["observation_period"]] %>%
-    dplyr::select("subject_id" = "person_id",
-                  "observation_period_start_date",
-                  "observation_period_end_date")
+  if (is.null(cohort)) {
+    # no domains included. Create empty cohort.
+    cohort <- dplyr::tibble(
+      cohort_definition_id = integer(),
+      subject_id = integer(),
+      cohort_start_date = as.Date(x = integer(0), origin = "1970-01-01"),
+      cohort_end_date = as.Date(x = integer(0), origin = "1970-01-01")
+    )
 
-  cohort_start_date <- "cohort_start_date"
+    DBI::dbWriteTable(con, name = inSchema(attr(cdm, "write_schema"), name), value = cohort)
+    cohortRef <- dplyr::tbl(con, inSchema(attr(cdm, "write_schema"), name))
+  } else {
 
-  cohortRef <- cohort %>%
-    dplyr::inner_join(obs_period, by = "subject_id") %>%
-    # TODO fix dplyr::between sql translation, also pmin.
-    dplyr::filter(.data$observation_period_start_date <= .data$cohort_start_date  &
-                  .data$cohort_start_date <= .data$observation_period_end_date) %>%
-    {if (requiredObservation[1] > 0) dplyr::filter(., !!dateadd("observation_period_start_date",
-                                                                requiredObservation[1]) <=.data$cohort_start_date) else .} %>%
-    {if (requiredObservation[2] > 0) dplyr::filter(., !!dateadd("cohort_start_date",
-                                                                requiredObservation[2]) <= .data$observation_period_end_date) else .} %>%
-    {if (end == "observation_period_end_date") dplyr::mutate(., cohort_end_date = .data$observation_period_end_date) else .} %>%
-    {if (is.numeric(end)) dplyr::mutate(., cohort_end_date = !!dateadd("cohort_start_date", end)) else .} %>%
-    dplyr::mutate(cohort_end_date = dplyr::case_when(
-      .data$cohort_end_date > .data$observation_period_end_date ~ .data$observation_period_end_date,
-      TRUE ~ .data$cohort_end_date)) %>%
-    dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
-    # TODO order_by = .data$cohort_start_date
-    {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
-    cohort_collapse() %>%
-    dplyr::mutate(cohort_start_date = !!asDate(.data$cohort_start_date),
-                  cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
-    computeQuery(temporary = FALSE,
-                 schema = attr(cdm, "write_schema"),
-                 name = name,
-                 overwrite = overwrite)
+    # drop any outside of an observation period
+    obs_period <- cdm[["observation_period"]] %>%
+      dplyr::select("subject_id" = "person_id",
+                    "observation_period_start_date",
+                    "observation_period_end_date")
+
+    # TODO remove this variable since it is confusing
+    cohort_start_date <- "cohort_start_date"
+
+    cohortRef <- cohort %>%
+      dplyr::inner_join(obs_period, by = "subject_id") %>%
+      # TODO fix dplyr::between sql translation, also pmin.
+      dplyr::filter(.data$observation_period_start_date <= .data$cohort_start_date  &
+                    .data$cohort_start_date <= .data$observation_period_end_date) %>%
+      {if (requiredObservation[1] > 0) dplyr::filter(., !!dateadd("observation_period_start_date",
+                                                                  requiredObservation[1]) <=.data$cohort_start_date) else .} %>%
+      {if (requiredObservation[2] > 0) dplyr::filter(., !!dateadd("cohort_start_date",
+                                                                  requiredObservation[2]) <= .data$observation_period_end_date) else .} %>%
+      {if (end == "observation_period_end_date") dplyr::mutate(., cohort_end_date = .data$observation_period_end_date) else .} %>%
+      {if (is.numeric(end)) dplyr::mutate(., cohort_end_date = !!dateadd("cohort_start_date", end)) else .} %>%
+      dplyr::mutate(cohort_end_date = dplyr::case_when(
+        .data$cohort_end_date > .data$observation_period_end_date ~ .data$observation_period_end_date,
+        TRUE ~ .data$cohort_end_date)) %>%
+      dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
+      # TODO order_by = .data$cohort_start_date
+      {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
+      cohort_collapse() %>%
+      dplyr::mutate(cohort_start_date = !!asDate(.data$cohort_start_date),
+                    cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
+      computeQuery(temporary = FALSE,
+                   schema = attr(cdm, "write_schema"),
+                   name = name,
+                   overwrite = overwrite)
+    }
+
+
 
   cohortSetRef <- concepts %>%
     dplyr::select(dplyr::any_of(c(

@@ -3,7 +3,7 @@ library(dplyr, warn.conflicts = FALSE)
 
 ### CDM object DBI drivers ------
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
+  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, cdm_name = "test")
   expect_s3_class(cdm, "cdm_reference")
   expect_error(assert_tables(cdm, "person"), NA)
   expect_true(version(cdm) %in% c("5.3", "5.4"))
@@ -27,13 +27,14 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 }
 
 # dbToTest <- c(
-#   "duckdb"
-#   ,"postgres"
-#   ,"redshift"
-#   ,"sqlserver"
-#   # ,"oracle" # requires development dbplyr version to work
-#   ,"snowflake"
-#   ,"bigquery" # issue with bigquery tbl
+  # "duckdb"
+  # ,"postgres"
+  # ,"redshift"
+  # ,
+  # "sqlserver"
+  # ,"oracle" # requires development dbplyr version to work
+  # ,"snowflake"
+  # ,"bigquery" # issue with bigquery tbl
 # )
 
 # dbtype = "duckdb"

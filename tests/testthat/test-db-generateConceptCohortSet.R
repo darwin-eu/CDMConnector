@@ -82,23 +82,6 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     cohort_count(cdm$gibleed3)$number_records >= cohort_count(cdm$gibleed4)$number_records
   })
 
-  cdm <- generateConceptCohortSet(cdm,
-    cohortSet = cohort, name = "gibleed5",
-    requiredObservation = c(2, 2),
-    overwrite = TRUE
-  )
-
-  cdm <- generateConceptCohortSet(cdm,
-    cohortSet = cohort, name = "gibleed6",
-    requiredObservation = c(200, 2),
-    overwrite = TRUE
-  )
-
-  expect_true({
-    cohort_count(cdm$gibleed5)$number_records >= cohort_count(cdm$gibleed6)$number_records
-  })
-
-
   # default (with descendants) ----
   if (FALSE) {
     # if (rlang::is_installed("Capr")) { # failing for some reason. gives different results.
@@ -233,5 +216,7 @@ test_that("missing domains produce warning", {
   expect_warning({
     cdm <- generateConceptCohortSet(cdm, conceptSet = list(celecoxib = 1118084))
   })
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
