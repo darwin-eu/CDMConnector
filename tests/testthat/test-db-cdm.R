@@ -18,6 +18,16 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
   expect_equal(dbms(cdm), dbms(attr(cdm, "dbcon")))
 
+  # check cdm_reference attribute
+  expect_true("cdm_reference" %in% names(attributes(cdm[["person"]])))
+  x <- unclass(cdm)
+  expect_false("cdm_reference" %in% names(attributes(x[["person"]])))
+  x[["person"]] <- cdm[["person"]] %>% computeQuery()
+  expect_true("cdm_reference" %in% names(attributes(x[["person"]])))
+  cdm[["person"]] <- cdm[["person"]] %>% computeQuery()
+  x <- unclass(cdm)
+  expect_false("cdm_reference" %in% names(attributes(x[["person"]])))
+
   # simple join
   df <- dplyr::inner_join(cdm$person, cdm$observation_period, by = "person_id") %>%
     head(2) %>%

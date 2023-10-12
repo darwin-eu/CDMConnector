@@ -886,14 +886,28 @@ cdm_select_tbl <- function(cdm, ...) {
 
  if(is.null(tbl)) return(NULL)
 
- for (nm in names(x_raw)) {
-   tab <- x_raw[[nm]]
-   attr(tab, "cdm_reference") <- NULL
-   x[[nm]] <- tab
- }
-
  attr(tbl, "cdm_reference") <- x
  return(tbl)
+}
+
+#' @export
+`[[<-.cdm_reference` <- function(obj, name, value) {
+  x <- class(obj)
+  attr(value, "cdm_reference") <- NULL
+  obj <- unclass(obj)
+  obj[[name]] <- value
+  class(obj) <- x
+  return(obj)
+}
+
+#' @export
+`$<-.cdm_reference` <- function(obj, name, value) {
+  x <- class(obj)
+  attr(value, "cdm_reference") <- NULL
+  obj <- unclass(obj)
+  obj[[name]] <- value
+  class(obj) <- x
+  return(obj)
 }
 
 

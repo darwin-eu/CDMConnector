@@ -904,7 +904,7 @@ computeAttritionTable <- function(cdm,
   }
 
   schema <- attr(cdm, "write_schema")
-  checkmate::assertCharacter(schema, min.len = 1, max.len = 2, min.chars = 1)
+  checkmate::assertCharacter(schema, min.len = 1, max.len = 3, min.chars = 1)
 
   if (paste0(cohortStem, "_attrition") %in% listTables(con, schema = schema)) {
     if (overwrite) {
