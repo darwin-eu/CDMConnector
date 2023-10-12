@@ -17,3 +17,4 @@ LICENSE
 ^pkgdown$
 ^vignettes2/*
 ^a/*
+^work/*

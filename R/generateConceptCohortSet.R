@@ -205,9 +205,10 @@ generateConceptCohortSet <- function(cdm,
     is <- ifelse(length(missing_tables) > 1, "are", "is")
     missing_tables <- paste(missing_tables, collapse = ", ")
     cli::cli_warn("Concept set includes concepts from the {missing_tables} table{s} which {is} not found in the cdm reference and will be skipped.")
-    table_refs(domain_id = domains) %>%
-      dplyr::filter(!(table_name %in% missing_tables)) %>%
-      dplyr::pull("table_name")
+
+    domains <- table_refs(domain_id = domains) %>%
+      dplyr::filter(!(.data$table_name %in% missing_tables)) %>%
+      dplyr::pull("domain_id")
   }
 
   # rowbind results from clinical data tables ----
@@ -229,8 +230,13 @@ generateConceptCohortSet <- function(cdm,
                                                          !!dateadd(df$start_date, 1)))
   }
 
-  cohort <- purrr::map(domains, ~get_domain(., cdm = cdm, concepts = concepts)) %>%
-    purrr::reduce(dplyr::union_all)
+  if (length(domains) == 0) {
+    cohort <- NULL
+  } else {
+    cohort <- purrr::map(domains, ~get_domain(., cdm = cdm, concepts = concepts)) %>%
+      purrr::reduce(dplyr::union_all)
+  }
+
 
   if (is.null(cohort)) {
     # no domains included. Create empty cohort.
