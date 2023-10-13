@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -222,7 +222,7 @@ tables will go into the CDM’s <code>write_schema</code>.</p>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.study_cohorts&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpRUNTHj/file86871c801907.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 22.6.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpdHmyx3/file868722116eab.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1        264 1984-06-22        2011-11-18     </span></span>
@@ -276,6 +276,7 @@ definition with one inclusion criteria</p>
 <p><code>generate_cohort_set</code> will accept a named list of Capr</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ohdsi.github.io/Capr/" class="external-link">Capr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: CirceR</span></span>
 <span></span>
 <span><span class="va">gibleed_concept_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ohdsi.github.io/Capr/reference/cs.html" class="external-link">cs</a></span><span class="op">(</span><span class="fl">192671</span>, name <span class="op">=</span> <span class="st">"gibleed"</span><span class="op">)</span></span>
 <span></span>
@@ -300,7 +301,7 @@ definition with one inclusion criteria</p>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.gibleed&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpRUNTHj/file86871c801907.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 22.6.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpdHmyx3/file868722116eab.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1        264 1984-06-22        2011-11-18     </span></span>
@@ -384,7 +385,7 @@ set.</p>
 <p>First make sure the table is in the database and create a dplyr table
 reference to it and add it to the CDM object.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbWriteTable.html" class="external-link">dbWriteTable</a></span><span class="op">(</span><span class="va">con</span>, <span class="fu"><a href="../reference/inSchema.html">inSchema</a></span><span class="op">(</span><span class="st">"main"</span>, <span class="st">"cohort"</span>, dbms <span class="op">=</span> <span class="fu"><a href="../reference/dbms.html">dbms</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span><span class="op">)</span>, value <span class="op">=</span> <span class="va">cohort</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbWriteTable.html" class="external-link">dbWriteTable</a></span><span class="op">(</span><span class="va">con</span>, <span class="fu"><a href="../reference/inSchema.html">inSchema</a></span><span class="op">(</span><span class="st">"main"</span>, <span class="st">"cohort"</span>, dbms <span class="op">=</span> <span class="fu"><a href="../reference/dbms.html">dbms</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span><span class="op">)</span>, value <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">con</span>, <span class="fu"><a href="../reference/inSchema.html">inSchema</a></span><span class="op">(</span><span class="st">"main"</span>, <span class="st">"cohort"</span>, dbms <span class="op">=</span> <span class="fu"><a href="../reference/dbms.html">dbms</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> </span></code></pre></div>
 <p>To make this a true generated cohort object use the

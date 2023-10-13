@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -141,7 +141,7 @@ the version of the cdm we have connected to.</p>
 underlying the cdm reference.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="st">"dbcon"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;duckdb_connection 6fe20 driver=&lt;duckdb_driver 07380 dbdir='/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpOVGOZb/file86de5fa1df25.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;duckdb_connection 45e00 driver=&lt;duckdb_driver 886a0 dbdir='/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpg3OeNQ/file86ed2cd05114.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
 <p>This can be useful, for example, if we want to make use of DBI
 functions to work with the database. For example we could use
 <code>dbListTables</code> to list the names of remote tables accessible
@@ -228,7 +228,7 @@ analysis.</p>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpOVGOZb/file86de5fa1df25.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 22.6.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpg3OeNQ/file86ed2cd05114.duckdb]</span></span>
 <span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</span></span>
 <span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 260, 549, 787, 795, 962, 1076, 1099, 1112, 1158, …</span></span>
 <span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2010-04-04, 1987-12-28, 2017-04-02, 1982-09-03, …</span></span>
@@ -238,12 +238,13 @@ associated with the cohorts (along with utility functions to make it
 easier to access this attribute).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span>, <span class="st">"cohort_set"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.study_cohorts_set&gt; [2 x 2]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpOVGOZb/file86de5fa1df25.duckdb]</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id cohort_name</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    2 celecoxib  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    1 gi_bleed</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.study_cohorts_set&gt; [2 x 6]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 22.6.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpg3OeNQ/file86ed2cd05114.duckdb]</span></span></span>
+<span><span class="co">#&gt;   cohort_definition_id cohort_name limit prior_observation future_observation</span></span>
+<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    2 celecoxib   first                 0                  0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    1 gi_bleed    first                 0                  0</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: end &lt;chr&gt;</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cohortSet.html">cohortSet</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cohortSet.html">cohort_set</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span> </span></code></pre></div>
@@ -252,7 +253,7 @@ cohorts.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span>, <span class="st">"cohort_count"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.study_cohorts_count&gt; [2 x 3]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpOVGOZb/file86de5fa1df25.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 22.6.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpg3OeNQ/file86ed2cd05114.duckdb]</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span>
@@ -298,7 +299,7 @@ structure</p>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpOVGOZb/file86de5fa1df25.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 22.6.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmpg3OeNQ/file86ed2cd05114.duckdb]</span></span>
 <span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</span></span>
 <span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 273, 61, 351, 579, 549, 116, 163, 304, 326, 285, …</span></span>
 <span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …</span></span>
@@ -315,9 +316,9 @@ custom cohorts.</p>
 <span>                                      cohortSetRef <span class="op">=</span> <span class="va">GI_bleed_cohort_ref</span>, </span>
 <span>                                      overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Now our custom cohort GI_bleed has the same attributes associated
-with it as if it had been created by generateConceptCohortSet. This will
-mean that it can be used by analytic packages designed to work with cdm
-cohorts.</p>
+with it as if it had been created by
+<code>generateConceptCohortSet</code>. This will mean that it can be
+used by analytic packages designed to work with cdm cohorts.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cohortSet.html">cohort_set</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">GI_bleed</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
