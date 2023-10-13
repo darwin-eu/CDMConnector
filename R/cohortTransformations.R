@@ -240,7 +240,7 @@ cohort_pad_start <- function(x, days = NULL, from = "start") {
 #' Collapse cohort records within a certain number of days
 #'
 #' @param x A generated cohort set
-#' @param gap When two cohort records are format('{') gap format('}')  days apart or less the periods will be
+#' @param gap When two cohort records are 'gap' days apart or less the periods will be
 #' collapsed into a single record
 #'
 #' @return A lazy query on a generated cohort set

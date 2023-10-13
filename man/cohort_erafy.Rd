@@ -12,7 +12,7 @@ cohortErafy(x, gap)
 \arguments{
 \item{x}{A generated cohort set}
 
-\item{gap}{When two cohort records are format('{') gap format('}')  days apart or less the periods will be
+\item{gap}{When two cohort records are 'gap' days apart or less the periods will be
 collapsed into a single record}
 }
 \value{
