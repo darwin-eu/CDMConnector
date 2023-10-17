@@ -573,6 +573,7 @@ new_generated_cohort_set <- function(cohort_ref,
   con <- cohort_ref[[1]]$con
   checkmate::assertTRUE(DBI::dbIsValid(con))
   cdm <- attr(cohort_ref, "cdm_reference")
+  attr(cohort_ref, "cdm_reference") <- NULL # Very important
   if (is.null(cdm)) rlang::abort("cohort_ref must be part of a cdm!")
   write_schema <- attr(cdm, "write_schema")
   if (is.null(write_schema)) rlang::abort("cohort_ref must be part of a cdm with a write_schema!")
