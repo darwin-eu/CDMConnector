@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a new patch release to fix a error.
+This is a new patch release to fix an error.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: CirceR, Capr
@@ -13,7 +13,7 @@ RCMD check passed on the following platforms with 0 errors, 0 warnings, and 0 no
   - {os: ubuntu-latest,   r: 'release'}
   - {os: ubuntu-latest,   r: 'devel'}
 
-Mac OS 12.6 running R 4.2.2
+Mac OS 12.6 running R 4.3.1
 
 I also checked on winbuilder.
 
