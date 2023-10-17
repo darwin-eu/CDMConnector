@@ -1,6 +1,7 @@
 ## R CMD check results
 
-This is a new patch release to fix an error.
+This is a new patch release to fix an error. There was a mistake in my last release
+that I would like to fix. Apologies for the back to back releases.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: CirceR, Capr
