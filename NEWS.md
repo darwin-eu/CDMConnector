@@ -1,10 +1,10 @@
+# CDMConnector 1.1.4
+
+-   Fix recursive edge cases with cdm reference issue. 
+
 # CDMConnector 1.1.3
 
--   Fix recursive reference [issue](https://github.com/darwin-eu-dev/CDMConnector/issues/312). 
-
-# CDMConnector 1.1.2
-
--   Fix recursive reference [issue](https://github.com/darwin-eu-dev/CDMConnector/issues/312). Thanks to @catalamarti!
+-   Fix recursive cdm reference issue. Thanks @catalamarti!
 
 # CDMConnector 1.1.2
 
