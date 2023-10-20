@@ -49,6 +49,12 @@ test_that("memory leak does not happen", {
   # This was strange error. Also can use pryr::object_size() and waldo::compare() to investigate
   expect_equal(object.size(cdm$asthma_1), object.size(cdm$asthma_5))
 
+  cdm2 <- cdmSubsetCohort(cdm = cdm, cohortTable = "asthma_5")
+  cdm2 <- unclass(cdm2)
+  for (nm in names(cdm2)) {
+    expect_false("cdm_reference" %in% names(attributes(cdm2[[nm]])))
+  }
+
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
