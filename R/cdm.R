@@ -32,6 +32,10 @@ cdm_from_con <- function(con,
     con <- pool::localCheckout(con)
   }
 
+  if (methods::is(con, "DatabaseConnectorConnection")) {
+    rlang::warn("Not all functionality is supported when DatabaseConnector as your database driver! Some issues may occur.")
+  }
+
   checkmate::assert_true(.dbIsValid(con))
 
   if (dbms(con) %in% c("duckdb", "sqlite") && is.null(cdm_schema)) {
