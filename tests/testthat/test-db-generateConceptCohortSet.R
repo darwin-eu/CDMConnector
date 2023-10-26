@@ -19,6 +19,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     expect_gt(10)
 
   # default (no descendants) ----
+  # debugonce(generateConceptCohortSet)
   cdm <- generateConceptCohortSet(
     cdm = cdm,
     conceptSet = list(gibleed = 192671),

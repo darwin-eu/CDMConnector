@@ -85,7 +85,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
 }
 
-# dbtype = "snowflake"
+# dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
     con <- get_connection(dbtype)

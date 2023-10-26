@@ -589,8 +589,7 @@ new_generated_cohort_set <- function(cohort_ref,
     }
 
     # get the table name from the cohort table. name argument will be ignored.
-    name <- rev(stringr::str_split(as.character(cohort_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^A-Za-z0-9_]")
+    name <- as.character(unclass(cohort_ref$lazy_query$x)$table)
     write_prefix <- write_schema["prefix"]
     if (!is.na(write_prefix)) {
       if (substr(name, 1, nchar(write_prefix)) != write_prefix) {
@@ -633,8 +632,7 @@ new_generated_cohort_set <- function(cohort_ref,
       rlang::abort("cohort_set_ref must be a dataframe or a remote table reference")
     }
 
-    nm <- rev(stringr::str_split(as.character(cohort_set_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^A-Za-z0-9_]")
+    nm <- as.character(unclass(cohort_set_ref$lazy_query$x)$table)
     if (!is.na(write_prefix)) {
       if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
         rlang::abort(glue::glue("cohort_set_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))
@@ -699,8 +697,7 @@ new_generated_cohort_set <- function(cohort_ref,
   {
     checkmate::assert_class(cohort_count_ref, "tbl_sql")
 
-    nm <- rev(stringr::str_split(as.character(cohort_count_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^A-Za-z0-9_]")
+    nm <- as.character(unclass(cohort_count_ref$lazy_query$x)$table)
 
     if (!is.na(write_prefix)) {
       if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
@@ -750,8 +747,8 @@ new_generated_cohort_set <- function(cohort_ref,
   {
     checkmate::assert_class(cohort_attrition_ref, "tbl_sql")
 
-    nm <- rev(stringr::str_split(as.character(cohort_attrition_ref[[2]]$x), "\\.")[[1]])[1] %>%
-      stringr::str_remove_all("[^A-Za-z0-9_]")
+    nm <- nm <- as.character(unclass(cohort_attrition_ref$lazy_query$x)$table)
+
     if (!is.na(write_prefix)) {
       if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
         rlang::abort(glue::glue("cohort_attrition_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))

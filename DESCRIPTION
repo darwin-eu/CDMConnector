@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 1.1.4
+Version: 1.2.0
 Authors@R: c(
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
@@ -23,7 +23,7 @@ Imports:
     dplyr,
     DBI (>= 0.3.0),
     checkmate,
-    dbplyr,
+    dbplyr (>= 2.4.0),
     cli,
     purrr,
     rlang,
