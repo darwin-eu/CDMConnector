@@ -190,6 +190,10 @@ computeQuery <- function(x,
   checkmate::assertLogical(temporary, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
 
+  if (nchar(dbplyr::sql_render(x)) > 1000) {
+    rlang::warn("Your SQL query is over 1000 characters which can cause issues on some database platforms!\nTry calling computeQuery earlier in your pipeline.")
+  }
+
   if (isFALSE(temporary)) {
     checkmate::assertCharacter(schema, min.len = 1, max.len = 3)
 
