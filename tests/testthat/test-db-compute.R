@@ -91,3 +91,11 @@ test_that("uniqueTableName", {
   result <- uniqueTableName()
   expect_true(startsWith(result, "dbplyr_"))
 })
+
+test_that("message does not duplicate when prefix is used", {
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, "main", c(prefix = "a_", schema = "main"))
+  DBI::dbWriteTable(con, inSchema(attr(cdm, "write_schema"), "cars"), cars)
+  expect_message(dropTable(cdm, "cars", verbose = TRUE))
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
