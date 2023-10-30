@@ -215,7 +215,8 @@ test_that("missing domains produce warning", {
     cdm_select_tbl(-drug_exposure)
 
   expect_warning({
-    cdm <- generateConceptCohortSet(cdm, conceptSet = list(celecoxib = 1118084))
+    cdm <- generateConceptCohortSet(cdm, name = "celecoxib",
+                                    conceptSet = list(celecoxib = 1118084))
   })
 
   DBI::dbDisconnect(con, shutdown = TRUE)
