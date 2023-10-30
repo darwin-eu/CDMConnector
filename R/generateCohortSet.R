@@ -589,7 +589,7 @@ new_generated_cohort_set <- function(cohort_ref,
     }
 
     # get the table name from the cohort table. name argument will be ignored.
-    name <- as.character(unclass(cohort_ref$lazy_query$x)$table)
+    name <- dbplyr::remote_name(cohort_ref)
     write_prefix <- write_schema["prefix"]
     if (!is.na(write_prefix)) {
       if (substr(name, 1, nchar(write_prefix)) != write_prefix) {
@@ -632,7 +632,7 @@ new_generated_cohort_set <- function(cohort_ref,
       rlang::abort("cohort_set_ref must be a dataframe or a remote table reference")
     }
 
-    nm <- as.character(unclass(cohort_set_ref$lazy_query$x)$table)
+    nm <- dbplyr::remote_name(cohort_set_ref)
     if (!is.na(write_prefix)) {
       if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
         rlang::abort(glue::glue("cohort_set_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))
@@ -697,8 +697,7 @@ new_generated_cohort_set <- function(cohort_ref,
   {
     checkmate::assert_class(cohort_count_ref, "tbl_sql")
 
-    nm <- as.character(unclass(cohort_count_ref$lazy_query$x)$table)
-
+    nm <- dbplyr::remote_name(cohort_count_ref)
     if (!is.na(write_prefix)) {
       if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
         rlang::abort(glue::glue("cohort_count_ref ({nm}) does not have the same prefix than the write_schema ({write_prefix})"))
@@ -747,7 +746,7 @@ new_generated_cohort_set <- function(cohort_ref,
   {
     checkmate::assert_class(cohort_attrition_ref, "tbl_sql")
 
-    nm <- nm <- as.character(unclass(cohort_attrition_ref$lazy_query$x)$table)
+    nm <- nm <- dbplyr::remote_name(cohort_attrition_ref)
 
     if (!is.na(write_prefix)) {
       if (substr(nm, 1, nchar(write_prefix)) != write_prefix) {
