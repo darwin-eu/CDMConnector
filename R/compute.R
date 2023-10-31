@@ -191,7 +191,7 @@ computeQuery <- function(x,
   checkmate::assertLogical(overwrite, len = 1)
 
   if (nchar(dbplyr::sql_render(x)) > 10000) {
-    rlang::warn("Your SQL query is over 10000 characters which can cause issues on some database platforms!\nTry calling computeQuery earlier in your pipeline.")
+    rlang::warn("Your SQL query is over 10,000 characters which can cause issues on some database platforms!\nTry calling computeQuery earlier in your pipeline.")
   }
 
   if (isFALSE(temporary)) {
@@ -219,7 +219,7 @@ computeQuery <- function(x,
       }
 
       if (dbms(con) %in% c("sql server")) {
-        DBI::dbExecute(con, glue::glue("DROP TABLE #{name};"))
+        DBI::dbExecute(con, glue::glue("DROP TABLE IF EXISTS #{name};"))
       } else {
         DBI::dbRemoveTable(con, name)
       }

@@ -248,16 +248,6 @@ test_cohort_collapse <- function(con, write_schema) {
   DBI::dbRemoveTable(con, inSchema(write_schema, "tmp_intervals", dbms = dbms(con)))
 }
 
-dbToTest <- c(
-  "duckdb"
-  ,"postgres"
-  ,"redshift"
-  ,"sqlserver"
-  # ,"oracle"
-  ,"snowflake"
-  ,"bigquery"
-)
-
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - cohort_collapse"), {
