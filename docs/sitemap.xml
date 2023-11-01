@@ -13,7 +13,7 @@
     <loc>/articles/a01_getting-started.html</loc>
   </url>
   <url>
-    <loc>/articles/a02_Working_with_cohorts.html</loc>
+    <loc>/articles/a02_working_with_cohorts.html</loc>
   </url>
   <url>
     <loc>/articles/a03_dbplyr.html</loc>
@@ -67,12 +67,6 @@
     <loc>/reference/cdmFlatten.html</loc>
   </url>
   <url>
-    <loc>/reference/cdmFromCon.html</loc>
-  </url>
-  <url>
-    <loc>/reference/cdmFromFiles.html</loc>
-  </url>
-  <url>
     <loc>/reference/cdmName.html</loc>
   </url>
   <url>
@@ -112,9 +106,6 @@
     <loc>/reference/collect.cdm_reference.html</loc>
   </url>
   <url>
-    <loc>/reference/computePermanent.html</loc>
-  </url>
-  <url>
     <loc>/reference/computeQuery.html</loc>
   </url>
   <url>
@@ -130,25 +121,10 @@
     <loc>/reference/datepart.html</loc>
   </url>
   <url>
-    <loc>/reference/dbConnect-dbConnectDetails-method.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dbConnectDetails-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dbConnectDetails.html</loc>
-  </url>
-  <url>
     <loc>/reference/dbms.html</loc>
   </url>
   <url>
     <loc>/reference/downloadEunomiaData.html</loc>
-  </url>
-  <url>
-    <loc>/reference/download_optional_data.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dropStemTables.html</loc>
   </url>
   <url>
     <loc>/reference/dropTable.html</loc>
@@ -157,16 +133,10 @@
     <loc>/reference/eunomiaDir.html</loc>
   </url>
   <url>
-    <loc>/reference/eunomia_dir.html</loc>
-  </url>
-  <url>
     <loc>/reference/eunomia_is_available.html</loc>
   </url>
   <url>
     <loc>/reference/exampleDatasets.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extractLoadData.html</loc>
   </url>
   <url>
     <loc>/reference/generateCohortSet.html</loc>
@@ -184,13 +154,7 @@
     <loc>/reference/intersect_cohorts.html</loc>
   </url>
   <url>
-    <loc>/reference/listTables.html</loc>
-  </url>
-  <url>
     <loc>/reference/list_tables.html</loc>
-  </url>
-  <url>
-    <loc>/reference/newGeneratedCohortSet.html</loc>
   </url>
   <url>
     <loc>/reference/new_generated_cohort_set.html</loc>
@@ -200,9 +164,6 @@
   </url>
   <url>
     <loc>/reference/print.cdm_reference.html</loc>
-  </url>
-  <url>
-    <loc>/reference/readCohortSet.html</loc>
   </url>
   <url>
     <loc>/reference/read_cohort_set.html</loc>
