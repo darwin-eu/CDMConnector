@@ -42,7 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="../articles/a02_working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
@@ -173,7 +173,7 @@ CDM tables and is required. All other arguments are optional.</p>
 <span><span class="co">#&gt; Tables: person, observation_period, visit_occurrence, visit_detail, condition_occurrence, drug_exposure, procedure_occurrence, device_exposure, measurement, observation, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, drug_era, dose_era, condition_era, metadata, cdm_source, concept, vocabulary, domain, concept_class, concept_relationship, relationship, concept_synonym, concept_ancestor, source_to_concept_map, drug_strength</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;observation_period&gt; [?? x 5]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpmVesxn/filefd0365d3c2a.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpiiD1GO/file12226ed2e1f6.duckdb]</span></span></span>
 <span><span class="co">#&gt;    observation_period_id person_id observation_period_s…¹ observation_period_e…²</span></span>
 <span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31             2007-02-06            </span></span>
@@ -196,7 +196,7 @@ CDM tables and is required. All other arguments are optional.</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 18</span></span>
-<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpmVesxn/filefd0365d3c2a.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpiiD1GO/file12226ed2e1f6.duckdb]</span></span>
 <span><span class="co">#&gt; $ person_id                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…</span></span>
 <span><span class="co">#&gt; $ gender_concept_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …</span></span>
 <span><span class="co">#&gt; $ year_of_birth               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …</span></span>
@@ -417,7 +417,7 @@ Typically this should be a separate schema from the “cdm_schema”.</p>
 <span></span>
 <span><span class="va">drugs</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;test&gt; [?? x 11]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpmVesxn/filefd0365d3c2a.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpiiD1GO/file12226ed2e1f6.duckdb]</span></span></span>
 <span><span class="co">#&gt;    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id</span></span>
 <span><span class="co">#&gt;              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">213</span>160  <span style="text-decoration: underline;">7</span>654 poliovirus va… Drug      CVX           CVX             </span></span>
@@ -572,10 +572,10 @@ this.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
 <span><span class="co">#&gt;   person_id gender_concept_id year_of_birth month_of_birth</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        18              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>965             11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        30              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>970              8</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        28              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>979             10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       133              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>980             12</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       180              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>977              4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        43              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>956             12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       341              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>960              7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       273              <span style="text-decoration: underline;">8</span>507          <span style="text-decoration: underline;">1</span>975              9</span></span></code></pre></div>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">save_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"tmp"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">save_path</span><span class="op">)</span></span>
