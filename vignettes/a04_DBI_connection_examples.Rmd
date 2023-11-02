@@ -26,25 +26,9 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       user = Sys.getenv("CDM5_POSTGRESQL_USER"),
                       password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
 
-cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
-DBI::dbDisconnect(con)
-```
-
-### SQL Server
-
-Using odbc with SQL Server requires driver setup described [here](https://solutions.posit.co/connections/db/r-packages/odbc/).
-
-```{r, eval=FALSE}
-con <- DBI::dbConnect(odbc::odbc(),
-                      Driver   = "ODBC Driver 18 for SQL Server",
-                      Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
-                      Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
-                      UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
-                      PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
-                      TrustServerCertificate="yes",
-                      Port     = 1433)
-
-cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"))
+cdm <- cdm_from_con(con, 
+                    cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
+                    write_schema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"))
 DBI::dbDisconnect(con)
 ```
 
@@ -60,21 +44,70 @@ con <- DBI::dbConnect(RPostgres::Redshift(),
                       user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                       password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
-cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
+cdm <- cdm_from_con(con, 
+                    cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), 
+                    write_schema = Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA"))
 DBI::dbDisconnect(con)
 ```
 
 
-### Oracle 
 
-First install the Oracle Instant Client odbc driver for your system following the instructions [here](https://www.oracle.com/uk/database/technologies/releasenote-odbc-ic.html).
+### SQL Server
+
+Using odbc with SQL Server requires driver setup described [here](https://solutions.posit.co/connections/db/r-packages/odbc/). Note, you'll likely need to [download the ODBC Driver for SQL Server](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16). 
 
 ```{r, eval=FALSE}
-# odbc::odbcListDrivers() # view all installed odbc drivers
-con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
-cdm <- cdm_from_con(con, cdm_schema = "CDMV5")
+con <- DBI::dbConnect(odbc::odbc(),
+                      Driver   = "ODBC Driver 18 for SQL Server",
+                      Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+                      Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
+                      UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
+                      PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+                      TrustServerCertificate="yes",
+                      Port     = 1433)
+
+cdm <- cdm_from_con(con, 
+                    cdm_schema = c("tempdb", "dbo"), 
+                    write_schema =  c("ATLAS", "RESULTS"))
 DBI::dbDisconnect(con)
 ```
 
+The connection to SQL Server can be simplified by configuring a DSN. See [here](https://www.r-bloggers.com/2018/05/setting-up-an-odbc-connection-with-ms-sql-server-on-windows/) for instructions on how to set up the DSN.If we named it "SQL", our connection is then simplified to.
 
-<div style="margin-bottom:3cm;"></div>
+```{r, eval=FALSE}
+con <- DBI::dbConnect(odbc::odbc(), "SQL")
+cdm <- cdm_from_con(con, 
+                    cdm_schema = c("tempdb", "dbo"), 
+                    write_schema =  c("ATLAS", "RESULTS"))
+DBI::dbDisconnect(con)
+```
+
+### Snowflake
+We can use the odbc package to connect to snowflake. 
+```{r, eval=FALSE}
+con <- DBI::dbConnect(odbc::odbc(),
+                          SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
+                          UID = Sys.getenv("SNOWFLAKE_USER"),
+                          PWD = Sys.getenv("SNOWFLAKE_PASSWORD"),
+                          DATABASE = Sys.getenv("SNOWFLAKE_DATABASE"),
+                          WAREHOUSE = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
+                          DRIVER = Sys.getenv("SNOWFLAKE_DRIVER"))
+cdm <- cdm_from_con(con, 
+                    cdm_schema =  c("OMOP_SYNTHETIC_DATASET", "CDM53"), 
+                    write_schema =  c("ATLAS", "RESULTS"))
+DBI::dbDisconnect(con)
+```
+
+Note, as with SQL server we could set up a DSN to simplify this connection as described [here](https://docs.snowflake.com/developer-guide/odbc/odbc-windows) for windows and [here](https://docs.snowflake.com/developer-guide/odbc/odbc-mac) for macOS.
+
+### Duckdb
+Duckdb is an in-process database. We use the duckdb package to connect.
+
+```{r, eval=FALSE}
+con <- DBI::dbConnect(duckdb::duckdb(), 
+                      dbdir=Sys.getenv("CDM5_DUCKDB_FILE"))
+cdm <- cdm_from_con(con, 
+                    cdm_schema = "main", 
+                    write_schema = "main")
+DBI::dbDisconnect(con)
+```
