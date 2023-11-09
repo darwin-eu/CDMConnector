@@ -145,6 +145,7 @@ test_that("duckdb cohort generation", {
   # empty data
   expect_error(generateCohortSet(cdm, cohortSet %>% head(0), name = "cohorts", overwrite = TRUE))
 
+  cdm_disconnect(cdm)
 })
 
 # Test readCohortSet ----

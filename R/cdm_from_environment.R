@@ -9,10 +9,11 @@
 #' to the database and creating the cdm reference object.
 #'
 #' The environment variables used by this function and provided by the execution engine are listed below.
+#'
 #' \itemize{
-#'    \item{DBMS_TYPE: one of "postgresql", "sql server", "redshift", "duckdb", "snowflake"}
+#'    \item{DBMS_TYPE: one of "postgresql", "sql server", "redshift", "duckdb", "snowflake".}
 #'    \item{DATA_SOURCE_NAME: a free text name for the CDM given by the person running the study.}
-#'    \item{CDM_VERSION: one of "5.3", "5.4"}
+#'    \item{CDM_VERSION: one of "5.3", "5.4".}
 #'    \item{DBMS_CATALOG: The database catalog. Important primarily for compound schema names used in SQL Server and Snowflake.}
 #'    \item{DBMS_SERVER: The database server URL.}
 #'    \item{DBMS_NAME: The database name used for creating the connection.}

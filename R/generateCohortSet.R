@@ -133,12 +133,6 @@ generateCohortSet <- function(cdm,
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
-  withr::local_options(list("cli.progress_show_after" = 0))
-  # cli::cli_progress_bar(
-    # total = nrow(cohortSet),
-    # format = "Generating cohorts {cli::pb_bar} {cli::pb_current}/{cli::pb_total}")
-  # cli::cli_progress_update(set = 0)
-
   assert_write_schema(cdm) # required for now
 
   checkmate::assertLogical(computeAttrition, len = 1)
@@ -275,12 +269,6 @@ generateCohortSet <- function(cdm,
     write_schema_sql <- paste(DBI::dbQuoteIdentifier(con, write_schema), collapse = ".")
   }
 
-  # if (!(dbms(con) %in% c("snowflake", "oracle"))) {
-    # target_cohort_table <- paste0(prefix, name)
-  # } else {
-    # target_cohort_table <- paste0(prefix, name)
-  # }
-
   dropTempTableIfExists <- function(con, table) {
     suppressMessages(
       DBI::dbExecute(
@@ -292,7 +280,15 @@ generateCohortSet <- function(cdm,
     )
   }
 
+  withr::local_options(list("cli.progress_show_after" = 0, "cli.progress_clear" = FALSE))
+  cli::cli_alert_info("Generating {nrow(cohortSet)} cohort{?s}")
+
   for (i in seq_len(nrow(cohortSet))) {
+
+    msg <- glue::glue("Generating cohort ({i}/{nrow(cohortSet)}) - {cohortSet$cohort_name[i]})")
+    # cli::cli_progress_step("Generating cohort ({i}/{nrow(cohortSet)}) - {cohortSet$cohort_name[i]}")
+    cli::cli_progress_step(msg)
+
     # Note: you cannot quote the auxiliary cohort table names because it will end up
     # generating sql like this: delete from "ATLAS"."RESULTS"."chrt0_inclusion"_stats where cohort_definition_id = 3
     # which fails
@@ -352,7 +348,6 @@ generateCohortSet <- function(cdm,
     for (j in seq_along(sql)) {
       DBI::dbExecute(con, sql[j], immediate = TRUE)
     }
-    # cli::cli_progress_update(set = i)
   }
 
   if (dbms(con) %in% c("snowflake", "oracle")) {
