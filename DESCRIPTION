@@ -40,7 +40,8 @@ Imports:
     fs,
     generics,
     tidyr,
-    pool
+    pool,
+    testthat (>= 3.0.0)
 Suggests: 
     arrow,
     SqlRender, 
@@ -54,7 +55,6 @@ Suggests:
     odbc,
     ggplot2,
     bigrquery,
-    testthat (>= 3.0.0),
     DatabaseConnector,
     lubridate,
     tibble,
