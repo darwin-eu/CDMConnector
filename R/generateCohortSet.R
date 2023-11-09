@@ -651,7 +651,8 @@ new_generated_cohort_set <- function(cohort_ref,
     }
 
     # primary key check
-    one <- cohort_set_ref %>%
+    if(cohort_set_ref %>% utils::head(1) %>% dplyr::tally() %>% dplyr::pull() != 0){
+      one <- cohort_set_ref %>%
       dplyr::count(.data$cohort_definition_id, name = "one") %>%
       dplyr::count(.data$one) %>%
       dplyr::pull("one")
@@ -664,6 +665,7 @@ new_generated_cohort_set <- function(cohort_ref,
     if (!all(cohort_ids %in% cohort_set_ids)) {
       diff <- dplyr::setdiff(cohort_ids, cohort_set_ids) %>% paste(collapse = ", ")
       rlang::abort(glue::glue("cohort IDs {diff} are in the cohort table but not in the cohort_set table!"))
+    }
     }
   }
 

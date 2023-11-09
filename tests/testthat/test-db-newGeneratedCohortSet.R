@@ -119,3 +119,40 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
+
+test_that("no error if cohort is empty", {
+  skip_if_not_installed("CirceR")
+  # if an empty cohort is passed return an empty GeneratedCohortSet object
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+  cohortSet <- readCohortSet("cohorts2")
+  cdm <- generateCohortSet(cdm,
+                           cohortSet,
+                           name = "cohorts2",
+                           overwrite = TRUE,
+                           computeAttrition = TRUE)
+  expect_true("GeneratedCohortSet" %in% class(cdm$cohorts2))
+
+  cdm$cohort_3 <- cdm$cohorts2 %>%
+    filter(cohort_start_date > "2030-01-01") %>%
+    compute_query()
+
+  cdm$cohort_3a <-  cdm$cohort_3 %>%
+    newGeneratedCohortSet(overwrite = TRUE)
+  expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3a))
+  # we won't have cohort set or cohort count as we didn't provide the cohort set ref
+  expect_true(nrow(cohort_set(cdm$cohort_3a)) == 0)
+  expect_true(nrow(cohort_count(cdm$cohort_3a)) == 0)
+
+  c_Ref<- cohort_set(cdm$cohort_3)
+  cdm$cohort_3b <-  cdm$cohort_3 %>%
+    newGeneratedCohortSet(cohortSetRef = c_Ref,
+                            overwrite = TRUE)
+  expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3b))
+  expect_false(nrow(cohort_set(cdm$cohort_3b)) == 0)
+  expect_false(nrow(cohort_count(cdm$cohort_3b)) == 0)
+
+  cdm_disconnect(cdm)
+
+})
