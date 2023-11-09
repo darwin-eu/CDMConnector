@@ -116,7 +116,6 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   )
 }
 
-dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
     con <- get_connection(dbtype)
