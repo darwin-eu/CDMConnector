@@ -2,20 +2,15 @@ library(testthat)
 library(CDMConnector)
 test_that("generate_cohort_set works with write_prefix on snowflake", {
 
-  # skip("failing test that should pass")
+  skip_on_cran()
 
-  con <- DBI::dbConnect(odbc::odbc(),
-                        SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
-                        UID = Sys.getenv("SNOWFLAKE_USER"),
-                        PWD = Sys.getenv("SNOWFLAKE_PASSWORD"),
-                        DATABASE = Sys.getenv("SNOWFLAKE_DATABASE"),
-                        WAREHOUSE = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
-                        DRIVER = Sys.getenv("SNOWFLAKE_DRIVER"))
+  con <- get_connection("snowflake")
+  cdm_schema <- get_cdm_schema("snowflake")
+  write_schema <- get_write_schema("snowflake")
 
-  cdm_schema <- strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]]
-  write_schema <- strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]]
-
-  write_schema <- c(catalog = write_schema[1], schema = write_schema[2], prefix = "test_")
+  skip_if(is.null(con))
+  skip_if(cdm_schema == "")
+  skip_if(write_schema == "")
 
   cdm <- cdm_from_con(con, cdm_schema, write_schema)
 
