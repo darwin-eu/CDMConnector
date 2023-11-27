@@ -101,6 +101,10 @@ appendPermanent <- function(x, name, schema = NULL) {
   checkmate::assertClass(x, "tbl_sql")
 
   # TODO try dbAppendTable
+  if ("prefix" %in% names(schema)) {
+    name <- paste0(schema["prefix"], name)
+    schema <- schema[names(schema) != "prefix"]
+  }
   fullNameQuoted <- getFullTableNameQuoted(x, name, schema)
   existingTables <- listTables(x$src$con, schema = schema)
   if (!(tolower(name) %in% tolower(existingTables))) {

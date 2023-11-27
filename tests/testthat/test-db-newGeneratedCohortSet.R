@@ -126,7 +126,12 @@ test_that("no error if cohort is empty", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 
-  cohortSet <- readCohortSet("cohorts2")
+  inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
+
+  withr::with_dir(inst_dir, {
+    cohortSet <- readCohortSet("cohorts2")
+  })
+
   cdm <- generateCohortSet(cdm,
                            cohortSet,
                            name = "cohorts2",

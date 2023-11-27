@@ -195,6 +195,8 @@ generateConceptCohortSet <- function(cdm,
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs
+  domains <- domains[domains %in% c("condition", "drug", "procedure", "observation", "measurement", "visit", "device")]
+
   if (length(domains) == 0) cli::cli_abort("None of the input concept IDs are in the CDM concept table!")
 
   # check we have references to all required tables ----
