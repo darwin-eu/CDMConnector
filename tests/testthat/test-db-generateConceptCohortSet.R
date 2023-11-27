@@ -222,3 +222,25 @@ test_that("missing domains produce warning", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
+
+test_that("Regimen domain does not cause error", {
+
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+
+  # create a fake concept with domain "Regimen"
+  DBI::dbExecute(con, "UPDATE main.concept SET domain_id = 'Regimen' WHERE concept_id = 19129655")
+  cdm <- CDMConnector::cdm_from_con(con, "main", "main")
+  concept_set <- list(drug1 = c(1127433, 19129655), drug2 = 19129655, drug3 = 1127433)
+
+  expect_no_error({
+    cdm <- generateConceptCohortSet(cdm = cdm,
+                                    name = "cohort",
+                                    conceptSet = concept_set,
+                                    overwrite = TRUE)
+  })
+
+  expect_s3_class(cdm$cohort, "GeneratedCohortSet")
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
