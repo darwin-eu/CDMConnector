@@ -12,6 +12,8 @@ generateConceptCohortSet(
   limit = "first",
   requiredObservation = c(0, 0),
   end = "observation_period_end_date",
+  subsetCohort = NULL,
+  subsetCohortId = NULL,
   overwrite = FALSE
 )
 
@@ -22,6 +24,8 @@ generate_concept_cohort_set(
   limit = "first",
   required_observation = c(0, 0),
   end = "observation_period_end_date",
+  subset_cohort = NULL,
+  subset_cohort_id = NULL,
   overwrite = FALSE
 )
 }
@@ -47,6 +51,14 @@ required observation time prior to index and post index for an event to be inclu
 \item{numeric scalar: A fixed number of days from the event start date}
 \item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
 }}
+
+\item{subsetCohort, subset_cohort}{A cohort table containing the individuals for which to
+generate cohorts for. Only individuals in the cohort table will appear in
+the created generated cohort set.}
+
+\item{subsetCohortId, subset_cohort_id}{A set of cohort IDs from the cohort table for which
+to include. If none are provided, all cohorts in the cohort table will
+be included.}
 
 \item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)}
 }

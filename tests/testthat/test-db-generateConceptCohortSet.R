@@ -192,6 +192,72 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
   expect_equal(actual, expected)
 
+
+  # cohort generation with a cohort subset ------
+  # create our main cohort of interest
+  cdm <- generateConceptCohortSet(
+    cdm = cdm,
+    conceptSet = list(gibleed_1 = 192671,
+                      gibleed_2 = 4112343),
+    name = "gibleed_exp",
+    overwrite = TRUE
+  )
+
+  start_person_count <- cdm$person %>% dplyr::tally() %>% dplyr::pull("n")
+  cdm <- generate_concept_cohort_set(cdm = cdm,
+                                     name = "gibleed_medications",
+                                     concept_set = list("diclofenac" = 1124300,
+                                                        "acetaminophen" = 1127433),
+                                     subset_cohort = "gibleed_exp",
+                                     overwrite = TRUE)
+  # we should still have our original cdm
+  end_person_count <- cdm$person %>% dplyr::tally() %>% dplyr::pull("n")
+  expect_true(start_person_count == end_person_count)
+
+  expect_true(nrow(cdm$gibleed_medications %>%
+    dplyr::select("subject_id") %>%
+    dplyr::distinct() %>%
+    dplyr::anti_join(cdm$gibleed_exp %>%
+                       dplyr::select("subject_id") %>%
+                       dplyr::distinct(),
+                     by = "subject_id") %>%
+    collect()) == 0)
+
+  # specifying cohort ids
+  cdm <- generate_concept_cohort_set(cdm = cdm,
+                                     name = "gibleed_medications2",
+                                     concept_set = list("diclofenac" = 1124300,
+                                                        "acetaminophen" = 1127433),
+                                     subset_cohort = "gibleed_exp",
+                                     subset_cohort_id = 1,
+                                     overwrite = TRUE)
+
+  expect_true(nrow(cdm$gibleed_medications2 %>%
+                     dplyr::select("subject_id") %>%
+                     dplyr::distinct() %>%
+                     dplyr::anti_join(cdm$gibleed_exp %>%
+                                        dplyr::filter(cohort_definition_id == 1L) %>%
+                                        dplyr::select("subject_id") %>%
+                                        dplyr::distinct(),
+                                      by = "subject_id") %>%
+                     collect()) == 0)
+  # expected errors
+ expect_error(generate_concept_cohort_set(cdm = cdm,
+                              name = "gibleed_medications2",
+                              concept_set = list("diclofenac" = 1124300,
+                                                 "acetaminophen" = 1127433),
+                              subset_cohort = "not_a_table",
+                              subset_cohort_id = 1,
+                              overwrite = TRUE))
+ expect_error(generate_concept_cohort_set(cdm = cdm,
+                                     name = "gibleed_medications2",
+                                     concept_set = list("diclofenac" = 1124300,
+                                                        "acetaminophen" = 1127433),
+                                     subset_cohort = "gibleed_exp",
+                                     subset_cohort_id = c(99,100,101),
+                                     overwrite = TRUE))
+
+
   # clean up
   CDMConnector::dropTable(cdm, dplyr::contains("gibleed"))
 }
@@ -221,7 +287,6 @@ test_that("missing domains produce warning", {
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
-
 
 test_that("Regimen domain does not cause error", {
 
