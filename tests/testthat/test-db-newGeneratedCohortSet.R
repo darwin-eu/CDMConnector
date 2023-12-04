@@ -140,7 +140,7 @@ test_that("no error if cohort is empty", {
   expect_true("GeneratedCohortSet" %in% class(cdm$cohorts2))
 
   cdm$cohort_3 <- cdm$cohorts2 %>%
-    filter(cohort_start_date > "2030-01-01") %>%
+    dplyr::filter(cohort_start_date > "2030-01-01") %>%
     compute_query()
 
   cdm$cohort_3a <-  cdm$cohort_3 %>%

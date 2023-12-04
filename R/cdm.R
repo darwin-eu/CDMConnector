@@ -82,9 +82,9 @@ cdm_from_con <- function(con,
   }
 
   # Handle uppercase table names in the database
-  if (all(dbTables == toupper(dbTables))) {
+  if (all(cdm_tables %in% toupper(dbTables))) {
     cdm_tables <- toupper(cdm_tables)
-  } else if (!all(dbTables == tolower(dbTables))) {
+  } else if (!all(cdm_tables %in% tolower(dbTables))) {
     rlang::abort("CDM database tables should be either all upppercase or all lowercase!")
   }
 

@@ -3,7 +3,7 @@ library(CDMConnector)
 test_that("generate_cohort_set works with write_prefix on snowflake", {
 
   skip_on_cran()
-
+  skip_if_not("snowflake" %in% dbToTest)
   con <- get_connection("snowflake")
   cdm_schema <- get_cdm_schema("snowflake")
   write_schema <- get_write_schema("snowflake")
