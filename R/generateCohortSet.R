@@ -414,7 +414,8 @@ generateCohortSet <- function(cdm,
     cohort_ref = cdm[[name]],
     cohort_set_ref = cohort_set_ref,
     cohort_attrition_ref = cohort_attrition_ref,
-    cohort_count_ref = cohort_count_ref)
+    cohort_count_ref = cohort_count_ref,
+    overwrite = overwrite)
 
   cli::cli_progress_done()
   return(cdm)
