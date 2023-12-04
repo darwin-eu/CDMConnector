@@ -291,6 +291,7 @@ test_that("newGeneratedCohortSet works with prefix", {
 # issue: https://github.com/darwin-eu-dev/CDMConnector/issues/337
 
 test_that("no error is given if attrition table already exists and overwrite = TRUE", {
+  skip_if_not_installed("CirceR")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main")
   cohort_set <- read_cohort_set(system.file("cohorts1", package = "CDMConnector"))
