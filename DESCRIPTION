@@ -39,8 +39,7 @@ Imports:
     stringi,
     fs,
     generics,
-    tidyr,
-    pool
+    tidyr
 Suggests: 
     arrow,
     SqlRender, 
@@ -57,7 +56,8 @@ Suggests:
     DatabaseConnector,
     lubridate,
     tibble,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    pool
 Enhances:
     CirceR,
     Capr

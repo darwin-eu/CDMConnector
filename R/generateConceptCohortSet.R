@@ -50,7 +50,7 @@ table_refs <- function(domain_id) {
 #'  \item{numeric scalar: A fixed number of days from the event start date}
 #'  \item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
 #' }
-#' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)
+#' @param overwrite Should the cohort table be overwritten if it already exists? TRUE (default) or FALSE.
 #'
 #' @return A cdm reference object with the new generated cohort set table added
 #' @export
@@ -60,7 +60,7 @@ generateConceptCohortSet <- function(cdm,
                                      limit = "first",
                                      requiredObservation = c(0,0),
                                      end = "observation_period_end_date",
-                                     overwrite = FALSE) {
+                                     overwrite = TRUE) {
 
   # check cdm ----
   checkmate::assertClass(cdm, "cdm_reference")
@@ -319,7 +319,7 @@ generate_concept_cohort_set <- function(cdm,
                                         limit = "first",
                                         required_observation = c(0,0),
                                         end = "observation_period_end_date",
-                                        overwrite = FALSE) {
+                                        overwrite = TRUE) {
   generateConceptCohortSet(cdm = cdm,
                            conceptSet = concept_set,
                            name = name,

@@ -29,6 +29,9 @@ cdm_from_con <- function(con,
   checkmate::assert_true(methods::is(con, "DBIConnection") || methods::is(con, "Pool"))
 
   if (methods::is(con, "Pool")) {
+    if (!rlang::is_installed("pool")) {
+      rlang::abort("Please install the pool package.")
+    }
     con <- pool::localCheckout(con)
   }
 
@@ -82,9 +85,10 @@ cdm_from_con <- function(con,
   }
 
   # Handle uppercase table names in the database
-  if (all(cdm_tables %in% toupper(dbTables))) {
+  cdm_tables_in_db <- dbTables[which(tolower(dbTables) %in% cdm_tables)]
+  if (all(cdm_tables_in_db == toupper(cdm_tables_in_db))) {
     cdm_tables <- toupper(cdm_tables)
-  } else if (!all(cdm_tables %in% tolower(dbTables))) {
+  } else if (!all(cdm_tables_in_db == tolower(cdm_tables_in_db))) {
     rlang::abort("CDM database tables should be either all upppercase or all lowercase!")
   }
 
@@ -481,6 +485,9 @@ dbms <- function(con) {
   if (methods::is(con, "cdm_reference")) {
     con <- attr(con, "dbcon")
   } else if (methods::is(con, "Pool")) {
+    if (!rlang::is_installed("pool")) {
+      rlang::abort("Please install the pool package.")
+    }
     con <- pool::localCheckout(con)
   }
 

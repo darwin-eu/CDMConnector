@@ -48,7 +48,14 @@ inSchema <- function(schema, table, dbms = NULL) {
 
   if ("prefix" %in% names(schema)) {
     checkmate::assertCharacter(schema['prefix'], len = 1, min.chars = 1, pattern = "[a-zA-Z1-9_]+")
-    table <- paste0(schema['prefix'], table)
+
+    # match the case of table name
+    if (toupper(table) == table) {
+      table <- paste0(toupper(schema['prefix']), table)
+    } else {
+      table <- paste0(schema['prefix'], table)
+    }
+
     schema <- schema[!names(schema) %in% "prefix"]
     checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
   }
@@ -95,6 +102,9 @@ in_schema <- inSchema
 list_tables <- function(con, schema = NULL) {
 
   if (methods::is(con, "Pool")) {
+    if (!rlang::is_installed("pool")) {
+      rlang::abort("Please install the pool package.")
+    }
     con <- pool::localCheckout(con)
   }
 

@@ -191,6 +191,10 @@ computeQuery <- function(x,
     return(x)
   }
 
+  if ("cdm_reference" %in% class(x)) {
+    rlang::abort("You passed a cdm object into computeQuery which only accepts single tables or lazy queries!")
+  }
+
   checkmate::assertLogical(temporary, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
 

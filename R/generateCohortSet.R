@@ -101,7 +101,7 @@ readCohortSet <- read_cohort_set
 #' or a named list of Capr cohort definitions.
 #' @param compute_attrition,computeAttrition Should attrition be computed? TRUE (default) or FALSE
 #' @param overwrite Should the cohort table be overwritten if it already
-#' exists? TRUE or FALSE (default)
+#' exists? TRUE (default) or FALSE
 #' @export
 #' @examples
 #' \dontrun{
@@ -124,7 +124,7 @@ generateCohortSet <- function(cdm,
                               cohortSet,
                               name = "cohort",
                               computeAttrition = TRUE,
-                              overwrite = FALSE) {
+                              overwrite = TRUE) {
 
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
@@ -428,7 +428,7 @@ generate_cohort_set <- function(cdm,
                                 cohort_set,
                                 name = "cohort",
                                 compute_attrition = TRUE,
-                                overwrite = FALSE) {
+                                overwrite = TRUE) {
   generateCohortSet(cdm = cdm,
                     cohortSet = cohort_set,
                     name = name,
