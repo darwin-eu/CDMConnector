@@ -374,6 +374,69 @@ dropTable <- function(cdm, name, verbose = FALSE) {
 #' @export
 drop_table <- dropTable
 
+#' Add tables to a cdm object
+#'
+#'
+#' @param cdm A cdm reference
+#' @param name A character name with the name of the table.
+#' @param table Table to insert in the cdm object. It has to be a in R-memory
+#' table.
+#'
+#' @return Returns the cdm object with the new tables added
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#'
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+#'
+#' cdm
+#'
+#' new_table <- dplyr::tibble(a = 1)
+#'
+#' cdm <- insertTable(cdm, "new_table", new_table)
+#'
+#' cdm
+#'
+#' cdm$new_table
+#'
+#' cdm_disconnect(cdm)
+#' }
+#' }
+insertTable <- function(cdm, name, table) {
+  # initial checks
+  checkmate::assertClass(cdm, "cdm_referene")
+  checkmate::assertCharacter(name, len = 1, min.chars = 1, any.missing = FALSE)
+  checkmate::assertTibble(table)
+
+  if (length(cdm) == 0) {
+    cli::cli_abort("The cdm is empty, please use a cdm creation function to create a cdm object")
+  }
+
+  # insert table
+  con <- attr(cdm, "dbcon")
+  if (!is.null(con)) {
+    fullName <- inSchema(attr(cdm, "write_schema"), name)
+    DBI::dbWriteTable(con, fullName, table)
+    cdm[[name]] <- dplyr::tbl(con, fullName)
+  } else if ("ArrowTabular" %in% class(cdm[[1]])) {
+    # TODO
+    # do we want to insert it in files or the source, like we do with databases?
+    cdm[[name]] <- arrow::arrow_table(table)
+  } else {
+    cdm[[name]] <- table
+  }
+
+  return(cdm)
+}
+
+#' @rdname insertTable
+#' @export
+insert_table <- insertTable
+
 # Get the full table name consisting of the schema and table name.
 #
 # @param x A dplyr query
