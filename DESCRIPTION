@@ -40,8 +40,7 @@ Imports:
     fs,
     generics,
     tidyr,
-    pool,
-    testthat (>= 3.0.0)
+    pool
 Suggests: 
     arrow,
     SqlRender, 
@@ -58,7 +57,7 @@ Suggests:
     DatabaseConnector,
     lubridate,
     tibble,
-    zeallot
+    testthat (>= 3.0.0)
 Enhances:
     CirceR,
     Capr
