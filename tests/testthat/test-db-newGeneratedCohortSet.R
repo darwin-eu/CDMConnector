@@ -161,3 +161,32 @@ test_that("no error if cohort is empty", {
   cdm_disconnect(cdm)
 
 })
+
+
+# issue: https://github.com/darwin-eu-dev/CDMConnector/issues/300
+test_that("newGeneratedCohortSet handles empty cohort tables", {
+
+  skip_if_not_installed("CirceR")
+
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+  cohortSet <- readCohortSet(system.file("cohorts2",
+                                         package = "CDMConnector",
+                                         mustWork = TRUE))
+  cdm <- generateCohortSet(cdm,
+                           cohortSet,
+                           name = "cohorts2",
+                           overwrite = TRUE,
+                           computeAttrition = TRUE)
+
+  expect_no_error({
+    cdm$cohort_3 <- cdm$cohorts2 %>%
+      dplyr::filter(cohort_start_date > "2099-01-01") %>%
+      compute_query() %>%
+      newGeneratedCohortSet()
+  })
+
+  expect_equal(nrow(dplyr::collect(cdm$cohort_3)), 0)
+  DBI::dbDisconnect(con, shutdown = T)
+})
