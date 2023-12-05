@@ -118,6 +118,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
+    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)

@@ -264,6 +264,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
+    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
     skip_if_not_installed("CirceR")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)

@@ -141,7 +141,7 @@ disconnect <- function(con) {
 
 dbToTest <- c(
   "duckdb"
-  # ,"postgres"
+  ,"postgres"
   # ,"redshift"
   # ,"sqlserver"
   # ,"snowflake"
@@ -151,3 +151,6 @@ dbToTest <- c(
   # ,
   # ,"bigquery"
 )
+
+# databases not in this vector will be skippped on github
+ciTestDbs <- c("duckdb","postgres")

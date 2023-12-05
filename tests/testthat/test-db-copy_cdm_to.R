@@ -25,7 +25,7 @@ test_copy_cdm_to <- function(con, write_schema) {
 # dbtype = "bigquery" # bigquery is failing
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - copy_cdm_to"), {
-    if (dbtype != "duckdb") skip_on_ci()
+    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
     con <- get_connection(dbtype)
     prefix <- paste0("tbl", as.integer(Sys.time()), "_")
     write_schema <- get_write_schema(dbtype, prefix = prefix)

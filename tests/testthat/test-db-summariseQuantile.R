@@ -53,9 +53,9 @@ test_summarise_quantile <- function(con,
   DBI::dbRemoveTable(con, inSchema(write_schema, tempname, dbms = dbms(con)))
 }
 
-dbtype = "snowflake"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - summariseQuantile"), {
+    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
     con <- get_connection(dbtype)
     prefix <- paste0("test", as.integer(Sys.time()), "_")
     write_schema <- get_write_schema(dbtype, prefix = prefix)

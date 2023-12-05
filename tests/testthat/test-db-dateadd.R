@@ -103,7 +103,7 @@ test_date_functions <- function(con, write_schema) {
 # dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - date functions"), {
-    if (dbtype != "duckdb") skip_on_ci()
+    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == ""))
     con <- get_connection(dbtype)
