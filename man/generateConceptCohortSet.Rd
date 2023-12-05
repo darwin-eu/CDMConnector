@@ -14,7 +14,7 @@ generateConceptCohortSet(
   end = "observation_period_end_date",
   subsetCohort = NULL,
   subsetCohortId = NULL,
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 generate_concept_cohort_set(
@@ -26,7 +26,7 @@ generate_concept_cohort_set(
   end = "observation_period_end_date",
   subset_cohort = NULL,
   subset_cohort_id = NULL,
-  overwrite = FALSE
+  overwrite = TRUE
 )
 }
 \arguments{
@@ -60,7 +60,7 @@ the created generated cohort set.}
 to include. If none are provided, all cohorts in the cohort table will
 be included.}
 
-\item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)}
+\item{overwrite}{Should the cohort table be overwritten if it already exists? TRUE (default) or FALSE.}
 }
 \value{
 A cdm reference object with the new generated cohort set table added

@@ -23,3 +23,23 @@ Returns the cdm object with the new tables added
 \description{
 Add tables to a cdm object
 }
+\examples{
+\dontrun{
+library(CDMConnector)
+
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+cdm
+
+new_table <- dplyr::tibble(a = 1)
+
+cdm <- insertTable(cdm, "new_table", new_table)
+
+cdm
+
+cdm$new_table
+
+cdm_disconnect(cdm)
+}
+}

@@ -409,10 +409,9 @@ drop_table <- dropTable
 #'
 #' cdm_disconnect(cdm)
 #' }
-#' }
 insertTable <- function(cdm, name, table) {
   # initial checks
-  checkmate::assertClass(cdm, "cdm_referene")
+  checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertCharacter(name, len = 1, min.chars = 1, any.missing = FALSE)
   checkmate::assertTibble(table)
 

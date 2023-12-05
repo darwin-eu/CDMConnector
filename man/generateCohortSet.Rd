@@ -10,7 +10,7 @@ generateCohortSet(
   cohortSet,
   name = "cohort",
   computeAttrition = TRUE,
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 generate_cohort_set(
@@ -18,7 +18,7 @@ generate_cohort_set(
   cohort_set,
   name = "cohort",
   compute_attrition = TRUE,
-  overwrite = FALSE
+  overwrite = TRUE
 )
 }
 \arguments{
@@ -29,7 +29,7 @@ specified.}
 as a prefix for the cohort attribute tables.}
 
 \item{overwrite}{Should the cohort table be overwritten if it already
-exists? TRUE or FALSE (default)}
+exists? TRUE (default) or FALSE}
 
 \item{cohort_set, cohortSet}{Can be a cohortSet object created with \code{readCohortSet()},
 a single Capr cohort definition,
