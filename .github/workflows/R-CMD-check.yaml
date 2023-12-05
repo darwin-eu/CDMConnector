@@ -101,6 +101,11 @@ jobs:
             print(list.files(path.expand("~")))
          shell: Rscript {0}
 
+      -  name: Run tests on postgres
+         run: |
+            withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())
+         shell: Rscript {0}
+
       # causing error on github runner for unknown reason
       # - name: Test coverage
       #   if: runner.os == 'macOS'

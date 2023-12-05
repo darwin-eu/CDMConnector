@@ -152,5 +152,6 @@ dbToTest <- c(
   # ,"bigquery"
 )
 
-# databases not in this vector will be skippped on github
-ciTestDbs <- c("duckdb","postgres")
+# databases not in this vector will be skipped on github
+ciTestDbs <- Sys.getenv("CI_TEST_DB")
+
