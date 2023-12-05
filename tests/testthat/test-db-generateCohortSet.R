@@ -29,7 +29,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   expect_true(methods::is(cdm$chrt0, "GeneratedCohortSet"))
 
-  expect_error(generateCohortSet(cdm, cohortSet = "not a cohort"))
+  expect_error(generateCohortSet(cdm, name = "blah", cohortSet = "not a cohort"))
 
   # check already exists
   expect_error(generateCohortSet(cdm, cohortSet, name = "chrt0", overwrite = FALSE))

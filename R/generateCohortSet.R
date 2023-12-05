@@ -122,7 +122,7 @@ readCohortSet <- read_cohort_set
 #' }
 generateCohortSet <- function(cdm,
                               cohortSet,
-                              name = "cohort",
+                              name,
                               computeAttrition = TRUE,
                               overwrite = TRUE) {
 
@@ -132,6 +132,7 @@ generateCohortSet <- function(cdm,
   checkmate::assertClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(con))
+  checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
   assert_write_schema(cdm) # required for now
 

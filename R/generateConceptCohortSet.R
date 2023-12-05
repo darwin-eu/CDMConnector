@@ -62,7 +62,7 @@ table_refs <- function(domain_id) {
 #' @export
 generateConceptCohortSet <- function(cdm,
                                      conceptSet = NULL,
-                                     name = "cohort",
+                                     name,
                                      limit = "first",
                                      requiredObservation = c(0,0),
                                      end = "observation_period_end_date",
@@ -74,6 +74,7 @@ generateConceptCohortSet <- function(cdm,
   checkmate::assertClass(cdm, "cdm_reference")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+  checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
   assertTables(cdm, "observation_period", empty.ok = FALSE)
   assertWriteSchema(cdm)
