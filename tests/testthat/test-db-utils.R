@@ -61,7 +61,7 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
 # dbtype = "oracle"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - inSchema"), {
-    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
 

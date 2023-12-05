@@ -251,7 +251,7 @@ test_cohort_collapse <- function(con, write_schema) {
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - cohort_collapse"), {
-    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     write_schema <- get_write_schema(dbtype)
     con <- get_connection(dbtype)
     skip_if(any(write_schema == "") || is.null(con))

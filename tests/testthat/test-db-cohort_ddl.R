@@ -29,7 +29,7 @@ test_cohort_ddl <- function(con, write_schema) {
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - createCohortTables"), {
-    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     con <- get_connection(dbtype)
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == "") || is.null(con))

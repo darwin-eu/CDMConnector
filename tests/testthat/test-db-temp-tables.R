@@ -43,7 +43,7 @@ test_temp_tables <- function(dbtype) {
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - temp_tables"), {
-    if (!(dbtype %in% ciTestDbs))) skip_on_ci()
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype %in% c("sqlserver", "snowflake", "bigquery")) skip("failing test")
     skip_if(get_write_schema(dbtype) == "")
     con <- get_connection(dbtype)
