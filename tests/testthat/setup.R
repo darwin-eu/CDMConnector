@@ -138,20 +138,24 @@ disconnect <- function(con) {
   }
 }
 
+# databases supported on github actions
+ciTestDbs <- c("duckdb", "postgres")
 
-dbToTest <- c(
-  "duckdb"
-  ,"postgres"
-  # ,"redshift"
-  # ,"sqlserver"
-  # ,"snowflake"
+if (Sys.getenv("CI_TEST_DB") == "") {
+  dbToTest <- c(
+    "duckdb"
+    # ,"postgres"
+    # ,"redshift"
+    # ,"sqlserver"
+    # ,"snowflake"
 
-  # ,"spark"
-  # ,"oracle"
-  # ,
-  # ,"bigquery"
-)
-
-# databases not in this vector will be skipped on github
-ciTestDbs <- Sys.getenv("CI_TEST_DB")
-
+    # ,"spark"
+    # ,"oracle"
+    # ,
+    # ,"bigquery"
+  )
+} else {
+  checkmate::assert_choice(Sys.getenv("CI_TEST_DB"),
+                           choices = c("duckdb", "postgres", "sqlserver", "redshift"))
+  dbToTest <- Sys.getenv("CI_TEST_DB")
+}
