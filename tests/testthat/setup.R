@@ -158,4 +158,5 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   checkmate::assert_choice(Sys.getenv("CI_TEST_DB"),
                            choices = c("duckdb", "postgres", "sqlserver", "redshift"))
   dbToTest <- Sys.getenv("CI_TEST_DB")
+  print(paste("running tests. on ", dbToTest))
 }
