@@ -35,6 +35,7 @@ jobs:
         run: |
             install.packages("DatabaseConnector")
             install.packages("RPostgres")
+            install.packages("testthat")
         shell: Rscript {0}
 
       - name: Install CirceR
