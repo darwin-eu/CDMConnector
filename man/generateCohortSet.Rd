@@ -8,7 +8,7 @@
 generateCohortSet(
   cdm,
   cohortSet,
-  name = "cohort",
+  name,
   computeAttrition = TRUE,
   overwrite = TRUE
 )

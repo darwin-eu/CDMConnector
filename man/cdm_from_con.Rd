@@ -11,13 +11,15 @@ cdm_from_con(
   write_schema = NULL,
   cohort_tables = NULL,
   cdm_version = "5.3",
-  cdm_name = NULL
+  cdm_name = NULL,
+  achilles_schema = NULL
 )
 
 cdmFromCon(
   con,
   cdmSchema = NULL,
   writeSchema = NULL,
+  achillesSchema = NULL,
   cohortTables = NULL,
   cdmVersion = "5.3",
   cdmName = NULL
@@ -42,6 +44,9 @@ heuristics. Cohort tables must be in the write_schema.}
 
 \item{cdm_name, cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.}
+
+\item{achilles_schema, achillesSchema}{An optional schema in the CDM database
+that contains achilles tables.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

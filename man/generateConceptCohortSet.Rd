@@ -8,7 +8,7 @@
 generateConceptCohortSet(
   cdm,
   conceptSet = NULL,
-  name = "cohort",
+  name,
   limit = "first",
   requiredObservation = c(0, 0),
   end = "observation_period_end_date",

@@ -34,6 +34,7 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
     dplyr::collect()
 
   expect_s3_class(df, "data.frame")
+
 }
 
 # dbToTest <- c(
@@ -80,4 +81,39 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
   expect_true(all(names(cdm) == tolower(names(cdm))))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+
+test_that("adding achilles", {
+  skip_if_not(eunomia_is_available())
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  expect_error(cdm_from_con(con = con,
+                      cdm_schema =  "main",
+                      achilles_schema = "main"))
+  DBI::dbWriteTable(con, "achilles_analysis",
+                    tibble(analysis_id = 1,
+                           analysis_name = 1),
+                    overwrite = TRUE
+  )
+  DBI::dbWriteTable(con, "achilles_results",
+                    tibble(analysis_id = 1,
+                           stratum_1 = "a"),
+                    overwrite = TRUE
+  )
+  DBI::dbWriteTable(con, "achilles_results_dist",
+                    tibble(analysis_id = 1,
+                           count_value = 5),
+                    overwrite = TRUE
+  )
+ cdm <- cdm_from_con(con = con,
+               cdm_schema =  "main",
+               achilles_schema = "main")
+
+ expect_true(cdm$achilles_analysis %>% dplyr::pull("analysis_name") == 1)
+ expect_true(cdm$achilles_results %>% dplyr::pull("stratum_1") == "a")
+ expect_true(cdm$achilles_results_dist %>% dplyr::pull("count_value") == 5)
+
+
+ DBI::dbDisconnect(con, shutdown = TRUE)
+
 })
