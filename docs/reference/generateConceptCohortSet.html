@@ -36,7 +36,7 @@ observation domains, the the start date will be used as the end date."><!-- math
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,11 +101,13 @@ observation domains, the the start date will be used as the end date.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">generateConceptCohortSet</span><span class="op">(</span></span>
 <span>  <span class="va">cdm</span>,</span>
 <span>  conceptSet <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  name <span class="op">=</span> <span class="st">"cohort"</span>,</span>
+<span>  <span class="va">name</span>,</span>
 <span>  limit <span class="op">=</span> <span class="st">"first"</span>,</span>
 <span>  requiredObservation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  end <span class="op">=</span> <span class="st">"observation_period_end_date"</span>,</span>
-<span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  subsetCohort <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subsetCohortId <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">generate_concept_cohort_set</span><span class="op">(</span></span>
@@ -115,7 +117,9 @@ observation domains, the the start date will be used as the end date.</p>
 <span>  limit <span class="op">=</span> <span class="st">"first"</span>,</span>
 <span>  required_observation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  end <span class="op">=</span> <span class="st">"observation_period_end_date"</span>,</span>
-<span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  subset_cohort <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subset_cohort_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -151,8 +155,20 @@ required observation time prior to index and post index for an event to be inclu
 </ul></dd>
 
 
+<dt>subsetCohort, subset_cohort</dt>
+<dd><p>A cohort table containing the individuals for which to
+generate cohorts for. Only individuals in the cohort table will appear in
+the created generated cohort set.</p></dd>
+
+
+<dt>subsetCohortId, subset_cohort_id</dt>
+<dd><p>A set of cohort IDs from the cohort table for which
+to include. If none are provided, all cohorts in the cohort table will
+be included.</p></dd>
+
+
 <dt>overwrite</dt>
-<dd><p>Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)</p></dd>
+<dd><p>Should the cohort table be overwritten if it already exists? TRUE (default) or FALSE.</p></dd>
 
 </dl></div>
     <div class="section level2">

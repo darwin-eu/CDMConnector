@@ -82,6 +82,9 @@
     <loc>/reference/cdm_from_con.html</loc>
   </url>
   <url>
+    <loc>/reference/cdm_from_environment.html</loc>
+  </url>
+  <url>
     <loc>/reference/cdm_from_files.html</loc>
   </url>
   <url>
@@ -149,6 +152,9 @@
   </url>
   <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/insertTable.html</loc>
   </url>
   <url>
     <loc>/reference/intersect_cohorts.html</loc>

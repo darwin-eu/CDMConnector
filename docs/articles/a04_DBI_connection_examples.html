@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,14 +96,35 @@
 <span>                      user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_POSTGRESQL_USER"</span><span class="op">)</span>,</span>
 <span>                      password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_POSTGRESQL_PASSWORD"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_POSTGRESQL_CDM_SCHEMA"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
+<span>                    cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_POSTGRESQL_CDM_SCHEMA"</span><span class="op">)</span>, </span>
+<span>                    write_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_POSTGRESQL_SCRATCH_SCHEMA"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="redshift">Redshift<a class="anchor" aria-label="anchor" href="#redshift"></a>
+</h3>
+<p>Redshift is almost identical to Postgres.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RPostgres</span><span class="fu">::</span><span class="fu"><a href="https://rpostgres.r-dbi.org/reference/Redshift.html" class="external-link">Redshift</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                      dbname   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_DBNAME"</span><span class="op">)</span>,</span>
+<span>                      host     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_HOST"</span><span class="op">)</span>,</span>
+<span>                      port     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_PORT"</span><span class="op">)</span>,</span>
+<span>                      user     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_USER"</span><span class="op">)</span>,</span>
+<span>                      password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_PASSWORD"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
+<span>                    cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_CDM_SCHEMA"</span><span class="op">)</span>, </span>
+<span>                    write_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_SCRATCH_SCHEMA"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="sql-server">SQL Server<a class="anchor" aria-label="anchor" href="#sql-server"></a>
 </h3>
-<p>Using odbc with SQL Server requires driver setup described <a href="https://solutions.posit.co/connections/db/r-packages/odbc/" class="external-link">here</a>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Using odbc with SQL Server requires driver setup described <a href="https://solutions.posit.co/connections/db/r-packages/odbc/" class="external-link">here</a>.
+Note, you’ll likely need to <a href="https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16" class="external-link">download
+the ODBC Driver for SQL Server</a>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">odbc</span><span class="fu">::</span><span class="fu"><a href="https://r-dbi.github.io/odbc/reference/odbc.html" class="external-link">odbc</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                      Driver   <span class="op">=</span> <span class="st">"ODBC Driver 18 for SQL Server"</span>,</span>
 <span>                      Server   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_SQL_SERVER_SERVER"</span><span class="op">)</span>,</span>
@@ -113,37 +134,54 @@
 <span>                      TrustServerCertificate<span class="op">=</span><span class="st">"yes"</span>,</span>
 <span>                      Port     <span class="op">=</span> <span class="fl">1433</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CDMV5"</span>, <span class="st">"dbo"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
+<span>                    cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tempdb"</span>, <span class="st">"dbo"</span><span class="op">)</span>, </span>
+<span>                    write_schema <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ATLAS"</span>, <span class="st">"RESULTS"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="redshift">Redshift<a class="anchor" aria-label="anchor" href="#redshift"></a>
-</h3>
-<p>Redshift is almost identical to Postgres.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RPostgres</span><span class="fu">::</span><span class="fu"><a href="https://rpostgres.r-dbi.org/reference/Redshift.html" class="external-link">Redshift</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                      dbname   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_DBNAME"</span><span class="op">)</span>,</span>
-<span>                      host     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_HOST"</span><span class="op">)</span>,</span>
-<span>                      port     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_PORT"</span><span class="op">)</span>,</span>
-<span>                      user     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_USER"</span><span class="op">)</span>,</span>
-<span>                      password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_PASSWORD"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_REDSHIFT_CDM_SCHEMA"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="oracle">Oracle<a class="anchor" aria-label="anchor" href="#oracle"></a>
-</h3>
-<p>First install the Oracle Instant Client odbc driver for your system
-following the instructions <a href="https://www.oracle.com/uk/database/technologies/releasenote-odbc-ic.html" class="external-link">here</a>.</p>
+<p>The connection to SQL Server can be simplified by configuring a DSN.
+See <a href="https://www.r-bloggers.com/2018/05/setting-up-an-odbc-connection-with-ms-sql-server-on-windows/" class="external-link">here</a>
+for instructions on how to set up the DSN.If we named it “SQL”, our
+connection is then simplified to.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># odbc::odbcListDrivers() # view all installed odbc drivers</span></span>
-<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">odbc</span><span class="fu">::</span><span class="fu"><a href="https://r-dbi.github.io/odbc/reference/odbc.html" class="external-link">odbc</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"OracleODBC-19"</span><span class="op">)</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"CDMV5"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">odbc</span><span class="fu">::</span><span class="fu"><a href="https://r-dbi.github.io/odbc/reference/odbc.html" class="external-link">odbc</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"SQL"</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
+<span>                    cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tempdb"</span>, <span class="st">"dbo"</span><span class="op">)</span>, </span>
+<span>                    write_schema <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ATLAS"</span>, <span class="st">"RESULTS"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
-<div style="margin-bottom:3cm;">
-
 </div>
+<div class="section level3">
+<h3 id="snowflake">Snowflake<a class="anchor" aria-label="anchor" href="#snowflake"></a>
+</h3>
+<p>We can use the odbc package to connect to snowflake.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">odbc</span><span class="fu">::</span><span class="fu"><a href="https://r-dbi.github.io/odbc/reference/odbc.html" class="external-link">odbc</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                          SERVER <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"SNOWFLAKE_SERVER"</span><span class="op">)</span>,</span>
+<span>                          UID <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"SNOWFLAKE_USER"</span><span class="op">)</span>,</span>
+<span>                          PWD <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"SNOWFLAKE_PASSWORD"</span><span class="op">)</span>,</span>
+<span>                          DATABASE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"SNOWFLAKE_DATABASE"</span><span class="op">)</span>,</span>
+<span>                          WAREHOUSE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"SNOWFLAKE_WAREHOUSE"</span><span class="op">)</span>,</span>
+<span>                          DRIVER <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"SNOWFLAKE_DRIVER"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
+<span>                    cdm_schema <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"OMOP_SYNTHETIC_DATASET"</span>, <span class="st">"CDM53"</span><span class="op">)</span>, </span>
+<span>                    write_schema <span class="op">=</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ATLAS"</span>, <span class="st">"RESULTS"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
+<p>Note, as with SQL server we could set up a DSN to simplify this
+connection as described <a href="https://docs.snowflake.com/developer-guide/odbc/odbc-windows" class="external-link">here</a>
+for windows and <a href="https://docs.snowflake.com/developer-guide/odbc/odbc-mac" class="external-link">here</a>
+for macOS.</p>
+</div>
+<div class="section level3">
+<h3 id="duckdb">Duckdb<a class="anchor" aria-label="anchor" href="#duckdb"></a>
+</h3>
+<p>Duckdb is an in-process database. We use the duckdb package to
+connect.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/duckdb/man/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>                      dbdir<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"CDM5_DUCKDB_FILE"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdm_from_con.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, </span>
+<span>                    cdm_schema <span class="op">=</span> <span class="st">"main"</span>, </span>
+<span>                    write_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

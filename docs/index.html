@@ -30,7 +30,7 @@
     
     <a class="navbar-brand me-2" href="index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -149,7 +149,7 @@
 <div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">tally</span>(cdm<span class="sc">$</span>person)</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="do">## # Source:   SQL [1 x 1]</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpGP4CIq/xpjlsqnl]</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp921L2M/file627412c0268b.duckdb]</span></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="do">##       n</span></span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
@@ -159,7 +159,7 @@
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">count</span>(<span class="at">top_conditions =</span> concept_name, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.8.0 [root@Darwin 21.6.0:R 4.2.2//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpGP4CIq/xpjlsqnl]</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp921L2M/file627412c0268b.duckdb]</span></span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
 <span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
@@ -179,60 +179,15 @@
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">validate_cdm</span>(cdm)</span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">## ── CDM v5.3 validation (checking 35 tables) ────────────────────────────────────</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">## visit_detail table expected columns[8:19] vs visit_detail table actual_colums[8:19]</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="do">##   "visit_detail_type_concept_id"</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="do">##   "provider_id"</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="do">##   "care_site_id"</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="do">## - "visit_detail_source_value"</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="do">## + "admitting_source_concept_id"</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="do">## - "visit_detail_source_concept_id"</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="do">## + "discharge_to_concept_id"</span></span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="do">## - "admitting_source_value"</span></span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="do">## + "preceding_visit_detail_id"</span></span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="do">## - "admitting_source_concept_id"</span></span>
-<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="do">## + "visit_detail_source_value"</span></span>
-<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="do">## - "discharge_to_source_value"</span></span>
-<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="do">## + "visit_detail_source_concept_id"</span></span>
-<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="do">## - "discharge_to_concept_id"</span></span>
-<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="do">## + "admitting_source_value"</span></span>
-<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="do">## - "preceding_visit_detail_id"</span></span>
-<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="do">## + "discharge_to_source_value"</span></span>
-<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="do">## and 2 more ...</span></span>
-<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="do">## condition_occurrence table expected columns[6:16] vs condition_occurrence table actual_colums[6:16]</span></span>
-<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="do">##   "condition_end_date"</span></span>
-<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="do">##   "condition_end_datetime"</span></span>
-<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="do">##   "condition_type_concept_id"</span></span>
-<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="do">## - "condition_status_concept_id"</span></span>
-<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="do">## + "stop_reason"</span></span>
-<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="do">## - "stop_reason"</span></span>
-<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="do">## + "provider_id"</span></span>
-<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="do">## - "provider_id"</span></span>
-<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="do">## + "visit_occurrence_id"</span></span>
-<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="do">## - "visit_occurrence_id"</span></span>
-<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="do">## + "visit_detail_id"</span></span>
-<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="do">## - "visit_detail_id"</span></span>
-<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="do">## + "condition_source_value"</span></span>
-<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="do">## - "condition_source_value"</span></span>
-<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="do">## + "condition_source_concept_id"</span></span>
-<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="do">## - "condition_source_concept_id"</span></span>
-<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="do">## + "condition_status_source_value"</span></span>
-<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="do">## and 1 more ...</span></span>
-<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="do">##     note_nlp table expected columns | note_nlp table actual_colums    </span></span>
-<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="do">## [2] "note_id"                       | "note_id"                    [2]</span></span>
-<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="do">## [3] "section_concept_id"            | "section_concept_id"         [3]</span></span>
-<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a><span class="do">## [4] "snippet"                       | "snippet"                    [4]</span></span>
-<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="do">## [5] "\"offset\""                    - "offset"                     [5]</span></span>
-<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="do">## [6] "lexical_variant"               | "lexical_variant"            [6]</span></span>
-<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="do">## [7] "note_nlp_concept_id"           | "note_nlp_concept_id"        [7]</span></span>
-<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="do">## [8] "note_nlp_source_concept_id"    | "note_nlp_source_concept_id" [8]</span></span>
-<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="do">##      cost table expected columns | cost table actual_colums       </span></span>
-<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="do">## [17] "payer_plan_period_id"      | "payer_plan_period_id"     [17]</span></span>
-<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="do">## [18] "amount_allowed"            | "amount_allowed"           [18]</span></span>
-<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="do">## [19] "revenue_code_concept_id"   | "revenue_code_concept_id"  [19]</span></span>
-<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="do">## [20] "revenue_code_source_value" - "reveue_code_source_value" [20]</span></span>
-<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="do">## [21] "drg_concept_id"            | "drg_concept_id"           [21]</span></span>
-<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="do">## [22] "drg_source_value"          | "drg_source_value"         [22]</span></span>
-<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="do">## • 17 empty CDM tables: visit_detail, device_exposure, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, dose_era, metadata, concept_class, source_to_concept_map, drug_strength</span></span></code></pre></div>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">##     note_nlp table expected columns | note_nlp table actual_colums    </span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="do">## [2] "note_id"                       | "note_id"                    [2]</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="do">## [3] "section_concept_id"            | "section_concept_id"         [3]</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="do">## [4] "snippet"                       | "snippet"                    [4]</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="do">## [5] "\"offset\""                    - "offset"                     [5]</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="do">## [6] "lexical_variant"               | "lexical_variant"            [6]</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="do">## [7] "note_nlp_concept_id"           | "note_nlp_concept_id"        [7]</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="do">## [8] "note_nlp_source_concept_id"    | "note_nlp_source_concept_id" [8]</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="do">## • 17 empty CDM tables: visit_detail, device_exposure, death, note, note_nlp, specimen, fact_relationship, location, care_site, provider, payer_plan_period, cost, dose_era, metadata, concept_class, source_to_concept_map, drug_strength</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="dbi-drivers">DBI Drivers<a class="anchor" aria-label="anchor" href="#dbi-drivers"></a>
@@ -301,6 +256,11 @@
 <li><a href="https://CRAN.R-project.org/package=CDMConnector" class="external-link"><img src="https://www.r-pkg.org/badges/version/CDMConnector" alt="CRAN status"></a></li>
 <li><a href="https://app.codecov.io/gh/OdyOSG/CDMConnector?branch=main" class="external-link"><img src="https://codecov.io/gh/OdyOSG/CDMConnector/coverage.svg?branch=main" alt="codecov.io"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg" alt="Build Status"></a></li>
+<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aduckdb-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/duckdb-test/badge.svg" alt="duckdb status"></a></li>
+<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Apostgres-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/postgres-test/badge.svg" alt="Postgres status"></a></li>
+<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asqlserver-odbc-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/sqlserver-odbc-test/badge.svg" alt="SQL Server odbc status"></a></li>
+<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aredshift-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/redshift-test/badge.svg" alt="Redshift status"></a></li>
+<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/snowflake-test/badge.svg" alt="Snowflake status"></a></li>
 </ul>
 </div>
 

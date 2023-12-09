@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,13 +68,15 @@
 <span>  write_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cohort_tables <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdm_version <span class="op">=</span> <span class="st">"5.3"</span>,</span>
-<span>  cdm_name <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cdm_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  achilles_schema <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">cdmFromCon</span><span class="op">(</span></span>
 <span>  <span class="va">con</span>,</span>
 <span>  cdmSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  writeSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  achillesSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cohortTables <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdmVersion <span class="op">=</span> <span class="st">"5.3"</span>,</span>
 <span>  cdmName <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -112,6 +114,11 @@ heuristics. Cohort tables must be in the write_schema.</p></dd>
 <dt>cdm_name, cdmName</dt>
 <dd><p>The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.</p></dd>
+
+
+<dt>achilles_schema, achillesSchema</dt>
+<dd><p>An optional schema in the CDM database
+that contains achilles tables.</p></dd>
 
 </dl></div>
     <div class="section level2">
