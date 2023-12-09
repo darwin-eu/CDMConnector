@@ -4,11 +4,11 @@ on:
   pull_request:
     branches: [main, master]
 
-name: sqlserver-odbc-test
+name: redshift-test
 
 jobs:
   R-CMD-check:
-    if: github.repository == 'darwin-eu/CDMConnector' || github.repository == 'darwin-eu-dev/CDMConnector'
+    if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
@@ -34,6 +34,7 @@ jobs:
       - name: Install suggested packages
         run: |
             install.packages("DatabaseConnector")
+            install.packages("RPostgres")
             install.packages("testthat")
         shell: Rscript {0}
 
@@ -51,9 +52,9 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
-      -  name: Run tests on MS SQL Server with odbc
+      -  name: Run tests on redshift with RPostgres driver
          run: |
-            withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver"), testthat::test_local())
+            withr::with_envvar(new = c("CI_TEST_DB" = "redshift"), testthat::test_local())
          shell: Rscript {0}
 
 

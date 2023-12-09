@@ -12,8 +12,10 @@ output: md_document
 [![codecov.io](https://codecov.io/gh/OdyOSG/CDMConnector/coverage.svg?branch=main)](https://app.codecov.io/gh/OdyOSG/CDMConnector?branch=main)
 [![Build Status](https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check)
 [![duckdb status](https://github.com/darwin-eu/CDMConnector/workflows/duckdb-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aduckdb-test)
-[![Postgres status](https://github.com/darwin-eu/CDMConnector/workflows/Postgres-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3APostgres-test)
+[![Postgres status](https://github.com/darwin-eu/CDMConnector/workflows/postgres-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Apostgres-test)
 [![SQL Server odbc status](https://github.com/darwin-eu/CDMConnector/workflows/sqlserver-odbc-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asqlserver-odbc-test)
+[![Redshift status](https://github.com/darwin-eu/CDMConnector/workflows/redshift-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aredshift-test)
+[![Snowflake status](https://github.com/darwin-eu/CDMConnector/workflows/snowflake-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-test)
 <!-- badges: end -->
 
 
