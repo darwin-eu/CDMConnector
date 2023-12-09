@@ -35,14 +35,14 @@ jobs:
       - name: Run a simple shell command
         run: ls
 
-      - name: Run a simple shell command
+      - name: Run one R command
         run: R -e "getwd()"
 
-      # - name: Run a simple R command
-      #   run: |
-      #     print(getwd())
-      #     print(list.files())
-      #     shell: Rscript {0}
+      - name: Run several R commands
+        run: |
+          print(getwd())
+          print(list.files())
+        shell: Rscript {0}
 
 #  - name: Run tests on duckdb
 #    run: |
