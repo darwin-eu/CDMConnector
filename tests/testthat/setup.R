@@ -82,7 +82,7 @@ get_connection <- function(dbms) {
     return(DBI::dbConnect(odbc::odbc(), "Databricks", bigint = "numeric"))
   }
 
-  return(invisible(NULL))
+  rlang::abort("Could not create connection. Are some environment variables missing?")
 }
 
 get_cdm_schema <- function(dbms) {
