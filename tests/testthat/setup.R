@@ -44,7 +44,7 @@ get_connection <- function(dbms) {
     print(Sys.getenv("SQL_SERVER_DRIVER"))
     return(DBI::dbConnect(odbc::odbc(),
                           # Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
-                          Driver   = "Microsoft ODBC Driver 17 for SQL Server",
+                          Driver   = "ODBC Driver 17 for SQL Server", #asdf
                           Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
                           Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
                           UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
