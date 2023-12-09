@@ -23,7 +23,7 @@ jobs:
         CDM5_SQL_SERVER_OHDSI_SCHEMA:   ${{ secrets.CDM5_SQL_SERVER_OHDSI_SCHEMA }}
         CDM5_SQL_SERVER_SCRATCH_SCHEMA: ${{ secrets.CDM5_SQL_SERVER_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        SQL_SERVER_DRIVER: "ODBC Driver 18 for SQL Server"
+        SQL_SERVER_DRIVER: "ODBC Driver 17 for SQL Server" # used in the docker image
         TESTTHAT_CPUS : 2
 
     name: SQL Server test (ODBC driver)
