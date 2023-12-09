@@ -32,14 +32,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Run a simple shell command
+        run: ls
+
       - name: Run a simple R command
         run: |
           print(getwd())
-          print(list.)
+          print(list.files())
           shell: Rscript {0}
-
-      - name: Run a simple shell command
-        run: ls
 
 #  - name: Run tests on duckdb
 #    run: |
