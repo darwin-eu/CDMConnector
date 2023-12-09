@@ -102,7 +102,7 @@ get_cdm_schema <- function(dbms) {
   return(s)
 }
 
-get_write_schema <- function(dbms, prefix = NULL) {
+get_write_schema <- function(dbms, prefix = paste0("temp", as.integer(Sys.time()) %% 10000L, "_")) {
   s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
           "local" = Sys.getenv("LOCAL_POSTGRESQL_SCRATCH_SCHEMA"),
@@ -158,5 +158,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   checkmate::assert_choice(Sys.getenv("CI_TEST_DB"),
                            choices = c("duckdb", "postgres", "sqlserver", "redshift"))
   dbToTest <- Sys.getenv("CI_TEST_DB")
-  print(paste("running tests. on ", dbToTest))
+  print(paste("running CI tests on ", dbToTest))
 }
+
+

@@ -1,18 +1,15 @@
 test_cohort_ddl <- function(con, write_schema) {
+  skip_if_not("prefix" %in% names(write_schema))
+  name <- "testcohort"
+
   expect_no_error(
     createCohortTables(con,
                        writeSchema = write_schema,
-                       name = "testcohort",
+                       name = name,
                        computeAttrition = FALSE)
   )
 
   tables <- sort(list_tables(con, schema = write_schema))
-
-  # cleanup ...
-  # tables_to_drop <- tables %>% stringr::str_subset("TEST")
-  # purrr::walk(tables_to_drop, ~DBI::dbRemoveTable(con, inSchema(write_schema , .)))
-
-  name <- paste0(tidyr::replace_na(write_schema["prefix"], ""), "testcohort")
 
   if (dbms(con) %in% c("oracle", "snowflake")) {
     name <- toupper(name)
@@ -20,11 +17,16 @@ test_cohort_ddl <- function(con, write_schema) {
 
   expect_true(name %in% tables)
 
-  if ("prefix" %in% names(write_schema)) {
-    write_schema <- unname(write_schema[names(write_schema) != "prefix"])
+  tables_to_drop <- stringr::str_subset(tables, name)
+
+  for (tb in tables_to_drop) {
+    DBI::dbRemoveTable(con, inSchema(write_schema, tb, dbms = dbms(con)))
   }
 
-  DBI::dbRemoveTable(con, inSchema(write_schema, name, dbms = dbms(con)))
+  tables <- list_tables(con, schema = write_schema)
+  for (tb in tables_to_drop) {
+    expect_false(tb %in% tables)
+  }
 }
 
 for (dbtype in dbToTest) {
