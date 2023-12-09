@@ -1,0 +1,40 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+name: sqlserver-odbc-test
+
+jobs:
+  Postgres-test:
+    if: github.repository == 'darwin-eu/CDMConnector'
+    runs-on: ubuntu-latest
+    container:
+      image: executionengine.azurecr.io/darwin-base:v0.1
+      env:
+        CDM5_SQL_SERVER_USER:           ${{ secrets.CDM5_SQL_SERVER_USER }}
+        CDM5_SQL_SERVER_PORT:           ${{ secrets.CDM5_SQL_SERVER_PORT }}
+        CDM5_SQL_SERVER_PASSWORD:       ${{ secrets.CDM5_SQL_SERVER_PASSWORD }}
+        CDM5_SQL_SERVER_SERVER:         ${{ secrets.CDM5_SQL_SERVER_SERVER }}
+        CDM5_SQL_SERVER_HOST:           ${{ secrets.CDM5_SQL_SERVER_HOST }}
+        CDM5_SQL_SERVER_DBNAME:         ${{ secrets.CDM5_SQL_SERVER_DBNAME }}
+        CDM5_SQL_SERVER_CDM_SCHEMA:     ${{ secrets.CDM5_SQL_SERVER_CDM_SCHEMA }}
+        CDM5_SQL_SERVER_OHDSI_SCHEMA:   ${{ secrets.CDM5_SQL_SERVER_OHDSI_SCHEMA }}
+        CDM5_SQL_SERVER_SCRATCH_SCHEMA: ${{ secrets.CDM5_SQL_SERVER_SCRATCH_SCHEMA }}
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        SQL_SERVER_DRIVER: "ODBC Driver 18 for SQL Server"
+        TESTTHAT_CPUS : 2
+
+    name: SQL Server test (ODBC driver)
+
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run tests on SQL Server with odbc driver
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver"), testthat::test_local())'
+
+

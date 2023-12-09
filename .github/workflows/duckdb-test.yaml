@@ -14,6 +14,7 @@ jobs:
       image: executionengine.azurecr.io/darwin-base:v0.1
       env:
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        TESTTHAT_CPUS : 1
 
     name: duckdb-test
 
@@ -23,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run tests on postgres with RPostgres driver
+      - name: Run tests on duckdb
         run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "duckdb", "TESTTHAT_CPUS" = 1), testthat::test_local())'
 
 
