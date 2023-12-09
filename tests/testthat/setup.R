@@ -40,9 +40,9 @@ get_connection <- function(dbms) {
                           password = Sys.getenv("CDM5_REDSHIFT_PASSWORD")))
   }
 
-  if (dbms == "sqlserver" && Sys.getenv("SQL_SERVER_DRIVER") != "") {
+  if (dbms == "sqlserver" && Sys.getenv("CDM5_SQL_SERVER_USER") != "") {
     return(DBI::dbConnect(odbc::odbc(),
-                          Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
+                          # Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
                           Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
                           Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
                           UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
