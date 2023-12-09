@@ -139,7 +139,7 @@ disconnect <- function(con) {
 }
 
 # databases supported on github actions
-ciTestDbs <- c("duckdb", "postgres")
+ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 
 if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
@@ -156,8 +156,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
     # ,"bigquery"
   )
 } else {
-  checkmate::assert_choice(Sys.getenv("CI_TEST_DB"),
-                           choices = c("duckdb", "postgres", "sqlserver", "redshift"))
+  checkmate::assert_choice(Sys.getenv("CI_TEST_DB"), choices = ciTestDbs)
   dbToTest <- Sys.getenv("CI_TEST_DB")
   print(paste("running CI tests on ", dbToTest))
 }
