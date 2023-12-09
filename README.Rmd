@@ -13,6 +13,7 @@ output: md_document
 [![Build Status](https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check)
 [![duckdb status](https://github.com/darwin-eu/CDMConnector/workflows/duckdb-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aduckdb-test)
 [![Postgres status](https://github.com/darwin-eu/CDMConnector/workflows/Postgres-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3APostgres-test)
+[![SQL Server odbc status](https://github.com/darwin-eu/CDMConnector/workflows/sqlserver-odbc-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asqlserver-odbc-test)
 <!-- badges: end -->
 
 
