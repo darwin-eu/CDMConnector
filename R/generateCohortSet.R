@@ -813,9 +813,11 @@ cohort_attrition <- cohortAttrition
 #' @export
 cohortAttrition.GeneratedCohortSet <- function(x) {
   if (is.null(attr(x, "cohort_attrition"))) {
-    NULL
+    return(invisible(NULL))
   } else {
-    dplyr::collect(attr(x, "cohort_attrition"))
+    a <- dplyr::collect(attr(x, "cohort_attrition"))
+    class(a) <- c("omop_attrition", "attrition", class(a))
+    return(a)
   }
 }
 

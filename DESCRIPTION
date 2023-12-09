@@ -57,7 +57,8 @@ Suggests:
     lubridate,
     tibble,
     testthat (>= 3.0.0),
-    pool
+    pool,
+    visR
 Enhances:
     CirceR,
     Capr
