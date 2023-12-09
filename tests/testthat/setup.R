@@ -104,7 +104,7 @@ get_cdm_schema <- function(dbms) {
   return(s)
 }
 
-get_write_schema <- function(dbms, prefix = paste0("temp", as.integer(Sys.time()) %% 10000L, "_")) {
+get_write_schema <- function(dbms, prefix = paste0("temp", floor(as.numeric(Sys.time())*100) %% 100000L, "_")) {
   s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
           "local" = Sys.getenv("LOCAL_POSTGRESQL_SCRATCH_SCHEMA"),
