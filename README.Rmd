@@ -15,7 +15,7 @@ output: md_document
 [![Postgres status](https://github.com/darwin-eu/CDMConnector/workflows/postgres-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Apostgres-test)
 [![SQL Server odbc status](https://github.com/darwin-eu/CDMConnector/workflows/sqlserver-odbc-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asqlserver-odbc-test)
 [![Redshift status](https://github.com/darwin-eu/CDMConnector/workflows/redshift-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aredshift-test)
-[![Snowflake status](https://github.com/darwin-eu/CDMConnector/workflows/snowflake-odbc-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-test)
+[![Snowflake status](https://github.com/darwin-eu/CDMConnector/workflows/snowflake-odbc-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-odbc-test)
 <!-- badges: end -->
 
 
