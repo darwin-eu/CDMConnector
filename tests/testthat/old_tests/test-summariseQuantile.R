@@ -434,7 +434,7 @@
 #   skip("manual test")
 #
 #   con <- DBI::dbConnect(odbc::odbc(),
-#                         Driver   = "ODBC Driver 18 for SQL Server",
+#                         Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
 #                         Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
 #                         Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
 #                         UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
