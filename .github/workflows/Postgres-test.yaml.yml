@@ -9,7 +9,7 @@ name: Postgres-test
 jobs:
   Postgres-test:
     if: github.repository == 'darwin-eu/CDMConnector'
-    runs-on: macOS-latest
+    runs-on: ubuntu-latest
     container:
       image: executionengine.azurecr.io/darwin-base:v0.1
       env:
