@@ -44,7 +44,7 @@ jobs:
           print(list.files())
         shell: Rscript {0}
 
-      - name: Run tests on duckdb
+      - name: Run tests on postgres with RPostgres driver
         run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
 
 

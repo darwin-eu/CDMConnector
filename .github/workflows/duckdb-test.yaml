@@ -7,54 +7,23 @@ on:
 name: duckdb-test
 
 jobs:
-  R-CMD-check:
-    if: github.repository == 'darwin-eu/CDMConnector' || github.repository == 'darwin-eu-dev/CDMConnector'
-    runs-on: ${{ matrix.config.os }}
+  Postgres-test:
+    if: github.repository == 'darwin-eu/CDMConnector'
+    runs-on: ubuntu-latest
+    container:
+      image: executionengine.azurecr.io/darwin-base:v0.1
+      env:
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: duckdb-test
 
     strategy:
       fail-fast: true
-      matrix:
-        config:
-          - {os: macOS-latest,   r: 'release'}
-
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v2
 
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: ${{ matrix.config.r }}
-          http-user-agent: ${{ matrix.config.http-user-agent }}
-          use-public-rspm: true
-
-      - name: Install suggested packages
-        run: |
-            install.packages("DatabaseConnector")
-            install.packages("RPostgres")
-            install.packages("testthat")
-        shell: Rscript {0}
-
-      - name: Install CirceR
-        run: |
-            install.packages("rJava")
-            install.packages("RJSONIO")
-            install.packages("CirceR", repos = "https://OHDSI.github.io/drat", type = "source")
-            install.packages("Capr", repos = "https://OHDSI.github.io/drat", type = "source")
-        shell: Rscript {0}
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          dependencies: '"hard"'
-          extra-packages: any::rcmdcheck
-          needs: check
-
-      -  name: Run tests on duckdb
-         run: |
-            withr::with_envvar(new = c("CI_TEST_DB" = "duckdb"), testthat::test_local())
-         shell: Rscript {0}
+      - name: Run tests on postgres with RPostgres driver
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "duckdb"), testthat::test_local())'
 
 
