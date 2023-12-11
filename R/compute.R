@@ -11,7 +11,7 @@
 # @return A dplyr reference to the newly created table
 #
 # internal function
-.computePermanent <- function(x, name, schema = NULL, overwrite = FALSE) {
+.computePermanent <- function(x, name, schema = NULL, overwrite = TRUE) {
   checkmate::assertCharacter(schema, min.len = 1, max.len = 2, null.ok = TRUE)
   schema <- unname(schema)
   checkmate::assertCharacter(name, len = 1)
@@ -154,8 +154,8 @@ unique_table_name <- uniqueTableName
 #' @param temporary Should the table be temporary: TRUE (default) or FALSE
 #' @param schema The schema where the table should be created. Ignored if
 #'   temporary = TRUE.
-#' @param overwrite Should the table be overwritten if it already exists: TRUE
-#'   or FALSE (default) Ignored if temporary = TRUE.
+#' @param overwrite Should the table be overwritten if it already exists: TRUE (default)
+#'   or FALSE Ignored if temporary = TRUE.
 #' @param ... Further arguments passed on the `dplyr::compute`
 #'
 #' @return A `dplyr::tbl()` reference to the newly created table.
@@ -184,7 +184,7 @@ computeQuery <- function(x,
                          name = uniqueTableName(),
                          temporary = TRUE,
                          schema = NULL,
-                         overwrite = FALSE,
+                         overwrite = TRUE,
                          ...) {
 
   if (is.data.frame(x) || (methods::is(x, "Table") && methods::is(x, "ArrowTabular"))) {

@@ -53,7 +53,7 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
   expect_error({
     cdm$vocabulary  %>%
       dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
-      computeQuery(new_table_name, schema = write_schema, temporary = FALSE)},
+      computeQuery(new_table_name, schema = write_schema, temporary = FALSE, overwrite = FALSE)},
   "already exists")
 
   expect_no_error({
