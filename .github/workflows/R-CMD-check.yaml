@@ -57,6 +57,7 @@ jobs:
             install.packages("bigrquery")
             install.packages("arrow")
             install.packages("tibble")
+            install.packages("visR")
         shell: Rscript {0}
 
       - name: Install CirceR

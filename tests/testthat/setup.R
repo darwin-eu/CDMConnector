@@ -10,7 +10,27 @@ tryCatch({
 
 # functions used for the test matrix
 
-get_connection <- function(dbms) {
+get_connection <- function(dbms, DatabaseConnector = FALSE) {
+
+  if (DatabaseConnector) {
+    stop(dbms %in% c("postgres"), rlang::is_installed("DatabaseConnector"))
+
+
+    if (dbms == "postgres") {
+
+      DatabaseConnector::connect(dbms = "postgresql",
+                                 server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
+                                 user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                                 password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+
+    }
+
+    stop(paste("Testing", dbms, "with DatabaseConnector has not been implemented yet."))
+
+  }
+
+
+
   if (dbms == "duckdb") {
     return(DBI::dbConnect(duckdb::duckdb(), eunomia_dir()))
   }
@@ -68,7 +88,7 @@ get_connection <- function(dbms) {
     ))
   }
 
-  if (dbms == "snowflake" && "Snowflake" %in% odbc::odbcListDataSources()$name) {
+  if (dbms == "snowflake" && Sys.getenv("SNOWFLAKE_USER") != "") {
     # return(DBI::dbConnect(odbc::odbc(), "Snowflake",
                           # pwd = Sys.getenv("SNOWFLAKE_PASSWORD")))
     return(DBI::dbConnect(odbc::odbc(),
@@ -145,11 +165,12 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 
 if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
-    "duckdb"
+    # "duckdb"
     # ,
     # "postgres"
     # ,"redshift"
-    # ,"sqlserver"
+    # ,
+    "sqlserver"
     # ,"snowflake"
 
     # ,"spark"
