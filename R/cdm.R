@@ -900,17 +900,6 @@ cdm_select_tbl <- function(cdm, ...) {
 #'
 #' @return A single cdm table reference
 #' @export
-`[.cdm_reference` <- function(x, i) {
-  cdm_select_tbl(x, dplyr::all_of(i))
-}
-
-#' Subset a cdm reference object
-#'
-#' @param x A cdm reference
-#' @param i The name or index of the table to extract from the cdm object
-#'
-#' @return A single cdm table reference
-#' @export
 `[[.cdm_reference` <- function(x, i) {
  x_raw <- unclass(x)
  tbl <- x_raw[[i]]
