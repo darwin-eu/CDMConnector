@@ -37,7 +37,7 @@ visr.omop_attrition <- function(x, ...) {
   checkmate::assertIntegerish(ids, len = 1, lower = 1, any.missing = FALSE)
 
   x <- x %>%
-    dplyr::select(Criteria = reason, `Remaining N` = number_subjects)
+    dplyr::select(Criteria = .data$reason, `Remaining N` = .data$number_subjects)
 
   NextMethod(x)
 }

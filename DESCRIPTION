@@ -39,7 +39,8 @@ Imports:
     stringi,
     fs,
     generics,
-    tidyr
+    tidyr,
+    visR
 Suggests: 
     arrow,
     SqlRender, 
@@ -57,8 +58,7 @@ Suggests:
     lubridate,
     tibble,
     testthat (>= 3.0.0),
-    pool,
-    visR
+    pool
 Enhances:
     CirceR,
     Capr

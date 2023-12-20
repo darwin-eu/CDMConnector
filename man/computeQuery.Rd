@@ -10,7 +10,7 @@ computeQuery(
   name = uniqueTableName(),
   temporary = TRUE,
   schema = NULL,
-  overwrite = FALSE,
+  overwrite = TRUE,
   ...
 )
 
@@ -19,7 +19,7 @@ compute_query(
   name = uniqueTableName(),
   temporary = TRUE,
   schema = NULL,
-  overwrite = FALSE,
+  overwrite = TRUE,
   ...
 )
 }
@@ -33,8 +33,8 @@ compute_query(
 \item{schema}{The schema where the table should be created. Ignored if
 temporary = TRUE.}
 
-\item{overwrite}{Should the table be overwritten if it already exists: TRUE
-or FALSE (default) Ignored if temporary = TRUE.}
+\item{overwrite}{Should the table be overwritten if it already exists: TRUE (default)
+or FALSE Ignored if temporary = TRUE.}
 
 \item{...}{Further arguments passed on the \code{dplyr::compute}}
 }
