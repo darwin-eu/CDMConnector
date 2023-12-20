@@ -40,7 +40,8 @@ Imports:
     fs,
     generics,
     tidyr,
-    visR
+    visR,
+    omopgenerics
 Suggests: 
     arrow,
     SqlRender, 
