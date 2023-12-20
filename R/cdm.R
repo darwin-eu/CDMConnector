@@ -100,9 +100,9 @@ cdm_from_con <- function(con,
     rlang::set_names(tolower(cdm_tables))
 
   if (!is.null(achilles_schema)) {
-  achilles <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
+  achillesReqTables <- omopgenerics::achillesTables()
   acTables <- listTables(con, schema = achilles_schema)
-  achilles_tables <- achilles[which(achilles %in% tolower(acTables))]
+  achilles_tables <- achillesReqTables[which(achillesReqTables %in% tolower(acTables))]
   if (length(achilles_tables) != 3) {
   cli::cli_abort("Achilles tables not found in {achilles_schema}!")
   }
