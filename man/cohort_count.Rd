@@ -15,3 +15,16 @@ A table with the counts.
 \description{
 Get cohort counts from a generated_cohort_set object.
 }
+\examples{
+\dontrun{
+library(CDMConnector)
+library(dplyr)
+
+con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+cdm <- cdm_from_con(con = con, cdm_schema = "main", write_schema = "main")
+cdm <- generateConceptCohortSet(
+  cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
+)
+cohort_count(cdm$new_cohort)
+}
+}
