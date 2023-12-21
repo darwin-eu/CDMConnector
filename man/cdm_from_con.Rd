@@ -20,7 +20,6 @@ cdmFromCon(
   writeSchema = NULL,
   achillesSchema = NULL,
   cohortTables = NULL,
-  cdmVersion = "5.3",
   cdmName = NULL
 )
 }

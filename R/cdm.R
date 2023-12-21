@@ -153,7 +153,6 @@ cdmFromCon <- function(con,
                        writeSchema = NULL,
                        achillesSchema = NULL,
                        cohortTables = NULL,
-                       cdmVersion = "5.3",
                        cdmName = NULL) {
   cdm_from_con(
     con = con,
@@ -161,7 +160,6 @@ cdmFromCon <- function(con,
     write_schema = writeSchema,
     achilles_schema = achillesSchema,
     cohort_tables = cohortTables,
-    cdm_version = cdmVersion,
     cdm_name = cdmName
   )
 }

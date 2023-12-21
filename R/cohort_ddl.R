@@ -203,5 +203,3 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     purrr::walk(sql, ~DBI::dbExecute(con, ., immediate = TRUE))
   }
 }
-
-
