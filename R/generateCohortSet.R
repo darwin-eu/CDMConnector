@@ -769,7 +769,8 @@ new_generated_cohort_set <- function(cohort_ref,
 
   # create the GeneratedCohortSet object ----
   if (!("GeneratedCohortSet" %in% class(cohort_ref))) {
-    class(cohort_ref) <- c("GeneratedCohortSet", class(cohort_ref))
+    class(cohort_ref) <- c("GeneratedCohortSet", "generated_cohort_set",
+                           class(cohort_ref))
   }
 
   attr(cohort_ref, "cohort_set") <- cohort_set_ref
@@ -812,13 +813,7 @@ cohort_attrition <- cohortAttrition
 
 #' @export
 cohortAttrition.GeneratedCohortSet <- function(x) {
-  if (is.null(attr(x, "cohort_attrition"))) {
-    return(invisible(NULL))
-  } else {
-    a <- dplyr::collect(attr(x, "cohort_attrition"))
-    class(a) <- c("omop_attrition", "attrition", class(a))
-    return(a)
-  }
+  omopgenerics::attrition(x)
 }
 
 #' Get cohort settings from a GeneratedCohortSet object
@@ -833,30 +828,39 @@ cohortSet <- function(x) { UseMethod("cohortSet") }
 #' @export
 cohort_set <- cohortSet
 
-
 #' @export
 cohortSet.GeneratedCohortSet <- function(x) {
-  dplyr::collect(attr(x, "cohort_set"))
+  omopgenerics::attrition(x)
 }
 
-#' Get cohort counts from a GeneratedCohortSet object
+#' Get cohort counts from a generated_cohort_set object.
+#' @importFrom omopgenerics cohortCount
+#' @export
+omopgenerics::cohortCount
+
+#' Get cohort counts from a generated_cohort_set object.
 #'
-#' @param x A generatedCohortSet object
+#' @param cohort A generated_cohort_set object.
 #'
+#' @return A table with the counts.
+#' @rdname cohort_count
 #' @export
-cohortCount <- function(x) { UseMethod("cohortCount") }
-
-
-#' @rdname cohortCount
-#' @export
-cohort_count <- cohortCount
-
-
-#' @export
-cohortCount.GeneratedCohortSet <- function(x) {
-  dplyr::collect(attr(x, "cohort_count"))
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' library(dplyr)
+#'
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' cdm <- cdm_from_con(con = con, cdm_schema = "main", write_schema = "main")
+#' cdm <- generateConceptCohortSet(
+#'   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
+#' )
+#' cohort_count(cdm$new_cohort)
+#' }
+cohort_count <- function(cohort){
+  omopgenerics::cohortCount(cohort)
 }
-
 
 # Compute the attrition for a set of cohorts (internal function)
 #
