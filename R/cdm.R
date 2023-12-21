@@ -372,21 +372,6 @@ cdmName <- function(cdm) {
 #' @export
 cdm_name <- cdmName
 
-#' Print a CDM reference object
-#'
-#' @param x A cdm_reference object
-#' @param ... Included for compatibility with generic. Not used.
-#'
-#' @return Invisibly returns the input
-#' @export
-print.cdm_reference <- function(x, ...) {
-  type <- class(x[[1]])[[1]]
-  cli::cat_line(glue::glue("# OMOP CDM reference ({type})"))
-  cli::cat_line("")
-  cli::cat_line(paste("Tables:", paste(names(x), collapse = ", ")))
-  invisible(x)
-}
-
 # con = database connection
 # write_schema = schema with write access
 # add = checkmate collection
@@ -881,52 +866,3 @@ cdm_select_tbl <- function(cdm, ...) {
   }
   cdm
 }
-
-#' Subset a cdm reference object
-#'
-#' @param x A cdm reference
-#' @param name The name of the table to extract from the cdm object
-#'
-#' @return A single cdm table reference
-#' @export
-`$.cdm_reference` <- function(x, name) {
- x[[name]]
-}
-
-#' Subset a cdm reference object
-#'
-#' @param x A cdm reference
-#' @param i The name or index of the table to extract from the cdm object
-#'
-#' @return A single cdm table reference
-#' @export
-`[[.cdm_reference` <- function(x, i) {
- x_raw <- unclass(x)
- tbl <- x_raw[[i]]
-
- if(is.null(tbl)) return(NULL)
-
- attr(tbl, "cdm_reference") <- x
- return(tbl)
-}
-
-#' @export
-`[[<-.cdm_reference` <- function(obj, name, value) {
-  x <- class(obj)
-  attr(value, "cdm_reference") <- NULL
-  obj <- unclass(obj)
-  obj[[name]] <- value
-  class(obj) <- x
-  return(obj)
-}
-
-#' @export
-`$<-.cdm_reference` <- function(obj, name, value) {
-  x <- class(obj)
-  attr(value, "cdm_reference") <- NULL
-  obj <- unclass(obj)
-  obj[[name]] <- value
-  class(obj) <- x
-  return(obj)
-}
-
