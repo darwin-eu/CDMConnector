@@ -37,6 +37,7 @@ dbSource <- function(con,
   if (dbms(con) %in% c("duckdb", "sqlite") && missing(writeSchema)) {
     writeSchema <- c(schema = "main")
   }
+  checkmate::assertCharacter(cdmName, len = 1, any.missing = FALSE)
   checkmate::assert_character(cdmSchema, min.len = 1, max.len = 3)
   checkmate::assert_character(writeSchema, min.len = 1, max.len = 3)
   checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, null.ok = TRUE)
@@ -49,10 +50,9 @@ dbSource <- function(con,
   class(source) <- "db_cdm"
   source <- omopgenerics::cdmSource(
     src = source,
-    sourceName = "temp", # to be removed
+    sourceName = cdmName,
     sourceType = dbms(con)
   )
-  # how to check read permissions?
   return(source)
 }
 

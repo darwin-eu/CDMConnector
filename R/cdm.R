@@ -2,14 +2,14 @@
 #'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
 #'   v5.3 instance is located.
+#' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
+#'.  field in the CDM_SOURCE table will be used.
 #' @param cdm_schema,cdmSchema The schema where the OMOP CDM tables are located. Defaults
 #'   to NULL.
 #' @param write_schema,writeSchema An optional schema in the CDM database that the user has
 #'   write access to.
 #' @param cohort_tables,cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
-#' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
-#'.  field in the CDM_SOURCE table will be used.
 #' @param achilles_schema,achillesSchema An optional schema in the CDM database
 #' that contains achilles tables.
 #'
@@ -17,29 +17,23 @@
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
 cdm_from_con <- function(con,
-                         cdm_schema = NULL,
-                         write_schema = NULL,
-                         cohort_tables = NULL,
                          cdm_name,
+                         cdm_schema,
+                         write_schema,
+                         cohort_tables = NULL,
                          achilles_schema = NULL) {
-  cdm_tables <- tbl_group("all")
-
   src <- dbSource(
     con = con, cdmName = cdm_name, cdmSchema = cdm_schema,
     writeSchema = write_schema, achillesSchema = achilles_schema
   )
 
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
-  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
-
-  if (cdm_version == "auto") {
-    cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
-  }
 
   # Try to get the cdm name if not supplied
   dbTables <- listTables(con, schema = cdm_schema)
 
   # only get the cdm tables that exist in the database
+  cdm_tables <- tbl_group("all")
   cdm_tables <- cdm_tables[which(cdm_tables %in% tolower(dbTables))]
   if (length(cdm_tables) == 0) {
     rlang::abort("There were no cdm tables found in the cdm_schema!")
@@ -106,7 +100,6 @@ cdm_from_con <- function(con,
     cdmTables = cdmTables,
     cohortTables = cohortTables,
     achillesTables = achillesTables,
-    cdmName =  cdmName,
     cdmSource = src
   )
 
@@ -141,7 +134,6 @@ cdm_from_con <- function(con,
 tbl.db_cdm <- function(src, name) {
   x <- dplyr::tbl(attr(src, "dbcon"), name)
   attr(x, "tbl_name") <- name
-  x <- omopgenerics::cdmTable(x)
   return(x)
 }
 
@@ -149,11 +141,11 @@ tbl.db_cdm <- function(src, name) {
 #' @rdname cdm_from_con
 #' @export
 cdmFromCon <- function(con,
-                       cdmSchema = NULL,
-                       writeSchema = NULL,
-                       achillesSchema = NULL,
+                       cdmName,
+                       cdmSchema,
+                       writeSchema,
                        cohortTables = NULL,
-                       cdmName = NULL) {
+                       achillesSchema = NULL) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,

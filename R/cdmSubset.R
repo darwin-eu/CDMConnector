@@ -25,23 +25,14 @@ cdm_sample_person <- function(cdm, person_subset) {
   checkmate::assert_class(cdm, "cdm_reference")
   checkmate::assert_class(person_subset, "tbl_sql")
 
-  tables_to_subset <- spec_cdm_field[[attr(cdm, "cdm_version")]] %>%
-    dplyr::filter(.data$cdmFieldName == "person_id") %>%
-    dplyr::pull("cdmTableName") %>%
-    unique()
-
-  cdm2 <- cdm
   for (nm in names(cdm)) {
-    if (nm %in% tables_to_subset) {
-      cdm2[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = "person_id")
+    if ("person_id" %in% colnames(cdm[[nm]])) {
+      cdm[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = "person_id")
     } else if ("subject_id" %in% colnames(cdm[[nm]])) {
-      cdm2[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = c("subject_id" = "person_id"))
+      cdm[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = c("subject_id" = "person_id"))
     }
   }
-
-  # TODO: need to subset and copy cohort tables
-  attributes(cdm2) <- attributes(cdm)
-  cdm2
+  return(cdm)
 }
 
 #' Subset a cdm to the individuals in one or more cohorts
