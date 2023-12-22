@@ -11,13 +11,6 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
-  expect_s3_class(cdm, "cdm_reference")
-  expect_error(assert_write_schema(cdm), NA)
-  expect_true("concept" %in% names(cdm))
-  expect_s3_class(collect(head(cdm$concept)), "data.frame")
-  expect_equal(dbms(cdm), dbms(attr(cdm, "dbcon")))
-
   # check cdm_reference attribute
   expect_true("cdm_reference" %in% names(attributes(cdm[["person"]])))
   x <- unclass(cdm)
@@ -79,7 +72,7 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
   expect_true(all(list_tables(con, "main") == toupper(list_tables(con, "main"))))
 
   # check that names in cdm are lowercase
-  cdm <- cdm_from_con(con, "main")
+  cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main")
   expect_true(all(names(cdm) == tolower(names(cdm))))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
@@ -107,9 +100,10 @@ test_that("adding achilles", {
                            count_value = 5),
                     overwrite = TRUE
   )
- cdm <- cdm_from_con(con = con,
-               cdm_schema =  "main",
-               achilles_schema = "main")
+ cdm <- cdm_from_con(
+   con = con, cdm_name = "eunomia", cdm_schema =  "main",
+   achilles_schema = "main"
+ )
 
  expect_true(cdm$achilles_analysis %>% dplyr::pull("analysis_name") == 1)
  expect_true(cdm$achilles_results %>% dplyr::pull("stratum_1") == "a")

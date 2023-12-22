@@ -84,7 +84,7 @@ cdm_from_con <- function(con,
     if (length(achilles_tables) != 3) {
       cli::cli_abort("Achilles tables not found in {achilles_schema}!")
     }
-    achilles <- purrr::map(
+    achillesTables <- purrr::map(
       achilles_tables,
       ~ dplyr::tbl(src = src, schema = achilles_schema, .) %>%
         dplyr::rename_all(tolower)
