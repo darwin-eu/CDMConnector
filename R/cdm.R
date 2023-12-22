@@ -49,34 +49,32 @@ cdm_from_con <- function(con,
 
   cdmTables <- purrr::map(
     cdm_tables,
-    ~ dplyr::tbl(src = src, inSchema(cdm_schema, ., dbms(con))) %>%
+    ~ dplyr::tbl(src = src, schema = cdm_schema, .) %>%
       dplyr::rename_all(tolower)
   ) %>%
     rlang::set_names(tolower(cdm_tables))
 
   cohortTables <- list()
-  if (!is.null(cohort_tables)) {
-    for (cohort_table in cohort_tables) {
-      nms <- paste0(cohort_table, c("", "_set", "_attrition"))
-      x <- purrr::map(nms, function(nm) {
-        if (nm %in% write_schema_tables) {
-          dplyr::tbl(src = src, inSchema(write_schema, nm, dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(write_schema_tables)) {
-          dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else {
-          NULL
-        }
-      })
-      cohort <- x[[1]]
-      if(is.null(cohort)) {
-        rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
+  for (cohort_table in cohort_tables) {
+    nms <- paste0(cohort_table, c("", "_set", "_attrition"))
+    x <- purrr::map(nms, function(nm) {
+      if (nm %in% write_schema_tables) {
+        dplyr::tbl(src = src, schema = write_schema, name = nm) %>%
+          dplyr::rename_all(tolower)
+      } else if (nm %in% toupper(write_schema_tables)) {
+        dplyr::tbl(src = src, schema = write_schema, name = toupper(nm)) %>%
+          dplyr::rename_all(tolower)
+      } else {
+        NULL
       }
-      attr(cohort, "cohort_set") <- x[[2]]
-      attr(cohort, "cohort_attrition") <- x[[3]]
-      cohortTables[[cohort_table]] <- cohort
+    })
+    cohort <- x[[1]]
+    if(is.null(cohort)) {
+      rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
     }
+    attr(cohort, "cohort_set") <- x[[2]]
+    attr(cohort, "cohort_attrition") <- x[[3]]
+    cohortTables[[cohort_table]] <- cohort
   }
 
   if (!is.null(achilles_schema)) {
@@ -88,7 +86,7 @@ cdm_from_con <- function(con,
     }
     achilles <- purrr::map(
       achilles_tables,
-      ~ dplyr::tbl(con, inSchema(achilles_schema, ., dbms(con))) %>%
+      ~ dplyr::tbl(src = src, schema = achilles_schema, .) %>%
         dplyr::rename_all(tolower)
     ) %>%
       rlang::set_names(tolower(achilles_tables))
@@ -131,8 +129,10 @@ cdm_from_con <- function(con,
 
 #' @export
 #' @importFrom dplyr tbl
-tbl.db_cdm <- function(src, name) {
-  x <- dplyr::tbl(attr(src, "dbcon"), name)
+tbl.db_cdm <- function(src, schema, name) {
+  con <- attr(src, "dbcon")
+  fullName <- inSchema(schema = schema, table = name, dbms = dbms(con))
+  x <- dplyr::tbl(con, fullName)
   attr(x, "tbl_name") <- name
   return(x)
 }
@@ -167,7 +167,8 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
     ))
   }
 
-  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
+  cdm <- purrr::map(
+    cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
                       dplyr::rename_all(tolower)) %>%
     rlang::set_names(tolower(cdm_tables))
 
