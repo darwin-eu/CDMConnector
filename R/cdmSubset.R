@@ -217,19 +217,13 @@ cdmSample <- function(cdm, n) {
 
   assert_tables(cdm, "person")
 
-
-  # take a random sample from the person table
-
-  prefix <- unique_prefix()
-
   # Note temporary = TRUE in dbWriteTable does not work on all dbms but we want a temp table here.
   person_subset <- cdm[["person"]] %>%
     dplyr::select("person_id") %>%
     dplyr::distinct() %>%
     dplyr::slice_sample(n = n) %>%
     dplyr::rename_all(tolower) %>%
-    computeQuery(name = glue::glue("person_subset_{prefix}"),
-                 temporary = TRUE)
+    dplyr::compute()
 
   cdm_sample_person(cdm, person_subset)
 }
