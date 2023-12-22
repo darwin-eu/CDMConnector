@@ -76,7 +76,7 @@ path_to_cohort_json_files <- system.file("example_cohorts",
 list.files(path_to_cohort_json_files)
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("GiBleed"))
-cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 
 cohort_set <- read_cohort_set(path_to_cohort_json_files)
 

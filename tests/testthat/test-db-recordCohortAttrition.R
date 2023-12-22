@@ -32,7 +32,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
     dplyr::filter(cohort_start_date >= as.Date("2010-01-01")) %>%
     computeQuery(temporary = FALSE,
                  name = "temp_test",
-                 schema = attr(cdm, "write_schema"),
+                 schema = cdmWriteSchema(cdm),
                  overwrite = TRUE)
 
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")

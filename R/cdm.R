@@ -760,3 +760,8 @@ cdm_select_tbl <- function(cdm, ...) {
   }
   cdm
 }
+
+#' @noRd
+cdmWriteSchema <- function(cdm) {
+  attr(attr(cdm, "cdm_source"), "write_schema")
+}

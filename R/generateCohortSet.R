@@ -139,7 +139,7 @@ generateCohortSet <- function(cdm,
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
 
-  write_schema <- attr(cdm, "write_schema")
+  write_schema <- cdmWriteSchema(cdm)
   checkmate::assert_character(write_schema,
                               min.chars = 1,
                               min.len = 1,
@@ -403,7 +403,7 @@ generateCohortSet <- function(cdm,
                   "number_records",
                   "number_subjects") %>%
     computeQuery(name = paste0(name, "_count"),
-                 schema = attr(cdm, "write_schema"),
+                 schema = cdmWriteSchema(cdm),
                  temporary = FALSE,
                  overwrite = TRUE)
 
@@ -690,7 +690,7 @@ computeAttritionTable <- function(cdm,
     inclusionResultTableName <- toupper(inclusionResultTableName)
   }
 
-  schema <- attr(cdm, "write_schema")
+  schema <- cdmWriteSchema(cdm)
   checkmate::assertCharacter(schema, min.len = 1, max.len = 3, min.chars = 1)
 
   if (paste0(cohortStem, "_attrition") %in% listTables(con, schema = schema)) {
@@ -912,7 +912,8 @@ recordCohortAttrition <- function(cohort,
       # temporary = getOption("intermediate_as_temp", TRUE),
       temporary = TRUE,
       overwrite = TRUE,
-      schema = attr(cdm, "write_schema"))
+      schema = cdmWriteSchema(cdm)
+    )
 
   # update cohort_count ----
   attr(cohort, "cohort_count") <- cohort %>%
@@ -933,7 +934,7 @@ recordCohortAttrition <- function(cohort,
     computeQuery(
       name = paste0(name, "_count"),
       temporary = FALSE,
-      schema = attr(cdm, "write_schema"),
+      schema = cdmWriteSchema(cdm),
       overwrite = TRUE
     )
 
@@ -961,7 +962,8 @@ recordCohortAttrition <- function(cohort,
       name = paste0("temp", tm, "b_"),
       temporary = TRUE,
       overwrite = TRUE,
-      schema = attr(cdm, "write_schema"))
+      schema = cdmWriteSchema(cdm)
+    )
 
   tempCohortAttrition <- attr(cohort, "cohort_attrition") %>%
     computeQuery(
@@ -969,7 +971,8 @@ recordCohortAttrition <- function(cohort,
       name = paste0("temp", tm, "c_"),
       temporary = TRUE,
       overwrite = TRUE,
-      schema = attr(cdm, "write_schema"))
+      schema = cdmWriteSchema(cdm)
+    )
 
   # note that overwrite will drop the table that is needed for the query.
   # TODO support overwrite existing table using rename in computeQuery. Cross platform table rename is needed for this though.
@@ -978,8 +981,9 @@ recordCohortAttrition <- function(cohort,
     computeQuery(
       name = paste0(name, "_attrition"),
       temporary = FALSE,
-      schema = attr(cdm, "write_schema"),
-      overwrite = TRUE)
+      schema = cdmWriteSchema(cdm),
+      overwrite = TRUE
+    )
 
   return(cohort)
 }

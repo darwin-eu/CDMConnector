@@ -52,7 +52,7 @@ After connecting to a database containing data mapped to the OMOP CDM, use `cdm_
 The cdm_schema is the schema in the database that contains the OMOP CDM tables and is required. All other arguments are optional.
 
 ```{r}
-cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 cdm
 cdm$observation_period
 ```
@@ -141,7 +141,7 @@ If we are writing data to the CDM database we need to add one more argument when
 ```{r}
 
 DBI::dbExecute(con, "create schema scratch;")
-cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "scratch")
+cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "scratch")
 ```
 
 ```{r, warning=FALSE}
@@ -169,19 +169,19 @@ We can see that the query has been saved to a new table in the scratch schema. `
 If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_select_tbl` function supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
 
 ```{r}
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl("person", "observation_period") # quoted names
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(person, observation_period) # unquoted names 
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(starts_with("concept")) # tables that start with 'concept'
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(contains("era")) # tables that contain the substring 'era'
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(matches("person|period")) # regular expression
+cdm %>% cdm_select_tbl("person", "observation_period") # quoted names
+cdm %>% cdm_select_tbl(person, observation_period) # unquoted names 
+cdm %>% cdm_select_tbl(starts_with("concept")) # tables that start with 'concept'
+cdm %>% cdm_select_tbl(contains("era")) # tables that contain the substring 'era'
+cdm %>% cdm_select_tbl(matches("person|period")) # regular expression
 ```
 
 Predefined sets of tables can also be selected using `tbl_group` which supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
 
 ```{r}
 # pre-defined groups
-cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("clinical")) 
-cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("vocab")) 
+cdm %>% cdm_select_tbl(tbl_group("clinical")) 
+cdm %>% cdm_select_tbl(tbl_group("vocab")) 
 ```
 
 The default set of CDM tables included in a CDM object is:

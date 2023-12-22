@@ -60,8 +60,9 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
     computeQuery(
       name = "new_cohort",
       temporary = FALSE,
-      schema = attr(cdm, "write_schema"),
-      overwrite = TRUE)
+      schema = cdmWriteSchema(cdm),
+      overwrite = TRUE
+    )
 
   cdm$new_cohort <- newGeneratedCohortSet(
       cdm$new_cohort,
