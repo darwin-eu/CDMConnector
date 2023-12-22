@@ -222,7 +222,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' cdm <- cdm_from_con(con, "eunomia", "main")
 #' version(cdm)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
@@ -250,13 +250,9 @@ version <- function(cdm) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' cdm <- cdm_from_con(con, "eunomia", "main")
 #' cdmName(cdm)
-#' #> [1] "Synthea synthetic health database"
-#'
-#' cdm <- cdm_from_con(con, "main", cdm_name = "Example CDM")
-#' cdmName(cdm)
-#' #> [1] "Example CDM"
+#' #> [1] "eunomia"
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
@@ -349,7 +345,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #'                       user = "postgres",
 #'                       password = Sys.getenv("PASSWORD"))
 #'
-#' cdm <- cdm_from_con(con) %>%
+#' cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "public") %>%
 #'   cdm_select_tbl(tbl_group("vocab"))
 #' }
 tbl_group <- function(group) {

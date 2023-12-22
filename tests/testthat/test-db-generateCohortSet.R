@@ -2,9 +2,9 @@
 
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(con,
-                      cdm_schema = cdm_schema,
-                      write_schema = write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
 
   # test read cohort set with a cohortsToCreate.csv
   expect_error(readCohortSet(path = "does_not_exist"))
@@ -77,10 +77,8 @@ test_that("Generation from Capr Cohorts", {
   library(Capr)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- CDMConnector::cdm_from_con(
-    con = con,
-    cdm_schema = "main",
-    write_schema = "main"
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
 
   gibleed_cohort_definition <- cohort(
@@ -112,7 +110,9 @@ test_that("duckdb - phenotype library generation", {
     PhenotypeLibrary::getPlCohortDefinitionSet()
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", write_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
   expect_error(
     generate_cohort_set(cdm, cohort_set, name = "cohort", overwrite = TRUE, compute_attrition = TRUE),
     NA
@@ -126,9 +126,7 @@ test_that("TreatmentPatterns cohort works", {
   skip("manual test")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(
-    con = con,
-    cdm_schema = "main",
-    write_schema = "main"
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
 
   cohortSet <- readCohortSet(
@@ -174,7 +172,10 @@ test_that("newGeneratedCohortSet works with prefix", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
   write_schema <- c(schema = "main", prefix = "test_")
-  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main",
+    write_schema = write_schema
+  )
 
   cdm$cohort <- cdm$condition_era %>%
     head(1) %>%
@@ -207,7 +208,9 @@ test_that("newGeneratedCohortSet works with prefix", {
 test_that("no error is given if attrition table already exists and overwrite = TRUE", {
   skip_if_not_installed("CirceR")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
   cohort_set <- read_cohort_set(system.file("cohorts1", package = "CDMConnector"))
 
   cdm <- generateCohortSet(cdm,

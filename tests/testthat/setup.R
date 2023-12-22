@@ -10,6 +10,9 @@ tryCatch({
 
 # functions used for the test matrix
 
+dbToTest <- "duckdb"
+ciTestDbs <- "duckdb"
+
 get_connection <- function(dbms, DatabaseConnector = FALSE) {
 
   if (DatabaseConnector) {

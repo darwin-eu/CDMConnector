@@ -239,6 +239,7 @@ for (dbtype in dbToTest) {
 
     # clean up
     cdm <- cdm_from_con(con,
+                        cdm_name = "test",
                         cdm_schema = cdm_schema,
                         write_schema = write_schema)
 
