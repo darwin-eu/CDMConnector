@@ -6,8 +6,8 @@ cdm <- cdm_from_con(con, "main", "main")
 
 # check cdm ----
 checkmate::assertClass(cdm, "cdm_reference")
-con <- attr(cdm, "dbcon")
-checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+con <- cdmCon(cdm)
+checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
 
 assertTables(cdm, "observation_period", empty.ok = FALSE)
 assertWriteSchema(cdm)
@@ -120,7 +120,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   # upload concept data to the database ----
   tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
-  DBI::dbWriteTable(attr(cdm, "dbcon"),
+  DBI::dbWriteTable(cdmCon(cdm),
                     name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
                     value = df,
                     overwrite = TRUE)
@@ -130,7 +130,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   }
 
   # realize full list of concepts ----
-  concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(cdmWriteSchema(cdm),
+  concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm),
                                                       tempName,
                                                       dbms = dbms(con))) %>%
     dplyr::rename_all(tolower) %>%
@@ -138,7 +138,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
       dplyr::filter(., .data$include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
         dplyr::select("cohort_definition_id", "cohort_name", concept_id = "descendant_concept_id", "is_excluded") %>%
-        dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
+        dplyr::union_all(dplyr::select(dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
     } else . } %>%
     dplyr::filter(.data$is_excluded == FALSE) %>%
     dplyr::left_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
@@ -146,7 +146,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
     dplyr::distinct() %>%
     CDMConnector::computeQuery(temporary = TRUE)
 
-  DBI::dbRemoveTable(attr(cdm, "dbcon"), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+  DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
 

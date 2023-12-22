@@ -282,10 +282,10 @@ cdmSubset <- function(cdm, personId) {
                               max.len = 1e6,
                               null.ok = FALSE)
 
-  writeSchema <- attr(attr(cdm, "cdm_source"), "write_schema")
+  writeSchema <- cdmWriteSchema(cdm)
   if (is.null(writeSchema)) rlang::abort("write_schema is required for subsetting a cdm!")
   assertWriteSchema(cdm)
-  con <- attr(cdm, "dbcon")
+  con <- cdmCon(cdm)
 
   prefix <- unique_prefix()
   DBI::dbWriteTable(con,

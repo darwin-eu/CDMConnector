@@ -130,7 +130,7 @@ generateCohortSet <- function(cdm,
   rlang::check_installed("SqlRender")
 
   checkmate::assertClass(cdm, "cdm_reference")
-  con <- attr(cdm, "dbcon")
+  con <- cdmCon(cdm)
   checkmate::assertTRUE(DBI::dbIsValid(con))
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
@@ -681,12 +681,12 @@ computeAttritionTable <- function(cdm,
   checkmate::assertNumeric(cohortId, any.missing = FALSE, min.len = 1)
   checkmate::assertTRUE(all(cohortId %in% cohortSet$cohort_definition_id))
 
-  con <- attr(cdm, "dbcon")
+  con <- cdmCon(cdm)
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
   inclusionResultTableName <- paste0(cohortStem, "_inclusion_result")
 
-  if (dbms(attr(cdm, "dbcon")) %in% c("oracle", "snowflake")) {
+  if (dbms(cdmCon(cdm)) %in% c("oracle", "snowflake")) {
     inclusionResultTableName <- toupper(inclusionResultTableName)
   }
 

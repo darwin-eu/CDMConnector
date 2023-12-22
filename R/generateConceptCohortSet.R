@@ -72,8 +72,8 @@ generateConceptCohortSet <- function(cdm,
 
   # check cdm ----
   checkmate::assertClass(cdm, "cdm_reference")
-  con <- attr(cdm, "dbcon")
-  checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+  con <- cdmCon(cdm)
+  checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
   assertTables(cdm, "observation_period", empty.ok = FALSE)
@@ -168,7 +168,7 @@ generateConceptCohortSet <- function(cdm,
   # upload concept data to the database ----
   tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
-  DBI::dbWriteTable(attr(cdm, "dbcon"),
+  DBI::dbWriteTable(cdmCon(cdm),
                     name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
                     value = df,
                     overwrite = TRUE)
@@ -178,7 +178,7 @@ generateConceptCohortSet <- function(cdm,
   }
 
   # realize full list of concepts ----
-  concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(cdmWriteSchema(cdm),
+  concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm),
                                                       tempName,
                                                       dbms = dbms(con))) %>%
     dplyr::rename_all(tolower) %>%
@@ -192,7 +192,7 @@ generateConceptCohortSet <- function(cdm,
         ) %>%
         dplyr::union_all(
           dplyr::tbl(
-            attr(cdm, "dbcon"),
+            cdmCon(cdm),
             inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))
           ) %>%
           dplyr::select(dplyr::any_of(c(
@@ -211,7 +211,7 @@ generateConceptCohortSet <- function(cdm,
     dplyr::distinct() %>%
     CDMConnector::computeQuery(temporary = TRUE, overwrite = overwrite)
 
-  DBI::dbRemoveTable(attr(cdm, "dbcon"), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+  DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs

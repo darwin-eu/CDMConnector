@@ -66,14 +66,14 @@ attr(cdm, "cdm_version")
 ### Database connection
 We also have an attribute identifying the database connection underlying the cdm reference.
 ```{r}
-attr(cdm, "dbcon")
+cdmCon(cdm)
 ```
 
 This can be useful, for example, if we want to make use of DBI functions to work with the database. For example we could use `dbListTables` to list the names of remote tables accessible through the connection, `dbListFields` to list the field names of a specific remote table, and `dbGetQuery` to returns the result of a query 
 ```{r}
-DBI::dbListTables(attr(cdm, "dbcon"))
-DBI::dbListFields(attr(cdm, "dbcon"), "person")
-DBI::dbGetQuery(attr(cdm, "dbcon"), "SELECT * FROM person LIMIT 5")
+DBI::dbListTables(cdmCon(cdm))
+DBI::dbListFields(cdmCon(cdm), "person")
+DBI::dbGetQuery(cdmCon(cdm), "SELECT * FROM person LIMIT 5")
 ```
 
 ## Cohort attributes

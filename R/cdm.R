@@ -713,7 +713,7 @@ cdmDisconnect <- function(cdm) {
   if (!("cdm_reference" %in% class(cdm))) {
     cli::cli_abort("cdm should be a cdm_reference")
   }
-  DBI::dbDisconnect(attr(cdm, "dbcon"), shutdown = TRUE)
+  DBI::dbDisconnect(cdmCon(cdm), shutdown = TRUE)
 }
 
 #' @rdname cdmDisconnect
@@ -764,4 +764,9 @@ cdm_select_tbl <- function(cdm, ...) {
 #' @noRd
 cdmWriteSchema <- function(cdm) {
   attr(attr(cdm, "cdm_source"), "write_schema")
+}
+
+#' @noRd
+cdmCon <- function(cdm) {
+  attr(attr(cdm, "cdm_source"), "dbcon")
 }
