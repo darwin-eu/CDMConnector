@@ -62,6 +62,7 @@ insertTable.db_cdm <- function(cdm,
                                name,
                                table,
                                overwrite = TRUE) {
+  checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
   con <- attr(cdm, "dbcon")
   writeSchema <- attr(cdm, "write_schema")
   fullName <- inSchema(schema = writeSchema, table = name, dbms = dbms(con))

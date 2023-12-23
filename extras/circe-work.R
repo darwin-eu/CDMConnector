@@ -226,10 +226,9 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
 
   cdm[[name]] <- cohortRef
 
-  cdm[[name]] <- newGeneratedCohortSet(
-    cohortRef = cdm[[name]],
-    cohortSetRef = cohortSetRef,
-    overwrite = overwrite)
+  cdm[[name]] <- omopgenerics::generatedCohortSet(
+    cohortRef = cdm[[name]], cohortSetRef = cohortSetRef, overwrite = overwrite
+  )
 
   # return(cdm)
 # }

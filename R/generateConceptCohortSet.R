@@ -321,10 +321,7 @@ generateConceptCohortSet <- function(cdm,
       cohort_collapse() %>%
       dplyr::mutate(cohort_start_date = !!asDate(.data$cohort_start_date),
                     cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
-      computeQuery(temporary = FALSE,
-                   schema = cdmWriteSchema(cdm),
-                   name = name,
-                   overwrite = overwrite)
+      dplyr::compute(name = name, temporary = FALSE, overwrite = overwrite)
     }
 
 
@@ -335,17 +332,11 @@ generateConceptCohortSet <- function(cdm,
       "future_observation", "end"
     ))) %>%
     dplyr::distinct() %>%
-    CDMConnector::computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
-                               schema = cdmWriteSchema(cdm),
-                               name = paste0(name, "_set"),
-                               overwrite = overwrite)
+    dplyr::collect()
 
-  cdm[[name]] <- cohortRef
-
-  cdm[[name]] <- newGeneratedCohortSet(
-    cohortRef = cdm[[name]],
-    cohortSetRef = cohortSetRef,
-    overwrite = overwrite)
+  cdm[[name]] <- omopgenerics::generatedCohortSet(
+    cohortRef = cohortRef, cohortSetRef = cohortSetRef, overwrite = overwrite
+  )
 
   return(cdm)
 }

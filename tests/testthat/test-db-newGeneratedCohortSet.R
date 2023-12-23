@@ -64,7 +64,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
       overwrite = TRUE
     )
 
-  cdm$new_cohort <- newGeneratedCohortSet(
+  cdm$new_cohort <- omopgenerics::generatedCohortSet(
       cdm$new_cohort,
       cohortSetRef = dplyr::tibble(
         cohort_definition_id = 1,
@@ -121,7 +121,7 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
                   "cohort_start_date" = "condition_start_date",
                   "cohort_end_date" = "condition_end_date")
 
-  expect_error(newGeneratedCohortSet(cohort_ref))
+  expect_error(omopgenerics::generatedCohortSet(cohort_ref))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -152,7 +152,7 @@ test_that("no error if cohort is empty", {
     compute_query()
 
   cdm$cohort_3a <-  cdm$cohort_3 %>%
-    newGeneratedCohortSet(overwrite = TRUE)
+    omopgenerics::generatedCohortSet(overwrite = TRUE)
   expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3a))
   # we won't have cohort set or cohort count as we didn't provide the cohort set ref
   expect_true(nrow(cohort_set(cdm$cohort_3a)) == 0)
@@ -160,7 +160,7 @@ test_that("no error if cohort is empty", {
 
   c_Ref<- cohort_set(cdm$cohort_3)
   cdm$cohort_3b <-  cdm$cohort_3 %>%
-    newGeneratedCohortSet(cohortSetRef = c_Ref,
+    omopgenerics::generatedCohortSet(cohortSetRef = c_Ref,
                             overwrite = TRUE)
   expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3b))
   expect_false(nrow(cohort_set(cdm$cohort_3b)) == 0)
@@ -194,7 +194,7 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
     cdm$cohort_3 <- cdm$cohorts2 %>%
       dplyr::filter(cohort_start_date > "2099-01-01") %>%
       compute_query() %>%
-      newGeneratedCohortSet()
+      omopgenerics::generatedCohortSet()
   })
 
   expect_equal(nrow(dplyr::collect(cdm$cohort_3)), 0)

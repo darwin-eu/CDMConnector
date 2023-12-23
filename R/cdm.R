@@ -582,35 +582,6 @@ cdmFromFiles <- function(path,
                  as_data_frame = asDataFrame)
 }
 
-
-#' Bring a remote CDM reference into R
-#'
-#' This function calls collect on a list of lazy queries and returns
-#' the result as a list of dataframes.
-#'
-#' @param x A cdm_reference object.
-#' @param ... Not used. Included for compatibility.
-#'
-#' @return A cdm_reference object that is a list of R dataframes.
-#' @importFrom dplyr collect
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' vocab <- cdm_from_con(con, "main") %>%
-#'   cdm_select_tbl("concept", "concept_ancestor")
-#'
-#' local_vocab <- collect(vocab)
-#' DBI::dbDisconnect(con, shutdown = TRUE)
-#' }
-collect.cdm_reference <- function(x, ...) {
-  for (nm in names(x)) {
-    x[[nm]] <- dplyr::collect(x[[nm]])
-  }
-  x
-}
-
 #' Extract CDM metadata
 #'
 #' Extract the name, version, and selected record counts from a cdm.
