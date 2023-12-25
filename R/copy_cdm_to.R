@@ -35,18 +35,14 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
 
   # insert person and observation_period
   cdmTables <- list()
-  cdmTables[["person"]] <- omopgenerics::insertTable(
-    cdm = newSource,
-    name = "person",
-    table = cdm$person |> dplyr::collect(),
-    overwrite = overwrite
-  )
-  cdmTables[["observation_period"]] <- omopgenerics::insertTable(
-    cdm = newSource,
-    name = "observation_period",
-    table = cdm$observation_period |> dplyr::collect(),
-    overwrite = overwrite
-  )
+  for (tab in c("person", "observation_period")) {
+    cdmTables[[tab]] <- omopgenerics::insertTable(
+      cdm = newSource,
+      name = tab,
+      table = cdm[[tab]] |> dplyr::collect(),
+      overwrite = overwrite
+    )
+  }
 
   # create cdm object
   newCdm <- omopgenerics::cdmReference(
