@@ -42,16 +42,16 @@ dbSource <- function(con,
   checkmate::assert_character(writeSchema, min.len = 1, max.len = 3)
   checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, null.ok = TRUE)
 
-  source <- NA
-  attr(source, "dbcon") <- con
-  attr(source, "cdm_schema") <- cdmSchema
-  attr(source, "write_schema") <- writeSchema
-  attr(source, "achilles_schema") <- achillesSchema
+  source <- structure(
+    .Data = list(),
+    "dbcon" = con,
+    "cdm_schema" = cdmSchema,
+    "write_schema" = writeSchema,
+    "achilles_schema" = achillesSchema
+  )
   class(source) <- "db_cdm"
   source <- omopgenerics::cdmSource(
-    src = source,
-    sourceName = cdmName,
-    sourceType = dbms(con)
+    src = source, sourceName = cdmName, sourceType = dbms(con)
   )
   return(source)
 }
