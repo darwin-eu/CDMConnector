@@ -7,14 +7,13 @@ test_copy_cdm_to <- function(con, write_schema) {
   on.exit(DBI::dbDisconnect(con1, shutdown = TRUE), add = TRUE)
 
   cdm <- cdm_from_con(con1, cdm_schema = "main", cdm_name = "test") %>%
-      # cdm_select_tbl(tbl_group("default")) # takes longer
-      cdm_select_tbl("person", "vocabulary")
+      cdm_select_tbl("person", "observation_period", "vocabulary")
 
   # create another cdm
-  cdm2 <- copy_cdm_to(con, cdm, schema = write_schema)
+  cdm2 <- copy_cdm_to(con = con, cdm = cdm, schema = write_schema)
   expect_setequal(names(cdm), names(cdm2))
   expect_s3_class(cdm2, "cdm_reference")
-  expect_error(copy_cdm_to(con, cdm, schema = write_schema))
+  expect_error(copy_cdm_to(con, cdm = cdm, schema = write_schema))
 
   # drop test tables
   list_tables(con, write_schema) %>%
@@ -37,7 +36,7 @@ for (dbtype in dbToTest) {
 
 test_that("duckdb - copy_cdm_to without prefix", {
   con1 <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm1 <- cdm_from_con(con1, cdm_schema = "main")
+  cdm1 <- cdm_from_con(con1, cdm_name = "eunomia", cdm_schema = "main")
 
   con2 <- DBI::dbConnect(duckdb::duckdb())
   cdm2 <- copy_cdm_to(con2, cdm1, schema = "main")
@@ -55,8 +54,6 @@ test_that("duckdb - copy_cdm_to without prefix", {
   DBI::dbDisconnect(con2, shutdown = T)
   DBI::dbDisconnect(con3, shutdown = T)
 })
-
-
 
 test_that("copy_to works locally", {
   skip("manual test")

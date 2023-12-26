@@ -186,10 +186,7 @@ test_that("newGeneratedCohortSet works with prefix", {
       cohort_start_date = "condition_era_start_date",
       cohort_end_date = "condition_era_end_date"
     ) %>%
-    compute_query(name = "cohort",
-                  schema = write_schema,
-                  temporary = FALSE,
-                  overwrite = TRUE)
+    compute(name = "cohort", temporary = FALSE, overwrite = TRUE)
 
   cdm$cohort <- new_generated_cohort_set(cdm$cohort)
 

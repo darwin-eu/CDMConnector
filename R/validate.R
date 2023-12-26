@@ -160,7 +160,7 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
     expectedColumns <- spec_cdm_field[[ver]] %>%
       dplyr::filter(.data$cdmTableName == .env$nm) %>%
       dplyr::pull(.data$cdmFieldName)
-    actualColumns <- cdm[[nm]] %>% head(1) %>% collect() %>% colnames()
+    actualColumns <- cdm[[nm]] %>% head(1) %>% dplyr::collect() %>% colnames()
     missingColumns <- dplyr::setdiff(expectedColumns, actualColumns)
 
     if (length(missingColumns) > 0) {

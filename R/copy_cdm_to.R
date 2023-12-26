@@ -29,8 +29,8 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
 
   # create a new source
   newSource <- dbSource(
-    con = con, cdmName = cdmName(cdm), cdmSchema = schema, writeSchema = schema,
-    achillesSchema = schema
+    con = con, cdmName = omopgenerics::cdmName(cdm), cdmSchema = schema,
+    writeSchema = schema, achillesSchema = schema
   )
 
   # insert person and observation_period

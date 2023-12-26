@@ -3,7 +3,7 @@ prepare_cdm <- function(con, write_schema) {
 
   # eunomia cdm
   eunomia_con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  eunomia_cdm <- cdm_from_con(eunomia_con, cdm_schema = "main") %>%
+  eunomia_cdm <- cdm_from_con(eunomia_con, cdm_name = "eunomia", cdm_schema = "main") %>%
     cdm_select_tbl("person", "observation_period")
 
   cdm <- copyCdmTo(con = con,
@@ -16,16 +16,16 @@ prepare_cdm <- function(con, write_schema) {
 
 check_counts <- function(cdm) {
   nm <- cdm$person %>%
-          dplyr::count() %>%
-          collect() %>%
-          colnames()
+    dplyr::count() %>%
+    dplyr::collect() %>%
+    colnames()
 
   expect_true("n" %in% nm)
 
   nm <- cdm$person %>%
     dplyr::group_by(.data$gender_concept_id, .data$month_of_birth) %>%
     dplyr::count() %>%
-    collect() %>%
+    dplyr::collect() %>%
     colnames()
 
    expect_true(all(c("gender_concept_id", "month_of_birth", "n") %in% nm))
@@ -244,7 +244,7 @@ for (dbtype in dbToTest) {
                         write_schema = write_schema)
 
     expect_s3_class(cdm, "cdm_reference")
-    CDMConnector::dropTable(cdm, dplyr::contains(write_prefix))
+    dropTable(cdm, dplyr::contains(write_prefix))
     disconnect(con)
   })
 }

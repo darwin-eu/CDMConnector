@@ -57,12 +57,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
 
   cdm$new_cohort <- x %>%
-    computeQuery(
-      name = "new_cohort",
-      temporary = FALSE,
-      schema = cdmWriteSchema(cdm),
-      overwrite = TRUE
-    )
+    compute(name = "new_cohort", temporary = FALSE, overwrite = TRUE)
 
   cdm$new_cohort <- omopgenerics::generatedCohortSet(
       cdm$new_cohort,
@@ -75,16 +70,16 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
   expect_true(all(
-    c("cdm_reference", "cohort_set", "cohort_attrition", "cohort_count", "tbl_name") %in% names(attributes(cdm$new_cohort))
+    c("cdm_reference", "cohort_set", "cohort_attrition", "tbl_name") %in% names(attributes(cdm$new_cohort))
   ))
 
   expect_true(attr(cdm$new_cohort, "tbl_name") == "new_cohort")
 
   # remove the cohort tables.
   if ("prefix" %in% names(write_schema)) {
-    drop_table(cdm, dplyr::starts_with(write_schema["prefix"]))
+    dropTable(cdm, dplyr::starts_with(write_schema["prefix"]))
   } else {
-    drop_table(cdm, dplyr::starts_with("new_cohort"))
+    dropTable(cdm, dplyr::starts_with("new_cohort"))
   }
 
 }
@@ -149,7 +144,7 @@ test_that("no error if cohort is empty", {
 
   cdm$cohort_3 <- cdm$cohorts2 %>%
     dplyr::filter(cohort_start_date > "2030-01-01") %>%
-    compute_query()
+    compute()
 
   cdm$cohort_3a <-  cdm$cohort_3 %>%
     omopgenerics::generatedCohortSet(overwrite = TRUE)
@@ -200,3 +195,4 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
   expect_equal(nrow(dplyr::collect(cdm$cohort_3)), 0)
   DBI::dbDisconnect(con, shutdown = T)
 })
+

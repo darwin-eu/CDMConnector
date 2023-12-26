@@ -221,7 +221,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                        dplyr::select("subject_id") %>%
                        dplyr::distinct(),
                      by = "subject_id") %>%
-    collect()) == 0)
+    dplyr::collect()) == 0)
 
   # specifying cohort ids
   cdm <- generate_concept_cohort_set(cdm = cdm,
@@ -240,7 +240,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                                         dplyr::select("subject_id") %>%
                                         dplyr::distinct(),
                                       by = "subject_id") %>%
-                     collect()) == 0)
+                     dplyr::collect()) == 0)
   # expected errors
  expect_error(generate_concept_cohort_set(cdm = cdm,
                               name = "gibleed_medications2",

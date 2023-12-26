@@ -175,7 +175,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   # Try a few different things to figure out what the cdm version is
   visit_occurrence_names <- cdm$visit_occurrence %>%
     head() %>%
-    collect() %>%
+    dplyr::collect() %>%
     colnames() %>%
     tolower()
 
@@ -189,7 +189,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 
   procedure_occurrence_names <- cdm$procedure_occurrence %>%
     head() %>%
-    collect() %>%
+    dplyr::collect() %>%
     colnames() %>%
     tolower()
 

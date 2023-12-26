@@ -910,83 +910,48 @@ recordCohortAttrition <- function(cohort,
 
   tm <- as.integer(Sys.time())
 
-  tempCohortCount <- attr(cohort, "cohort_count") %>%
-    dplyr::filter(!(.data$cohort_definition_id %in% .env$cohortId)) %>%
-    computeQuery(
-      name = paste0("temp", tm, "a_"),
-      # temporary = getOption("intermediate_as_temp", TRUE),
-      temporary = TRUE,
-      overwrite = TRUE,
-      schema = cdmWriteSchema(cdm)
-    )
-
-  # update cohort_count ----
-  attr(cohort, "cohort_count") <- cohort %>%
-    dplyr::filter(.data$cohort_definition_id %in% .env$cohortId) %>%
-    dplyr::group_by(.data$cohort_definition_id) %>%
-    dplyr::summarise(
-      number_records = dplyr::n(),
-      number_subjects = dplyr::n_distinct(.data$subject_id)
-    ) %>%
-    dplyr::union_all(tempCohortCount) %>%
-    dplyr::right_join(
-      attr(cohort, "cohort_set") %>% dplyr::select("cohort_definition_id"),
-      by = "cohort_definition_id"
-    ) %>%
-    dplyr::mutate(
-      number_records = dplyr::coalesce(.data$number_records, 0),
-      number_subjects = dplyr::coalesce(.data$number_subjects, 0)) %>%
-    computeQuery(
-      name = paste0(name, "_count"),
-      temporary = FALSE,
-      schema = cdmWriteSchema(cdm),
-      overwrite = TRUE
-    )
-
   # update cohort_attrition ----
   newAttritionRow <- attr(cohort, "cohort_attrition") %>%
     dplyr::filter(.data$cohort_definition_id %in% .env$cohortId) %>%
-    dplyr::select("cohort_definition_id",
-                  "reason_id",
-                  "previous_records" = "number_records",
-                  "previous_subjects" = "number_subjects") %>%
+    dplyr::select(
+      "cohort_definition_id",
+      "reason_id",
+      "previous_records" = "number_records",
+      "previous_subjects" = "number_subjects"
+    ) %>%
     dplyr::group_by(.data$cohort_definition_id) %>%
     dplyr::filter(.data$reason_id == max(.data$reason_id, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%
-    dplyr::inner_join(attr(cohort, "cohort_count"), by = c("cohort_definition_id")) %>%
+    dplyr::inner_join(
+      cohort %>%
+        dplyr::group_by(.data$cohort_definition_id) %>%
+        dplyr::summarise(
+          number_records = dplyr::n(),
+          number_subjects = dplyr::n_distinct(.data$subject_id),
+          .groups = "drop"
+        ) %>%
+        dplyr::filter(.data$cohort_definition_id %in% .env$cohortId),
+      by = c("cohort_definition_id")
+    ) %>%
     dplyr::mutate(
-      reason_id = .data$reason_id + 1,
-      reason = .env$reason,
-      excluded_records = .data$previous_records - .data$number_records,
-      excluded_subjects = .data$previous_subjects - .data$number_subjects) %>%
+      "reason_id" = .data$reason_id + 1,
+      "reason" = .env$reason,
+      "excluded_records" = .data$previous_records - .data$number_records,
+      "excluded_subjects" = .data$previous_subjects - .data$number_subjects
+    ) %>%
     dplyr::select(
       "cohort_definition_id", "number_records", "number_subjects",
-      "reason_id", "reason", "excluded_records", "excluded_subjects") %>%
-    computeQuery(
-      # temporary = getOption("intermediate_as_temp", TRUE),
-      name = paste0("temp", tm, "b_"),
-      temporary = TRUE,
-      overwrite = TRUE,
-      schema = cdmWriteSchema(cdm)
-    )
-
-  tempCohortAttrition <- attr(cohort, "cohort_attrition") %>%
-    computeQuery(
-      # temporary = getOption("intermediate_as_temp", TRUE),
-      name = paste0("temp", tm, "c_"),
-      temporary = TRUE,
-      overwrite = TRUE,
-      schema = cdmWriteSchema(cdm)
-    )
+      "reason_id", "reason", "excluded_records", "excluded_subjects"
+    ) %>%
+    compute()
 
   # note that overwrite will drop the table that is needed for the query.
   # TODO support overwrite existing table using rename in computeQuery. Cross platform table rename is needed for this though.
-  attr(cohort, "cohort_attrition")  <- tempCohortAttrition %>%
+  attr(cohort, "cohort_attrition")  <- attr(cohort, "cohort_attrition") %>%
     dplyr::union_all(newAttritionRow) %>%
-    computeQuery(
+    compute(
       name = paste0(name, "_attrition"),
       temporary = FALSE,
-      schema = cdmWriteSchema(cdm),
       overwrite = TRUE
     )
 
