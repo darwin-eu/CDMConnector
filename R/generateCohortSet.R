@@ -369,10 +369,13 @@ generateCohortSet <- function(cdm,
 
   # Create attrition attribute ----
   if (computeAttrition) {
-    cohort_attrition_ref <- computeAttritionTable(cdm,
-                                                  cohortStem = name,
-                                                  cohortSet = cohortSet,
-                                                  overwrite = overwrite)
+    cohort_attrition_ref <- computeAttritionTable(
+      cdm = cdm,
+      cohortStem = name,
+      cohortSet = cohortSet,
+      overwrite = overwrite
+    ) |>
+      dplyr::collect()
   } else {
     cohort_attrition_ref <- NULL
   }

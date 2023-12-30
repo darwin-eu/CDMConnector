@@ -118,6 +118,9 @@ cdm_from_con <- function(con,
     DBI::dbExecute(con, glue::glue_sql("USE SCHEMA {s2}"))
   }
 
+  # TO BE REMOVED WHEN CIRCER WORKS WITH CDM OBJECT
+  attr(cdm, "cdm_schema") <- cdm_schema
+
   return(cdm)
 }
 

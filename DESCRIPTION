@@ -44,7 +44,7 @@ Imports:
     omopgenerics
 Suggests: 
     arrow,
-    SqlRender, 
+    SqlRender,
     rJava,
     covr,
     knitr,
@@ -59,7 +59,8 @@ Suggests:
     lubridate,
     tibble,
     testthat (>= 3.0.0),
-    pool
+    pool,
+    snakecase
 Enhances:
     CirceR,
     Capr
