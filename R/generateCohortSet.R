@@ -382,40 +382,14 @@ generateCohortSet <- function(cdm,
     DBI::dbRemoveTable(con, inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)))
   }
 
-  # overwrite not working on snowflake
-  DBI::dbWriteTable(con,
-                    name = inSchema(write_schema, paste0(name, "_set"), dbms(con)),
-                    value = as.data.frame(cohortSet[,c("cohort_definition_id", "cohort_name")]),
-                    overwrite = TRUE)
-
-  cohort_set_ref <- dplyr::tbl(con, inSchema(write_schema, paste0(name, "_set"), dbms(con)))
-
-  # Create cohort_count attribute ----
-  cohort_count_ref <- cohort_ref %>%
-    dplyr::ungroup() %>%
-    dplyr::group_by(.data$cohort_definition_id) %>%
-    dplyr::summarise(number_records = dplyr::n(),
-                     number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
-    {dplyr::left_join(cohort_set_ref, ., by = "cohort_definition_id")} %>%
-    dplyr::mutate(number_records  = dplyr::coalesce(.data$number_records, 0L),
-                  number_subjects = dplyr::coalesce(.data$number_subjects, 0L)) %>%
-    dplyr::select("cohort_definition_id",
-                  "number_records",
-                  "number_subjects") %>%
-    computeQuery(name = paste0(name, "_count"),
-                 schema = cdmWriteSchema(cdm),
-                 temporary = FALSE,
-                 overwrite = TRUE)
-
-  # cohort_ref must be a cdm table before it is passed in to new_generated_cohort_set.
-  cdm[[name]] <- cohort_ref
+  cdm[[name]] <- cohort_ref |>
+    omopgenerics::cdmTable(src = attr(cdm, "cdm_source"), name = name)
 
   # Create the object. Let the constructor handle getting the counts.----
   cdm[[name]] <- new_generated_cohort_set(
     cohort_ref = cdm[[name]],
-    cohort_set_ref = cohort_set_ref,
+    cohort_set_ref = cohortSet[,c("cohort_definition_id", "cohort_name")],
     cohort_attrition_ref = cohort_attrition_ref,
-    cohort_count_ref = cohort_count_ref,
     overwrite = overwrite)
 
   cli::cli_progress_done()
