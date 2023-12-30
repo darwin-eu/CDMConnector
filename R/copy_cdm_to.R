@@ -24,14 +24,8 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
   checkmate::assertCharacter(schema, min.len = 1, max.len = 3, all.missing = F)
   checkmate::assertLogical(overwrite, len = 1)
 
-  # get source
-  src <- attr(cdm, "cdm_source")
-
   # create a new source
-  newSource <- dbSource(
-    con = con, cdmName = omopgenerics::cdmName(cdm), cdmSchema = schema,
-    writeSchema = schema, achillesSchema = schema
-  )
+  newSource <- dbSource(con = con, writeSchema = schema)
 
   # insert person and observation_period
   cdmTables <- list()
@@ -39,14 +33,14 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
     cdmTables[[tab]] <- omopgenerics::insertTable(
       cdm = newSource,
       name = tab,
-      table = cdm[[tab]] |> dplyr::collect(),
+      table = cdm[[tab]] |> dplyr::collect() |> dplyr::as_tibble(),
       overwrite = overwrite
     )
   }
 
   # create cdm object
   newCdm <- omopgenerics::cdmReference(
-    cdmTables = cdmTables, cdmSource = newSource
+    tables = cdmTables, cdmName = omopgenerics::cdmName(cdm)
   )
 
   # copy all other tables
@@ -56,12 +50,35 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
   ]
   for (i in cli::cli_progress_along(tables_to_copy)) {
     table_name <- tables_to_copy[i]
+    cohort <- inherits(cdm[[table_name]], "generated_cohort_set")
+    if (cohort) {
+      set <- omopgenerics::settings(cdm[[table_name]]) |> dplyr::as_tibble()
+      att <- omopgenerics::attrition(cdm[[table_name]]) |> dplyr::as_tibble()
+      newCdm <- omopgenerics::insertTable(
+        cdm = newCdm, name = paste0(table_name, "_set"), table = set,
+        overwrite = overwrite
+      )
+      newCdm <- omopgenerics::insertTable(
+        cdm = newCdm, paste0(table_name, "_attrition"), table = att,
+        overwrite = overwrite
+      )
+    }
     newCdm <- omopgenerics::insertTable(
       cdm = newCdm,
       name = table_name,
-      table = cdm[[table_name]] |> dplyr::collect(),
+      table = cdm[[table_name]] |> dplyr::collect() |> dplyr::as_tibble(),
       overwrite = overwrite
     )
+    if (cohort) {
+      newCdm[[table_name]] <- omopgenerics::generatedCohortSet(
+        cohortRef = newCdm[[table_name]],
+        cohortSetRef = newCdm[[paste0(table_name, "_set")]],
+        cohortAttritionRef = newCdm[[paste0(table_name, "_attrition")]],
+        overwrite = overwrite
+      )
+      newCdm[[paste0(table_name, "_set")]] <- NULL
+      newCdm[[paste0(table_name, "_attrition")]] <- NULL
+    }
   }
 
   return(newCdm)

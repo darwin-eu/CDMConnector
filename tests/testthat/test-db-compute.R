@@ -7,8 +7,8 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
   # temp table creation from query ----
   q <- cdm$concept %>%
     dplyr::filter(domain_id == "Drug") %>%
-    dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) %>%
-    dplyr::count(.data$isRxnorm)
+    dplyr::mutate(is_rxnorm = (vocabulary_id == "RxNorm")) %>%
+    dplyr::count(.data$is_rxnorm)
 
   x <- computeQuery(q,
                     name = new_table_name,

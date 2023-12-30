@@ -4,21 +4,13 @@
 \alias{dbSource}
 \title{Create a source for a cdm in a database.}
 \usage{
-dbSource(con, cdmName, cdmSchema, writeSchema, achillesSchema = NULL)
+dbSource(con, writeSchema)
 }
 \arguments{
 \item{con}{Connection to a database.}
 
-\item{cdmName}{Name of the cdm.}
-
 \item{writeSchema}{Schema where cohort tables are. You must have read and
 write access to it.}
-
-\item{achillesSchema}{Schema where achilles tables are. You must have read
-access to it.}
-
-\item{cdmScehma}{Schema where cdm tables are. You must have read access to
-it.}
 }
 \description{
 Create a source for a cdm in a database.

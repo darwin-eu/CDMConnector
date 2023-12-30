@@ -22,60 +22,35 @@ cdm_from_con <- function(con,
                          write_schema,
                          cohort_tables = NULL,
                          achilles_schema = NULL) {
-  src <- dbSource(
-    con = con, cdmName = cdm_name, cdmSchema = cdm_schema,
-    writeSchema = write_schema, achillesSchema = achilles_schema
-  )
-
+  checkmate::assert_character(cdm_name, any.missing = FALSE, len = 1)
+  checkmate::assert_character(cdm_schema, min.len = 1, max.len = 3, any.missing = F)
+  checkmate::assert_character(write_schema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
+  checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
 
-  # Try to get the cdm name if not supplied
+  # create source object and validate connecion
+  src <- dbSource(con = con, writeSchema = write_schema)
+  con <- attr(src, "dbcon")
+
+  # read omop tables
   dbTables <- listTables(con, schema = cdm_schema)
-
-  # only get the cdm tables that exist in the database
-  cdm_tables <- tbl_group("all")
-  cdm_tables <- cdm_tables[which(cdm_tables %in% tolower(dbTables))]
-  if (length(cdm_tables) == 0) {
+  omop_tables <- omopgenerics::omopTables()
+  omop_tables <- omop_tables[which(omop_tables %in% tolower(dbTables))]
+  if (length(omop_tables) == 0) {
     rlang::abort("There were no cdm tables found in the cdm_schema!")
   }
-
-  # Handle uppercase table names in the database
-  cdm_tables_in_db <- dbTables[which(tolower(dbTables) %in% cdm_tables)]
+  cdm_tables_in_db <- dbTables[which(tolower(dbTables) %in% omop_tables)]
   if (all(cdm_tables_in_db == toupper(cdm_tables_in_db))) {
-    cdm_tables <- toupper(cdm_tables)
+    omop_tables <- toupper(omop_tables)
   } else if (!all(cdm_tables_in_db == tolower(cdm_tables_in_db))) {
     rlang::abort("CDM database tables should be either all upppercase or all lowercase!")
   }
 
   cdmTables <- purrr::map(
-    cdm_tables,
-    ~ dplyr::tbl(src = src, schema = cdm_schema, .) %>%
-      dplyr::rename_all(tolower)
+    omop_tables, ~ dplyr::tbl(src = src, schema = cdm_schema, name = .)
   ) %>%
-    rlang::set_names(tolower(cdm_tables))
+    rlang::set_names(tolower(omop_tables))
 
-  cohortTables <- list()
-  for (cohort_table in cohort_tables) {
-    nms <- paste0(cohort_table, c("", "_set", "_attrition"))
-    x <- purrr::map(nms, function(nm) {
-      if (nm %in% write_schema_tables) {
-        dplyr::tbl(src = src, schema = write_schema, name = nm) %>%
-          dplyr::rename_all(tolower)
-      } else if (nm %in% toupper(write_schema_tables)) {
-        dplyr::tbl(src = src, schema = write_schema, name = toupper(nm)) %>%
-          dplyr::rename_all(tolower)
-      } else {
-        NULL
-      }
-    })
-    cohort <- x[[1]]
-    if(is.null(cohort)) {
-      rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
-    }
-    attr(cohort, "cohort_set") <- x[[2]]
-    attr(cohort, "cohort_attrition") <- x[[3]]
-    cohortTables[[cohort_table]] <- cohort
-  }
 
   if (!is.null(achilles_schema)) {
     achillesReqTables <- omopgenerics::achillesTables()
@@ -86,8 +61,7 @@ cdm_from_con <- function(con,
     }
     achillesTables <- purrr::map(
       achilles_tables,
-      ~ dplyr::tbl(src = src, schema = achilles_schema, .) %>%
-        dplyr::rename_all(tolower)
+      ~ dplyr::tbl(src = src, schema = achilles_schema, .)
     ) %>%
       rlang::set_names(tolower(achilles_tables))
   } else {
@@ -95,11 +69,30 @@ cdm_from_con <- function(con,
   }
 
   cdm <- omopgenerics::cdmReference(
-    cdmTables = cdmTables,
-    cohortTables = cohortTables,
-    achillesTables = achillesTables,
-    cdmSource = src
+    tables = c(cdmTables, achillesTables), cdmName = cdm_name
   )
+
+  for (cohort_table in cohort_tables) {
+    nms <- paste0(cohort_table, c("", "_set", "_attrition"))
+    x <- purrr::map(nms, function(nm) {
+      if (nm %in% write_schema_tables) {
+        dplyr::tbl(src = src, schema = write_schema, name = nm)
+      } else if (nm %in% toupper(write_schema_tables)) {
+        dplyr::tbl(src = src, schema = write_schema, name = toupper(nm))
+      } else {
+        NULL
+      }
+    })
+    cohort <- x[[1]]
+    if(is.null(cohort)) {
+      rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
+    }
+    attr(cohort, "cdm_reference") <- cdm
+    cdm[[cohort_table]] <- omopgenerics::generatedCohortSet(
+      cohortRef = cohort, cohortSetRef = x[[2]], cohortAttritionRef = x[[3]],
+      overwrite = FALSE
+    )
+  }
 
   if (dbms(con) == "snowflake") {
 
@@ -132,8 +125,9 @@ cdm_from_con <- function(con,
 tbl.db_cdm <- function(src, schema, name) {
   con <- attr(src, "dbcon")
   fullName <- inSchema(schema = schema, table = name, dbms = dbms(con))
-  x <- dplyr::tbl(con, fullName)
-  attr(x, "tbl_name") <- name
+  x <- dplyr::tbl(src = con, fullName) |>
+    dplyr::rename_all(tolower) |>
+    omopgenerics::cdmTable(src = src, name = tolower(name))
   return(x)
 }
 

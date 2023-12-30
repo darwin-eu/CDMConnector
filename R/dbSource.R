@@ -2,21 +2,13 @@
 #' Create a source for a cdm in a database.
 #'
 #' @param con Connection to a database.
-#' @param cdmName Name of the cdm.
-#' @param cdmScehma Schema where cdm tables are. You must have read access to
-#' it.
 #' @param writeSchema Schema where cohort tables are. You must have read and
 #' write access to it.
-#' @param achillesSchema Schema where achilles tables are. You must have read
-#' access to it.
 #'
 #' @export
 #'
 dbSource <- function(con,
-                     cdmName,
-                     cdmSchema,
-                     writeSchema,
-                     achillesSchema = NULL) {
+                     writeSchema) {
   # initial checks
   if (methods::is(con, "Pool")) {
     if (!rlang::is_installed("pool")) {
@@ -31,28 +23,18 @@ dbSource <- function(con,
     )
   }
   checkmate::assert_true(.dbIsValid(con))
-  if (dbms(con) %in% c("duckdb", "sqlite") && missing(cdmSchema)) {
-    cdmSchema <- c(schema = "main")
-  }
   if (dbms(con) %in% c("duckdb", "sqlite") && missing(writeSchema)) {
     writeSchema <- c(schema = "main")
   }
-  checkmate::assertCharacter(cdmName, len = 1, any.missing = FALSE)
-  checkmate::assert_character(cdmSchema, min.len = 1, max.len = 3)
   checkmate::assert_character(writeSchema, min.len = 1, max.len = 3)
-  checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, null.ok = TRUE)
 
   source <- structure(
     .Data = list(),
     "dbcon" = con,
-    "cdm_schema" = cdmSchema,
-    "write_schema" = writeSchema,
-    "achilles_schema" = achillesSchema
+    "write_schema" = writeSchema
   )
   class(source) <- "db_cdm"
-  source <- omopgenerics::cdmSource(
-    src = source, sourceName = cdmName, sourceType = dbms(con)
-  )
+  source <- omopgenerics::cdmSource(src = source, sourceType = dbms(con))
   return(source)
 }
 
@@ -62,16 +44,20 @@ insertTable.db_cdm <- function(cdm,
                                name,
                                table,
                                overwrite = TRUE) {
+  src <- cdm
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
-  con <- attr(cdm, "dbcon")
-  writeSchema <- attr(cdm, "write_schema")
+  con <- attr(src, "dbcon")
+  writeSchema <- attr(src, "write_schema")
   fullName <- inSchema(schema = writeSchema, table = name, dbms = dbms(con))
   if (overwrite) {
-    omopgenerics::dropTable(cdm = cdm, name = name)
+    omopgenerics::dropTable(cdm = src, name = name)
+  }
+  if (!inherits(table, "data.frame")) {
+    table <- table |> dplyr::collect()
   }
   DBI::dbWriteTable(conn = con, name = fullName, value = table)
-  x <- dplyr::tbl(src = con, fullName)
-  attr(x, "tbl_name") <- name
+  x <- dplyr::tbl(src = con, fullName) |>
+    omopgenerics::cdmTable(src = src, name = name)
   return(x)
 }
 
@@ -97,9 +83,9 @@ dropTable.db_cdm <- function(cdm, name) {
 
   # drop tables
   for (i in seq_along(toDrop)) {
-    if (toDrop[i] %in% allTables) {
-      DBI::dbRemoveTable(con, inSchema(schema, toDrop[i], dbms = dbms(con)))
-    }
+    DBI::dbRemoveTable(conn = con, name = inSchema(
+      schema = schema, table = toDrop[i], dbms = dbms(con)
+    ))
   }
 
   return(invisible(TRUE))
@@ -108,31 +94,32 @@ dropTable.db_cdm <- function(cdm, name) {
 #' @export
 #' @importFrom dplyr compute
 compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
-  cdm <- attr(x, "cdm_reference")
-  if (is.null(cdm)) {
-    cli::cli_abort("x must come from a valid cdm reference")
-  }
-  source <- attr(cdm, "cdm_source")
-  if (is.null(source)) {
-    cli::cli_abort("source of the cdm can not be NULL")
-  }
-  if (!temporary && attr(x, "tbl_name") == name) {
+  # check source and name
+  source <- attr(x, "tbl_source")
+  if (is.null(source)) cli::cli_abort("table source not found.")
+  oldName <- attr(x, "tbl_name")
+  if (is.null(oldName)) cli::cli_abort("table name not found.")
+
+  # whether an intermediate table will be needed
+  if (!temporary && oldName == name) {
     intermediate <- TRUE
+    intername <- paste0(c(sample(letters, 5), "_test_table"), collapse = "")
   } else {
     intermediate <- FALSE
   }
 
+  # get schema
   schema <- attr(source, "write_schema")
+  if (is.null(schema)) cli::cli_abort("write_schema can not be NULL.")
+
+  # remove db_con class
   class(x) <- class(x)[!class(x) %in% "db_cdm"]
 
   if (intermediate) {
-    intermediateName <- paste0(
-      c(sample(letters, 5), "_test_table"), collapse = ""
-    )
-    x <- computeQuery(
-      x = x, name = intermediateName, temporary = FALSE, schema = schema,
-      overwrite = TRUE
-    )
+    x <- x |>
+      computeQuery(
+        name = intername, temporary = FALSE, schema = schema, overwrite = FALSE
+      )
   }
 
   x <- x |>
@@ -141,12 +128,8 @@ compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
     )
 
   if (intermediate) {
-    dropTable(cdm = source, name = intermediateName)
+    dropTable(cdm = source, name = intername)
   }
 
-  if (temporary) {
-    name <- NA_character_
-  }
-  attr(x, "tbl_name") <- name
   return(x)
 }

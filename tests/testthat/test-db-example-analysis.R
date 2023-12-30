@@ -3,7 +3,7 @@ prepare_cdm <- function(con, write_schema) {
 
   # eunomia cdm
   eunomia_con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  eunomia_cdm <- cdm_from_con(eunomia_con, cdm_name = "eunomia", cdm_schema = "main") %>%
+  eunomia_cdm <- cdm_from_con(eunomia_con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main") %>%
     cdm_select_tbl("person", "observation_period")
 
   cdm <- copyCdmTo(con = con,

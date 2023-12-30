@@ -10,9 +10,6 @@ tryCatch({
 
 # functions used for the test matrix
 
-dbToTest <- "duckdb"
-ciTestDbs <- "duckdb"
-
 get_connection <- function(dbms, DatabaseConnector = FALSE) {
 
   if (DatabaseConnector) {
@@ -168,12 +165,12 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 
 if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
-    # "duckdb"
+     "duckdb"
     # ,
     # "postgres"
     # ,"redshift"
     # ,
-    "sqlserver"
+    # "sqlserver"
     # ,"snowflake"
 
     # ,"spark"

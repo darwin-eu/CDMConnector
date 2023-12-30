@@ -300,7 +300,7 @@ test_that("Regimen domain does not cause error", {
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
-  concept_set <- list(drug1 = c(1127433, 19129655), drug2 = 19129655, drug3 = 1127433)
+  concept_set <- list(drug_1 = c(1127433, 19129655), drug_2 = 19129655, drug_3 = 1127433)
 
   expect_no_error({
     cdm <- generateConceptCohortSet(cdm = cdm,

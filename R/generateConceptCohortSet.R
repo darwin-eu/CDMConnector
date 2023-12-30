@@ -268,9 +268,10 @@ generateConceptCohortSet <- function(cdm,
       cohort_start_date = as.Date(x = integer(0), origin = "1970-01-01"),
       cohort_end_date = as.Date(x = integer(0), origin = "1970-01-01")
     )
-
-    DBI::dbWriteTable(con, name = inSchema(cdmWriteSchema(cdm), name), value = cohort)
-    cohortRef <- dplyr::tbl(con, inSchema(cdmWriteSchema(cdm), name))
+    cdm <- omopgenerics::insertTable(
+      cdm = cdm, name = name, table = cohort, overwrite = overwrite
+    )
+    cohortRef <- cdm[[name]]
   } else {
 
     # drop any outside of an observation period
@@ -323,8 +324,6 @@ generateConceptCohortSet <- function(cdm,
                     cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
       dplyr::compute(name = name, temporary = FALSE, overwrite = overwrite)
     }
-
-
 
   cohortSetRef <- concepts %>%
     dplyr::select(dplyr::any_of(c(

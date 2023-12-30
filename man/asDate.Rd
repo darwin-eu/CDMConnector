@@ -32,6 +32,6 @@ df <- date_tbl \%>\%
     .data$m, "/",
     .data$d
   ))) \%>\%
-  collect()
+  dplyr::collect()
 }
 }

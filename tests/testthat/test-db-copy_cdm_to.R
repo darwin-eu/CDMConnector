@@ -6,7 +6,7 @@ test_copy_cdm_to <- function(con, write_schema) {
   con1 <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   on.exit(DBI::dbDisconnect(con1, shutdown = TRUE), add = TRUE)
 
-  cdm <- cdm_from_con(con1, cdm_schema = "main", cdm_name = "test") %>%
+  cdm <- cdm_from_con(con1, cdm_schema = "main", cdm_name = "test", write_schema = write_schema) %>%
       cdm_select_tbl("person", "observation_period", "vocabulary")
 
   # create another cdm
@@ -36,7 +36,7 @@ for (dbtype in dbToTest) {
 
 test_that("duckdb - copy_cdm_to without prefix", {
   con1 <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm1 <- cdm_from_con(con1, cdm_name = "eunomia", cdm_schema = "main")
+  cdm1 <- cdm_from_con(con1, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 
   con2 <- DBI::dbConnect(duckdb::duckdb())
   cdm2 <- copy_cdm_to(con2, cdm1, schema = "main")
