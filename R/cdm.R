@@ -72,6 +72,7 @@ cdm_from_con <- function(con,
     tables = c(cdmTables, achillesTables), cdmName = cdm_name
   )
 
+  write_schema_tables <- listTables(con, schema = write_schema)
   for (cohort_table in cohort_tables) {
     nms <- paste0(cohort_table, c("", "_set", "_attrition"))
     x <- purrr::map(nms, function(nm) {

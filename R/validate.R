@@ -46,7 +46,7 @@ validate_cdm_colnames <- function(cdm) {
       expected_columns <- spec_cdm_field[[ver]] %>%
         dplyr::filter(.data$cdmTableName == nm) %>%
         dplyr::pull(.data$cdmFieldName)
-      actual_columns <- cdm[[nm]] %>% head(1) %>% collect() %>% colnames()
+      actual_columns <- cdm[[nm]] %>% head(1) %>% dplyr::collect() %>% colnames()
 
       dif <- waldo::compare(expected_columns,
                             actual_columns,
