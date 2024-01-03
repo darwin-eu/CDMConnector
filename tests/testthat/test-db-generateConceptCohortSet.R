@@ -6,8 +6,8 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   }
 
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
-  cdm <- cdm_from_con(con,
-    cdm_schema = cdm_schema,
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = cdm_schema,
     write_schema = write_schema
   )
 
@@ -221,7 +221,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                        dplyr::select("subject_id") %>%
                        dplyr::distinct(),
                      by = "subject_id") %>%
-    collect()) == 0)
+    dplyr::collect()) == 0)
 
   # specifying cohort ids
   cdm <- generate_concept_cohort_set(cdm = cdm,
@@ -240,7 +240,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                                         dplyr::select("subject_id") %>%
                                         dplyr::distinct(),
                                       by = "subject_id") %>%
-                     collect()) == 0)
+                     dplyr::collect()) == 0)
   # expected errors
  expect_error(generate_concept_cohort_set(cdm = cdm,
                               name = "gibleed_medications2",
@@ -278,7 +278,9 @@ for (dbtype in dbToTest) {
 
 test_that("missing domains produce warning", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", "main") %>%
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  ) %>%
     cdm_select_tbl(-drug_exposure)
 
   expect_warning({
@@ -295,8 +297,10 @@ test_that("Regimen domain does not cause error", {
 
   # create a fake concept with domain "Regimen"
   DBI::dbExecute(con, "UPDATE main.concept SET domain_id = 'Regimen' WHERE concept_id = 19129655")
-  cdm <- CDMConnector::cdm_from_con(con, "main", "main")
-  concept_set <- list(drug1 = c(1127433, 19129655), drug2 = 19129655, drug3 = 1127433)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
+  concept_set <- list(drug_1 = c(1127433, 19129655), drug_2 = 19129655, drug_3 = 1127433)
 
   expect_no_error({
     cdm <- generateConceptCohortSet(cdm = cdm,

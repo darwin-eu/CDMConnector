@@ -1,6 +1,9 @@
 test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = cdm_schema,
+    write_schema = write_schema
+  )
 
   x <- cdm$condition_occurrence %>%
     dplyr::filter(condition_concept_id == 4112343) %>%
@@ -54,13 +57,9 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
 
   cdm$new_cohort <- x %>%
-    computeQuery(
-      name = "new_cohort",
-      temporary = FALSE,
-      schema = attr(cdm, "write_schema"),
-      overwrite = TRUE)
+    compute(name = "new_cohort", temporary = FALSE, overwrite = TRUE)
 
-  cdm$new_cohort <- newGeneratedCohortSet(
+  cdm$new_cohort <- omopgenerics::generatedCohortSet(
       cdm$new_cohort,
       cohortSetRef = dplyr::tibble(
         cohort_definition_id = 1,
@@ -71,16 +70,16 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
   expect_true(all(
-    c("cdm_reference", "cohort_set", "cohort_attrition", "cohort_count", "tbl_name") %in% names(attributes(cdm$new_cohort))
+    c("cdm_reference", "cohort_set", "cohort_attrition", "tbl_name") %in% names(attributes(cdm$new_cohort))
   ))
 
   expect_true(attr(cdm$new_cohort, "tbl_name") == "new_cohort")
 
   # remove the cohort tables.
   if ("prefix" %in% names(write_schema)) {
-    drop_table(cdm, dplyr::starts_with(write_schema["prefix"]))
+    dropTable(cdm, dplyr::starts_with(write_schema["prefix"]))
   } else {
-    drop_table(cdm, dplyr::starts_with("new_cohort"))
+    dropTable(cdm, dplyr::starts_with("new_cohort"))
   }
 
 }
@@ -102,7 +101,9 @@ for (dbtype in dbToTest) {
 test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", {
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
 
   cohort_ref <- cdm$condition_occurrence %>%
     dplyr::filter(condition_concept_id == 192671) %>%
@@ -115,7 +116,7 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
                   "cohort_start_date" = "condition_start_date",
                   "cohort_end_date" = "condition_end_date")
 
-  expect_error(newGeneratedCohortSet(cohort_ref))
+  expect_error(omopgenerics::generatedCohortSet(cohort_ref))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -124,7 +125,9 @@ test_that("no error if cohort is empty", {
   skip_if_not_installed("CirceR")
   # if an empty cohort is passed return an empty GeneratedCohortSet object
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
 
   inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
 
@@ -141,10 +144,10 @@ test_that("no error if cohort is empty", {
 
   cdm$cohort_3 <- cdm$cohorts2 %>%
     dplyr::filter(cohort_start_date > "2030-01-01") %>%
-    compute_query()
+    compute()
 
   cdm$cohort_3a <-  cdm$cohort_3 %>%
-    newGeneratedCohortSet(overwrite = TRUE)
+    omopgenerics::generatedCohortSet(overwrite = TRUE)
   expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3a))
   # we won't have cohort set or cohort count as we didn't provide the cohort set ref
   expect_true(nrow(cohort_set(cdm$cohort_3a)) == 0)
@@ -152,7 +155,7 @@ test_that("no error if cohort is empty", {
 
   c_Ref<- cohort_set(cdm$cohort_3)
   cdm$cohort_3b <-  cdm$cohort_3 %>%
-    newGeneratedCohortSet(cohortSetRef = c_Ref,
+    omopgenerics::generatedCohortSet(cohortSetRef = c_Ref,
                             overwrite = TRUE)
   expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3b))
   expect_false(nrow(cohort_set(cdm$cohort_3b)) == 0)
@@ -169,7 +172,9 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
   skip_if_not_installed("CirceR")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
 
   cohortSet <- readCohortSet(system.file("cohorts2",
                                          package = "CDMConnector",
@@ -184,9 +189,10 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
     cdm$cohort_3 <- cdm$cohorts2 %>%
       dplyr::filter(cohort_start_date > "2099-01-01") %>%
       compute_query() %>%
-      newGeneratedCohortSet()
+      omopgenerics::generatedCohortSet()
   })
 
   expect_equal(nrow(dplyr::collect(cdm$cohort_3)), 0)
   DBI::dbDisconnect(con, shutdown = T)
 })
+

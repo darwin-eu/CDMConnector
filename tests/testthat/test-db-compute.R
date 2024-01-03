@@ -1,14 +1,14 @@
 
 test_compute_query <- function(con, cdm_schema, write_schema) {
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = cdm_schema, write_schema = write_schema)
 
   new_table_name <- paste0("temp", floor(10*as.numeric(Sys.time()) %% 1e7))
 
   # temp table creation from query ----
   q <- cdm$concept %>%
     dplyr::filter(domain_id == "Drug") %>%
-    dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) %>%
-    dplyr::count(.data$isRxnorm)
+    dplyr::mutate(is_rxnorm = (vocabulary_id == "RxNorm")) %>%
+    dplyr::count(.data$is_rxnorm)
 
   x <- computeQuery(q,
                     name = new_table_name,
@@ -94,8 +94,8 @@ test_that("uniqueTableName", {
 
 test_that("message does not duplicate when prefix is used", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", c(prefix = "a_", schema = "main"))
-  DBI::dbWriteTable(con, inSchema(attr(cdm, "write_schema"), "cars"), cars)
-  expect_message(dropTable(cdm, "cars", verbose = TRUE))
+  cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "main", write_schema = c(prefix = "a_", schema = "main"))
+  DBI::dbWriteTable(con, inSchema(attr(attr(cdm, "cdm_source"), "write_schema"), "cars"), cars)
+  expect_no_error(dropTable(cdm, "cars"))
   DBI::dbDisconnect(con, shutdown = TRUE)
 })

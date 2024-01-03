@@ -130,12 +130,12 @@ test_that('dateadd works without pipe', {
 
   df1 <- db %>%
     dplyr::mutate(next_day = !!dateadd("date", 1, "day")) %>%
-    collect()
+    dplyr::collect()
 
 
   df2 <- db |>
     dplyr::mutate(next_day = !!dateadd("date", 1, "day")) |>
-    collect()
+    dplyr::collect()
 
   # dateadd does not work without the magrittr pipe
   df3 <- dplyr::mutate(db, next_day = !!dateadd("date", 1, "day")) %>%

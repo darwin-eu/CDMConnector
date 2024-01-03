@@ -4,7 +4,9 @@ test_that("visR attrition diagram works", {
   skip_if_not_installed("CirceR")
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
   cohort_set <- read_cohort_set(system.file("cohorts2", package = "CDMConnector"))
   cdm <- generate_cohort_set(cdm, cohort_set, name = "cohort", overwrite = T)
 

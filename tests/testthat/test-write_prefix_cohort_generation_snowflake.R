@@ -12,7 +12,10 @@ test_that("generate_cohort_set works with write_prefix on snowflake", {
   skip_if(cdm_schema == "")
   skip_if(write_schema == "")
 
-  cdm <- cdm_from_con(con, cdm_schema, write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "snowflake", cdm_schema = cdm_schema,
+    write_schema = write_schema
+  )
 
   cohort_set <- read_cohort_set(system.file("cohorts3", package = "CDMConnector", mustWork = TRUE)) %>%
     dplyr::slice(4)

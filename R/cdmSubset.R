@@ -25,23 +25,14 @@ cdm_sample_person <- function(cdm, person_subset) {
   checkmate::assert_class(cdm, "cdm_reference")
   checkmate::assert_class(person_subset, "tbl_sql")
 
-  tables_to_subset <- spec_cdm_field[[attr(cdm, "cdm_version")]] %>%
-    dplyr::filter(.data$cdmFieldName == "person_id") %>%
-    dplyr::pull("cdmTableName") %>%
-    unique()
-
-  cdm2 <- cdm
   for (nm in names(cdm)) {
-    if (nm %in% tables_to_subset) {
-      cdm2[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = "person_id")
+    if ("person_id" %in% colnames(cdm[[nm]])) {
+      cdm[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = "person_id")
     } else if ("subject_id" %in% colnames(cdm[[nm]])) {
-      cdm2[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = c("subject_id" = "person_id"))
+      cdm[[nm]] <- dplyr::inner_join(cdm[[nm]], person_subset, by = c("subject_id" = "person_id"))
     }
   }
-
-  # TODO: need to subset and copy cohort tables
-  attributes(cdm2) <- attributes(cdm)
-  cdm2
+  return(cdm)
 }
 
 #' Subset a cdm to the individuals in one or more cohorts
@@ -226,19 +217,13 @@ cdmSample <- function(cdm, n) {
 
   assert_tables(cdm, "person")
 
-
-  # take a random sample from the person table
-
-  prefix <- unique_prefix()
-
   # Note temporary = TRUE in dbWriteTable does not work on all dbms but we want a temp table here.
   person_subset <- cdm[["person"]] %>%
     dplyr::select("person_id") %>%
     dplyr::distinct() %>%
     dplyr::slice_sample(n = n) %>%
     dplyr::rename_all(tolower) %>%
-    computeQuery(name = glue::glue("person_subset_{prefix}"),
-                 temporary = TRUE)
+    dplyr::compute()
 
   cdm_sample_person(cdm, person_subset)
 }
@@ -297,10 +282,10 @@ cdmSubset <- function(cdm, personId) {
                               max.len = 1e6,
                               null.ok = FALSE)
 
-  writeSchema <- attr(cdm, "write_schema")
+  writeSchema <- cdmWriteSchema(cdm)
   if (is.null(writeSchema)) rlang::abort("write_schema is required for subsetting a cdm!")
   assertWriteSchema(cdm)
-  con <- attr(cdm, "dbcon")
+  con <- cdmCon(cdm)
 
   prefix <- unique_prefix()
   DBI::dbWriteTable(con,

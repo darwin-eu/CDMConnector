@@ -1,7 +1,10 @@
 
 test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "test", cdm_schema = cdm_schema,
+    write_schema = write_schema
+  )
 
   cdm <- generateConceptCohortSet(
     cdm,
@@ -29,7 +32,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
     dplyr::filter(cohort_start_date >= as.Date("2010-01-01")) %>%
     computeQuery(temporary = FALSE,
                  name = "temp_test",
-                 schema = attr(cdm, "write_schema"),
+                 schema = cdmWriteSchema(cdm),
                  overwrite = TRUE)
 
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
@@ -133,7 +136,9 @@ test_that("record_cohort_attrition works", {
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
 
