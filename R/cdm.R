@@ -732,12 +732,47 @@ cdm_select_tbl <- function(cdm, ...) {
   cdm
 }
 
-#' @noRd
+#' Get cdm write schema
+#'
+#' @param cdm A cdm reference object created by `cdm_from_con`
+#'
+#' @return The database write schema
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#'
+#' cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
+#'                     cdm_schema =  "main", write_schema = "main")
+#'
+#' cdmWriteSchema(cdm)
+#'
+#' DBI::dbDisconnect(con)
+#' }
 cdmWriteSchema <- function(cdm) {
   attr(attr(cdm, "cdm_source"), "write_schema")
 }
 
-#' @noRd
+#' Get underlying database connection
+#'
+#' @param cdm A cdm reference object created by `cdm_from_con`
+#'
+#' @return A reference to the database containing tables in the cdm reference
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#'
+#' cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
+#'                     cdm_schema =  "main", write_schema = "main")
+#'
+#' cdmCon(cdm)
+#'
+#' DBI::dbDisconnect(con)
+#' }
 cdmCon <- function(cdm) {
   attr(attr(cdm, "cdm_source"), "dbcon")
 }
+

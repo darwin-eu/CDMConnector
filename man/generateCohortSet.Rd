@@ -38,7 +38,7 @@ or a named list of Capr cohort definitions.}
 \item{compute_attrition, computeAttrition}{Should attrition be computed? TRUE (default) or FALSE}
 }
 \description{
-A "GeneratedCohortSet" object consists of four components
+A "chort_table" object consists of four components
 \itemize{
 \item{A remote table reference to an OHDSI cohort table with at least
 the columns: cohort_definition_id, subject_id, cohort_start_date,
@@ -60,9 +60,9 @@ object is experimental and user feedback is welcome.
 
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
-One key design principle is that GeneratedCohortSet objects are created once
+One key design principle is that cohort_table objects are created once
 and can persist across analysis execution but should not be modified after
-creation. While it is possible to modify a GeneratedCohortSet object doing
+creation. While it is possible to modify a cohort_table object doing
 so will invalidate it and it's attributes may no longer be accurate.
 }
 \examples{

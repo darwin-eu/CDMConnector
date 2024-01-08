@@ -3,7 +3,7 @@
 \name{new_generated_cohort_set}
 \alias{new_generated_cohort_set}
 \alias{newGeneratedCohortSet}
-\title{Constructor for GeneratedCohortSet objects}
+\title{Constructor for cohort_table objects}
 \usage{
 new_generated_cohort_set(
   cohort_ref,
@@ -42,30 +42,30 @@ cohort_subjects.}
 \item{overwrite}{Should tables be overwritten if they already exist? TRUE or FALSE (default)}
 }
 \value{
-A \code{generatedCohortSet} object that is a \code{tbl_sql} reference
+A \code{cohort_table} object that is a \code{tbl_sql} reference
 to a cohort table in the write_schema of an OMOP CDM
 }
 \description{
 This constructor function is to be used by analytic package developers to
-create \code{generatedCohortSet} objects.
+create \code{cohort_table} objects.
 }
 \details{
-A \code{generatedCohort} is a set of person-time from an OMOP CDM database.
-A \code{generatedCohort} can be represented by a table with three columns:
+A \code{cohort_table} is a set of person-time from an OMOP CDM database.
+A \code{cohort_table} can be represented by a table with three columns:
 subject_id, cohort_start_date, cohort_end_date. Subject_id is the same as
-person_id in the OMOP CDM. A \code{generatedCohortSet} is a collection of one
-or more \code{generatedCohorts} and can be represented as a table with four
+person_id in the OMOP CDM. A \code{cohort_table} is a collection of one
+or more \code{cohort_table} and can be represented as a table with four
 columns: cohort_definition_id, subject_id, cohort_start_date,
 cohort_end_date.
 
-This constructor function defines the \code{generatedCohortSet} object in R.
+This constructor function defines the \code{cohort_table} object in R.
 
 The object is an extension of a \code{tbl_sql} object defined in dplyr. This is
 a lazy database query that points to a cohort table in the database with
 at least the columns cohort_definition_id, subject_id, cohort_start_date,
 cohort_end_date. The table could optionally have more columns as well.
 
-In addition the \code{generatedCohortSet} object has three optional attributes.
+In addition the \code{cohort_table} object has three optional attributes.
 These are: cohort_set, cohort_attrition, cohort_count.
 Each of these attributes is also a lazy SQL query (\code{tbl_sql}) that points
 to a table in a database and is described below.
@@ -90,17 +90,17 @@ have no constraints.
 \subsection{cohort_count}{
 
 cohort_count is a option attribute table that records the number of records
-and the number of unique persons in each cohort in a \code{generatedCohortSet}.
+and the number of unique persons in each cohort in a \code{cohort_table}.
 It is derived metadata that can be re-derived as long as cohort_set,
 the complete list of cohorts in the set, is available. Column names of
 cohort_count are: cohort_definition_id, number_records,
-number_subjects. This table is required for generatedCohortSet objects and
+number_subjects. This table is required for cohort_table objects and
 will be created if not supplied.
 }
 }
 \examples{
 \dontrun{
- # This function is for developers who are creating generatedCohortSet
+ # This function is for developers who are creating cohort_table
  # objects in their packages. The function should accept a cdm_reference
  # object as the first argument and return a cdm_reference object with the
  # cohort table added. The second argument should be `name` which will be

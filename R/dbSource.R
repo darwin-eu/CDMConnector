@@ -101,9 +101,19 @@ compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
   if (is.null(oldName)) cli::cli_abort("table name not found.")
 
   # whether an intermediate table will be needed
+<<<<<<< HEAD
   if (!temporary && oldName == name) {
     intermediate <- TRUE
     intername <- paste0(c(sample(letters, 5), "_test_table"), collapse = "")
+=======
+  if (!temporary & !is.na(oldName)) {
+    if (oldName == name) {
+      intermediate <- TRUE
+      intername <- paste0(c(sample(letters, 5), "_test_table"), collapse = "")
+    } else {
+      intermediate <- FALSE
+    }
+>>>>>>> b706fbdfa71e306204251e200a2370313335ee32
   } else {
     intermediate <- FALSE
   }
@@ -133,3 +143,43 @@ compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
 
   return(x)
 }
+<<<<<<< HEAD
+=======
+
+#' @export
+#' @importFrom omopgenerics insertFromSource
+insertFromSource.db_cdm <- function(cdm, value) {
+  if (inherits(value, "data.frame")) {
+    cli::cli_abort(
+      "To insert a local table to a cdm_reference object use insertTable
+      function."
+    )
+  }
+  if (!inherits(value, "tbl_lazy")) {
+    cli::cli_abort(
+      "Can't assign an object of class: {paste0(class(value), collapse = ", ")}
+      to a db_con cdm_reference object."
+    )
+  }
+  con <- cdmCon(cdm)
+  schema <- cdmWriteSchema(cdm)
+  if (!identical(con, dbplyr::remote_con(value))) {
+    cli::cli_abort(
+      "The cdm object and the table have different connection sources."
+    )
+  }
+  remoteName <- dbplyr::remote_name(value)
+  if ("dbplyr" == substr(remoteName, 1, 6)) {
+    remoteName <- NA_character_
+  } else if ("prefix" %in% names(schema)) {
+    prefix <- schema["prefix"] |> unname()
+    if (substr(remoteName, 1, nchar(prefix)) == prefix) {
+      remoteName <- substr(remoteName, nchar(prefix) + 1, nchar(remoteName))
+    }
+  }
+  value <- omopgenerics::cdmTable(
+    table = value, src = attr(cdm, "cdm_source"), name = remoteName
+  )
+  return(value)
+}
+>>>>>>> b706fbdfa71e306204251e200a2370313335ee32

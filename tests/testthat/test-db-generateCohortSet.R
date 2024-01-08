@@ -3,7 +3,11 @@
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   cdm <- cdm_from_con(
+<<<<<<< HEAD
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = write_schema
+=======
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+>>>>>>> b706fbdfa71e306204251e200a2370313335ee32
   )
 
   # test read cohort set with a cohortsToCreate.csv

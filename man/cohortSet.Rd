@@ -3,15 +3,15 @@
 \name{cohortSet}
 \alias{cohortSet}
 \alias{cohort_set}
-\title{Get cohort settings from a GeneratedCohortSet object}
+\title{Get cohort settings from a cohort_table object}
 \usage{
 cohortSet(x)
 
 cohort_set(x)
 }
 \arguments{
-\item{x}{A generatedCohortSet object}
+\item{x}{A cohort_table object}
 }
 \description{
-Get cohort settings from a GeneratedCohortSet object
+Get cohort settings from a cohort_table object
 }

@@ -3,7 +3,7 @@
 \name{recordCohortAttrition}
 \alias{recordCohortAttrition}
 \alias{record_cohort_attrition}
-\title{Add attrition reason to a GeneratedCohortSet object}
+\title{Add attrition reason to a cohort_table object}
 \usage{
 recordCohortAttrition(cohort, reason, cohortId = NULL)
 
