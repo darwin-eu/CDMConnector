@@ -116,6 +116,29 @@ test_that("adding achilles", {
  expect_true(cdm$achilles_results %>% dplyr::pull("stratum_1") == "a")
  expect_true(cdm$achilles_results_dist %>% dplyr::pull("count_value") == 5)
 
+ # we should also be able to add achilles tables manually if in db
+ cdm <- cdm_from_con(
+   con = con, cdm_name = "eunomia", cdm_schema =  "main", write_schema = "main"
+ )
+ cdm$achilles_analysis <- dplyr::tbl(con, "achilles_analysis")
+ # but should not work if tables are not in db (as cdm is db side)
+ expect_error(
+ cdm$achilles_analysis <- dplyr::tibble(
+   analysis_id = 1, analysis_name = 1, stratum_1_name = 1,
+   stratum_2_name = 1, stratum_3_name = 1, stratum_4_name = 1,
+   stratum_5_name = 1, is_default = 1, category = 1
+ ))
+# if local tables, insert table would take care of this
+
+ achilles_analysis_tibble <- dplyr::tibble(
+   analysis_id = 1, analysis_name = 1, stratum_1_name = 1,
+   stratum_2_name = 1, stratum_3_name = 1, stratum_4_name = 1,
+   stratum_5_name = 1, is_default = 1, category = 1
+ )
+ cdm <- omopgenerics::insertTable(cdm = cdm,
+                                                    table = achilles_analysis_tibble,
+                                                    name = "achilles_analysis",
+                                                    overwrite = TRUE)
 
  DBI::dbDisconnect(con, shutdown = TRUE)
 
