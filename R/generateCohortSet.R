@@ -65,7 +65,7 @@ readCohortSet <- read_cohort_set
 #' Generate a cohort set on a cdm object
 #'
 #' @description
-#' A "GeneratedCohortSet" object consists of four components
+#' A "chort_table" object consists of four components
 #' \itemize{
 #'   \item{A remote table reference to an OHDSI cohort table with at least
 #'         the columns: cohort_definition_id, subject_id, cohort_start_date,
@@ -87,9 +87,9 @@ readCohortSet <- read_cohort_set
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' One key design principle is that GeneratedCohortSet objects are created once
+#' One key design principle is that cohort_table objects are created once
 #' and can persist across analysis execution but should not be modified after
-#' creation. While it is possible to modify a GeneratedCohortSet object doing
+#' creation. While it is possible to modify a cohort_table object doing
 #' so will invalidate it and it's attributes may no longer be accurate.
 #'
 #' @param cdm A cdm reference created by CDMConnector. write_schema must be
@@ -416,28 +416,28 @@ generate_cohort_set <- function(cdm,
 }
 
 
-#' Constructor for GeneratedCohortSet objects
+#' Constructor for cohort_table objects
 #'
 #' This constructor function is to be used by analytic package developers to
-#' create `generatedCohortSet` objects.
+#' create `cohort_table` objects.
 #'
 #' @details
-#' A `generatedCohort` is a set of person-time from an OMOP CDM database.
-#' A `generatedCohort` can be represented by a table with three columns:
+#' A `cohort_table` is a set of person-time from an OMOP CDM database.
+#' A `cohort_table` can be represented by a table with three columns:
 #' subject_id, cohort_start_date, cohort_end_date. Subject_id is the same as
-#' person_id in the OMOP CDM. A `generatedCohortSet` is a collection of one
-#' or more `generatedCohorts` and can be represented as a table with four
+#' person_id in the OMOP CDM. A `cohort_table` is a collection of one
+#' or more `cohort_table` and can be represented as a table with four
 #' columns: cohort_definition_id, subject_id, cohort_start_date,
 #' cohort_end_date.
 #'
-#' This constructor function defines the `generatedCohortSet` object in R.
+#' This constructor function defines the `cohort_table` object in R.
 #'
 #' The object is an extension of a `tbl_sql` object defined in dplyr. This is
 #' a lazy database query that points to a cohort table in the database with
 #' at least the columns cohort_definition_id, subject_id, cohort_start_date,
 #' cohort_end_date. The table could optionally have more columns as well.
 #'
-#' In addition the `generatedCohortSet` object has three optional attributes.
+#' In addition the `cohort_table` object has three optional attributes.
 #' These are: cohort_set, cohort_attrition, cohort_count.
 #' Each of these attributes is also a lazy SQL query (`tbl_sql`) that points
 #' to a table in a database and is described below.
@@ -461,11 +461,11 @@ generate_cohort_set <- function(cdm,
 #' ## cohort_count
 #'
 #' cohort_count is a option attribute table that records the number of records
-#' and the number of unique persons in each cohort in a `generatedCohortSet`.
+#' and the number of unique persons in each cohort in a `cohort_table`.
 #' It is derived metadata that can be re-derived as long as cohort_set,
 #' the complete list of cohorts in the set, is available. Column names of
 #' cohort_count are: cohort_definition_id, number_records,
-#' number_subjects. This table is required for generatedCohortSet objects and
+#' number_subjects. This table is required for cohort_table objects and
 #' will be created if not supplied.
 #'
 #' @param cohort_ref,cohortRef A `tbl_sql` object that points to a remote cohort table
@@ -483,13 +483,13 @@ generate_cohort_set <- function(cdm,
 #' cohort_subjects.
 #' @param overwrite Should tables be overwritten if they already exist? TRUE or FALSE (default)
 #'
-#' @return A `generatedCohortSet` object that is a `tbl_sql` reference
+#' @return A `cohort_table` object that is a `tbl_sql` reference
 #' to a cohort table in the write_schema of an OMOP CDM
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'  # This function is for developers who are creating generatedCohortSet
+#'  # This function is for developers who are creating cohort_table
 #'  # objects in their packages. The function should accept a cdm_reference
 #'  # object as the first argument and return a cdm_reference object with the
 #'  # cohort table added. The second argument should be `name` which will be
@@ -534,13 +534,13 @@ new_generated_cohort_set <- function(cohort_ref,
   lifecycle::deprecate_warn(
     when = "1.3.0",
     what = "new_generated_cohort_set()",
-    with = "omopgenerics::generatedCohortSet()"
+    with = "omopgenerics::cohortTable()"
   )
   if (!is.null(cohort_count_ref)) {
     cli::cli_warn("cohort_count_ref is no longer a required argument for new_generated_cohort_set")
   }
-  omopgenerics::generatedCohortSet(
-    cohortRef = cohort_ref,
+  omopgenerics::cohortTable(
+    table = cohort_ref,
     cohortSetRef = cohort_set_ref,
     cohortAttritionRef = cohort_attrition_ref,
     overwrite = overwrite
@@ -565,9 +565,9 @@ newGeneratedCohortSet <- function(cohortRef,
 }
 
 
-#' Get attrition table from a GeneratedCohortSet object
+#' Get attrition table from a cohort_table object
 #'
-#' @param x A generatedCohortSet object
+#' @param x A cohort_table object
 #'
 #' @export
 cohortAttrition <- function(x) { UseMethod("cohortAttrition") }
@@ -579,13 +579,13 @@ cohort_attrition <- cohortAttrition
 
 
 #' @export
-cohortAttrition.GeneratedCohortSet <- function(x) {
+cohortAttrition.cohort_table <- function(x) {
   omopgenerics::attrition(x)
 }
 
-#' Get cohort settings from a GeneratedCohortSet object
+#' Get cohort settings from a cohort_table object
 #'
-#' @param x A generatedCohortSet object
+#' @param x A cohort_table object
 #'
 #' @export
 cohortSet <- function(x) { UseMethod("cohortSet") }
@@ -596,8 +596,8 @@ cohortSet <- function(x) { UseMethod("cohortSet") }
 cohort_set <- cohortSet
 
 #' @export
-cohortSet.GeneratedCohortSet <- function(x) {
-  omopgenerics::attrition(x)
+cohortSet.cohort_table <- function(x) {
+  omopgenerics::settings(x)
 }
 
 #' Get cohort counts from a generated_cohort_set object.
@@ -827,7 +827,7 @@ caprConceptToDataframe <- function(x) {
   )
 }
 
-#' Add attrition reason to a GeneratedCohortSet object
+#' Add attrition reason to a cohort_table object
 #'
 #' Update the cohort attrition table with new counts and a reason for attrition.
 #'
@@ -871,7 +871,7 @@ caprConceptToDataframe <- function(x) {
 recordCohortAttrition <- function(cohort,
                                   reason,
                                   cohortId = NULL) {
-  checkmate::assertClass(cohort, "GeneratedCohortSet")
+  checkmate::assertClass(cohort, "cohort_table")
   name <- attr(cohort, "tbl_name")
   checkmate::assertCharacter(name, len = 1, min.chars = 1)
   checkmate::assertCharacter(reason, len = 1, min.chars = 1, any.missing = FALSE)

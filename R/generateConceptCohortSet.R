@@ -333,8 +333,8 @@ generateConceptCohortSet <- function(cdm,
     dplyr::distinct() %>%
     dplyr::collect()
 
-  cdm[[name]] <- omopgenerics::generatedCohortSet(
-    cohortRef = cohortRef, cohortSetRef = cohortSetRef, overwrite = overwrite
+  cdm[[name]] <- omopgenerics::cohortTable(
+    table = cohortRef, cohortSetRef = cohortSetRef, overwrite = overwrite
   )
 
   return(cdm)

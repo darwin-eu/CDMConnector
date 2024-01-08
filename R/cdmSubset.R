@@ -103,7 +103,7 @@ cdmSubsetCohort <- function(cdm,
   checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertCharacter(cohortTable, len = 1)
   checkmate::assertTRUE(cohortTable %in% names(cdm))
-  checkmate::assertClass(cdm[[cohortTable]], "GeneratedCohortSet")
+  checkmate::assertClass(cdm[[cohortTable]], "cohort_table")
   checkmate::assertIntegerish(cohortId, min.len = 1, null.ok = TRUE)
   checkmate::assertLogical(verbose, len = 1)
 

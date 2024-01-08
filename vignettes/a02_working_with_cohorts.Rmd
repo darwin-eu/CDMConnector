@@ -202,7 +202,7 @@ cdm$cohort
 To make this a true generated cohort object use the `generatedCohortSet`
 
 ```{r}
-cdm$cohort <- generatedCohortSet(cdm$cohort)
+cdm$cohort <- cohortTable(cdm$cohort)
 ```
 
 We can see that this cohort is now has the class "generated_cohort_set" as well as the various metadata tables.

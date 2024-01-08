@@ -89,8 +89,8 @@ cdm_from_con <- function(con,
       rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
     }
     attr(cohort, "cdm_reference") <- cdm
-    cdm[[cohort_table]] <- omopgenerics::generatedCohortSet(
-      cohortRef = cohort, cohortSetRef = x[[2]], cohortAttritionRef = x[[3]],
+    cdm[[cohort_table]] <- omopgenerics::cohortTable(
+      table = cohort, cohortSetRef = x[[2]], cohortAttritionRef = x[[3]],
       overwrite = FALSE
     )
   }
