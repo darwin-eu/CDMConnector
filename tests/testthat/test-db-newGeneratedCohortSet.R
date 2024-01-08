@@ -59,7 +59,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
   cdm$new_cohort <- x %>%
     compute(name = "new_cohort", temporary = FALSE, overwrite = TRUE)
 
-  cdm$new_cohort <- omopgenerics::generatedCohortSet(
+  cdm$new_cohort <- omopgenerics::cohortTable(
       cdm$new_cohort,
       cohortSetRef = dplyr::tibble(
         cohort_definition_id = 1,

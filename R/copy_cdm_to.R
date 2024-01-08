@@ -70,7 +70,7 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
       overwrite = overwrite
     )
     if (cohort) {
-      newCdm[[table_name]] <- omopgenerics::generatedCohortSet(
+      newCdm[[table_name]] <- omopgenerics::cohortTable(
         cohortRef = newCdm[[table_name]],
         cohortSetRef = newCdm[[paste0(table_name, "_set")]],
         cohortAttritionRef = newCdm[[paste0(table_name, "_attrition")]],

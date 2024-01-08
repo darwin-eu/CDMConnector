@@ -3,7 +3,7 @@
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = write_schema
   )
 
   # test read cohort set with a cohortsToCreate.csv
@@ -40,7 +40,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_s3_class(df, "data.frame")
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% colnames(df)))
 
-  expect_true(all(c("cohort_set", "cohort_count", "cohort_attrition") %in% names(attributes(cdm$chrt0))))
+  expect_true(all(c("cohort_set", "cohort_attrition", "cdm_reference") %in% names(attributes(cdm$chrt0))))
   attrition_df <- cohortAttrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
@@ -55,10 +55,11 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   # empty data
   expect_error(generateCohortSet(cdm, cohortSet %>% head(0), name = "cohorts", overwrite = TRUE))
-  drop_table(cdm, dplyr::starts_with("chrt0_"))
+  dropTable(cdm, dplyr::starts_with("chrt0_"))
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
 
+dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")
@@ -124,15 +125,15 @@ test_that("TreatmentPatterns cohort works", {
   skip_if_not_installed("TreatmentPatterns")
   skip_on_cran()
   skip("manual test")
+  skip("failing test")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
 
   cohortSet <- readCohortSet(
-    system.file(
-      package = "TreatmentPatterns",
-      "examples", "CDM", "cohorts", "ViralSinusitis", "JSON"))
+    system.file("exampleCohorts", package = "TreatmentPatterns")
+  )
 
   cdm <- generateCohortSet(
     cdm = cdm,
@@ -188,7 +189,7 @@ test_that("newGeneratedCohortSet works with prefix", {
     ) %>%
     compute(name = "cohort", temporary = FALSE, overwrite = TRUE)
 
-  cdm$cohort <- new_generated_cohort_set(cdm$cohort)
+  cdm$cohort <- cohortTable(cdm$cohort)
 
   expect_true("cohort" %in% list_tables(con, write_schema))
   expect_true("test_cohort" %in% list_tables(con, "main"))
