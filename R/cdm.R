@@ -17,12 +17,13 @@
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
 cdm_from_con <- function(con,
-                         cdm_name,
                          cdm_schema,
                          write_schema,
                          cohort_tables = NULL,
+                         cdm_name = NULL,
                          achilles_schema = NULL) {
-  checkmate::assert_character(cdm_name, any.missing = FALSE, len = 1)
+
+  checkmate::assert_character(cdm_name, any.missing = FALSE, len = 1, null.ok = TRUE)
   checkmate::assert_character(cdm_schema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(write_schema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
@@ -50,6 +51,21 @@ cdm_from_con <- function(con,
     omop_tables, ~ dplyr::tbl(src = src, schema = cdm_schema, name = .)
   ) %>%
     rlang::set_names(tolower(omop_tables))
+
+  if(is.null(cdm_name)){
+  if("cdm_source" %in% names(cdmTables)){
+    cdm_name <- cdmTables$cdm_source %>%
+    utils::head(1) %>%
+    dplyr::pull("cdm_source_name")
+  }
+  }
+
+  if(is.null(cdm_name) ||
+     length(cdm_name) != 1 ||
+     is.na(cdm_name))  {
+     cli::cli_alert_warning("cdm name not specified and could not be inferred from the cdm source table")
+    cdm_name <- "An OMOP CDM database"
+      }
 
 
   if (!is.null(achilles_schema)) {
@@ -122,6 +138,9 @@ cdm_from_con <- function(con,
 
   # TO BE REMOVED WHEN CIRCER WORKS WITH CDM OBJECT
   attr(cdm, "cdm_schema") <- cdm_schema
+  # TO BE REMOVED WHEN DOWNSTREAM PACKAGES NO LONGER USE THESE ATTRIBUTES
+  attr(cdm, "write_schema") <- write_schema
+  attr(cdm, "dbcon") <- attr(attr(cdm, "cdm_source"), "dbcon")
 
   return(cdm)
 }
