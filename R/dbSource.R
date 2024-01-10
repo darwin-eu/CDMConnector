@@ -61,9 +61,12 @@ insertTable.db_cdm <- function(cdm,
   return(x)
 }
 
+#' @importFrom omopgenerics dropTable
+#' @export
+omopgenerics::dropTable
+
 #' @export
 #' @importFrom tidyselect starts_with ends_with matches
-#' @importFrom omopgenerics dropTable
 dropTable.db_cdm <- function(cdm, name) {
   # initial checks
   schema <- attr(cdm, "write_schema")

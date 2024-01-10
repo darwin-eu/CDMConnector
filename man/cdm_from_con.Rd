@@ -7,10 +7,10 @@
 \usage{
 cdm_from_con(
   con,
-  cdm_name,
   cdm_schema,
   write_schema,
   cohort_tables = NULL,
+  cdm_name = NULL,
   achilles_schema = NULL
 )
 
@@ -27,9 +27,6 @@ cdmFromCon(
 \item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or
 v5.3 instance is located.}
 
-\item{cdm_name, cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
-.  field in the CDM_SOURCE table will be used.}
-
 \item{cdm_schema, cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
 to NULL.}
 
@@ -38,6 +35,9 @@ write access to.}
 
 \item{cohort_tables, cohortTables}{A character vector listing the cohort table names to be
 included in the CDM object.}
+
+\item{cdm_name, cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
+.  field in the CDM_SOURCE table will be used.}
 
 \item{achilles_schema, achillesSchema}{An optional schema in the CDM database
 that contains achilles tables.}
