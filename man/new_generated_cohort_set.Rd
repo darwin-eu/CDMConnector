@@ -46,10 +46,14 @@ A \code{cohort_table} object that is a \code{tbl_sql} reference
 to a cohort table in the write_schema of an OMOP CDM
 }
 \description{
-This constructor function is to be used by analytic package developers to
-create \code{cohort_table} objects.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 }
 \details{
+Please use \code{omopgenerics::cohortTable()} instead.
+
+This constructor function is to be used by analytic package developers to
+create \code{cohort_table} objects.
+
 A \code{cohort_table} is a set of person-time from an OMOP CDM database.
 A \code{cohort_table} can be represented by a table with three columns:
 subject_id, cohort_start_date, cohort_end_date. Subject_id is the same as

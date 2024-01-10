@@ -116,11 +116,7 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
                   "cohort_start_date" = "condition_start_date",
                   "cohort_end_date" = "condition_end_date")
 
-<<<<<<< HEAD
-  expect_error(omopgenerics::generatedCohortSet(cohort_ref))
-=======
   expect_error(omopgenerics::cohortTable(cohort_ref))
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -144,37 +140,35 @@ test_that("no error if cohort is empty", {
                            name = "cohorts2",
                            overwrite = TRUE,
                            computeAttrition = TRUE)
-  expect_true("GeneratedCohortSet" %in% class(cdm$cohorts2))
 
-  cdm$cohort_3 <- cdm$cohorts2 %>%
+  expect_true("cohort_table" %in% class(cdm$cohorts2))
+
+  # cdm$cohort_3 <- cdm$cohorts2 %>%
+  #   dplyr::filter(cohort_start_date > "2030-01-01") %>%
+  #   computeQuery(name = "cohorts_3", temporary = FALSE, schema = cdmWriteSchema(cdm))
+
+  db <- cdm$cohorts2 %>%
     dplyr::filter(cohort_start_date > "2030-01-01") %>%
-    compute()
+    computeQuery(name = "cohorts_3", temporary = FALSE, schema = cdmWriteSchema(cdm), overwrite = T) %>%
+    cohortTable()
 
-  cdm$cohort_3a <-  cdm$cohort_3 %>%
-<<<<<<< HEAD
-    omopgenerics::generatedCohortSet(overwrite = TRUE)
-=======
-    omopgenerics::cohortTable(overwrite = TRUE)
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
-  expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3a))
+  cdm <- omopgenerics::insertTable(cdm, "cohort_3", db)
+
+  expect_true("cohort_table" %in% class(cdm$cohort_3))
   # we won't have cohort set or cohort count as we didn't provide the cohort set ref
-  expect_true(nrow(cohort_set(cdm$cohort_3a)) == 0)
-  expect_true(nrow(cohort_count(cdm$cohort_3a)) == 0)
+  expect_true(nrow(cohort_set(cdm$cohort_3)) == 0)
+  expect_true(nrow(cohort_count(cdm$cohort_3)) == 0)
 
   c_Ref<- cohort_set(cdm$cohort_3)
+
   cdm$cohort_3b <-  cdm$cohort_3 %>%
-<<<<<<< HEAD
-    omopgenerics::generatedCohortSet(cohortSetRef = c_Ref,
-                            overwrite = TRUE)
-=======
     omopgenerics::cohortTable(cohortSetRef = c_Ref, overwrite = TRUE)
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
+
   expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3b))
   expect_false(nrow(cohort_set(cdm$cohort_3b)) == 0)
   expect_false(nrow(cohort_count(cdm$cohort_3b)) == 0)
 
   cdm_disconnect(cdm)
-
 })
 
 
@@ -201,11 +195,7 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
     cdm$cohort_3 <- cdm$cohorts2 %>%
       dplyr::filter(cohort_start_date > "2099-01-01") %>%
       compute_query() %>%
-<<<<<<< HEAD
-      omopgenerics::generatedCohortSet()
-=======
       omopgenerics::cohortTable()
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
   })
 
   expect_equal(nrow(dplyr::collect(cdm$cohort_3)), 0)

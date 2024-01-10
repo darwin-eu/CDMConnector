@@ -45,12 +45,15 @@ read_cohort_set <- function(path) {
       dplyr::mutate(cohort_definition_id = .data$cohortId, cohort_name = .data$cohortName)
   } else {
     jsonFiles <- sort(list.files(path, pattern = "\\.json$", full.names = TRUE))
+
     cohortsToCreate <- dplyr::tibble(
       cohort_definition_id = seq_along(jsonFiles),
       cohort_name = tools::file_path_sans_ext(basename(jsonFiles)),
       json_path = jsonFiles) %>%
       dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
-      dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
+      dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file)) %>%
+      dplyr::mutate(cohort_name = stringr::str_replace_all(tolower(cohort_name), "\\s", "_")) %>%
+      dplyr::mutate(cohort_name = stringr::str_remove_all(cohort_name, "[^a-z1-9_]"))
   }
 
   cohortsToCreate <- dplyr::select(cohortsToCreate, "cohort_definition_id", "cohort_name", "cohort", "json")
@@ -390,17 +393,10 @@ generateCohortSet <- function(cdm,
 
 # browser()
   # Create the object. Let the constructor handle getting the counts.----
-<<<<<<< HEAD
   cdm[[name]] <- omopgenerics::cohortTable(
     table = cdm[[name]],
     cohortSetRef = cohortSet[,c("cohort_definition_id", "cohort_name")],
     cohortAttritionRef = cohort_attrition_ref,
-=======
-  cdm[[name]] <- new_generated_cohort_set(
-    cohort_ref = cdm[[name]],
-    cohort_set_ref = cohortSet[,c("cohort_definition_id", "cohort_name")],
-    cohort_attrition_ref = cohort_attrition_ref,
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
     overwrite = overwrite)
 
   cli::cli_progress_done()
@@ -425,7 +421,7 @@ generate_cohort_set <- function(cdm,
 
 #' Constructor for cohort_table objects
 #'
-#' `r lifecycle::badge("superceded")`
+#' `r lifecycle::badge("superseded")`
 #'
 #' Please use `omopgenerics::cohortTable()` instead.
 #'
@@ -550,13 +546,9 @@ new_generated_cohort_set <- function(cohort_ref,
   if (!is.null(cohort_count_ref)) {
     cli::cli_warn("cohort_count_ref is no longer a required argument for new_generated_cohort_set")
   }
-<<<<<<< HEAD
-  omopgenerics::generatedCohortSet(
-    cohortRef = cohort_ref,
-=======
+
   omopgenerics::cohortTable(
     table = cohort_ref,
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
     cohortSetRef = cohort_set_ref,
     cohortAttritionRef = cohort_attrition_ref,
     overwrite = overwrite
@@ -595,11 +587,7 @@ cohort_attrition <- cohortAttrition
 
 
 #' @export
-<<<<<<< HEAD
-cohortAttrition.GeneratedCohortSet <- function(x) {
-=======
 cohortAttrition.cohort_table <- function(x) {
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
   omopgenerics::attrition(x)
 }
 
@@ -616,13 +604,8 @@ cohortSet <- function(x) { UseMethod("cohortSet") }
 cohort_set <- cohortSet
 
 #' @export
-<<<<<<< HEAD
-cohortSet.GeneratedCohortSet <- function(x) {
-  omopgenerics::attrition(x)
-=======
 cohortSet.cohort_table <- function(x) {
   omopgenerics::settings(x)
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
 }
 
 #' Get cohort counts from a generated_cohort_set object.

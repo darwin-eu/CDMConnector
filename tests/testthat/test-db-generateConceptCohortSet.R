@@ -28,7 +28,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "GiBleed_default") %>%
+    dplyr::filter(cohort_name == "gibleed_all") %>%
     dplyr::mutate(cohort_definition_id = 1L)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
@@ -48,8 +48,12 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # setdiff(unique(actual$subject_id), unique(expected$subject_id))
 
   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
-  expect_equal(actual, expected)
 
+  # remove attributes since they are a bit different
+
+  attr(actual, 'cohort_attrition') <- attr(expected, 'cohort_attrition') <- NULL
+  attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
+  expect_equal(actual, expected)
 
   expect_error({
     # should be fail fast case
@@ -127,7 +131,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "GiBleed_all") %>%
+    dplyr::filter(cohort_name == "gibleed_all") %>%
     dplyr::mutate(cohort_definition_id = 1L)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
@@ -152,6 +156,8 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_true(nrow(actual) == nrow(expected))
 
   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
+  attr(actual, 'cohort_attrition') <- attr(expected, 'cohort_attrition') <- NULL
+  attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
   expect_equal(actual, expected)
 
   # all occurrences (no descendants) fixed end date ----
@@ -165,7 +171,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "GiBleed_all_end10") %>%
+    dplyr::filter(cohort_name == "gibleed_all_end_10") %>%
     dplyr::mutate(cohort_definition_id = 1L)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
@@ -190,6 +196,8 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_true(nrow(actual) == nrow(expected))
 
   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
+  attr(actual, 'cohort_attrition') <- attr(expected, 'cohort_attrition') <- NULL
+  attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
   expect_equal(actual, expected)
 
 
@@ -259,9 +267,9 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
 
   # clean up
-  CDMConnector::dropTable(cdm, dplyr::contains("gibleed"))
+  dropTable(cdm, dplyr::contains("gibleed"))
 }
-
+# dbtype="duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()

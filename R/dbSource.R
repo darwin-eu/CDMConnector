@@ -104,11 +104,6 @@ compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
   if (is.null(oldName)) cli::cli_abort("table name not found.")
 
   # whether an intermediate table will be needed
-<<<<<<< HEAD
-  if (!temporary && oldName == name) {
-    intermediate <- TRUE
-    intername <- paste0(c(sample(letters, 5), "_test_table"), collapse = "")
-=======
   if (!temporary & !is.na(oldName)) {
     if (oldName == name) {
       intermediate <- TRUE
@@ -116,7 +111,6 @@ compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
     } else {
       intermediate <- FALSE
     }
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
   } else {
     intermediate <- FALSE
   }
@@ -146,8 +140,6 @@ compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
 
   return(x)
 }
-<<<<<<< HEAD
-=======
 
 #' @export
 #' @importFrom omopgenerics insertFromSource
@@ -185,4 +177,4 @@ insertFromSource.db_cdm <- function(cdm, value) {
   )
   return(value)
 }
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
+
