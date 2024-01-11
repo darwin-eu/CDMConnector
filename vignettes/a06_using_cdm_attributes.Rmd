@@ -154,15 +154,9 @@ We can add the required attributes using the `newGeneratedCohortSet` function. T
 ```{r}
 GI_bleed_cohort_ref <- tibble(cohort_definition_id = 1, cohort_name = "custom_gi_bleed")
 
-<<<<<<< HEAD
-cdm$gi_bleed <- omopgenerics::generatedCohortSet(cohortRef = cdm$gi_bleed, 
-                                      cohortSetRef = GI_bleed_cohort_ref, 
-                                      overwrite = TRUE)
-=======
 cdm$gi_bleed <- omopgenerics::cohortTable(
   table = cdm$gi_bleed, cohortSetRef = GI_bleed_cohort_ref, overwrite = TRUE
 )
->>>>>>> b706fbdfa71e306204251e200a2370313335ee32
 ```
 
 Now our custom cohort GI_bleed has the same attributes associated with it as if it had been created by `generateConceptCohortSet`. This will mean that it can be used by analytic packages designed to work with cdm cohorts.
