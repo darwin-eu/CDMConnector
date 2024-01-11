@@ -835,6 +835,7 @@ caprConceptToDataframe <- function(x) {
   )
 }
 
+
 #' Add attrition reason to a cohort_table object
 #'
 #' Update the cohort attrition table with new counts and a reason for attrition.
@@ -879,70 +880,13 @@ caprConceptToDataframe <- function(x) {
 recordCohortAttrition <- function(cohort,
                                   reason,
                                   cohortId = NULL) {
-  checkmate::assertClass(cohort, "cohort_table")
-  name <- attr(cohort, "tbl_name")
-  checkmate::assertCharacter(name, len = 1, min.chars = 1)
-  checkmate::assertCharacter(reason, len = 1, min.chars = 1, any.missing = FALSE)
-  checkmate::assertIntegerish(cohortId, any.missing = FALSE, null.ok = TRUE)
 
-  cdm <- attr(cohort, "cdm_reference")
-  checkmate::assertClass(cdm, "cdm_reference")
-
-  if (is.null(cohortId)) {
-    cohortId <- attr(cohort, "cohort_set") %>%
-      dplyr::pull("cohort_definition_id")
-  }
-
-  tm <- as.integer(Sys.time())
-
-  # update cohort_attrition ----
-  newAttritionRow <- attr(cohort, "cohort_attrition") %>%
-    dplyr::filter(.data$cohort_definition_id %in% .env$cohortId) %>%
-    dplyr::select(
-      "cohort_definition_id",
-      "reason_id",
-      "previous_records" = "number_records",
-      "previous_subjects" = "number_subjects"
-    ) %>%
-    dplyr::group_by(.data$cohort_definition_id) %>%
-    dplyr::filter(.data$reason_id == max(.data$reason_id, na.rm = TRUE)) %>%
-    dplyr::ungroup() %>%
-    dplyr::inner_join(
-      cohort %>%
-        dplyr::group_by(.data$cohort_definition_id) %>%
-        dplyr::summarise(
-          number_records = dplyr::n(),
-          number_subjects = dplyr::n_distinct(.data$subject_id),
-          .groups = "drop"
-        ) %>%
-        dplyr::filter(.data$cohort_definition_id %in% .env$cohortId),
-      by = c("cohort_definition_id")
-    ) %>%
-    dplyr::mutate(
-      "reason_id" = .data$reason_id + 1,
-      "reason" = .env$reason,
-      "excluded_records" = .data$previous_records - .data$number_records,
-      "excluded_subjects" = .data$previous_subjects - .data$number_subjects
-    ) %>%
-    dplyr::select(
-      "cohort_definition_id", "number_records", "number_subjects",
-      "reason_id", "reason", "excluded_records", "excluded_subjects"
-    ) %>%
-    compute()
-
-  # note that overwrite will drop the table that is needed for the query.
-  # TODO support overwrite existing table using rename in computeQuery. Cross platform table rename is needed for this though.
-  attr(cohort, "cohort_attrition")  <- attr(cohort, "cohort_attrition") %>%
-    dplyr::union_all(newAttritionRow) %>%
-    compute(
-      name = paste0(name, "_attrition"),
-      temporary = FALSE,
-      overwrite = TRUE
-    )
-
-  return(cohort)
+  omopgenerics::recordCohortAttrition(cohort = cohort,
+                                      reason = reason,
+                                      cohortId = cohortId)
 }
 
 #' @export
 #' @rdname recordCohortAttrition
 record_cohort_attrition <- recordCohortAttrition
+

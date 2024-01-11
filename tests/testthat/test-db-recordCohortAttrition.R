@@ -141,7 +141,9 @@ test_that("record_cohort_attrition works", {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
-
+  cohort <- cohort %>%
+    dplyr::mutate(cohort_name = tolower(cohort_name)) %>%
+    dplyr::filter(cohort_name == "gibleed_all")
   cdm <- generateCohortSet(cdm,
                            cohortSet = cohort,
                            name = "gibleed2",
@@ -156,6 +158,16 @@ test_that("record_cohort_attrition works", {
     dplyr::collect()
 
   expect_true(nrow(df) >= 1)
+
+  cdm$gibleed2 <- cdm$gibleed2 %>%
+    dplyr::filter(subject_id == 1)  %>%
+    dplyr::filter(subject_id == 2)  %>%
+    recordCohortAttrition("zero count")
+
+  expect_equal(cohort_attrition(cdm$gibleed2) %>%
+    dplyr::filter(reason == "zero count") %>%
+    dplyr::pull("number_subjects"), 0)
+
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
