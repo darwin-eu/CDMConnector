@@ -2,14 +2,17 @@
 #'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
 #'   v5.3 instance is located.
-#' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
-#'.  field in the CDM_SOURCE table will be used.
 #' @param cdm_schema,cdmSchema The schema where the OMOP CDM tables are located. Defaults
 #'   to NULL.
 #' @param write_schema,writeSchema An optional schema in the CDM database that the user has
 #'   write access to.
 #' @param cohort_tables,cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
+#' @param cdm_version,cdmVersion The version of the OMOP CDM: "5.3" (default), "5.4",
+#'   "auto". "auto" attempts to automatically determine the cdm version using
+#'   heuristics. Cohort tables must be in the write_schema.
+#' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
+#'.  field in the CDM_SOURCE table will be used.
 #' @param achilles_schema,achillesSchema An optional schema in the CDM database
 #' that contains achilles tables.
 #'
@@ -20,6 +23,7 @@ cdm_from_con <- function(con,
                          cdm_schema,
                          write_schema,
                          cohort_tables = NULL,
+                         cdm_version = "5.3",
                          cdm_name = NULL,
                          achilles_schema = NULL) {
 
@@ -28,6 +32,7 @@ cdm_from_con <- function(con,
   checkmate::assert_character(write_schema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
+  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
 
   # create source object and validate connecion
   src <- dbSource(con = con, writeSchema = write_schema)
@@ -158,18 +163,20 @@ tbl.db_cdm <- function(src, schema, name) {
 #' @rdname cdm_from_con
 #' @export
 cdmFromCon <- function(con,
-                       cdmName,
                        cdmSchema,
                        writeSchema,
                        cohortTables = NULL,
+                       cdmVersion = "5.3",
+                       cdmName = NULL,
                        achillesSchema = NULL) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,
     write_schema = writeSchema,
-    achilles_schema = achillesSchema,
     cohort_tables = cohortTables,
-    cdm_name = cdmName
+    cdm_version = cdmVersion,
+    cdm_name = cdmName,
+    achilles_schema = achillesSchema
   )
 }
 
