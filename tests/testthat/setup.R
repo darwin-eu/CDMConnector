@@ -168,12 +168,15 @@ if (Sys.getenv("CI_TEST_DB") == "") {
     # "duckdb"
     # ,
     # "postgres"
-    # ,"redshift"
     # ,
-    "sqlserver"
-    # ,"snowflake"
+    "redshift"
+    # ,
+    # "sqlserver"
+    # ,
+    # "snowflake"
 
     # ,"spark"
+
     # ,"oracle"
     # ,
     # ,"bigquery"

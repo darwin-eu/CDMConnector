@@ -37,6 +37,7 @@ read_cohort_set <- function(path) {
     rlang::abort(glue::glue("The directory {path} does not exist!"))
   }
 
+
   if (file.exists(file.path(path, "CohortsToCreate.csv"))) {
     cohortsToCreate <- readr::read_csv(file.path(path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
       dplyr::mutate(jsonPath = file.path(path, .data$jsonPath)) %>%
@@ -53,7 +54,11 @@ read_cohort_set <- function(path) {
       dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file))
   }
 
-  cohortsToCreate <- dplyr::select(cohortsToCreate, "cohort_definition_id", "cohort_name", "cohort", "json")
+  # snakecase name can be used for column names or filenames
+  cohortsToCreate <- cohortsToCreate %>%
+    dplyr::mutate(cohort_name_snakecase = snakecase::to_snake_case(cohort_name)) %>%
+    dplyr::select("cohort_definition_id", "cohort_name", "cohort", "json", "cohort_name_snakecase")
+
   class(cohortsToCreate) <- c("CohortSet", class(cohortsToCreate))
   return(cohortsToCreate)
 }

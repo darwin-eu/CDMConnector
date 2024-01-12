@@ -28,7 +28,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "GiBleed_default") %>%
+    dplyr::filter(cohort_name == "gibleed_default") %>%
     dplyr::mutate(cohort_definition_id = 1L)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
@@ -127,7 +127,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "GiBleed_all") %>%
+    dplyr::filter(cohort_name == "gibleed_all") %>%
     dplyr::mutate(cohort_definition_id = 1L)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
@@ -249,6 +249,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                               subset_cohort = "not_a_table",
                               subset_cohort_id = 1,
                               overwrite = TRUE))
+
  expect_error(generate_concept_cohort_set(cdm = cdm,
                                      name = "gibleed_medications2",
                                      concept_set = list("diclofenac" = 1124300,

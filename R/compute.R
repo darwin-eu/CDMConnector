@@ -428,6 +428,7 @@ insertTable <- function(cdm, name, table) {
   } else if ("ArrowTabular" %in% class(cdm[[1]])) {
     # TODO
     # do we want to insert it in files or the source, like we do with databases?
+    rlang::check_installed("arrow")
     cdm[[name]] <- arrow::arrow_table(table)
   } else {
     cdm[[name]] <- table
