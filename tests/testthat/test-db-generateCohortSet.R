@@ -1,5 +1,4 @@
 
-
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   cdm <- cdm_from_con(con,

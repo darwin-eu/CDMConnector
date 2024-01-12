@@ -206,16 +206,21 @@ generateCohortSet <- function(cdm,
   checkmate::assertCharacter(name, len = 1, min.chars = 1, pattern = "[a-z_]+")
 
   if (paste0(prefix, name) != tolower(paste0(prefix, name))) {
-    rlang::abort(glue::glue("Cohort table name `{paste0(prefix, name)}` must be lowercase!"))
+    cli::cli_abort("Cohort table name {.code {paste0(prefix, name)}} must be lowercase!")
   }
 
+  # Make sure tables do not already exist
   existingTables <- CDMConnector::listTables(con, write_schema)
 
-  if ((paste0(prefix, name) %in% existingTables) && isFALSE(overwrite)) {
-    rlang::abort(glue::glue("The cohort table {paste0(prefix, name)} already exists.
-                            \nSpecify overwrite = TRUE to overwrite it."))
+  for (x in paste0(name, c("", "_count", "_set", "_attrition"))) {
+    if (x %in% existingTables) {
+      if (isTrue(overwrite)) {
+        DBI::dbRemoveTable(con, inSchema(write_schema, x, dbms = dbms(con)))
+      } else {
+        cli::cli_abort("The cohort table {paste0(prefix, name)} already exists.\nSpecify overwrite = TRUE to overwrite it.")
+      }
+    }
   }
-
 
   # Create the OHDSI-SQL for each cohort ----
 
@@ -576,9 +581,13 @@ new_generated_cohort_set <- function(cohort_ref,
   checkmate::assertTRUE(DBI::dbIsValid(con))
   cdm <- attr(cohort_ref, "cdm_reference")
   attr(cohort_ref, "cdm_reference") <- NULL # Very important
-  if (is.null(cdm)) rlang::abort("cohort_ref must be part of a cdm!")
+  if (is.null(cdm)) {
+    rlang::abort("cohort_ref must be part of a cdm!")
+  }
   write_schema <- attr(cdm, "write_schema")
-  if (is.null(write_schema)) rlang::abort("cohort_ref must be part of a cdm with a write_schema!")
+  if (is.null(write_schema)) {
+    rlang::abort("cohort_ref must be part of a cdm with a write_schema!")
+  }
   checkmate::assert_character(write_schema, min.len = 1, max.len = 3, min.chars = 1)
   verify_write_access(con, write_schema = write_schema)
 

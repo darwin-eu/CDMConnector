@@ -137,6 +137,7 @@ test_that("no error if cohort is empty", {
                            name = "cohorts2",
                            overwrite = TRUE,
                            computeAttrition = TRUE)
+
   expect_true("GeneratedCohortSet" %in% class(cdm$cohorts2))
 
   cdm$cohort_3 <- cdm$cohorts2 %>%
@@ -159,7 +160,6 @@ test_that("no error if cohort is empty", {
   expect_false(nrow(cohort_count(cdm$cohort_3b)) == 0)
 
   cdm_disconnect(cdm)
-
 })
 
 
