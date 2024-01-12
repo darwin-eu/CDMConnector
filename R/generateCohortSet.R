@@ -214,7 +214,7 @@ generateCohortSet <- function(cdm,
 
   for (x in paste0(name, c("", "_count", "_set", "_attrition"))) {
     if (x %in% existingTables) {
-      if (isTrue(overwrite)) {
+      if (overwrite) {
         DBI::dbRemoveTable(con, inSchema(write_schema, x, dbms = dbms(con)))
       } else {
         cli::cli_abort("The cohort table {paste0(prefix, name)} already exists.\nSpecify overwrite = TRUE to overwrite it.")
