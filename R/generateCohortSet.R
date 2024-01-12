@@ -388,9 +388,9 @@ generateCohortSet <- function(cdm,
   }
 
   # Create cohort_set attribute -----
-  if (paste0(name, "_set") %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)))
-  }
+  # if (paste0(name, "_set") %in% existingTables) {
+  #   DBI::dbRemoveTable(con, inSchema(write_schema, paste0(name, "_set"), dbms = dbms(con)))
+  # }
 
   # overwrite not working on snowflake
   DBI::dbWriteTable(con,
@@ -563,7 +563,7 @@ new_generated_cohort_set <- function(cohort_ref,
                                      cohort_set_ref = NULL,
                                      cohort_attrition_ref = NULL,
                                      cohort_count_ref = NULL,
-                                     overwrite = FALSE) {
+                                     overwrite = TRUE) {
 
   if (!methods::is(cohort_ref, "tbl_sql")) {
     rlang::abort("cohort_ref must be a remote database table reference (tbl_sql)")
