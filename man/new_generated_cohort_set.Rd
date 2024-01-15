@@ -10,7 +10,7 @@ new_generated_cohort_set(
   cohort_set_ref = NULL,
   cohort_attrition_ref = NULL,
   cohort_count_ref = NULL,
-  overwrite = FALSE
+  overwrite = TRUE
 )
 
 newGeneratedCohortSet(

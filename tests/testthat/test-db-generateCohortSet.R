@@ -58,6 +58,10 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
 
+# dbtype = "snowflake"
+# dbToTest = c("postgres", "redshift", "duckdb") #, "sqlserver", "postgres", "redshift", "duckdb")
+# dbtype = "snowflake"
+
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")

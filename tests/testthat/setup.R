@@ -165,21 +165,17 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 
 if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
-    # "duckdb"
-    # ,
-    # "postgres"
-    # ,
-    # "redshift"
-    # ,
+    "duckdb"
+    ,
+    "postgres"
+    ,
+    "redshift"
+    ,
     "sqlserver"
-    # ,
-    # "snowflake"
+    ,
+    "snowflake"
     # ,
     # "spark"
-    # ,
-    # "oracle"
-    # ,
-    # "bigquery"
   )
 } else {
   checkmate::assert_choice(Sys.getenv("CI_TEST_DB"), choices = ciTestDbs)

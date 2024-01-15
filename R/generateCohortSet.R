@@ -134,30 +134,6 @@ generateCohortSet <- function(cdm,
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
 
-  checkmate::assertClass(cdm, "cdm_reference")
-  con <- attr(cdm, "dbcon")
-  checkmate::assertTRUE(DBI::dbIsValid(con))
-  checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
-
-  assert_write_schema(cdm) # required for now
-
-  checkmate::assertLogical(computeAttrition, len = 1)
-  checkmate::assertLogical(overwrite, len = 1)
-
-  write_schema <- attr(cdm, "write_schema")
-  checkmate::assert_character(write_schema,
-                              min.chars = 1,
-                              min.len = 1,
-                              max.len = 3,
-                              null.ok = FALSE)
-
-  if ("prefix" %in% names(write_schema)) {
-    prefix <- unname(write_schema["prefix"])
-    # write_schema <- write_schema[-which(names(write_schema) == "prefix")]
-  } else {
-    prefix <- ""
-  }
-
   if (!is.data.frame(cohortSet)) {
     if (!is.list(cohortSet)) {
       rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
@@ -179,6 +155,35 @@ generateCohortSet <- function(cdm,
   }
 
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
+
+  cli::cli_alert_info("Generating {nrow(cohortSet)} cohort{?s}")
+  withr::local_options(list("cli.progress_show_after" = 0, "cli.progress_clear" = FALSE))
+
+
+  checkmate::assertClass(cdm, "cdm_reference")
+  con <- attr(cdm, "dbcon")
+  checkmate::assertTRUE(DBI::dbIsValid(con))
+  checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
+
+  assert_write_schema(cdm)
+
+  checkmate::assertLogical(computeAttrition, len = 1)
+  checkmate::assertLogical(overwrite, len = 1)
+
+  write_schema <- attr(cdm, "write_schema")
+  checkmate::assert_character(write_schema,
+                              min.chars = 1,
+                              min.len = 1,
+                              max.len = 3,
+                              null.ok = FALSE)
+
+  if ("prefix" %in% names(write_schema)) {
+    prefix <- unname(write_schema["prefix"])
+  } else {
+    prefix <- ""
+  }
+
+
 
   # Handle OHDSI cohort sets
   if ("cohortId" %in% names(cohortSet) && !("cohort_definition_id" %in% names(cohortSet))) {
@@ -210,7 +215,7 @@ generateCohortSet <- function(cdm,
   }
 
   # Make sure tables do not already exist
-  existingTables <- CDMConnector::listTables(con, write_schema)
+  existingTables <- listTables(con, write_schema)
 
   for (x in paste0(name, c("", "_count", "_set", "_attrition"))) {
     if (x %in% existingTables) {
@@ -227,47 +232,20 @@ generateCohortSet <- function(cdm,
   cohortSet$sql <- character(nrow(cohortSet))
 
   for (i in seq_len(nrow(cohortSet))) {
-    # cohortJson <- as.character(jsonlite::toJSON(cohortSet$cohort[[i]], auto_unbox = TRUE))
     cohortJson <- cohortSet$json[[i]]
     cohortExpression <- CirceR::cohortExpressionFromJson(expressionJson = cohortJson)
     cohortSql <- CirceR::buildCohortQuery(expression = cohortExpression,
                                           options = CirceR::createGenerateOptions(
                                             generateStats = computeAttrition))
     cohortSet$sql[i] <- SqlRender::render(cohortSql, warnOnMissingParameters = FALSE)
-
-    # if (dbms(con) == "snowflake") {
-      # a hack because we are using lowercase column names for cohort tables
-      # q <- function(x) DBI::dbQuoteIdentifier(con, x)
-      # r <- "DELETE FROM @target_database_schema.@target_cohort_table where cohort_definition_id = @target_cohort_id;"
-      # r2 <- glue::glue("DELETE FROM @target_database_schema.@target_cohort_table where {q('cohort_definition_id')} = @target_cohort_id;")
-      # if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
-      # cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
-      #
-      # if (computeAttrition) {
-      #   r <- "delete from @results_database_schema.cohort_censor_stats where cohort_definition_id = @target_cohort_id;"
-      #   r2 <- glue::glue("delete from @results_database_schema.cohort_censor_stats where {q('cohort_definition_id')} = @target_cohort_id;")
-      #   if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
-      #   cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
-      # }
-      #
-      # r <- "INSERT INTO @target_database_schema.@target_cohort_table \\(cohort_definition_id, subject_id, cohort_start_date, cohort_end_date\\)"
-      # r2 <- "INSERT INTO @target_database_schema.@target_cohort_table "
-      # if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
-      # cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
-
-      # r <- "select @target_cohort_id as cohort_definition_id, person_id, start_date, end_date "
-      # r2 <- glue::glue("select @target_cohort_id as {q('cohort_definition_id')}, person_id, start_date, end_date ")
-      # if (!stringr::str_detect(cohortSet$sql[i], r)) rlang::abort("critical SQL replacement failed!")
-      # cohortSet$sql[i] <- stringr::str_replace(cohortSet$sql[i], r, r2)
-    # }
   }
-# cat(cohortSet$sql[1])
-  # Create the cohort tables ----
-  createCohortTables(con, write_schema, name, computeAttrition)
-  # Run the OHDSI-SQL ----
 
+  createCohortTables(con, write_schema, name, computeAttrition)
+
+  # Run the OHDSI-SQL ----
   cdm_schema <- attr(cdm, "cdm_schema")
   checkmate::assertCharacter(cdm_schema, max.len = 3, min.len = 1, min.chars = 1)
+
   if ("prefix" %in% names(cdm_schema)) {
     cdm_schema_sql <- glue::glue_sql_collapse(DBI::dbQuoteIdentifier(con, cdm_schema[-which(names(cdm_schema) == "prefix")]), sep = ".")
   } else {
@@ -280,102 +258,129 @@ generateCohortSet <- function(cdm,
     write_schema_sql <- paste(DBI::dbQuoteIdentifier(con, write_schema), collapse = ".")
   }
 
-  dropTempTableIfExists <- function(con, table) {
-    suppressMessages(
-      DBI::dbExecute(
-        con,
-        SqlRender::translate(
-          glue::glue("IF OBJECT_ID('#{table}', 'U') IS NOT NULL DROP TABLE #{table};"),
-          targetDialect = dbms(con))
-        )
-    )
-  }
+  # dropTempTableIfExists <- function(con, table) {
+  #   # used for dropping temp emulation tables
+  #   suppressMessages(
+  #     DBI::dbExecute(
+  #       con,
+  #       SqlRender::translate(
+  #         glue::glue("IF OBJECT_ID('#{table}', 'U') IS NOT NULL DROP TABLE #{table};"),
+  #         targetDialect = dbms(con))
+  #       )
+  #   )
+  # }
 
-  withr::local_options(list("cli.progress_show_after" = 0, "cli.progress_clear" = FALSE))
-  cli::cli_alert_info("Generating {nrow(cohortSet)} cohort{?s}")
+  generate <- function(i) {
+    pct <- ""
+    cli::cli_progress_step("Generating cohort ({i}/{nrow(cohortSet)}{pct}) - {cohortSet$cohort_name[i]})", spinner = interactive())
 
-  for (i in seq_len(nrow(cohortSet))) {
-
-    msg <- glue::glue("Generating cohort ({i}/{nrow(cohortSet)}) - {cohortSet$cohort_name[i]})")
-    # cli::cli_progress_step("Generating cohort ({i}/{nrow(cohortSet)}) - {cohortSet$cohort_name[i]}")
-    cli::cli_progress_step(msg)
-
-    # Note: you cannot quote the auxiliary cohort table names because it will end up
-    # generating sql like this: delete from "ATLAS"."RESULTS"."chrt0_inclusion"_stats where cohort_definition_id = 3
-    # which fails
     sql <- cohortSet$sql[i] %>%
       SqlRender::render(
         cdm_database_schema = cdm_schema_sql,
         vocabulary_database_schema = cdm_schema_sql,
         target_database_schema = write_schema_sql,
-        results_database_schema.cohort_inclusion        = paste0(write_schema_sql, ".", prefix, name, "_inclusion"),
-        results_database_schema.cohort_inclusion_result = paste0(write_schema_sql, ".", prefix, name, "_inclusion_result"),
-        results_database_schema.cohort_summary_stats    = paste0(write_schema_sql, ".", prefix, name, "_summary_stats"),
-        results_database_schema.cohort_censor_stats     = paste0(write_schema_sql, ".", prefix, name, "_censor_stats"),
-        results_database_schema.cohort_inclusion        = paste0(write_schema_sql, ".", prefix, name, "_inclusion"),
-        target_cohort_table = paste0(prefix, name),
+        results_database_schema.cohort_inclusion        = paste0(write_schema_sql, ".", DBI::dbQuoteIdentifier(con, paste0(prefix, name, "_inclusion"))),
+        results_database_schema.cohort_inclusion_result = paste0(write_schema_sql, ".", DBI::dbQuoteIdentifier(con, paste0(prefix, name, "_inclusion_result"))),
+        results_database_schema.cohort_summary_stats    = paste0(write_schema_sql, ".", DBI::dbQuoteIdentifier(con, paste0(prefix, name, "_summary_stats"))),
+        results_database_schema.cohort_censor_stats     = paste0(write_schema_sql, ".", DBI::dbQuoteIdentifier(con, paste0(prefix, name, "_censor_stats"))),
+        results_database_schema.cohort_inclusion        = paste0(write_schema_sql, ".", DBI::dbQuoteIdentifier(con, paste0(prefix, name, "_inclusion"))),
+        target_cohort_table = DBI::dbQuoteIdentifier(con, paste0(prefix, name)),
         target_cohort_id = cohortSet$cohort_definition_id[i],
         warnOnMissingParameters = FALSE
       )
 
-    stopifnot(length(unique(stringr::str_extract_all(sql, "@\\w+"))[[1]]) == 0)
+    if (dbms(con) == "snowflake") {
+      # we don't want to use temp emulation on snowflake. We want to use actual temp tables.
+      sql <- stringr::str_replace_all(sql, "CREATE TABLE #", "CREATE TEMPORARY TABLE ") %>%
+        stringr::str_replace_all("create table #", "create temporary table ") %>%
+        stringr::str_replace_all("#", "")
 
-    if (dbms(con) == "spark") {
-      # remove comments from SQL which are causing an issue on spark
-      # --([^\n])*?\n => match strings starting with -- followed by anything except a newline
-      sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
+      # temp tables created by circe that can be left dangling.
+      tempTablesToDrop <- c(
+        "Codesets",
+        "qualified_events",
+        "cohort_rows",
+        "Inclusion",
+        "strategy_ends",
+        "inclusion_events",
+        "included_events",
+        "final_cohort",
+        "inclusion_rules",
+        "BEST_EVENTS")
+
+      for (j in seq_along(tempTablesToDrop)) {
+        DBI::dbExecute(con, paste("drop table if exists", tempTablesToDrop[j]))
+      }
+
+      namesToQuote <- c("cohort_definition_id",
+                        "subject_id",
+                        "cohort_start_date",
+                        "cohort_end_date",
+                        "mode_id",
+                        "inclusion_rule_mask",
+                        "person_count",
+                        "rule_sequence",
+                        "gain_count",
+                        "person_total",
+                        "base_count", "final_count")
+
+      for (n in namesToQuote) {
+        sql <- stringr::str_replace_all(sql, n, DBI::dbQuoteIdentifier(con, n))
+      }
     }
 
-    tempEmulationSchema <- getOption("sqlRenderTempEmulationSchema") %||% write_schema_sql
+    # total hack workaround for circe - temp23019_chrt0_inclusion"_stats
+    quoteSymbol <- substr(as.character(DBI::dbQuoteIdentifier(con, "a")), 1, 1)
+    sql <- stringr::str_replace_all(sql,
+                             paste0("_inclusion", quoteSymbol, "_stats"),
+                             paste0("_inclusion_stats", quoteSymbol))
+
+    # if parameters exist in the sql (starting with @), stop.
+    stopifnot(length(unique(stringr::str_extract_all(sql, "@\\w+"))[[1]]) == 0)
+
+    # remove comments from SQL which are causing an issue on spark
+    # --([^\n])*?\n => match strings starting with -- followed by anything except a newline
+    sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
 
     sql <- SqlRender::translate(sql,
                                 targetDialect = CDMConnector::dbms(con),
-                                tempEmulationSchema = tempEmulationSchema) %>%
-      SqlRender::splitSql()
+                                tempEmulationSchema = "SQL ERROR")
+
+    if (stringr::str_detect(sql, "SQL ERROR")) {
+      cli::cli_abort("sqlRenderTempEmulationSchema being used for cohort generation!
+        Please open a github issue at {.url https://github.com/darwin-eu/CDMConnector/issues} with your cohort definition.")
+    }
 
     if (dbms(con) == "duckdb") {
       # hotfix for duckdb sql translation https://github.com/OHDSI/SqlRender/issues/340
       sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
     }
 
-    if (!(dbms(con) %in% c("snowflake", "oracle", "bigquery"))) {
-      # TODO: issue dropping temp tables on dbms which are using tempEmulation
-      # Error: nanodbc/nanodbc.cpp:1526: 00000: Cannot perform DROP.
-      # This session does not have a current schema. Call 'USE SCHEMA', or use a qualified name.
-      # SqlRender::getTempTablePrefix()
-      dropTempTableIfExists(con, "Codesets")
-      dropTempTableIfExists(con, "qualified_events")
-      dropTempTableIfExists(con, "cohort_rows")
-      dropTempTableIfExists(con, "Inclusion")
-      dropTempTableIfExists(con, "inclusion_events")
-      dropTempTableIfExists(con, "included_events")
-      dropTempTableIfExists(con, "final_cohort")
-    } else if (dbms(con) == "bigquery") {
-      tables <- c("codesets", "qualified_events", "cohort_rows", "inclusion", "inclusion_events", "included_events", "final_cohort")
-      sql <- glue::glue("drop table if exists {write_schema}.{SqlRender::getTempTablePrefix()}{tables}")
-      purrr::walk(sql, ~DBI::dbExecute(con, .))
-    }
+    sql <- stringr::str_replace_all(sql, "\\s+", " ")
 
-    for (j in seq_along(sql)) {
-      DBI::dbExecute(con, sql[j], immediate = TRUE)
+    sql <- stringr::str_split(sql, ";")[[1]] %>%
+      stringr::str_trim() %>%
+      stringr::str_c(";") %>% # remove empty statements
+      stringr::str_subset("^;$", negate = TRUE)
+
+    for (k in seq_along(sql)) {
+      # cli::cat_rule(glue::glue("sql {k} with {nchar(sql[k])} characters."))
+      # cli::cat_line(sql[k])
+      DBI::dbExecute(con, sql[k], immediate = TRUE)
+
+      if (interactive()) {
+        pct <- ifelse(k == length(sql), "", glue::glue(" ~ {floor(100*k/length(sql))}%"))
+        cli::cli_progress_update()
+      }
     }
   }
 
-  if (dbms(con) %in% c("snowflake", "oracle")) {
-    # make table lowercase
-
-    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, toupper(name), dbms(con))) %>%
-      dplyr::rename_all(tolower) %>%
-      # compute_query() %>%
-      compute_query(
-        name = name,
-        temporary = FALSE,
-        schema = write_schema,
-        overwrite = TRUE
-      )
-  } else {
-    cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name, dbms = dbms(con)))
+  # this loop makes cli updates look correct
+  for (i in seq_len(nrow(cohortSet))) {
+    generate(i)
   }
+
+  cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name, dbms = dbms(con)))
 
   # Create attrition attribute ----
   if (computeAttrition) {
@@ -429,6 +434,7 @@ generateCohortSet <- function(cdm,
     overwrite = overwrite)
 
   cli::cli_progress_done()
+
   return(cdm)
 }
 
@@ -911,9 +917,9 @@ computeAttritionTable <- function(cdm,
 
   inclusionResultTableName <- paste0(cohortStem, "_inclusion_result")
 
-  if (dbms(attr(cdm, "dbcon")) %in% c("oracle", "snowflake")) {
-    inclusionResultTableName <- toupper(inclusionResultTableName)
-  }
+  # if (dbms(attr(cdm, "dbcon")) %in% c("oracle", "snowflake")) {
+  #   inclusionResultTableName <- toupper(inclusionResultTableName)
+  # }
 
   schema <- attr(cdm, "write_schema")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 3, min.chars = 1)
