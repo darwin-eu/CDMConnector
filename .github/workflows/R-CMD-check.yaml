@@ -21,8 +21,8 @@ jobs:
         config:
           - {os: macOS-latest,   r: 'release'}
           - {os: windows-latest, r: 'release'}
-          # - {os: ubuntu-latest,  r: 'release'} # takes a long time to compile duckdb.
-          # - {os: ubuntu-latest,   r: 'devel'} # takes a long time to compile duckdb.
+          - {os: ubuntu-latest,  r: 'release'} # takes a long time to compile duckdb.
+          - {os: ubuntu-latest,   r: 'devel'} # takes a long time to compile duckdb.
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
