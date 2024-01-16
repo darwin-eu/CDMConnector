@@ -19,7 +19,7 @@ jobs:
         SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
         SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
         SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-        SNOWFLAKE_DRIVER: ${{ secrets.SNOWFLAKE_DRIVER }}
+        SNOWFLAKE_DRIVER: "/usr/lib/snowflake/odbc/lib/libSnowflake.so"
         SNOWFLAKE_CDM_SCHEMA: ${{ secrets.SNOWFLAKE_CDM_SCHEMA }}
         SNOWFLAKE_SCRATCH_SCHEMA: ${{ secrets.SNOWFLAKE_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
