@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main, master, test, test]
+    branches: [main, master, test]
   pull_request:
     branches: [main, master]
 
