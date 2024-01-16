@@ -90,7 +90,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     )
 
     cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-      dplyr::filter(cohort_name == "GiBleed_default_with_descendants") %>%
+      dplyr::filter(cohort_name == "gibleed_default_with_descendants") %>%
       dplyr::mutate(cohort_definition_id = 1L)
 
     cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
