@@ -89,8 +89,7 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
   }
 
   if (dbms == "snowflake" && Sys.getenv("SNOWFLAKE_USER") != "") {
-    # return(DBI::dbConnect(odbc::odbc(), "Snowflake",
-                          # pwd = Sys.getenv("SNOWFLAKE_PASSWORD")))
+
     return(DBI::dbConnect(odbc::odbc(),
                           SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
                           UID = Sys.getenv("SNOWFLAKE_USER"),
@@ -168,13 +167,13 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
     # "duckdb"
     # ,
-    "postgres"
+    # "postgres"
     # ,
     # "redshift"
     # ,
     # "sqlserver"
     # ,
-    # "snowflake"
+    "snowflake"
     # ,
     # "spark"
   )

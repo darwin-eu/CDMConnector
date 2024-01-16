@@ -109,6 +109,7 @@ test_that("Generation from Capr Cohorts", {
 
 test_that("duckdb - phenotype library generation", {
   skip("manual test")
+  skip_if_not_installed("PhenotypeLibrary")
 
   cohort_set <- PhenotypeLibrary::listPhenotypes() %>%
     dplyr::pull("cohortId") %>%
