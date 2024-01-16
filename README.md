@@ -153,7 +153,7 @@ Run a simple quality check on a cdm.
 
 CDMConnector is tested using the following DBI driver backends:
 
--   [RPostgres](https://rpostgres.r-dbi.org/reference/postgres) on
+-   [RPostgres](https://rpostgres.r-dbi.org/) on
     Postgres and Redshift
 -   [odbc](https://solutions.posit.co/connections/db/r-packages/odbc/)
     on Microsoft SQL Server, Oracle, and Databricks/Spark
