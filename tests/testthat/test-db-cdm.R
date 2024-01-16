@@ -52,6 +52,7 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - cdm_from_con"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran()
     con <- get_connection(dbtype)
     cli::cat_rule(paste("running cdm test on ", dbtype))
     cli::cat_line(paste("DBI::dbIsValid(con):", DBI::dbIsValid(con)))

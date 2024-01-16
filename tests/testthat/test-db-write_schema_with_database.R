@@ -3,6 +3,7 @@
 # issue https://github.com/darwin-eu/CDMConnector/issues/12
 test_that("write_schema can be in a separate database in snowflake", {
   skip("manual test")
+  skip_on_cran()
 
   con <- DBI::dbConnect(odbc::odbc(),
                         SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
