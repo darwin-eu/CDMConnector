@@ -56,7 +56,7 @@ read_cohort_set <- function(path) {
 
   # snakecase name can be used for column names or filenames
   cohortsToCreate <- cohortsToCreate %>%
-    dplyr::mutate(cohort_name_snakecase = snakecase::to_snake_case(cohort_name)) %>%
+    dplyr::mutate(cohort_name_snakecase = snakecase::to_snake_case(.data$cohort_name)) %>%
     dplyr::select("cohort_definition_id", "cohort_name", "cohort", "json", "cohort_name_snakecase")
 
   class(cohortsToCreate) <- c("CohortSet", class(cohortsToCreate))
