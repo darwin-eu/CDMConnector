@@ -30,7 +30,7 @@
     
     <a class="navbar-brand me-2" href="index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="articles/a02_Working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="articles/a02_working_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="articles/a05_cdm_reference_backends.html">CDM reference backends</a>
@@ -149,7 +149,7 @@
 <div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">tally</span>(cdm<span class="sc">$</span>person)</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="do">## # Source:   SQL [1 x 1]</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp921L2M/file627412c0268b.duckdb]</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="do">## # Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpDEBaNI/file119253539b760.duckdb]</span></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="do">##       n</span></span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
@@ -159,7 +159,7 @@
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">count</span>(<span class="at">top_conditions =</span> concept_name, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp921L2M/file627412c0268b.duckdb]</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="do">## # Database:   DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpDEBaNI/file119253539b760.duckdb]</span></span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
 <span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
@@ -260,7 +260,7 @@
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Apostgres-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/postgres-test/badge.svg" alt="Postgres status"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asqlserver-odbc-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/sqlserver-odbc-test/badge.svg" alt="SQL Server odbc status"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aredshift-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/redshift-test/badge.svg" alt="Redshift status"></a></li>
-<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/snowflake-test/badge.svg" alt="Snowflake status"></a></li>
+<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-odbc-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/snowflake-odbc-test/badge.svg" alt="Snowflake status"></a></li>
 </ul>
 </div>
 

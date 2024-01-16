@@ -37,3 +37,4 @@ DBI::dbDisconnect(con, shutdown = TRUE)
 }
 
 }
+\keyword{internal}

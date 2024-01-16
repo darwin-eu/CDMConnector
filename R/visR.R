@@ -9,6 +9,7 @@
 #' @return No return value. This function will create one attrition plot for each generated cohort.
 #'
 #' @export
+#' @keywords internal
 #'
 #' @examples
 #' \dontrun{
