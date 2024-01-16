@@ -1,9 +1,4 @@
 test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
-  # if (dbms(con) == "bigquery") return(skip("failing test"))
-
-  if (dbms(con) == "bigquery") {
-    return(skip("failing test"))
-  }
 
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
   cdm <- cdm_from_con(con,
