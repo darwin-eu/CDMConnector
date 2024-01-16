@@ -177,7 +177,8 @@ if (Sys.getenv("CI_TEST_DB") == "") {
     # ,
     # "spark"
   )
-} else {
+
+  } else {
   checkmate::assert_choice(Sys.getenv("CI_TEST_DB"), choices = ciTestDbs)
   dbToTest <- Sys.getenv("CI_TEST_DB")
   print(paste("running CI tests on ", dbToTest))

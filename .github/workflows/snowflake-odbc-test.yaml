@@ -23,7 +23,7 @@ jobs:
         SNOWFLAKE_CDM_SCHEMA: ${{ secrets.SNOWFLAKE_CDM_SCHEMA }}
         SNOWFLAKE_SCRATCH_SCHEMA: ${{ secrets.SNOWFLAKE_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        TESTTHAT_CPUS : 2
+        TESTTHAT_CPUS : 1
 
     name: Snowflake test (odbc driver)
 

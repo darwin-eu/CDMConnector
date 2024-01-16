@@ -23,7 +23,7 @@ jobs:
         CDM5_REDSHIFT_OHDSI_SCHEMA:   ${{ secrets.CDM5_REDSHIFT_OHDSI_SCHEMA }}
         CDM5_REDSHIFT_SCRATCH_SCHEMA: ${{ secrets.CDM5_REDSHIFT_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        TESTTHAT_CPUS : 2
+        TESTTHAT_CPUS : 1
 
     name: Redshift test (RPostgres driver)
 
