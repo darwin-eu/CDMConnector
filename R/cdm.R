@@ -466,6 +466,10 @@ stow <- function(cdm, path, format = "parquet") {
   path <- path.expand(path)
   checkmate::assert_true(file.exists(path))
 
+  if (format %in% c("parquet", "feather")) {
+    rlang::check_installed("arrow")
+  }
+
   switch(
     format,
     parquet = purrr::walk2(
@@ -516,6 +520,7 @@ cdm_from_files <- function(path,
 
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4"))
   checkmate::assert_character(cdm_name, null.ok = TRUE)
+  rlang::check_installed("arrow")
 
   path <- path.expand(path)
 

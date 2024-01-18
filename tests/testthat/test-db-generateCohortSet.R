@@ -1,5 +1,4 @@
 
-
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   cdm <- cdm_from_con(
@@ -59,10 +58,10 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
 
-dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")
+    if (dbtype != "duckdb") skip_on_cran()
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
@@ -105,6 +104,7 @@ test_that("Generation from Capr Cohorts", {
 
 test_that("duckdb - phenotype library generation", {
   skip("manual test")
+  skip_if_not_installed("PhenotypeLibrary")
 
   cohort_set <- PhenotypeLibrary::listPhenotypes() %>%
     dplyr::pull("cohortId") %>%

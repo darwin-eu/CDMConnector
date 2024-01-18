@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, test]
   pull_request:
     branches: [main, master]
 
@@ -45,6 +45,6 @@ jobs:
         shell: Rscript {0}
 
       - name: Run tests on postgres with RPostgres driver
-        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
 
 

@@ -1,9 +1,4 @@
 test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
-  # if (dbms(con) == "bigquery") return(skip("failing test"))
-
-  if (dbms(con) == "bigquery") {
-    return(skip("failing test"))
-  }
 
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
   cdm <- cdm_from_con(
@@ -28,8 +23,10 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "gibleed_all") %>%
+    dplyr::filter(cohort_name %in% c("gibleed_default", "GiBleed_default")) %>%
     dplyr::mutate(cohort_definition_id = 1L)
+
+  stopifnot(nrow(cohort) == 1)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
 
@@ -99,8 +96,10 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     )
 
     cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-      dplyr::filter(cohort_name == "GiBleed_default_with_descendants") %>%
+      dplyr::filter(cohort_name %in% c("gibleed_default_with_descendants", "GiBleed_default_with_descendants")) %>%
       dplyr::mutate(cohort_definition_id = 1L)
+
+    stopifnot(nrow(cohort) == 1)
 
     cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
 
@@ -131,8 +130,10 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "gibleed_all") %>%
+    dplyr::filter(cohort_name %in% c("gibleed_all", "GiBleed_all")) %>%
     dplyr::mutate(cohort_definition_id = 1L)
+
+  stopifnot(nrow(cohort) == 1)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
 
@@ -171,8 +172,10 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name == "gibleed_all_end_10") %>%
+    dplyr::filter(cohort_name %in% c("GiBleed_all_end10", "gibleed_all_end10")) %>%
     dplyr::mutate(cohort_definition_id = 1L)
+
+  stopifnot(nrow(cohort) == 1)
 
   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
 
@@ -257,6 +260,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                               subset_cohort = "not_a_table",
                               subset_cohort_id = 1,
                               overwrite = TRUE))
+
  expect_error(generate_concept_cohort_set(cdm = cdm,
                                      name = "gibleed_medications2",
                                      concept_set = list("diclofenac" = 1124300,
@@ -273,6 +277,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran()
     skip_if_not_installed("CirceR")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)

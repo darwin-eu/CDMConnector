@@ -89,8 +89,7 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
   }
 
   if (dbms == "snowflake" && Sys.getenv("SNOWFLAKE_USER") != "") {
-    # return(DBI::dbConnect(odbc::odbc(), "Snowflake",
-                          # pwd = Sys.getenv("SNOWFLAKE_PASSWORD")))
+
     return(DBI::dbConnect(odbc::odbc(),
                           SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
                           UID = Sys.getenv("SNOWFLAKE_USER"),
@@ -164,21 +163,20 @@ disconnect <- function(con) {
 ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 
 if (Sys.getenv("CI_TEST_DB") == "") {
+
   dbToTest <- c(
      "duckdb"
     # ,
     # "postgres"
-    # ,"redshift"
     # ,
     # "sqlserver"
     # ,"snowflake"
-
     # ,"spark"
     # ,"oracle"
-    # ,
-    # ,"bigquery"
+    # "redshift"
   )
-} else {
+
+  } else {
   checkmate::assert_choice(Sys.getenv("CI_TEST_DB"), choices = ciTestDbs)
   dbToTest <- Sys.getenv("CI_TEST_DB")
   print(paste("running CI tests on ", dbToTest))

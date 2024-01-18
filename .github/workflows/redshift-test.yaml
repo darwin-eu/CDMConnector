@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, test]
   pull_request:
     branches: [main, master]
 
@@ -23,7 +23,7 @@ jobs:
         CDM5_REDSHIFT_OHDSI_SCHEMA:   ${{ secrets.CDM5_REDSHIFT_OHDSI_SCHEMA }}
         CDM5_REDSHIFT_SCRATCH_SCHEMA: ${{ secrets.CDM5_REDSHIFT_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        TESTTHAT_CPUS : 2
+        TESTTHAT_CPUS : 1
 
     name: Redshift test (RPostgres driver)
 
@@ -34,6 +34,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Run tests on Redshift with RPostgres driver
-        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "redshift"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "redshift"), testthat::test_local())'
 
 
