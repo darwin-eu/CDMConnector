@@ -1,5 +1,7 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+# the purpose of this workflow is to run R CMD CHECK without installing suggested packages
+# CRAN will check this
+
 on:
   push:
     branches: [main, master, test]
@@ -20,9 +22,6 @@ jobs:
       matrix:
         config:
           - {os: macOS-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest,  r: 'release'} # takes a long time to compile duckdb.
-          - {os: ubuntu-latest,   r: 'devel'} # takes a long time to compile duckdb.
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -43,7 +42,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: '"hard"'
+          dependencies: '"hard"' # install only imports, depends, and linking to (hard dependencies)
           extra-packages: any::rcmdcheck
           needs: check
 
@@ -70,10 +69,3 @@ jobs:
             print(list.files(path.expand("~")))
          shell: Rscript {0}
 
-      # causing error on github runner for unknown reason
-      # - name: Test coverage
-      #   if: runner.os == 'macOS'
-      #   run: |
-      #     install.packages("covr")
-      #     covr::codecov()
-      #   shell: Rscript {0}
