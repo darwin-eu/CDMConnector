@@ -1,4 +1,5 @@
 test_that("cdm_sample works", {
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main", cdm_name = "test")
   cdm_sampled <- cdm_sample(cdm, n = 10)

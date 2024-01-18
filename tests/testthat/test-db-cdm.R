@@ -52,7 +52,7 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - cdm_from_con"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     cli::cat_rule(paste("running cdm test on ", dbtype))
     cli::cat_line(paste("DBI::dbIsValid(con):", DBI::dbIsValid(con)))
@@ -65,6 +65,7 @@ for (dbtype in dbToTest) {
 }
 
 test_that("Uppercase tables are stored as lowercase in cdm", {
+  skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
   # create a test cdm with upppercase table names
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
@@ -89,6 +90,7 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
 
 test_that("adding achilles", {
   skip_if_not(eunomia_is_available())
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   expect_error(cdm_from_con(con = con,
                       cdm_schema =  "main",

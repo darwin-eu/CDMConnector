@@ -269,7 +269,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     skip_if_not_installed("CirceR")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
@@ -282,6 +282,7 @@ for (dbtype in dbToTest) {
 
 
 test_that("missing domains produce warning", {
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main") %>%
     cdm_select_tbl(-drug_exposure)
@@ -295,7 +296,7 @@ test_that("missing domains produce warning", {
 })
 
 test_that("Regimen domain does not cause error", {
-
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
   # create a fake concept with domain "Regimen"

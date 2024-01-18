@@ -3,7 +3,7 @@
 # fixed in v1.1.3
 
 test_that("memory leak does not happen", {
-
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main")
 

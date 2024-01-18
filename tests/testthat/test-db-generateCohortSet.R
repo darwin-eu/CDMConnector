@@ -65,7 +65,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
@@ -78,6 +78,7 @@ for (dbtype in dbToTest) {
 test_that("Generation from Capr Cohorts", {
   skip_if_not(eunomia_is_available())
   skip_if_not_installed("Capr", minimum_version = "2.0.5")
+  skip_if_not_installed("duckdb")
   library(Capr)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
@@ -176,6 +177,7 @@ test_that("TreatmentPatterns cohort works", {
 # cohort_count(cdm$gibleed)
 
 test_that("newGeneratedCohortSet works with prefix", {
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
   write_schema <- c(schema = "main", prefix = "test_")
@@ -211,6 +213,7 @@ test_that("newGeneratedCohortSet works with prefix", {
 
 test_that("no error is given if attrition table already exists and overwrite = TRUE", {
   skip_if_not_installed("CirceR")
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main")
   cohort_set <- read_cohort_set(system.file("cohorts1", package = "CDMConnector"))

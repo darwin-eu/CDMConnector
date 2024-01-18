@@ -199,7 +199,7 @@ for (dbtype in dbToTest) {
   if (dbtype == "bigquery") next
   require(dplyr)
   test_that(glue::glue("{dbtype} - checking common usage"), {
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_prefix <- paste0("test", as.integer(Sys.time()), "_")

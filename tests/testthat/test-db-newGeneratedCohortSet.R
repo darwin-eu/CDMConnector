@@ -89,7 +89,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
@@ -102,7 +102,7 @@ for (dbtype in dbToTest) {
 
 
 test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", {
-
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 
@@ -124,6 +124,7 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
 
 test_that("no error if cohort is empty", {
   skip_if_not_installed("CirceR")
+  skip_if_not_installed("duckdb")
   # if an empty cohort is passed return an empty GeneratedCohortSet object
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
@@ -167,7 +168,7 @@ test_that("no error if cohort is empty", {
 
 # issue: https://github.com/darwin-eu-dev/CDMConnector/issues/300
 test_that("newGeneratedCohortSet handles empty cohort tables", {
-
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
