@@ -11,7 +11,7 @@ on:
 name: R-CMD-check
 
 jobs:
-  R-CMD-check:
+  R-CMD-check-hard-deps:
     # if: github.repository == 'darwin-eu-dev/CDMConnector' || github.repository == 'darwin-eu/CDMConnector'
     runs-on: ${{ matrix.config.os }}
 
