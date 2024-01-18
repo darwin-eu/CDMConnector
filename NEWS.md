@@ -1,3 +1,11 @@
+# CDMConnector 1.2.1
+
+- Fix failing CRAN tests
+
+# CDMConnector 1.2.0
+
+- Compatibility with dbplyr v2.4.0
+
 # CDMConnector 1.1.4
 
 -   Fix recursive edge cases with cdm reference issue. 
