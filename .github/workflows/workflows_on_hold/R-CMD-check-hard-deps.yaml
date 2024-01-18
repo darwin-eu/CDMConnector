@@ -1,0 +1,79 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: [main, master, test]
+  pull_request:
+    branches: [main, master]
+
+name: R-CMD-check
+
+jobs:
+  R-CMD-check:
+    # if: github.repository == 'darwin-eu-dev/CDMConnector' || github.repository == 'darwin-eu/CDMConnector'
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: macOS-latest,   r: 'release'}
+          - {os: windows-latest, r: 'release'}
+          - {os: ubuntu-latest,  r: 'release'} # takes a long time to compile duckdb.
+          - {os: ubuntu-latest,   r: 'devel'} # takes a long time to compile duckdb.
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      CI_TEST_DB: duckdb
+      TESTTHAT_CPUS : 1
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: List contents of home directory
+        run: |
+            print("Home directory content before R check")
+            print(list.files(path.expand("~")))
+        shell: Rscript {0}
+
+      - name: Add options to .Rprofile
+        run: |
+            echo "options(rmarkdown.html_vignette.check_title = FALSE)" >> ~/.Rprofile
+        shell: bash
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          args: 'c("--no-manual", "--as-cran", "--no-build-vignettes", "--ignore-vignettes")'
+          error-on: '"error"'
+
+      -  name: List contents of home directory after R check
+         run: |
+            print("Home directory content after R check. Should be the same as before R check.")
+            print(list.files(path.expand("~")))
+         shell: Rscript {0}
+
+      # causing error on github runner for unknown reason
+      # - name: Test coverage
+      #   if: runner.os == 'macOS'
+      #   run: |
+      #     install.packages("covr")
+      #     covr::codecov()
+      #   shell: Rscript {0}
