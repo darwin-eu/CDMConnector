@@ -113,8 +113,7 @@ cdm_from_con <- function(con,
     cdm[[cohort_table]] <- omopgenerics::cohortTable(
       table = cohort,
       cohortSetRef = x[[2]],
-      cohortAttritionRef = x[[3]],
-      overwrite = FALSE
+      cohortAttritionRef = x[[3]]
     )
   }
 

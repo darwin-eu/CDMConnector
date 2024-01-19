@@ -155,7 +155,7 @@ We can add the required attributes using the `newGeneratedCohortSet` function. T
 GI_bleed_cohort_ref <- tibble(cohort_definition_id = 1, cohort_name = "custom_gi_bleed")
 
 cdm$gi_bleed <- omopgenerics::cohortTable(
-  table = cdm$gi_bleed, cohortSetRef = GI_bleed_cohort_ref, overwrite = TRUE
+  table = cdm$gi_bleed, cohortSetRef = GI_bleed_cohort_ref
 )
 ```
 

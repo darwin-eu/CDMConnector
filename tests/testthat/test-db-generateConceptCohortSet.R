@@ -172,7 +172,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-    dplyr::filter(cohort_name %in% c("GiBleed_all_end10", "gibleed_all_end10")) %>%
+    dplyr::filter(cohort_name %in% c("gibleed_all")) %>%
     dplyr::mutate(cohort_definition_id = 1L)
 
   stopifnot(nrow(cohort) == 1)
