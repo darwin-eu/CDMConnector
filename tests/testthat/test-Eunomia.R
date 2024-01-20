@@ -37,7 +37,7 @@ test_that("downloadEunomiaData", {
 })
 
 test_that("empty cdm works", {
-  skip("manual test")
+  # skip("manual test")
 
   expect_true("empty_cdm" %in% example_datasets())
 
@@ -52,5 +52,4 @@ test_that("empty cdm works", {
   DBI::dbDisconnect(con, shutdown = T)
 })
 
-library(CDMConnector)
 
