@@ -122,7 +122,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
@@ -134,6 +134,7 @@ for (dbtype in dbToTest) {
 
 test_that("record_cohort_attrition works", {
   skip_if_not_installed("CirceR")
+  skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())

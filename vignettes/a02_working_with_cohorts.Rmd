@@ -93,7 +93,11 @@ cdm$study_cohorts
 
 ```
 
-The generated cohort has some associated metadata tables.
+The generated cohort has associated metadata tables.
+
+- `cohort_count` contains the person and record counts for each cohort in the cohort set
+- The `cohort_attrition` table contains the attrition information (persons, and records dropped at each sequential inclusion rule)
+- The `cohort_set` table contains the cohort id and cohort name
 
 ```{r}
 cohort_count(cdm$study_cohorts)
@@ -146,6 +150,107 @@ cdm$gibleed
 We should get the exact same result from Capr and Atlas if the definitions are equivalent.
 
 Learn more about Capr at the package website <https://ohdsi.github.io/Capr/>.
+
+
+```{r}
+DBI::dbDisconnect(con, shutdown = TRUE)
+```
+
+
+### Subset a cohort
+
+Suppose you have a generated cohort and you would like to create a new cohort that is a subset of the first. This can be done using the 
+
+
+First we will generate an example cohort set and then create a new cohort based on filtering the Atlas cohort.
+
+```{r}
+
+library(CDMConnector)
+con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+
+cohort_set <- read_cohort_set(system.file("cohorts3", package = "CDMConnector"))
+
+
+cdm <- generate_cohort_set(cdm, cohort_set, name = "cohort") 
+
+cdm$cohort
+
+
+cohort_count(cdm$cohort)
+
+```
+
+As an example we will take only people in the cohort that have a cohort duration that is longer than 4 weeks.
+Using dplyr we can write this query and save the result in a new table in the cdm.
+
+```{r}
+library(dplyr)
+
+cdm$cohort_subset <- cdm$cohort %>% 
+  # only keep persons who are in the cohort at least 28 days
+  filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
+  # optionally you can modify the cohort_id
+  mutate(cohort_definition_id = 100 + cohort_definition_id) %>% 
+  compute_query(name = "cohort_subset", temporary = FALSE, schema = attr(cdm, "write_schema"), overwrite = TRUE) %>% 
+  new_generated_cohort_set()
+
+cdm$cohort2
+
+cohort_count(cdm$cohort_subset)
+
+```
+In this case we can see that cohorts 1 and 5 were dropped completely and some patients were dropped from cohorts 2, 3, and 4.
+
+Let's confirm that everyone in cohorts 1 and 5 were in the cohort for less than 28 days.
+
+```{r}
+days_in_cohort <- cdm$cohort %>% 
+  filter(cohort_definition_id %in% c(1,5)) %>% 
+  mutate(days_in_cohort = !!datediff("cohort_start_date", "cohort_end_date")) %>% 
+  count(cohort_definition_id, days_in_cohort) %>% 
+  collect()
+
+days_in_cohort
+```
+
+We have confirmed that everyone in cohorts 1 and 5 were in the cohort less than 10 days.
+
+Now suppose we would like to create a new cohort table with three different versions of the cohorts in the original cohort table. We will keep persons who are in the cohort at 2 weeks, 3 weeks, and 4 weeks. We can simply write some custom dplyr to create the table and then call `new_generated_cohort_set` just like in the previous example.
+
+
+```{r}
+
+cdm$cohort_subset <- cdm$cohort %>% 
+  filter(!!datediff("cohort_start_date", "cohort_end_date") >= 14) %>% 
+  mutate(cohort_definition_id = 10 + cohort_definition_id) %>% 
+  union_all(
+    cdm$cohort %>%
+    filter(!!datediff("cohort_start_date", "cohort_end_date") >= 21) %>% 
+    mutate(cohort_definition_id = 100 + cohort_definition_id)
+  ) %>% 
+  union_all(
+    cdm$cohort %>% 
+    filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
+    mutate(cohort_definition_id = 1000 + cohort_definition_id)
+  ) %>% 
+  compute_query(name = "cohort_subset", 
+                temporary = FALSE, 
+                schema = attr(cdm, "write_schema"), 
+                overwrite = TRUE) %>% 
+  new_generated_cohort_set() # this function creates the cohort object and metadata
+
+cdm$cohort_subset %>% 
+  mutate(days_in_cohort = !!datediff("cohort_start_date", "cohort_end_date")) %>% 
+  group_by(cohort_definition_id) %>% 
+  summarize(mean_days_in_cohort = mean(days_in_cohort, na.rm = TRUE)) %>% 
+  collect() %>% 
+  arrange(mean_days_in_cohort)
+
+```
+
+This is an example of creating new cohorts from existing cohorts using CDMConnector. There is a lot of flexibility with this approach. Next we will look at completely custom cohort creation which is quite similar.
 
 ### Custom Cohort Creation
 

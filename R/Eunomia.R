@@ -24,7 +24,7 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
                                 pathToData = Sys.getenv("EUNOMIA_DATA_FOLDER"),
                                 overwrite = FALSE) {
 
-  # checkmate::assertChoice(datasetName, choices = exampleDatasets))
+  checkmate::assertChoice(datasetName, choices = exampleDatasets())
 
   if (cdmVersion != "5.3") {
     rlang::abort("Only CDM v5.3 is supported currently!")
@@ -104,7 +104,8 @@ exampleDatasets <- function() {
     "synthea-total_joint_replacement-10k",
     "synthea-veteran_prostate_cancer-10k",
     "synthea-veterans-10k",
-    "synthea-weight_loss-10k")
+    "synthea-weight_loss-10k",
+    "empty_cdm")
 }
 
 #' @export

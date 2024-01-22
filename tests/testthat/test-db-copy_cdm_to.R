@@ -25,7 +25,7 @@ test_copy_cdm_to <- function(con, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - copy_cdm_to"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     prefix <- paste0("tbl", as.integer(Sys.time()), "_")
     write_schema <- get_write_schema(dbtype, prefix = prefix)
@@ -36,6 +36,7 @@ for (dbtype in dbToTest) {
 }
 
 test_that("duckdb - copy_cdm_to without prefix", {
+  skip_if_not_installed("duckdb")
   con1 <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm1 <- cdm_from_con(con1, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 

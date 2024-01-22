@@ -78,7 +78,7 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - compute_query"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
-    if (dbtype != "duckdb") skip_on_cran()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
@@ -94,6 +94,7 @@ test_that("uniqueTableName", {
 })
 
 test_that("message does not duplicate when prefix is used", {
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "main", write_schema = c(prefix = "a_", schema = "main"))
   DBI::dbWriteTable(con, inSchema(attr(attr(cdm, "cdm_source"), "write_schema"), "cars"), cars)
