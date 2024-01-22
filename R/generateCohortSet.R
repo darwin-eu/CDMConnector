@@ -634,14 +634,23 @@ new_generated_cohort_set <- function(cohort_ref,
   } else if (is.null(cohort_set_ref)) {
 
     # create the cohort_set table
-    cohort_set_ref <- cohort_ref %>%
-      dplyr::distinct(.data$cohort_definition_id) %>%
-      dplyr::mutate(cohort_name = paste0("cohort_", .data$cohort_definition_id)) %>%
-      computeQuery(
-        name = paste0(name, "_set"),
-        temporary = FALSE,
-        schema = write_schema,
-        overwrite = overwrite)
+    if (dbms(con) == "sql server") {
+      # workaround for incorrect sql translation for paste on sql server. we want concat().
+      q <- cohort_ref %>%
+        dplyr::distinct(.data$cohort_definition_id) %>%
+        dplyr::mutate(cohort_name = concat("cohort_", .data$cohort_definition_id))
+    } else {
+      q <- cohort_ref %>%
+        dplyr::distinct(.data$cohort_definition_id) %>%
+        dplyr::mutate(cohort_name = paste0("cohort_", .data$cohort_definition_id))
+    }
+
+    cohort_set_ref <- computeQuery(
+      q,
+      name = paste0(name, "_set"),
+      temporary = FALSE,
+      schema = write_schema,
+      overwrite = overwrite)
   }
 
   {

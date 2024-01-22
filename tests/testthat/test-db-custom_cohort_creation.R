@@ -18,14 +18,15 @@ test_custom_derived_cohort <- function(con, cdm_schema, write_schema) {
         dplyr::filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>%
         dplyr::mutate(cohort_definition_id = 1000 + cohort_definition_id)
     ) %>%
-    compute_query(name = "cohort2", temporary = FALSE, schema = write_schema, overwrite = TRUE) %>%
-    new_generated_cohort_set() # this function creates the cohort object and metadata
+    compute_query(name = "cohort2", temporary = FALSE, schema = write_schema, overwrite = TRUE)
+
+  chr <- new_generated_cohort_set(cdm$cohort2) # this function creates the cohort object and metadata
 
   expect_s3_class(cdm$cohort2, "GeneratedCohortSet")
 
 }
 
-dbToTest <- c("duckdb", "snowflake", "postgres", "sqlserver", "redshift")
+# dbToTest <- c("duckdb", "snowflake", "postgres", "sqlserver", "redshift")
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - test_custom_derived_cohort"), {
