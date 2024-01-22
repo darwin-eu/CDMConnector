@@ -554,9 +554,9 @@ new_generated_cohort_set <- function(cohort_ref,
                                      cohort_count_ref = NULL,
                                      overwrite) {
   lifecycle::deprecate_warn(
-    when = "1.3.0",
+    when = "1.3",
     what = "new_generated_cohort_set()",
-    with = "omopgenerics::cohortTable()"
+    with = "cohortTable()"
   )
   if (!is.null(cohort_count_ref)) {
     cli::cli_warn("cohort_count_ref is no longer a required argument for new_generated_cohort_set")
@@ -564,7 +564,6 @@ new_generated_cohort_set <- function(cohort_ref,
   if (!missing(overwrite)) {
     cli::cli_warn("overwrite is no longer a required argument for new_generated_cohort_set")
   }
-
   omopgenerics::cohortTable(
     table = cohort_ref,
     cohortSetRef = cohort_set_ref,
