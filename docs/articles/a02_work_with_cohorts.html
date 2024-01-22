@@ -42,7 +42,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/a01_getting-started.html">Getting Started</a>
-    <a class="dropdown-item" href="../articles/a02_Working_with_cohorts.html">Working with cohorts</a>
+    <a class="dropdown-item" href="../articles/a02_work_with_cohorts.html">Working with cohorts</a>
     <a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a>
     <a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a>
     <a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a>
@@ -79,8 +79,8 @@
       <img src="" class="logo" alt=""><h1>Working with cohorts</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/HEAD/vignettes/a02_Working_with_cohorts.Rmd" class="external-link"><code>vignettes/a02_Working_with_cohorts.Rmd</code></a></small>
-      <div class="d-none name"><code>a02_Working_with_cohorts.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/HEAD/vignettes/a02_work_with_cohorts.Rmd" class="external-link"><code>vignettes/a02_work_with_cohorts.Rmd</code></a></small>
+      <div class="d-none name"><code>a02_work_with_cohorts.Rmd</code></div>
     </div>
 
     
@@ -221,27 +221,27 @@ tables will go into the CDM’s <code>write_schema</code>.</p>
 <span>                           name <span class="op">=</span> <span class="st">"study_cohorts"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 2 cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/2) - GiBleed_default)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - GiBleed_default) <span style="color: #B2B2B2;">[107ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - GiBleed_default) <span style="color: #B2B2B2;">[108ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/2) - GIBleed_male)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - GIBleed_male) <span style="color: #B2B2B2;">[103ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - GIBleed_male) <span style="color: #B2B2B2;">[102ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;study_cohorts&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp1lHRIC/file98b712cad0c7.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpQCjYPo/file973221689eae.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">2</span>898 2016-09-03        2019-01-23     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">3</span>064 1975-06-26        2018-10-19     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">5</span>153 1987-03-14        2019-05-15     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">3</span>195 1984-10-22        2019-01-07     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">2</span>358 2007-10-15        2018-10-16     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">5</span>210 2015-08-12        2017-12-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1        693 1995-09-01        2019-01-29     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1        651 2012-06-08        2018-12-06     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">1</span>118 2014-07-07        2019-06-23     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">4</span>529 1997-09-09        2018-12-17     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">3</span>216 1995-12-22        2018-10-05     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">4</span>072 2012-01-09        2017-11-18     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">5</span>251 1962-05-29        1980-03-17     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">1</span>846 1987-12-07        2019-03-14     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">3</span>960 1997-06-12        2019-04-20     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">1</span>257 2010-04-21        2018-11-17     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1        484 1974-08-11        2019-07-01     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">2</span>574 2005-08-01        2019-02-20     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">2</span>586 2007-11-24        2018-08-19     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">3</span>437 1955-04-23        1988-11-13     </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span></code></pre></div>
 <p>The generated cohort has associated metadata tables.</p>
 <ul>
@@ -317,27 +317,27 @@ definition with one inclusion criteria</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 2 cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/2) - gibleed)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - gibleed) <span style="color: #B2B2B2;">[46ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - gibleed) <span style="color: #B2B2B2;">[42ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/2) - gibleed_male)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - gibleed_male) <span style="color: #B2B2B2;">[46ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - gibleed_male) <span style="color: #B2B2B2;">[45ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;gibleed&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp1lHRIC/file98b712cad0c7.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpQCjYPo/file973221689eae.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">4</span>521 1958-11-18        2009-05-07     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">4</span>487 1988-03-26        2010-02-19     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1        844 2002-10-10        2019-05-11     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">2</span>283 1975-10-06        2019-05-07     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1        285 2006-08-16        2018-06-18     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">1</span>965 2010-05-27        2019-02-17     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1        115 2001-04-15        2019-05-05     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1        639 1989-06-08        2019-05-18     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">3</span>196 2008-07-06        2018-08-01     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">1</span>068 2015-02-20        2018-11-02     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1        213 2003-10-18        2018-07-02     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">2</span>834 1972-03-16        1999-12-11     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">4</span>923 2000-06-14        2018-10-09     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1        817 1999-09-20        2019-02-08     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">3</span>561 1944-01-20        2018-11-05     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">1</span>433 1995-11-08        2019-04-08     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">4</span>374 2013-04-13        2017-08-24     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">5</span>267 2006-04-03        2018-12-16     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">2</span>541 2017-12-17        2019-05-27     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1        729 2000-04-28        2019-03-30     </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span></code></pre></div>
 <p>We should get the exact same result from Capr and Atlas if the
 definitions are equivalent.</p>
@@ -367,33 +367,33 @@ cohort based on filtering the Atlas cohort.</p>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/5) - GiBleed_all_end10) <span style="color: #B2B2B2;">[45ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/5) - gibleed_all)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/5) - gibleed_all) <span style="color: #B2B2B2;">[43ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/5) - gibleed_all) <span style="color: #B2B2B2;">[42ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (3/5) - gibleed_default_with_descendants)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (3/5) - gibleed_default_with_descendants) <span style="color: #B2B2B2;">[43ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (3/5) - gibleed_default_with_descendants) <span style="color: #B2B2B2;">[44ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (4/5) - gibleed_default)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (4/5) - gibleed_default) <span style="color: #B2B2B2;">[43ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (5/5) - GiBleed_end10)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (5/5) - GiBleed_end10) <span style="color: #B2B2B2;">[45ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (5/5) - GiBleed_end10) <span style="color: #B2B2B2;">[43ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;cohort&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp1lHRIC/file98b71103f0c4.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpQCjYPo/file97327840d0a7.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">1</span>560 1975-02-16        1975-02-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">2</span>556 2004-08-16        2004-08-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">4</span>009 1992-06-12        1992-06-22     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">2</span>243 2005-10-16        2005-10-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">3</span>658 1999-09-01        1999-09-11     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">3</span>647 1970-01-06        1970-01-16     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">4</span>949 2013-03-31        2013-04-10     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">5</span>210 2015-08-12        2015-08-22     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">2</span>283 1975-10-06        1975-10-16     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1        558 2002-03-22        2002-04-01     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">5</span>014 1949-01-08        1949-01-18     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1        729 2000-04-28        2000-05-08     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">3</span>106 1990-05-10        1990-05-20     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">3</span>232 2004-07-15        2004-07-25     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">3</span>287 1980-07-02        1980-07-12     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1        421 2001-07-24        2001-08-03     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">1</span>579 1988-05-25        1988-06-04     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">5</span>316 1995-08-02        1995-08-12     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">1</span>669 1998-12-29        1999-01-08     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">1</span>112 2007-08-17        2007-08-27     </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
 <span></span>
 <span></span>
@@ -428,8 +428,8 @@ this query and save the result in a new table in the cdm.</p>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                  102            466             466</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                  104            466             466</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                  103            466             466</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                  103            466             466</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                  104            466             466</span></span></code></pre></div>
 <p>In this case we can see that cohorts 1 and 5 were dropped completely
 and some patients were dropped from cohorts 2, 3, and 4.</p>
 <p>Let’s confirm that everyone in cohorts 1 and 5 were in the cohort for
@@ -448,10 +448,10 @@ less than 28 days.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1              9     1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    5             10   467</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    5              2     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    1             10   467</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    1              2     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    5              9     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                    1              1    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    1              1    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    1             10   467</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    1              2     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                    5              9     1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                    5              1    10</span></span></code></pre></div>
 <p>We have confirmed that everyone in cohorts 1 and 5 were in the cohort
 less than 10 days.</p>
@@ -492,14 +492,14 @@ example.</p>
 <span><span class="co">#&gt;   cohort_definition_id mean_days_in_cohort</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                   13               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                   14               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                   12               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                 <span style="text-decoration: underline;">1</span>004               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                  103               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                  104               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                 <span style="text-decoration: underline;">1</span>003               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                  102               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span>                 <span style="text-decoration: underline;">1</span>002               <span style="text-decoration: underline;">7</span>602.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                   12               <span style="text-decoration: underline;">7</span>586.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                   14               <span style="text-decoration: underline;">7</span>586.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                  102               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                 <span style="text-decoration: underline;">1</span>002               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                  103               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                  104               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                 <span style="text-decoration: underline;">1</span>003               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span>                 <span style="text-decoration: underline;">1</span>004               <span style="text-decoration: underline;">7</span>602.</span></span></code></pre></div>
 <p>This is an example of creating new cohorts from existing cohorts
 using CDMConnector. There is a lot of flexibility with this approach.
 Next we will look at completely custom cohort creation which is quite
