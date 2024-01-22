@@ -886,7 +886,6 @@ caprConceptToDataframe <- function(x) {
 recordCohortAttrition <- function(cohort,
                                   reason,
                                   cohortId = NULL) {
-
   omopgenerics::recordCohortAttrition(cohort = cohort,
                                       reason = reason,
                                       cohortId = cohortId)

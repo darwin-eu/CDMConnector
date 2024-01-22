@@ -17,7 +17,3 @@ omopgenerics::cohortTable
 #' @importFrom omopgenerics insertTable
 #' @export
 omopgenerics::insertTable
-
-#' @importFrom omopgenerics recordCohortAttrition
-#' @export
-omopgenerics::recordCohortAttrition
