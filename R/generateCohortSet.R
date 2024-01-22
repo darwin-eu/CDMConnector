@@ -133,7 +133,6 @@ generateCohortSet <- function(cdm,
                               name,
                               computeAttrition = TRUE,
                               overwrite = TRUE) {
-
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
 

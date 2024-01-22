@@ -1,6 +1,9 @@
 
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
+  circe_installed <- require("CirceR")
+  skip_if(!circe_installed, "CirceR not installed")
+
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = write_schema
   )
