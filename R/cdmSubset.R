@@ -297,8 +297,7 @@ cdmSubset <- function(cdm, personId) {
 
   person_subset <- dplyr::tbl(con, inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con))) %>%
     dplyr::rename_all(tolower) %>% # just in case
-    computeQuery(name = glue::glue("person_subset_{prefix}"),
-                 temporary = TRUE)
+    compute(name = glue::glue("person_subset_{prefix}"), temporary = TRUE)
 
   DBI::dbRemoveTable(con, inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)))
 

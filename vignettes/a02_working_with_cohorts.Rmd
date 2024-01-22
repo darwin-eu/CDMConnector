@@ -193,7 +193,7 @@ cdm$cohort_subset <- cdm$cohort %>%
   filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
   # optionally you can modify the cohort_id
   mutate(cohort_definition_id = 100 + cohort_definition_id) %>% 
-  compute_query(name = "cohort_subset", temporary = FALSE, schema = attr(cdm, "write_schema"), overwrite = TRUE) %>% 
+  compute(name = "cohort_subset", temporary = FALSE, overwrite = TRUE) %>% 
   new_generated_cohort_set()
 
 cdm$cohort2
@@ -235,10 +235,7 @@ cdm$cohort_subset <- cdm$cohort %>%
     filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
     mutate(cohort_definition_id = 1000 + cohort_definition_id)
   ) %>% 
-  compute_query(name = "cohort_subset", 
-                temporary = FALSE, 
-                schema = attr(cdm, "write_schema"), 
-                overwrite = TRUE) %>% 
+  compute(name = "cohort_subset", temporary = FALSE, overwrite = TRUE) %>% 
   new_generated_cohort_set() # this function creates the cohort object and metadata
 
 cdm$cohort_subset %>% 

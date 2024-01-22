@@ -15,9 +15,9 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_true("cdm_reference" %in% names(attributes(cdm[["person"]])))
   x <- unclass(cdm)
   expect_false("cdm_reference" %in% names(attributes(x[["person"]])))
-  x[["person"]] <- cdm[["person"]] %>% computeQuery()
+  x[["person"]] <- cdm[["person"]] %>% compute()
   expect_true("cdm_reference" %in% names(attributes(x[["person"]])))
-  cdm[["person"]] <- cdm[["person"]] %>% computeQuery()
+  cdm[["person"]] <- cdm[["person"]] %>% compute()
   x <- unclass(cdm)
   expect_false("cdm_reference" %in% names(attributes(x[["person"]])))
 

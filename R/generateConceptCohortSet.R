@@ -209,7 +209,7 @@ generateConceptCohortSet <- function(cdm,
       dplyr::any_of(c("limit", "prior_observation", "future_observation", "end"))
     ) %>%
     dplyr::distinct() %>%
-    CDMConnector::computeQuery(temporary = TRUE, overwrite = overwrite)
+    dplyr::compute(temporary = TRUE, overwrite = overwrite)
 
   DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
 

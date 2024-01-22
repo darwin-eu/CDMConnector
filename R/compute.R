@@ -83,7 +83,7 @@
 #'   dplyr::filter(domain_id == "Drug") %>%
 #'   dplyr::mutate(isRxnorm = (vocabulary_id == "RxNorm")) %>%
 #'   dplyr::count(domain_id, isRxnorm) %>%
-#'   computeQuery("rxnorm_count")
+#'   compute("rxnorm_count")
 #'
 #' # append to an existing table
 #' rxnorm_count <- concept %>%
@@ -186,7 +186,7 @@ computeQuery <- function(x,
                          schema = NULL,
                          overwrite = TRUE,
                          ...) {
-
+  lifecycle::deprecate_soft("1.3", "computeQuerry()", with = "dplyr::compute()")
   if (is.data.frame(x) || (methods::is(x, "Table") && methods::is(x, "ArrowTabular"))) {
     return(x)
   }

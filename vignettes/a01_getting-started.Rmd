@@ -134,7 +134,7 @@ For example a "cohort definition" is a set of criteria that persons must satisfy
 
 ## Saving query results to the database
 
-Sometime it is helpful to save query results to the database instead of reading the result into R. dplyr provides the `compute` function but due to differences between database systems CDMConnector has needed to export a wrapper that handles the slight differences. CDMConnector's `compute_query` function works similarly but is tested across the OHDSI supported database platforms. It also has a few more options than `dplyr::compute.`
+Sometime it is helpful to save query results to the database instead of reading the result into R. dplyr provides the `compute` function but due to differences between database systems CDMConnector has needed to export a its own method that handles the slight differences.  Internally CDMConnector runs `compute_query` function that is tested across the OHDSI supported database platforms.
 
 If we are writing data to the CDM database we need to add one more argument when creating our cdm reference object, the "write_schema". This is a schema in the database where you have write permissions. Typically this should be a separate schema from the "cdm_schema".
 
@@ -152,17 +152,14 @@ drugs <- cdm$condition_occurrence %>%
   inner_join(cdm$drug_exposure, by = "person_id") %>% 
   count(drug_concept_id, sort = TRUE) %>% 
   left_join(cdm$concept, by = c("drug_concept_id" = "concept_id")) %>% 
-  compute_query(name = "test",
-                temporary = FALSE,
-                schema = "scratch",
-                overwrite = TRUE)
+  compute(name = "test", temporary = FALSE, overwrite = TRUE)
 
 drugs %>% show_query()
 
 drugs
 ```
 
-We can see that the query has been saved to a new table in the scratch schema. `compute_query` returns a dplyr reference to this table.
+We can see that the query has been saved to a new table in the scratch schema. `compute` returns a dplyr reference to this table.
 
 ## Selecting a subset of CDM tables
 

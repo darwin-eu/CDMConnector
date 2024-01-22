@@ -24,7 +24,7 @@ test_date_functions <- function(con, write_schema) {
 
     date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con))) %>%
       dplyr::mutate(date1 = !!asDate(date1), date2 = !!asDate(date2)) %>%
-      computeQuery(temporary = FALSE, name = "tmpdate", schema = write_schema, overwrite = TRUE)
+      compute(temporary = FALSE, name = "tmpdate", overwrite = TRUE)
 
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con)))
   } else {
