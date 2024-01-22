@@ -185,17 +185,17 @@ Using dplyr we can write this query and save the result in a new table in the cd
 ```{r}
 library(dplyr)
 
-cdm$cohort2 <- cdm$cohort %>% 
+cdm$cohort_subset <- cdm$cohort %>% 
   # only keep persons who are in the cohort at least 28 days
   filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
   # optionally you can modify the cohort_id
   mutate(cohort_definition_id = 100 + cohort_definition_id) %>% 
-  compute_query(name = "cohort2", temporary = FALSE, schema = attr(cdm, "write_schema"), overwrite = TRUE) %>% 
+  compute_query(name = "cohort_subset", temporary = FALSE, schema = attr(cdm, "write_schema"), overwrite = TRUE) %>% 
   new_generated_cohort_set()
 
 cdm$cohort2
 
-cohort_count(cdm$cohort2)
+cohort_count(cdm$cohort_subset)
 
 ```
 In this case we can see that cohorts 1 and 5 were dropped completely and some patients were dropped from cohorts 2, 3, and 4.
@@ -219,7 +219,7 @@ Now suppose we would like to create a new cohort table with three different vers
 
 ```{r}
 
-cdm$cohort2 <- cdm$cohort %>% 
+cdm$cohort_subset <- cdm$cohort %>% 
   filter(!!datediff("cohort_start_date", "cohort_end_date") >= 14) %>% 
   mutate(cohort_definition_id = 10 + cohort_definition_id) %>% 
   union_all(
@@ -232,13 +232,16 @@ cdm$cohort2 <- cdm$cohort %>%
     filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
     mutate(cohort_definition_id = 1000 + cohort_definition_id)
   ) %>% 
-  compute_query(name = "cohort2", temporary = FALSE, schema = attr(cdm, "write_schema"), overwrite = TRUE) %>% 
+  compute_query(name = "cohort_subset", 
+                temporary = FALSE, 
+                schema = attr(cdm, "write_schema"), 
+                overwrite = TRUE) %>% 
   new_generated_cohort_set() # this function creates the cohort object and metadata
 
-cdm$cohort2 %>% 
+cdm$cohort_subset %>% 
   mutate(days_in_cohort = !!datediff("cohort_start_date", "cohort_end_date")) %>% 
   group_by(cohort_definition_id) %>% 
-  summarize(mean_days_in_cohort = mean(days_in_cohort)) %>% 
+  summarize(mean_days_in_cohort = mean(days_in_cohort, na.rm = TRUE)) %>% 
   collect() %>% 
   arrange(mean_days_in_cohort)
 
