@@ -17,3 +17,7 @@ omopgenerics::cohortTable
 #' @importFrom omopgenerics insertTable
 #' @export
 omopgenerics::insertTable
+
+#' @importFrom omopgenerics dropTable
+#' @export
+omopgenerics::dropTable
