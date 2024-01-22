@@ -597,40 +597,30 @@ newGeneratedCohortSet <- function(cohortRef,
 #' @param x A cohort_table object
 #'
 #' @export
-cohortAttrition <- function(x) { UseMethod("cohortAttrition") }
+cohortAttrition <- function(x) {
+  lifecycle::deprecate_warn("1.3", "cohortAttrition()", "attrition()")
+  omopgenerics::attrition(x)
+}
 
 
 #' @rdname cohortAttrition
 #' @export
 cohort_attrition <- cohortAttrition
 
-
-#' @export
-cohortAttrition.cohort_table <- function(x) {
-  omopgenerics::attrition(x)
-}
-
 #' Get cohort settings from a cohort_table object
 #'
 #' @param x A cohort_table object
 #'
 #' @export
-cohortSet <- function(x) { UseMethod("cohortSet") }
+cohortSet <- function(x) {
+  lifecycle::deprecate_warn("1.3", "cohortSet()", "settings()")
+  omopgenerics::settings(x)
+}
 
 
 #' @rdname cohortSet
 #' @export
 cohort_set <- cohortSet
-
-#' @export
-cohortSet.cohort_table <- function(x) {
-  omopgenerics::settings(x)
-}
-
-#' Get cohort counts from a generated_cohort_set object.
-#' @importFrom omopgenerics cohortCount
-#' @export
-omopgenerics::cohortCount
 
 #' Get cohort counts from a generated_cohort_set object.
 #'
@@ -652,9 +642,7 @@ omopgenerics::cohortCount
 #' )
 #' cohort_count(cdm$new_cohort)
 #' }
-cohort_count <- function(cohort){
-  omopgenerics::cohortCount(cohort)
-}
+cohort_count <- cohortCount
 
 # Compute the attrition for a set of cohorts (internal function)
 #
