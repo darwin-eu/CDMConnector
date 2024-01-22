@@ -1,8 +1,6 @@
 
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
-
-  circe_installed <- require("CirceR")
-  skip_if(!circe_installed, "CirceR not installed")
+  skip_if_not_installed("CirceR")
 
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = write_schema
@@ -78,6 +76,7 @@ test_that("Generation from Capr Cohorts", {
   skip_if_not(eunomia_is_available())
   skip_if_not_installed("Capr", minimum_version = "2.0.5")
   skip_if_not_installed("duckdb")
+  skip_if_not_installed("CirceR")
   library(Capr)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())

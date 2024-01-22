@@ -1,5 +1,5 @@
 test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
-
+  skip_if_not_installed("CirceR")
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = cdm_schema,

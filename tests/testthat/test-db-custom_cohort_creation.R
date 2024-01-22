@@ -1,6 +1,6 @@
 
 test_custom_derived_cohort <- function(con, cdm_schema, write_schema) {
-
+  skip_if_not_installed("CirceR")
   cdm <- cdm_from_con(con, cdm_schema, write_schema)
   cohort_set <- read_cohort_set(system.file("cohorts3", package = "CDMConnector"))
   cdm <- generate_cohort_set(cdm, cohort_set, name = "cohort")
