@@ -32,7 +32,7 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
 
 
   if (dbms == "duckdb") {
-    return(DBI::dbConnect(duckdb::duckdb(), eunomia_dir()))
+    return(DBI::dbConnect(duckdb::duckdb(dbdir =eunomia_dir())))
   }
 
   if (dbms == "postgres" && Sys.getenv("CDM5_POSTGRESQL_DBNAME") != "") {

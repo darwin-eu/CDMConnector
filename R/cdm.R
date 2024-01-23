@@ -27,6 +27,16 @@ cdm_from_con <- function(con,
                          cdm_name = NULL,
                          achilles_schema = NULL) {
 
+  if (!DBI::dbIsValid(con)) {
+    cli::cli_abort("The connection is not valid. Is the database connection open?")
+  }
+
+  if (missing(write_schema)) {
+    cli::cli_abort("write_schema is now required to create a cdm object with a database backend.
+                   Please make sure you have a schema in your database where you can create new tables and provide it in the `write_schema` argument.
+                   If your schema has muliple parts please provide a length 2 character vector: `write_schema = c('my_db', 'my_schema')`")
+  }
+
   checkmate::assert_character(cdm_name, any.missing = FALSE, len = 1, null.ok = TRUE)
   checkmate::assert_character(cdm_schema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(write_schema, min.len = 1, max.len = 3, any.missing = F)
