@@ -8,7 +8,7 @@ name: redshift-test
 
 jobs:
   Postgres-test:
-    if: github.repository == 'darwin-eu/CDMConnector'
+    # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
       image: executionengine.azurecr.io/darwin-base:v0.1
