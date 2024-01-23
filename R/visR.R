@@ -7,8 +7,9 @@
 #' `r lifecycle::badge("experimental")`
 #'
 #' @return No return value. This function will create one attrition plot for each generated cohort.
+#'
 #' @export
-#' @importFrom visR visr
+#' @keywords internal
 #'
 #' @examples
 #' \dontrun{
@@ -21,13 +22,14 @@
 #' cdm <- generate_cohort_set(cdm, cohort_set, name = "cohort", overwrite = T)
 #'
 #' cohort_attrition(cdm$cohort) %>%
-#'   dplyr::filter(cohort_definition_id == 3) %>%
-#'   visR::visr()
+#'  dplyr::filter(cohort_definition_id == 3) %>%
+#'  visR::visr()
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 #'
 visr.omop_attrition <- function(x, ...) {
+  rlang::check_installed("visR")
   if (!rlang::is_installed("visR")) cli::cli_abort("Please install the visR package.")
 
   ids <- unique(x$cohort_definition_id)
@@ -37,7 +39,7 @@ visr.omop_attrition <- function(x, ...) {
   checkmate::assertIntegerish(ids, len = 1, lower = 1, any.missing = FALSE)
 
   x <- x %>%
-    dplyr::select(Criteria = .data$reason, `Remaining N` = .data$number_subjects)
+    dplyr::select(Criteria = "reason", `Remaining N` = "number_subjects")
 
   NextMethod(x)
 }

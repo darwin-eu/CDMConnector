@@ -39,7 +39,6 @@ dbSource <- function(con,
 }
 
 #' @export
-#' @importFrom omopgenerics insertTable
 insertTable.db_cdm <- function(cdm,
                                name,
                                table,
@@ -60,10 +59,6 @@ insertTable.db_cdm <- function(cdm,
     omopgenerics::cdmTable(src = src, name = name)
   return(x)
 }
-
-#' @importFrom omopgenerics dropTable
-#' @export
-omopgenerics::dropTable
 
 #' @export
 #' @importFrom tidyselect starts_with ends_with matches

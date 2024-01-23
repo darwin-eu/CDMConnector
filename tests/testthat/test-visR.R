@@ -1,7 +1,9 @@
 
 test_that("visR attrition diagram works", {
   skip_if_not_installed("visR")
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
+  skip_on_cran()
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(

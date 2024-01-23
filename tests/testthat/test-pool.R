@@ -1,5 +1,5 @@
 test_that("pool connections work", {
-
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("pool")
   pool <- pool::dbPool(
     drv = duckdb::duckdb(),

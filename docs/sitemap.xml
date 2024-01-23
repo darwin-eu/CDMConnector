@@ -13,7 +13,7 @@
     <loc>/articles/a01_getting-started.html</loc>
   </url>
   <url>
-    <loc>/articles/a02_working_with_cohorts.html</loc>
+    <loc>/articles/a02_cohorts.html</loc>
   </url>
   <url>
     <loc>/articles/a03_dbplyr.html</loc>
@@ -206,5 +206,8 @@
   </url>
   <url>
     <loc>/reference/version.html</loc>
+  </url>
+  <url>
+    <loc>/reference/visr.omop_attrition.html</loc>
   </url>
 </urlset>

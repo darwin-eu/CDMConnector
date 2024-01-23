@@ -176,6 +176,12 @@ if (Sys.getenv("CI_TEST_DB") == "") {
     #"snowflake"
     # ,
     # "spark"
+    # ,
+    # "sqlserver"
+    # ,"snowflake"
+    # ,"spark"
+    # ,"oracle"
+    # "redshift"
   )
 
   } else {

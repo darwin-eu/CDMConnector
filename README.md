@@ -18,7 +18,7 @@ status](https://github.com/darwin-eu/CDMConnector/workflows/sqlserver-odbc-test/
 [![Redshift
 status](https://github.com/darwin-eu/CDMConnector/workflows/redshift-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aredshift-test)
 [![Snowflake
-status](https://github.com/darwin-eu/CDMConnector/workflows/snowflake-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-test)
+status](https://github.com/darwin-eu/CDMConnector/workflows/snowflake-odbc-test/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-odbc-test)
 <!-- badges: end -->
 
 > Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
@@ -105,7 +105,7 @@ Use dplyr verbs with the table references.
     tally(cdm$person)
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp921L2M/file627412c0268b.duckdb]
+    ## # Database: DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpDEBaNI/file119253539b760.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -117,7 +117,7 @@ Compose operations with the pipe.
       count(top_conditions = concept_name, sort = TRUE)
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp921L2M/file627412c0268b.duckdb]
+    ## # Database:   DuckDB 0.8.1 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpDEBaNI/file119253539b760.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -153,7 +153,7 @@ Run a simple quality check on a cdm.
 
 CDMConnector is tested using the following DBI driver backends:
 
--   [RPostgres](https://rpostgres.r-dbi.org/reference/postgres) on
+-   [RPostgres](https://rpostgres.r-dbi.org/) on
     Postgres and Redshift
 -   [odbc](https://solutions.posit.co/connections/db/r-packages/odbc/)
     on Microsoft SQL Server, Oracle, and Databricks/Spark

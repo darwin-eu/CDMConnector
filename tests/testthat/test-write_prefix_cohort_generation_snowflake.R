@@ -1,6 +1,6 @@
 
 test_that("generate_cohort_set works with write_prefix on snowflake", {
-
+  skip_if_not_installed("CirceR")
   skip_on_cran()
   skip_if_not("snowflake" %in% dbToTest)
   prefix <- paste0("test", as.integer(Sys.time()) %% 10000, "_")

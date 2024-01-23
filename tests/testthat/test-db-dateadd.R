@@ -24,7 +24,7 @@ test_date_functions <- function(con, write_schema) {
 
     date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con))) %>%
       dplyr::mutate(date1 = !!asDate(date1), date2 = !!asDate(date2)) %>%
-      computeQuery(temporary = FALSE, name = "tmpdate", schema = write_schema, overwrite = TRUE)
+      compute(temporary = FALSE, name = "tmpdate", overwrite = TRUE)
 
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con)))
   } else {
@@ -104,6 +104,7 @@ test_date_functions <- function(con, write_schema) {
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - date functions"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == ""))
     con <- get_connection(dbtype)

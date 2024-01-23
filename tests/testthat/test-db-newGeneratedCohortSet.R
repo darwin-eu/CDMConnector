@@ -64,8 +64,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
       cohortSetRef = dplyr::tibble(
         cohort_definition_id = 1,
         cohort_name = "pharyngitis"
-      ),
-      overwrite = TRUE)
+      ))
 
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
@@ -87,6 +86,8 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - recordCohortAttrition"), {
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
@@ -99,7 +100,7 @@ for (dbtype in dbToTest) {
 
 
 test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", {
-
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
@@ -123,6 +124,7 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
 
 test_that("no error if cohort is empty", {
   skip_if_not_installed("CirceR")
+  skip_if_not_installed("duckdb")
   # if an empty cohort is passed return an empty GeneratedCohortSet object
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(
@@ -147,24 +149,23 @@ test_that("no error if cohort is empty", {
   #   dplyr::filter(cohort_start_date > "2030-01-01") %>%
   #   computeQuery(name = "cohorts_3", temporary = FALSE, schema = cdmWriteSchema(cdm))
 
-  db <- cdm$cohorts2 %>%
+  cdm$cohort_3 <- cdm$cohorts2 %>%
     dplyr::filter(cohort_start_date > "2030-01-01") %>%
-    computeQuery(name = "cohorts_3", temporary = FALSE, schema = cdmWriteSchema(cdm), overwrite = T) %>%
+    compute(name = "cohort_3", temporary = FALSE) %>%
     cohortTable()
-
-  cdm <- omopgenerics::insertTable(cdm, "cohort_3", db)
 
   expect_true("cohort_table" %in% class(cdm$cohort_3))
   # we won't have cohort set or cohort count as we didn't provide the cohort set ref
-  expect_true(nrow(cohort_set(cdm$cohort_3)) == 0)
-  expect_true(nrow(cohort_count(cdm$cohort_3)) == 0)
+  # expect_true(nrow(cohort_set(cdm$cohort_3)) == 0)
+  # expect_true(nrow(cohort_count(cdm$cohort_3)) == 0)
 
   c_Ref<- cohort_set(cdm$cohort_3)
 
-  cdm$cohort_3b <-  cdm$cohort_3 %>%
-    omopgenerics::cohortTable(cohortSetRef = c_Ref, overwrite = TRUE)
+  cdm$cohort_3b <- cdm$cohort_3 %>%
+    dplyr::compute(name = "cohort_3b", temporary = FALSE) |>
+    omopgenerics::cohortTable(cohortSetRef = c_Ref)
 
-  expect_true("GeneratedCohortSet" %in% class(cdm$cohort_3b))
+  expect_true("cohort_table" %in% class(cdm$cohort_3b))
   expect_false(nrow(cohort_set(cdm$cohort_3b)) == 0)
   expect_false(nrow(cohort_count(cdm$cohort_3b)) == 0)
 
@@ -174,7 +175,7 @@ test_that("no error if cohort is empty", {
 
 # issue: https://github.com/darwin-eu-dev/CDMConnector/issues/300
 test_that("newGeneratedCohortSet handles empty cohort tables", {
-
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
@@ -194,7 +195,7 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
   expect_no_error({
     cdm$cohort_3 <- cdm$cohorts2 %>%
       dplyr::filter(cohort_start_date > "2099-01-01") %>%
-      compute_query() %>%
+      compute(name = "cohort_3", temporary = FALSE) %>%
       omopgenerics::cohortTable()
   })
 

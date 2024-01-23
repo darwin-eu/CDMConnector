@@ -4,7 +4,7 @@
 \alias{visr.omop_attrition}
 \title{Create an attrition diagram from a generated cohort set}
 \usage{
-\method{visr}{omop_attrition}(x, ...)
+visr.omop_attrition(x, ...)
 }
 \arguments{
 \item{x}{A cohort_table object}
@@ -30,10 +30,11 @@ cohort_set <- read_cohort_set(system.file("cohorts2", package = "CDMConnector"))
 cdm <- generate_cohort_set(cdm, cohort_set, name = "cohort", overwrite = T)
 
 cohort_attrition(cdm$cohort) \%>\%
-  dplyr::filter(cohort_definition_id == 3) \%>\%
-  visR::visr()
+ dplyr::filter(cohort_definition_id == 3) \%>\%
+ visR::visr()
 
 DBI::dbDisconnect(con, shutdown = TRUE)
 }
 
 }
+\keyword{internal}
