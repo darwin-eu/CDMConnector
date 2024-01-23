@@ -160,11 +160,11 @@ test_that("adding achilles", {
     stratum_2_name = 1, stratum_3_name = 1, stratum_4_name = 1,
     stratum_5_name = 1, is_default = 1, category = 1
   )
+
   cdm <- omopgenerics::insertTable(cdm = cdm,
                                     table = achilles_analysis_tibble,
                                     name = "achilles_analysis",
                                     overwrite = TRUE)
 
   DBI::dbDisconnect(con, shutdown = TRUE)
-
 })
