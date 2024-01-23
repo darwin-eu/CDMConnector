@@ -98,7 +98,7 @@ cohortUnion <- cohort_union
 #
 #   # collapse cohorts just
 #   x <- cohort_collapse(x) %>%
-#     computeQuery(temporary = TRUE)
+#     compute(temporary = TRUE)
 #
 #   y <- y %>%
 #     dplyr::mutate(cohort_definition_id = -1) %>%

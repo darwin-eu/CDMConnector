@@ -1,4 +1,5 @@
 #' @keywords internal
+#' @import omopgenerics
 #' @import DBI
 #' @importMethodsFrom DBI dbConnect
 #' @importFrom dbplyr in_schema

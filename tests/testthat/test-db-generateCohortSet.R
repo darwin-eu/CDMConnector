@@ -1,9 +1,10 @@
 
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
+  skip_if_not_installed("CirceR")
 
-  cdm <- cdm_from_con(con,
-                      cdm_schema = cdm_schema,
-                      write_schema = write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = write_schema
+  )
 
   # test read cohort set with a cohortsToCreate.csv
   expect_error(readCohortSet(path = "does_not_exist"))
@@ -39,7 +40,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_s3_class(df, "data.frame")
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% colnames(df)))
 
-  expect_true(all(c("cohort_set", "cohort_count", "cohort_attrition") %in% names(attributes(cdm$chrt0))))
+  expect_true(all(c("cohort_set", "cohort_attrition", "cdm_reference") %in% names(attributes(cdm$chrt0))))
   attrition_df <- cohortAttrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
@@ -54,13 +55,9 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   # empty data
   expect_error(generateCohortSet(cdm, cohortSet %>% head(0), name = "cohorts", overwrite = TRUE))
-  drop_table(cdm, dplyr::starts_with("chrt0_"))
+  dropTable(cdm, dplyr::starts_with("chrt0_"))
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
-
-# dbtype = "snowflake"
-# dbToTest = c("postgres", "redshift", "duckdb") #, "sqlserver", "postgres", "redshift", "duckdb")
-# dbtype = "snowflake"
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
@@ -79,13 +76,12 @@ test_that("Generation from Capr Cohorts", {
   skip_if_not(eunomia_is_available())
   skip_if_not_installed("Capr", minimum_version = "2.0.5")
   skip_if_not_installed("duckdb")
+  skip_if_not_installed("CirceR")
   library(Capr)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- CDMConnector::cdm_from_con(
-    con = con,
-    cdm_schema = "main",
-    write_schema = "main"
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
 
   gibleed_cohort_definition <- cohort(
@@ -118,7 +114,9 @@ test_that("duckdb - phenotype library generation", {
     PhenotypeLibrary::getPlCohortDefinitionSet()
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", write_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
   expect_error(
     generate_cohort_set(cdm, cohort_set, name = "cohort", overwrite = TRUE, compute_attrition = TRUE),
     NA
@@ -130,17 +128,15 @@ test_that("TreatmentPatterns cohort works", {
   skip_if_not_installed("TreatmentPatterns")
   skip_on_cran()
   skip("manual test")
+  skip("failing test")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(
-    con = con,
-    cdm_schema = "main",
-    write_schema = "main"
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
 
   cohortSet <- readCohortSet(
-    system.file(
-      package = "TreatmentPatterns",
-      "examples", "CDM", "cohorts", "ViralSinusitis", "JSON"))
+    system.file("exampleCohorts", package = "TreatmentPatterns")
+  )
 
   cdm <- generateCohortSet(
     cdm = cdm,
@@ -181,7 +177,10 @@ test_that("newGeneratedCohortSet works with prefix", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
   write_schema <- c(schema = "main", prefix = "test_")
-  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main",
+    write_schema = write_schema
+  )
 
   cdm$cohort <- cdm$condition_era %>%
     head(1) %>%
@@ -192,12 +191,9 @@ test_that("newGeneratedCohortSet works with prefix", {
       cohort_start_date = "condition_era_start_date",
       cohort_end_date = "condition_era_end_date"
     ) %>%
-    compute_query(name = "cohort",
-                  schema = write_schema,
-                  temporary = FALSE,
-                  overwrite = TRUE)
+    compute(name = "cohort", temporary = FALSE, overwrite = TRUE)
 
-  cdm$cohort <- new_generated_cohort_set(cdm$cohort)
+  cdm$cohort <- cohortTable(cdm$cohort)
 
   expect_true("cohort" %in% list_tables(con, write_schema))
   expect_true("test_cohort" %in% list_tables(con, "main"))
@@ -215,7 +211,9 @@ test_that("no error is given if attrition table already exists and overwrite = T
   skip_if_not_installed("CirceR")
   skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
   cohort_set <- read_cohort_set(system.file("cohorts1", package = "CDMConnector"))
 
   cdm <- generateCohortSet(cdm,

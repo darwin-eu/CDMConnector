@@ -1,6 +1,6 @@
 
 test_custom_derived_cohort <- function(con, cdm_schema, write_schema) {
-
+  skip_if_not_installed("CirceR")
   cdm <- cdm_from_con(con, cdm_schema, write_schema)
   cohort_set <- read_cohort_set(system.file("cohorts3", package = "CDMConnector"))
   cdm <- generate_cohort_set(cdm, cohort_set, name = "cohort")
@@ -18,7 +18,7 @@ test_custom_derived_cohort <- function(con, cdm_schema, write_schema) {
         dplyr::filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>%
         dplyr::mutate(cohort_definition_id = 1000 + cohort_definition_id)
     ) %>%
-    compute_query(name = "cohort2", temporary = FALSE, schema = write_schema, overwrite = TRUE)
+    compute(name = "cohort2", temporary = FALSE, overwrite = TRUE)
 
   chr <- new_generated_cohort_set(cdm$cohort2) # this function creates the cohort object and metadata
 

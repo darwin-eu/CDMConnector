@@ -20,101 +20,101 @@
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
 cdm_from_con <- function(con,
-                         cdm_schema = NULL,
-                         write_schema = NULL,
+                         cdm_schema,
+                         write_schema,
                          cohort_tables = NULL,
                          cdm_version = "5.3",
                          cdm_name = NULL,
                          achilles_schema = NULL) {
 
-  cdm_tables <- tbl_group("all")
-
-  checkmate::assert_true(methods::is(con, "DBIConnection") || methods::is(con, "Pool"))
-
-  if (methods::is(con, "Pool")) {
-    if (!rlang::is_installed("pool")) {
-      rlang::abort("Please install the pool package.")
-    }
-    con <- pool::localCheckout(con)
-  }
-
-  if (methods::is(con, "DatabaseConnectorConnection")) {
-    rlang::warn("Not all functionality is supported when DatabaseConnector as your database driver! Some issues may occur.")
-  }
-
-  checkmate::assert_true(.dbIsValid(con))
-
-  if (dbms(con) %in% c("duckdb", "sqlite") && is.null(cdm_schema)) {
-    cdm_schema = "main"
-  }
-
-  checkmate::assert_character(cdm_schema, min.len = 1, max.len = 3)
-  checkmate::assert_character(write_schema, min.len = 1, max.len = 3, null.ok = TRUE)
-  checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, null.ok = TRUE)
+  checkmate::assert_character(cdm_name, any.missing = FALSE, len = 1, null.ok = TRUE)
+  checkmate::assert_character(cdm_schema, min.len = 1, max.len = 3, any.missing = F)
+  checkmate::assert_character(write_schema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
-  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"))
-  checkmate::assert_character(cdm_name, null.ok = TRUE)
+  checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
+  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
 
-  if (cdm_version == "auto") {
-    cdm_version <- detect_cdm_version(con, cdm_schema = cdm_schema)
-  }
+  # create source object and validate connecion
+  src <- dbSource(con = con, writeSchema = write_schema)
+  con <- attr(src, "dbcon")
 
-  # Try to get the cdm name if not supplied
+  # read omop tables
   dbTables <- listTables(con, schema = cdm_schema)
-  if (is.null(cdm_name) && ("cdm_source" %in% tolower(dbTables))) {
-    if ("cdm_source" %in% dbTables) {
-      cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "cdm_source", dbms(con)))
-    } else if ("CDM_SOURCE" %in% dbTables) {
-      cdm_source <- dplyr::tbl(con, inSchema(cdm_schema, "CDM_SOURCE", dbms(con)))
-    }
-
-    cdm_source <- cdm_source %>%
-      head() %>%
-      dplyr::collect() %>%
-      dplyr::rename_all(tolower)
-
-    cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[1],
-                                cdm_source$cdm_source_abbreviation[1])
-  }
-
-  if (is.null(cdm_name)) {
-    rlang::abort("cdm_name must be supplied!")
-  }
-
-  # only get the cdm tables that exist in the database
-  cdm_tables <- cdm_tables[which(cdm_tables %in% tolower(dbTables))]
-  if (length(cdm_tables) == 0) {
+  omop_tables <- omopgenerics::omopTables()
+  omop_tables <- omop_tables[which(omop_tables %in% tolower(dbTables))]
+  if (length(omop_tables) == 0) {
     rlang::abort("There were no cdm tables found in the cdm_schema!")
   }
-
-  # Handle uppercase table names in the database
-  cdm_tables_in_db <- dbTables[which(tolower(dbTables) %in% cdm_tables)]
+  cdm_tables_in_db <- dbTables[which(tolower(dbTables) %in% omop_tables)]
   if (all(cdm_tables_in_db == toupper(cdm_tables_in_db))) {
-    cdm_tables <- toupper(cdm_tables)
+    omop_tables <- toupper(omop_tables)
   } else if (!all(cdm_tables_in_db == tolower(cdm_tables_in_db))) {
     rlang::abort("CDM database tables should be either all upppercase or all lowercase!")
   }
 
-  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con)), check_from = FALSE) %>%
-                    dplyr::rename_all(tolower)) %>%
-    rlang::set_names(tolower(cdm_tables))
+  cdmTables <- purrr::map(
+    omop_tables, ~ dplyr::tbl(src = src, schema = cdm_schema, name = .)
+  ) %>%
+    rlang::set_names(tolower(omop_tables))
+
+  if(is.null(cdm_name)){
+  if("cdm_source" %in% names(cdmTables)){
+    cdm_name <- cdmTables$cdm_source %>%
+    utils::head(1) %>%
+    dplyr::pull("cdm_source_name")
+  }
+  }
+
+  if(is.null(cdm_name) ||
+     length(cdm_name) != 1 ||
+     is.na(cdm_name))  {
+     cli::cli_alert_warning("cdm name not specified and could not be inferred from the cdm source table")
+    cdm_name <- "An OMOP CDM database"
+      }
+
 
   if (!is.null(achilles_schema)) {
-  achilles <- c("achilles_analysis", "achilles_results", "achilles_results_dist")
-  acTables <- listTables(con, schema = achilles_schema)
-  achilles_tables <- achilles[which(achilles %in% tolower(acTables))]
-  if (length(achilles_tables) != 3) {
-  cli::cli_abort("Achilles tables not found in {achilles_schema}!")
-  }
-  achilles <- purrr::map(achilles_tables,
-             ~dplyr::tbl(con, inSchema(achilles_schema, ., dbms(con)), check_from = FALSE) %>%
-               dplyr::rename_all(tolower)) %>%
-    rlang::set_names(tolower(achilles_tables))
-  cdm <- purrr::flatten(list(cdm, achilles))
+    achillesReqTables <- omopgenerics::achillesTables()
+    acTables <- listTables(con, schema = achilles_schema)
+    achilles_tables <- achillesReqTables[which(achillesReqTables %in% tolower(acTables))]
+    if (length(achilles_tables) != 3) {
+      cli::cli_abort("Achilles tables not found in {achilles_schema}!")
+    }
+    achillesTables <- purrr::map(
+      achilles_tables,
+      ~ dplyr::tbl(src = src, schema = achilles_schema, .)
+    ) %>%
+      rlang::set_names(tolower(achilles_tables))
+  } else {
+    achillesTables <- list()
   }
 
-  if (!is.null(write_schema)) {
-    verify_write_access(con, write_schema = write_schema)
+  cdm <- omopgenerics::cdmReference(
+    tables = c(cdmTables, achillesTables), cdmName = cdm_name
+  )
+
+  write_schema_tables <- listTables(con, schema = write_schema)
+  for (cohort_table in cohort_tables) {
+    nms <- paste0(cohort_table, c("", "_set", "_attrition"))
+    x <- purrr::map(nms, function(nm) {
+      if (nm %in% write_schema_tables) {
+        dplyr::tbl(src = src, schema = write_schema, name = nm)
+      } else if (nm %in% toupper(write_schema_tables)) {
+        dplyr::tbl(src = src, schema = write_schema, name = toupper(nm))
+      } else {
+        NULL
+      }
+    })
+    cohort <- x[[1]]
+    if(is.null(cohort)) {
+      rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
+    }
+
+    cdm[[cohort_table]] <- omopgenerics::cohortTable(
+      table = cohort,
+      cohortSetRef = x[[2]],
+      cohortAttritionRef = x[[3]]
+    )
   }
 
   if (dbms(con) == "snowflake") {
@@ -140,122 +140,44 @@ cdm_from_con <- function(con,
     DBI::dbExecute(con, glue::glue_sql("USE SCHEMA {s2}"))
   }
 
-  # add class info -----
-
-  # TODO use a cdm_reference constructor function
-  class(cdm) <- "cdm_reference"
+  # TO BE REMOVED WHEN CIRCER WORKS WITH CDM OBJECT
   attr(cdm, "cdm_schema") <- cdm_schema
+  # TO BE REMOVED WHEN DOWNSTREAM PACKAGES NO LONGER USE THESE ATTRIBUTES
   attr(cdm, "write_schema") <- write_schema
-  attr(cdm, "achilles_schema") <- achilles_schema
-  attr(cdm, "dbcon") <- con
-  attr(cdm, "cdm_version") <- cdm_version
-  attr(cdm, "cdm_name") <- cdm_name
-
-  # Add existing GeneratedCohortSet objects to cdm object
-  if (!is.null(cohort_tables)) {
-    if (is.null(write_schema)) {
-      rlang::abort("write_schema is required when using cohort_tables")
-    }
-
-    write_schema_tables <- listTables(con, schema = write_schema)
-
-    for (cohort_table in cohort_tables) {
-
-      # A generated cohort set object has tables: {cohort}
-      # and attribute tables {cohort}_set, {cohort}_attrition, {cohort}_count
-      # Only {cohort}_attrition is optional. The others will be created if not supplied.
-      nms <- paste0(cohort_table, c("", "_set", "_count", "_attrition"))
-      x <- purrr::map(nms, function(nm) {
-        if (nm %in% write_schema_tables) {
-          dplyr::tbl(con, inSchema(write_schema, nm, dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else if (nm %in% toupper(write_schema_tables)) {
-          dplyr::tbl(con, inSchema(write_schema, toupper(nm), dbms(con))) %>%
-            dplyr::rename_all(tolower)
-        } else {
-          NULL
-        }
-      })
-
-      cohort_ref <- x[[1]]
-      cohort_set_ref <- x[[2]]
-      cohort_count_ref <- x[[3]]
-      cohort_attrition_ref <- x[[4]]
-
-      if (is.null(cohort_ref)) {
-        rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
-      }
-
-      if (is.null(cohort_set_ref)) {
-        # create the required cohort_set table
-        cohort_set_ref <- cohort_ref %>%
-          dplyr::distinct(.data$cohort_definition_id) %>%
-          dplyr::mutate(cohort_name = paste("cohort", as.integer(.data$cohort_definition_id))) %>%
-          computeQuery(name = paste0(cohort_table, "_set"),
-                       schema = write_schema,
-                       temporary = FALSE,
-                       overwrite = TRUE)
-      }
-
-      if (is.null(cohort_count_ref)) {
-        # create the required cohort_count table
-        cohort_count_ref <- cohort_ref %>%
-          dplyr::ungroup() %>%
-          dplyr::group_by(.data$cohort_definition_id) %>%
-          dplyr::summarise(number_records = dplyr::n(),
-                           number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
-          computeQuery(name = paste0(cohort_table, "_count"),
-                       schema = write_schema,
-                       temporary = FALSE,
-                       overwrite = TRUE)
-      }
-
-      # Note: use name without prefix (i.e. `cohort_tables[i]`) in the cdm object
-      cdm[[cohort_table]] <- cohort_ref
-      class(cdm) <- "cdm_reference"
-
-      cdm[[cohort_table]] <- new_generated_cohort_set(
-        cohort_ref = cdm[[cohort_table]],
-        cohort_set_ref = cohort_set_ref,
-        cohort_count_ref = cohort_count_ref,
-        cohort_attrition_ref = cohort_attrition_ref)
-    }
-  }
-
-  # add "cdm_tbl" as a class of every table in our cdm reference
-  # cdm <- lapply(cdm, function(x) {
-  #   class(x) <- c("cdm_tbl", class(x))
-  #   return(x)
-  # })
-
-  # TODO use a cdm_reference constructor function
-  # class(cdm) <- "cdm_reference"
-  attr(cdm, "cdm_schema") <- cdm_schema
-  attr(cdm, "write_schema") <- write_schema
-  attr(cdm, "dbcon") <- con
-  attr(cdm, "cdm_version") <- cdm_version
-  attr(cdm, "cdm_name") <- cdm_name
+  attr(cdm, "dbcon") <- attr(attr(cdm, "cdm_source"), "dbcon")
 
   return(cdm)
 }
 
+#' @export
+#' @importFrom dplyr tbl
+tbl.db_cdm <- function(src, schema, name) {
+  con <- attr(src, "dbcon")
+  fullName <- inSchema(schema = schema, table = name, dbms = dbms(con))
+  x <- dplyr::tbl(src = con, fullName) |>
+    dplyr::rename_all(tolower) |>
+    omopgenerics::cdmTable(src = src, name = tolower(name))
+  return(x)
+}
+
+
 #' @rdname cdm_from_con
 #' @export
 cdmFromCon <- function(con,
-                       cdmSchema = NULL,
-                       writeSchema = NULL,
-                       achillesSchema = NULL,
+                       cdmSchema,
+                       writeSchema,
                        cohortTables = NULL,
                        cdmVersion = "5.3",
-                       cdmName = NULL) {
+                       cdmName = NULL,
+                       achillesSchema = NULL) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,
     write_schema = writeSchema,
-    achilles_schema = achillesSchema,
     cohort_tables = cohortTables,
     cdm_version = cdmVersion,
-    cdm_name = cdmName
+    cdm_name = cdmName,
+    achilles_schema = achillesSchema
   )
 }
 
@@ -270,14 +192,15 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
     ))
   }
 
-  cdm <- purrr::map(cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
+  cdm <- purrr::map(
+    cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
                       dplyr::rename_all(tolower)) %>%
     rlang::set_names(tolower(cdm_tables))
 
   # Try a few different things to figure out what the cdm version is
   visit_occurrence_names <- cdm$visit_occurrence %>%
     head() %>%
-    collect() %>%
+    dplyr::collect() %>%
     colnames() %>%
     tolower()
 
@@ -291,7 +214,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 
   procedure_occurrence_names <- cdm$procedure_occurrence %>%
     head() %>%
-    collect() %>%
+    dplyr::collect() %>%
     colnames() %>%
     tolower()
 
@@ -324,7 +247,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' cdm <- cdm_from_con(con, "eunomia", "main")
 #' version(cdm)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
@@ -352,13 +275,9 @@ version <- function(cdm) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' cdm <- cdm_from_con(con, "eunomia", "main")
 #' cdmName(cdm)
-#' #> [1] "Synthea synthetic health database"
-#'
-#' cdm <- cdm_from_con(con, "main", cdm_name = "Example CDM")
-#' cdmName(cdm)
-#' #> [1] "Example CDM"
+#' #> [1] "eunomia"
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
@@ -371,21 +290,6 @@ cdmName <- function(cdm) {
 #' @rdname cdmName
 #' @export
 cdm_name <- cdmName
-
-#' Print a CDM reference object
-#'
-#' @param x A cdm_reference object
-#' @param ... Included for compatibility with generic. Not used.
-#'
-#' @return Invisibly returns the input
-#' @export
-print.cdm_reference <- function(x, ...) {
-  type <- class(x[[1]])[[1]]
-  cli::cat_line(glue::glue("# OMOP CDM reference ({type})"))
-  cli::cat_line("")
-  cli::cat_line(paste("Tables:", paste(names(x), collapse = ", ")))
-  invisible(x)
-}
 
 # con = database connection
 # write_schema = schema with write access
@@ -466,7 +370,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #'                       user = "postgres",
 #'                       password = Sys.getenv("PASSWORD"))
 #'
-#' cdm <- cdm_from_con(con) %>%
+#' cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "public") %>%
 #'   cdm_select_tbl(tbl_group("vocab"))
 #' }
 tbl_group <- function(group) {
@@ -708,35 +612,6 @@ cdmFromFiles <- function(path,
                  as_data_frame = asDataFrame)
 }
 
-
-#' Bring a remote CDM reference into R
-#'
-#' This function calls collect on a list of lazy queries and returns
-#' the result as a list of dataframes.
-#'
-#' @param x A cdm_reference object.
-#' @param ... Not used. Included for compatibility.
-#'
-#' @return A cdm_reference object that is a list of R dataframes.
-#' @importFrom dplyr collect
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' vocab <- cdm_from_con(con, "main") %>%
-#'   cdm_select_tbl("concept", "concept_ancestor")
-#'
-#' local_vocab <- collect(vocab)
-#' DBI::dbDisconnect(con, shutdown = TRUE)
-#' }
-collect.cdm_reference <- function(x, ...) {
-  for (nm in names(x)) {
-    x[[nm]] <- dplyr::collect(x[[nm]])
-  }
-  x
-}
-
 #' Extract CDM metadata
 #'
 #' Extract the name, version, and selected record counts from a cdm.
@@ -839,7 +714,7 @@ cdmDisconnect <- function(cdm) {
   if (!("cdm_reference" %in% class(cdm))) {
     cli::cli_abort("cdm should be a cdm_reference")
   }
-  DBI::dbDisconnect(attr(cdm, "dbcon"), shutdown = TRUE)
+  DBI::dbDisconnect(cdmCon(cdm), shutdown = TRUE)
 }
 
 #' @rdname cdmDisconnect
@@ -887,62 +762,47 @@ cdm_select_tbl <- function(cdm, ...) {
   cdm
 }
 
-#' Subset a cdm reference object
+#' Get cdm write schema
 #'
-#' @param x A cdm reference
-#' @param name The name of the table to extract from the cdm object
+#' @param cdm A cdm reference object created by `cdm_from_con`
 #'
-#' @return A single cdm table reference
+#' @return The database write schema
 #' @export
-`$.cdm_reference` <- function(x, name) {
- x[[name]]
+#'
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#'
+#' cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
+#'                     cdm_schema =  "main", write_schema = "main")
+#'
+#' cdmWriteSchema(cdm)
+#'
+#' DBI::dbDisconnect(con)
+#' }
+cdmWriteSchema <- function(cdm) {
+  attr(attr(cdm, "cdm_source"), "write_schema")
 }
 
-#' Subset a cdm reference object
+#' Get underlying database connection
 #'
-#' @param x A cdm reference
-#' @param i The name or index of the table to extract from the cdm object
+#' @param cdm A cdm reference object created by `cdm_from_con`
 #'
-#' @return A single cdm table reference
+#' @return A reference to the database containing tables in the cdm reference
 #' @export
-`[.cdm_reference` <- function(x, i) {
-  cdm_select_tbl(x, dplyr::all_of(i))
-}
-
-#' Subset a cdm reference object
 #'
-#' @param x A cdm reference
-#' @param i The name or index of the table to extract from the cdm object
+#' @examples
+#' \dontrun{
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 #'
-#' @return A single cdm table reference
-#' @export
-`[[.cdm_reference` <- function(x, i) {
- x_raw <- unclass(x)
- tbl <- x_raw[[i]]
-
- if(is.null(tbl)) return(NULL)
-
- attr(tbl, "cdm_reference") <- x
- return(tbl)
-}
-
-#' @export
-`[[<-.cdm_reference` <- function(obj, name, value) {
-  x <- class(obj)
-  attr(value, "cdm_reference") <- NULL
-  obj <- unclass(obj)
-  obj[[name]] <- value
-  class(obj) <- x
-  return(obj)
-}
-
-#' @export
-`$<-.cdm_reference` <- function(obj, name, value) {
-  x <- class(obj)
-  attr(value, "cdm_reference") <- NULL
-  obj <- unclass(obj)
-  obj[[name]] <- value
-  class(obj) <- x
-  return(obj)
+#' cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
+#'                     cdm_schema =  "main", write_schema = "main")
+#'
+#' cdmCon(cdm)
+#'
+#' DBI::dbDisconnect(con)
+#' }
+cdmCon <- function(cdm) {
+  attr(attr(cdm, "cdm_source"), "dbcon")
 }
 

@@ -7,8 +7,8 @@
 \usage{
 cdm_from_con(
   con,
-  cdm_schema = NULL,
-  write_schema = NULL,
+  cdm_schema,
+  write_schema,
   cohort_tables = NULL,
   cdm_version = "5.3",
   cdm_name = NULL,
@@ -17,12 +17,12 @@ cdm_from_con(
 
 cdmFromCon(
   con,
-  cdmSchema = NULL,
-  writeSchema = NULL,
-  achillesSchema = NULL,
+  cdmSchema,
+  writeSchema,
   cohortTables = NULL,
   cdmVersion = "5.3",
-  cdmName = NULL
+  cdmName = NULL,
+  achillesSchema = NULL
 )
 }
 \arguments{

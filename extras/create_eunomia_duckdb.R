@@ -79,6 +79,6 @@ for (tbl in tables) {
 # df <- cdm$condition_occurrence  %>%
 #   filter(person_id == 32, condition_concept_id == 192671) %>%
 #   left_join(cdm$observation_period, by = "person_id") %>%
-#   collect() %>%
+#   dplyr::collect() %>%
 #   tibble()
 

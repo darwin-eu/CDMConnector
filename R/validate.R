@@ -20,7 +20,7 @@
 #' }
 validate_cdm <- function(cdm) {
   checkmate::assert_class(cdm, "cdm_reference")
-  if (is.null(attr(cdm, "dbcon"))) {
+  if (is.null(cdmCon(cdm))) {
     rlang::abort("validate_cdm is not implement for local cdms")
   }
 
@@ -46,7 +46,7 @@ validate_cdm_colnames <- function(cdm) {
       expected_columns <- spec_cdm_field[[ver]] %>%
         dplyr::filter(.data$cdmTableName == nm) %>%
         dplyr::pull(.data$cdmFieldName)
-      actual_columns <- cdm[[nm]] %>% head(1) %>% collect() %>% colnames()
+      actual_columns <- cdm[[nm]] %>% head(1) %>% dplyr::collect() %>% colnames()
 
       dif <- waldo::compare(expected_columns,
                             actual_columns,
@@ -160,7 +160,7 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
     expectedColumns <- spec_cdm_field[[ver]] %>%
       dplyr::filter(.data$cdmTableName == .env$nm) %>%
       dplyr::pull(.data$cdmFieldName)
-    actualColumns <- cdm[[nm]] %>% head(1) %>% collect() %>% colnames()
+    actualColumns <- cdm[[nm]] %>% head(1) %>% dplyr::collect() %>% colnames()
     missingColumns <- dplyr::setdiff(expectedColumns, actualColumns)
 
     if (length(missingColumns) > 0) {
@@ -212,12 +212,12 @@ assertTables <- assert_tables
 #' @export
 assert_write_schema <- function(cdm, add = NULL) {
   checkmate::assert_class(cdm, "cdm_reference")
-  if (is.null(attr(cdm, "dbcon"))) {
+  if (is.null(cdmCon(cdm))) {
     rlang::abort("Local cdm objects do not have a write schema.")
   }
-  write_schema <- attr(cdm, "write_schema")
+  write_schema <- cdmWriteSchema(cdm)
   checkmate::assert_character(write_schema, min.len = 1, max.len = 3, min.chars = 1, add = add)
-  verify_write_access(attr(cdm, "dbcon"),
+  verify_write_access(cdmCon(cdm),
                       write_schema = write_schema,
                       add = add)
   invisible(cdm)

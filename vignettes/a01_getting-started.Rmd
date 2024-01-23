@@ -52,7 +52,7 @@ After connecting to a database containing data mapped to the OMOP CDM, use `cdm_
 The cdm_schema is the schema in the database that contains the OMOP CDM tables and is required. All other arguments are optional.
 
 ```{r}
-cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 cdm
 cdm$observation_period
 ```
@@ -134,14 +134,14 @@ For example a "cohort definition" is a set of criteria that persons must satisfy
 
 ## Saving query results to the database
 
-Sometime it is helpful to save query results to the database instead of reading the result into R. dplyr provides the `compute` function but due to differences between database systems CDMConnector has needed to export a wrapper that handles the slight differences. CDMConnector's `compute_query` function works similarly but is tested across the OHDSI supported database platforms. It also has a few more options than `dplyr::compute.`
+Sometime it is helpful to save query results to the database instead of reading the result into R. dplyr provides the `compute` function but due to differences between database systems CDMConnector has needed to export a its own method that handles the slight differences.  Internally CDMConnector runs `compute_query` function that is tested across the OHDSI supported database platforms.
 
 If we are writing data to the CDM database we need to add one more argument when creating our cdm reference object, the "write_schema". This is a schema in the database where you have write permissions. Typically this should be a separate schema from the "cdm_schema".
 
 ```{r}
 
 DBI::dbExecute(con, "create schema scratch;")
-cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "scratch")
+cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "scratch")
 ```
 
 ```{r, warning=FALSE}
@@ -152,36 +152,33 @@ drugs <- cdm$condition_occurrence %>%
   inner_join(cdm$drug_exposure, by = "person_id") %>% 
   count(drug_concept_id, sort = TRUE) %>% 
   left_join(cdm$concept, by = c("drug_concept_id" = "concept_id")) %>% 
-  compute_query(name = "test",
-                temporary = FALSE,
-                schema = "scratch",
-                overwrite = TRUE)
+  compute(name = "test", temporary = FALSE, overwrite = TRUE)
 
 drugs %>% show_query()
 
 drugs
 ```
 
-We can see that the query has been saved to a new table in the scratch schema. `compute_query` returns a dplyr reference to this table.
+We can see that the query has been saved to a new table in the scratch schema. `compute` returns a dplyr reference to this table.
 
 ## Selecting a subset of CDM tables
 
 If you do not need references to all tables you can easily select only a subset of tables to include in the CDM reference. The `cdm_select_tbl` function supports the [tidyselect selection language](https://tidyselect.r-lib.org/reference/language.html) and provides a new selection helper: `tbl_group`.
 
 ```{r}
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl("person", "observation_period") # quoted names
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(person, observation_period) # unquoted names 
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(starts_with("concept")) # tables that start with 'concept'
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(contains("era")) # tables that contain the substring 'era'
-cdm_from_con(con, cdm_schema = "main") %>% cdm_select_tbl(matches("person|period")) # regular expression
+cdm %>% cdm_select_tbl("person", "observation_period") # quoted names
+cdm %>% cdm_select_tbl(person, observation_period) # unquoted names 
+cdm %>% cdm_select_tbl(starts_with("concept")) # tables that start with 'concept'
+cdm %>% cdm_select_tbl(contains("era")) # tables that contain the substring 'era'
+cdm %>% cdm_select_tbl(matches("person|period")) # regular expression
 ```
 
 Predefined sets of tables can also be selected using `tbl_group` which supports several subsets of the CDM: "all", "clinical", "vocab", "derived", and "default".
 
 ```{r}
 # pre-defined groups
-cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("clinical")) 
-cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("vocab")) 
+cdm %>% cdm_select_tbl(tbl_group("clinical")) 
+cdm %>% cdm_select_tbl(tbl_group("vocab")) 
 ```
 
 The default set of CDM tables included in a CDM object is:

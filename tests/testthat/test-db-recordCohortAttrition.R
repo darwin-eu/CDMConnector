@@ -1,7 +1,10 @@
 
 test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "test", cdm_schema = cdm_schema,
+    write_schema = write_schema
+  )
 
   cdm <- generateConceptCohortSet(
     cdm,
@@ -27,10 +30,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
   cdm$new_cohort <- cdm$new_cohort %>%
     dplyr::filter(cohort_start_date >= as.Date("2010-01-01")) %>%
-    computeQuery(temporary = FALSE,
-                 name = "temp_test",
-                 schema = attr(cdm, "write_schema"),
-                 overwrite = TRUE)
+    compute(temporary = FALSE, name = "new_cohort", overwrite = TRUE)
 
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
@@ -135,10 +135,14 @@ test_that("record_cohort_attrition works", {
   skip_if_not(eunomia_is_available())
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
-
+  cohort <- cohort %>%
+    dplyr::mutate(cohort_name = tolower(cohort_name)) %>%
+    dplyr::filter(cohort_name == "gibleed_all")
   cdm <- generateCohortSet(cdm,
                            cohortSet = cohort,
                            name = "gibleed2",
@@ -153,6 +157,16 @@ test_that("record_cohort_attrition works", {
     dplyr::collect()
 
   expect_true(nrow(df) >= 1)
+
+  cdm$gibleed2 <- cdm$gibleed2 %>%
+    dplyr::filter(subject_id == 1)  %>%
+    dplyr::filter(subject_id == 2)  %>%
+    recordCohortAttrition("zero count")
+
+  expect_equal(cohort_attrition(cdm$gibleed2) %>%
+    dplyr::filter(reason == "zero count") %>%
+    dplyr::pull("number_subjects"), 0)
+
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 

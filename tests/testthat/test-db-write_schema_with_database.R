@@ -26,10 +26,7 @@ test_that("write_schema can be in a separate database in snowflake", {
 
   new_table <- cdm$person %>%
     head(5) %>%
-    computeQuery(name = "person_subset",
-                 temporary = FALSE,
-                 schema = write_schema,
-                 overwrite = TRUE)
+    compute(name = "person_subset", temporary = FALSE, overwrite = TRUE)
 
   new_table <- dplyr::collect(new_table)
 
@@ -39,10 +36,7 @@ test_that("write_schema can be in a separate database in snowflake", {
   # check that overwrite works
   new_table <- cdm$person %>%
     head(5) %>%
-    computeQuery(name = "person_subset",
-                 temporary = FALSE,
-                 schema = write_schema,
-                 overwrite = TRUE)
+    compute(name = "person_subset", temporary = FALSE, overwrite = TRUE)
 
   new_table <- dplyr::collect(new_table)
 

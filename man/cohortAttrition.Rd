@@ -3,15 +3,15 @@
 \name{cohortAttrition}
 \alias{cohortAttrition}
 \alias{cohort_attrition}
-\title{Get attrition table from a GeneratedCohortSet object}
+\title{Get attrition table from a cohort_table object}
 \usage{
 cohortAttrition(x)
 
 cohort_attrition(x)
 }
 \arguments{
-\item{x}{A generatedCohortSet object}
+\item{x}{A cohort_table object}
 }
 \description{
-Get attrition table from a GeneratedCohortSet object
+Get attrition table from a cohort_table object
 }

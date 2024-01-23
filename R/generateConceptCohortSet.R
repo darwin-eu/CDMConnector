@@ -72,8 +72,8 @@ generateConceptCohortSet <- function(cdm,
 
   # check cdm ----
   checkmate::assertClass(cdm, "cdm_reference")
-  con <- attr(cdm, "dbcon")
-  checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+  con <- cdmCon(cdm)
+  checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
   assertTables(cdm, "observation_period", empty.ok = FALSE)
@@ -82,7 +82,7 @@ generateConceptCohortSet <- function(cdm,
   # check name ----
   checkmate::assertLogical(overwrite, len = 1, any.missing = FALSE)
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE, min.chars = 1, pattern = "[a-z1-9_]+")
-  existingTables <- listTables(con, attr(cdm, "write_schema"))
+  existingTables <- listTables(con, cdmWriteSchema(cdm))
 
   if (name %in% existingTables && !overwrite) {
     rlang::abort(glue::glue("{name} already exists in the CDM write_schema and overwrite is FALSE!"))
@@ -168,8 +168,8 @@ generateConceptCohortSet <- function(cdm,
   # upload concept data to the database ----
   tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
-  DBI::dbWriteTable(attr(cdm, "dbcon"),
-                    name = inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con)),
+  DBI::dbWriteTable(cdmCon(cdm),
+                    name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
                     value = df,
                     overwrite = TRUE)
 
@@ -178,7 +178,7 @@ generateConceptCohortSet <- function(cdm,
   }
 
   # realize full list of concepts ----
-  concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"),
+  concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm),
                                                       tempName,
                                                       dbms = dbms(con))) %>%
     dplyr::rename_all(tolower) %>%
@@ -192,8 +192,8 @@ generateConceptCohortSet <- function(cdm,
         ) %>%
         dplyr::union_all(
           dplyr::tbl(
-            attr(cdm, "dbcon"),
-            inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con))
+            cdmCon(cdm),
+            inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))
           ) %>%
           dplyr::select(dplyr::any_of(c(
             "cohort_definition_id", "cohort_name", "concept_id", "is_excluded",
@@ -209,9 +209,9 @@ generateConceptCohortSet <- function(cdm,
       dplyr::any_of(c("limit", "prior_observation", "future_observation", "end"))
     ) %>%
     dplyr::distinct() %>%
-    CDMConnector::computeQuery(temporary = TRUE, overwrite = overwrite)
+    dplyr::compute(temporary = TRUE, overwrite = overwrite)
 
-  DBI::dbRemoveTable(attr(cdm, "dbcon"), name = inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con)))
+  DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs
@@ -268,9 +268,10 @@ generateConceptCohortSet <- function(cdm,
       cohort_start_date = as.Date(x = integer(0), origin = "1970-01-01"),
       cohort_end_date = as.Date(x = integer(0), origin = "1970-01-01")
     )
-
-    DBI::dbWriteTable(con, name = inSchema(attr(cdm, "write_schema"), name), value = cohort)
-    cohortRef <- dplyr::tbl(con, inSchema(attr(cdm, "write_schema"), name))
+    cdm <- omopgenerics::insertTable(
+      cdm = cdm, name = name, table = cohort, overwrite = overwrite
+    )
+    cohortRef <- cdm[[name]]
   } else {
 
     # drop any outside of an observation period
@@ -321,13 +322,8 @@ generateConceptCohortSet <- function(cdm,
       cohort_collapse() %>%
       dplyr::mutate(cohort_start_date = !!asDate(.data$cohort_start_date),
                     cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
-      computeQuery(temporary = FALSE,
-                   schema = attr(cdm, "write_schema"),
-                   name = name,
-                   overwrite = overwrite)
+      dplyr::compute(name = name, temporary = FALSE, overwrite = overwrite)
     }
-
-
 
   cohortSetRef <- concepts %>%
     dplyr::select(dplyr::any_of(c(
@@ -335,17 +331,11 @@ generateConceptCohortSet <- function(cdm,
       "future_observation", "end"
     ))) %>%
     dplyr::distinct() %>%
-    CDMConnector::computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
-                               schema = attr(cdm, "write_schema"),
-                               name = paste0(name, "_set"),
-                               overwrite = overwrite)
+    dplyr::collect()
 
-  cdm[[name]] <- cohortRef
-
-  cdm[[name]] <- newGeneratedCohortSet(
-    cohortRef = cdm[[name]],
-    cohortSetRef = cohortSetRef,
-    overwrite = overwrite)
+  cdm[[name]] <- omopgenerics::cohortTable(
+    table = cohortRef, cohortSetRef = cohortSetRef
+  )
 
   return(cdm)
 }

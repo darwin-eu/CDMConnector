@@ -5,7 +5,10 @@ test_summarise_quantile <- function(con,
 
   eunomia_con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 
-  eunomia_cdm <- cdm_from_con(eunomia_con, cdm_schema = "main") %>%
+  eunomia_cdm <- cdm_from_con(
+    con = eunomia_con, cdm_name = "eunomia", cdm_schema = "main",
+    write_schema = "main"
+  ) %>%
     cdm_select_tbl("person")
 
   person <- dplyr::collect(eunomia_cdm$person)

@@ -32,13 +32,14 @@ Let's again load required packages and connect to our Eunomia dataset in duckdb.
 
 ```{r, message=FALSE, warning=FALSE}
 library(CDMConnector)
+library(omopgenerics)
 library(dplyr)
 
 write_schema <- "main"
 cdm_schema <- "main"
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = cdm_schema, write_schema = write_schema)
 ```
 
 ## CDM reference attributes
@@ -48,7 +49,7 @@ Our cdm reference has various attributes associated with it. These can be useful
 ### CDM name
 It's a requirement that every cdm reference has name associated with it. This is particularly useful for network studies so that we can associate results with a particular cdm. We can access this attribute like so 
 ```{r}
-attr(cdm, "cdm_name")
+#attr(cdm, "cdm_name")
 ```
 
 Because it is so regularly used, to make getting the cdm name even easier, we can also use `cdmName` (or it's snake case equivalent `cdm_name`)
@@ -60,20 +61,20 @@ cdm_name(cdm)
 ### CDM version
 The OMOP CDM has various versions. We also have an attribute giving the version of the cdm we have connected to.
 ```{r}
-attr(cdm, "cdm_version")
+#attr(cdm, "cdm_version")
 ```
 
 ### Database connection
 We also have an attribute identifying the database connection underlying the cdm reference.
 ```{r}
-attr(cdm, "dbcon")
+#cdmCon(cdm)
 ```
 
 This can be useful, for example, if we want to make use of DBI functions to work with the database. For example we could use `dbListTables` to list the names of remote tables accessible through the connection, `dbListFields` to list the field names of a specific remote table, and `dbGetQuery` to returns the result of a query 
 ```{r}
-DBI::dbListTables(attr(cdm, "dbcon"))
-DBI::dbListFields(attr(cdm, "dbcon"), "person")
-DBI::dbGetQuery(attr(cdm, "dbcon"), "SELECT * FROM person LIMIT 5")
+#DBI::dbListTables(cdmCon(cdm))
+#DBI::dbListFields(cdmCon(cdm), "person")
+#DBI::dbGetQuery(cdmCon(cdm), "SELECT * FROM person LIMIT 5")
 ```
 
 ## Cohort attributes
@@ -133,40 +134,38 @@ attr(cdm$study_cohorts, "cdm_reference")
 ### Creating a bespoke cohort
 Say we create a custom GI bleed cohort with the standard cohort structure
 ```{r}
-cdm$GI_bleed <- cdm$condition_occurrence %>% 
+cdm$gi_bleed <- cdm$condition_occurrence %>% 
   filter(condition_concept_id == 192671) %>% 
   mutate(cohort_definition_id = 1) %>% 
-  select(cohort_definition_id, person_id,
-         condition_start_date, condition_end_date) %>% 
-  rename("subject_id" = "person_id", 
-         "cohort_start_date" = "condition_start_date", 
-         "cohort_end_date" = "condition_end_date") %>% 
-  compute_query(temporary = FALSE,
-                schema = write_schema,
-                overwrite = TRUE)
+  select(
+    cohort_definition_id, 
+    subject_id = person_id, 
+    cohort_start_date = condition_start_date, 
+    cohort_end_date = condition_start_date
+  ) %>% 
+  compute(name = "gi_bleed", temporary = FALSE, overwrite = TRUE)
 
-cdm$GI_bleed %>% 
+cdm$gi_bleed %>% 
   glimpse()
 ```
 
 We can add the required attributes using the `newGeneratedCohortSet` function. The minimum requirement for this is that we also define the cohort set to associate with our set of custom cohorts.
 
 ```{r}
-GI_bleed_cohort_ref <- data.frame(cohort_definition_id = 1,
-                                  cohort_name = "custom_gi_bleed")
+GI_bleed_cohort_ref <- tibble(cohort_definition_id = 1, cohort_name = "custom_gi_bleed")
 
-cdm$GI_bleed <- newGeneratedCohortSet(cohortRef = cdm$GI_bleed, 
-                                      cohortSetRef = GI_bleed_cohort_ref, 
-                                      overwrite = TRUE)
+cdm$gi_bleed <- omopgenerics::cohortTable(
+  table = cdm$gi_bleed, cohortSetRef = GI_bleed_cohort_ref
+)
 ```
 
 Now our custom cohort GI_bleed has the same attributes associated with it as if it had been created by `generateConceptCohortSet`. This will mean that it can be used by analytic packages designed to work with cdm cohorts.
 
 ```{r}
-cohort_set(cdm$GI_bleed)
-cohort_count(cdm$GI_bleed)
-cohort_attrition(cdm$GI_bleed)
-attr(cdm$GI_bleed, "cdm_reference")
+cohortSet(cdm$gi_bleed)
+cohortCount(cdm$gi_bleed)
+cohortAttrition(cdm$gi_bleed)
+attr(cdm$gi_bleed, "cdm_reference")
 ```
 
 

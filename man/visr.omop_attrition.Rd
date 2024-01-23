@@ -7,7 +7,7 @@
 visr.omop_attrition(x, ...)
 }
 \arguments{
-\item{x}{A GeneratedCohortSet object}
+\item{x}{A cohort_table object}
 
 \item{...}{Not used
 

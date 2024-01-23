@@ -167,7 +167,7 @@ datediff <- function(start, end, interval = "day") {
 #'     .data$m, "/",
 #'     .data$d
 #'   ))) %>%
-#'   collect()
+#'   dplyr::collect()
 #' }
 asDate <- function(x) {
   x_quo <- rlang::enquo(x)

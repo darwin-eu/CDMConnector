@@ -110,5 +110,3 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     )
   }
 }
-
-

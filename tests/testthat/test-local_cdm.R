@@ -4,7 +4,9 @@ test_that("assertTables works with local cdms", {
   skip_if_not_installed("duckdb")
   skip_on_cran()
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main")
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  )
 
   expect_equal(version(cdm), "5.3")
   expect_error(assertTables(cdm, "concept"), NA)

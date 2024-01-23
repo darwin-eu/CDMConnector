@@ -1,7 +1,7 @@
 
 #' Create an attrition diagram from a generated cohort set
 #'
-#' @param x A GeneratedCohortSet object
+#' @param x A cohort_table object
 #' @param ... Not used
 #'
 #' `r lifecycle::badge("experimental")`

@@ -76,15 +76,18 @@ path_to_cohort_json_files <- system.file("example_cohorts",
 list.files(path_to_cohort_json_files)
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("GiBleed"))
-cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 
-cohort_set <- read_cohort_set(path_to_cohort_json_files)
+cohort_set <- read_cohort_set(path_to_cohort_json_files) |>
+  mutate(cohort_name = snakecase::to_snake_case(cohort_name))
 
 cohort_set
 
-cdm <- generate_cohort_set(cdm, 
-                           cohort_set,
-                           name = "study_cohorts")
+cdm <- generate_cohort_set(
+  cdm = cdm, 
+  cohort_set = cohort_set,
+  name = "study_cohorts"
+)
 
 cdm$study_cohorts
 
@@ -190,7 +193,7 @@ cdm$cohort_subset <- cdm$cohort %>%
   filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
   # optionally you can modify the cohort_id
   mutate(cohort_definition_id = 100 + cohort_definition_id) %>% 
-  compute_query(name = "cohort_subset", temporary = FALSE, schema = attr(cdm, "write_schema"), overwrite = TRUE) %>% 
+  compute(name = "cohort_subset", temporary = FALSE, overwrite = TRUE) %>% 
   new_generated_cohort_set()
 
 cdm$cohort2
@@ -232,10 +235,7 @@ cdm$cohort_subset <- cdm$cohort %>%
     filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>% 
     mutate(cohort_definition_id = 1000 + cohort_definition_id)
   ) %>% 
-  compute_query(name = "cohort_subset", 
-                temporary = FALSE, 
-                schema = attr(cdm, "write_schema"), 
-                overwrite = TRUE) %>% 
+  compute(name = "cohort_subset", temporary = FALSE, overwrite = TRUE) %>% 
   new_generated_cohort_set() # this function creates the cohort object and metadata
 
 cdm$cohort_subset %>% 
@@ -295,18 +295,19 @@ cohort
 First make sure the table is in the database and create a dplyr table reference to it and add it to the CDM object.
 
 ```{r}
-DBI::dbWriteTable(con, inSchema("main", "cohort", dbms = dbms(con)), value = cohort, overwrite = TRUE)
+library(omopgenerics)
+cdm <- insertTable(cdm = cdm, name = "cohort", table = cohort, overwrite = TRUE)
 
-cdm$cohort <- tbl(con, inSchema("main", "cohort", dbms = dbms(con))) 
+cdm$cohort
 ```
 
-To make this a true generated cohort object use the `new_generated_cohort_set`
+To make this a true generated cohort object use the `generatedCohortSet`
 
 ```{r}
-cdm$cohort <- new_generated_cohort_set(cdm$cohort)
+cdm$cohort <- cohortTable(cdm$cohort)
 ```
 
-We can see that this cohort is now has the class "GeneratedCohortSet" as well as the various metadata tables.
+We can see that this cohort is now has the class "generated_cohort_set" as well as the various metadata tables.
 
 ```{r}
 class(cdm$cohort)
@@ -317,12 +318,10 @@ cohort_attrition(cdm$cohort)
 If you would like to override the attribute tables then pass additional dataframes into new_generated_cohort_set. 
 
 ```{r}
-DBI::dbWriteTable(con, inSchema("main", "cohort2", dbms = dbms(con)), value = cohort)
-
-cdm$cohort2 <- tbl(con, inSchema("main", "cohort2", dbms = dbms(con))) 
+cdm <- insertTable(cdm = cdm, name = "cohort2", table = cohort, overwrite = TRUE)
 
 cohort_set <- data.frame(cohort_definition_id = 1L,
-                         cohort_name = "made up cohort")
+                         cohort_name = "made_up_cohort")
 
 cdm$cohort2 <- new_generated_cohort_set(cdm$cohort2,
                                         cohort_set_ref = cohort_set)

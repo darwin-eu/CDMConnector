@@ -19,7 +19,7 @@ NULL
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
 #' cdm <- cdm_from_con(con, "main")
 #'
-#' local_concept <- collect(cdm$concept)
+#' local_concept <- dplyr::collect(cdm$concept)
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 collect.cdm_tbl <- function(x, ...) {

@@ -6,8 +6,8 @@ cdm <- cdm_from_con(con, "main", "main")
 
 # check cdm ----
 checkmate::assertClass(cdm, "cdm_reference")
-con <- attr(cdm, "dbcon")
-checkmate::assertTRUE(DBI::dbIsValid(attr(cdm, "dbcon")))
+con <- cdmCon(cdm)
+checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
 
 assertTables(cdm, "observation_period", empty.ok = FALSE)
 assertWriteSchema(cdm)
@@ -38,7 +38,7 @@ if (length(missing_codesets) > 0) {
                           Please remove empty concept sets from your cohort definition." ))
 }
 
-write_schema <- attr(cdm, "write_schema")
+write_schema <- cdmWriteSchema(cdm)
 DBI::dbWriteTable(con, inSchema(write_schema, "codesets", dbms(con)), codesets)
 
 codesets <- dplyr::tbl(con, inSchema(write_schema, "codesets")) %>%
@@ -62,7 +62,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   # check name ----
   checkmate::assertLogical(overwrite, len = 1, any.missing = FALSE)
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE, min.chars = 1, pattern = "[a-z1-9_]+")
-  existingTables <- listTables(con, attr(cdm, "write_schema"))
+  existingTables <- listTables(con, cdmWriteSchema(cdm))
 
   if (name %in% existingTables && !overwrite) {
     rlang::abort(glue::glue("{name} already exists in the CDM write_schema and overwrite is FALSE!"))
@@ -120,8 +120,8 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   # upload concept data to the database ----
   tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
-  DBI::dbWriteTable(attr(cdm, "dbcon"),
-                    name = inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con)),
+  DBI::dbWriteTable(cdmCon(cdm),
+                    name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
                     value = df,
                     overwrite = TRUE)
 
@@ -130,7 +130,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   }
 
   # realize full list of concepts ----
-  concepts <- dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"),
+  concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm),
                                                       tempName,
                                                       dbms = dbms(con))) %>%
     dplyr::rename_all(tolower) %>%
@@ -138,7 +138,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
       dplyr::filter(., .data$include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
         dplyr::select("cohort_definition_id", "cohort_name", concept_id = "descendant_concept_id", "is_excluded") %>%
-        dplyr::union_all(dplyr::select(dplyr::tbl(attr(cdm, "dbcon"), inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
+        dplyr::union_all(dplyr::select(dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))), "cohort_definition_id", "cohort_name", "concept_id", "is_excluded"))
     } else . } %>%
     dplyr::filter(.data$is_excluded == FALSE) %>%
     dplyr::left_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
@@ -146,7 +146,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
     dplyr::distinct() %>%
     CDMConnector::computeQuery(temporary = TRUE)
 
-  DBI::dbRemoveTable(attr(cdm, "dbcon"), name = inSchema(attr(cdm, "write_schema"), tempName, dbms = dbms(con)))
+  DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
 
@@ -205,7 +205,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
     {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
     cohort_collapse() %>%
     computeQuery(temporary = FALSE,
-                 schema = attr(cdm, "write_schema"),
+                 schema = cdmWriteSchema(cdm),
                  name = name,
                  overwrite = overwrite)
 
@@ -220,16 +220,15 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   cohortSetRef <- concepts %>%
     dplyr::distinct(.data$cohort_definition_id, .data$cohort_name) %>%
     CDMConnector::computeQuery(temporary = getOption("CDMConnector.cohort_as_temp", FALSE),
-                               schema = attr(cdm, "write_schema"),
+                               schema = cdmWriteSchema(cdm),
                                name = paste0(name, "_set"),
                                overwrite = overwrite)
 
   cdm[[name]] <- cohortRef
 
-  cdm[[name]] <- newGeneratedCohortSet(
-    cohortRef = cdm[[name]],
-    cohortSetRef = cohortSetRef,
-    overwrite = overwrite)
+  cdm[[name]] <- omopgenerics::cohortTable(
+    cohortRef = cdm[[name]], cohortSetRef = cohortSetRef, overwrite = overwrite
+  )
 
   # return(cdm)
 # }

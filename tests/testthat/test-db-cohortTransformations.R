@@ -183,7 +183,7 @@ test_cohort_collapse <- function(con, write_schema) {
     filter(relationship %in% c("reference", "finished_by")) %>%
     dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
-    collect() %>%
+    dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
 
@@ -200,7 +200,7 @@ test_cohort_collapse <- function(con, write_schema) {
     filter(relationship %in% c("reference", "contains")) %>%
     dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
-    collect() %>%
+    dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
 
@@ -217,7 +217,7 @@ test_cohort_collapse <- function(con, write_schema) {
     filter(relationship %in% c("reference", "starts")) %>%
     dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
-    collect() %>%
+    dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
 
@@ -234,7 +234,7 @@ test_cohort_collapse <- function(con, write_schema) {
     filter(relationship %in% c("reference", "equals")) %>%
     dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
-    collect() %>%
+    dplyr::collect() %>%
     arrange(subject_id)
 
   expected <- tibble::tribble(

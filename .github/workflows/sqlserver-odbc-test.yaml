@@ -8,7 +8,7 @@ name: sqlserver-odbc-test
 
 jobs:
   Postgres-test:
-    if: github.repository == 'darwin-eu/CDMConnector'
+    # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
       image: executionengine.azurecr.io/darwin-base:v0.1
@@ -35,6 +35,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Run tests on SQL Server with odbc driver
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver"), testthat::test_local())'
+        run: R -e 'install.packages("omopgenerics"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver"), testthat::test_local())'
 
 
