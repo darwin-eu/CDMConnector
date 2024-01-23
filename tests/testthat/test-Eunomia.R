@@ -4,7 +4,7 @@ test_that("downloadEunomiaData", {
   expect_true(nchar(path) > 0)
 
   path <- downloadEunomiaData("GiBleed", overwrite = T)
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir("GiBleed")))
   cdm <- cdm_from_con(con, "main", cdm_name = "test")
   expect_s3_class(cdm, "cdm_reference")
   DBI::dbDisconnect(con, shutdown = TRUE)

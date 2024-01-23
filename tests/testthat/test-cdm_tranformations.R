@@ -1,6 +1,11 @@
 test_that("cdm_sample works", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+
+  # note that this form of connecting causes the db to be garbage collected when called
+  # using the "run tests" button in RStudio IDE `con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())`
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+
+  expect_true(DBI::dbIsValid(con))
   cdm <- cdm_from_con(con, "main", "main", cdm_name = "test")
   cdm_sampled <- cdm_sample(cdm, n = 10)
 
@@ -11,6 +16,7 @@ test_that("cdm_sample works", {
   expect_equal(as.double(df$n), 10)
 
   DBI::dbDisconnect(con, shutdown = TRUE)
+
 })
 
 # TODO do we still need this test?

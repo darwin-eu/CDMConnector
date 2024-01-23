@@ -1,3 +1,7 @@
+# CDMConnector 1.3.0
+
+- Incorporate omopgenerics
+
 # CDMConnector 1.2.1
 
 - Fix failing CRAN tests
