@@ -85,7 +85,6 @@ test_cohort_collapse <- function(con, write_schema) {
 
 
   # test every case (Allen's interval algebra) for two intervals and two people
-  require(dplyr)
   intervals <- tibble::tribble(
     ~relationship,  ~cohort_definition_id, ~subject_id, ~cohort_start_date, ~cohort_end_date,
     "reference",    1,                     1,           "2022-01-05",       "2022-01-10",
@@ -115,8 +114,8 @@ test_cohort_collapse <- function(con, write_schema) {
     DBI::dbWriteTable(con, nm, df, temporary = TRUE)
 
     db <- tbl(con, nm) %>%
-      mutate(cohort_start_date = TO_DATE(cohort_start_date, "YYYY-MM-DD")) %>%
-      mutate(cohort_end_date   = TO_DATE(cohort_end_date, "YYYY-MM-DD")) %>%
+      dplyr::mutate(cohort_start_date = TO_DATE(cohort_start_date, "YYYY-MM-DD")) %>%
+      dplyr::mutate(cohort_end_date   = TO_DATE(cohort_end_date, "YYYY-MM-DD")) %>%
       compute_query()
   } else {
     DBI::dbWriteTable(con, inSchema(write_schema, "tmp_intervals", dbms = dbms(con)), intervals, overwrite = TRUE)
@@ -235,7 +234,7 @@ test_cohort_collapse <- function(con, write_schema) {
     dplyr::select(-"relationship") %>%
     cohort_collapse() %>%
     dplyr::collect() %>%
-    arrange(subject_id)
+    dplyr::arrange(subject_id)
 
   expected <- tibble::tribble(
     ~cohort_definition_id, ~subject_id, ~cohort_start_date, ~cohort_end_date,

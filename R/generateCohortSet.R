@@ -124,8 +124,8 @@ readCohortSet <- read_cohort_set
 #'
 #' print(cdm$cohort)
 #'
-#' cohortAttrition(cdm$cohort)
-#' cohortSet(cdm$cohort)
+#' attrition(cdm$cohort)
+#' settings(cdm$cohort)
 #' cohortCount(cdm$cohort)
 #' }
 generateCohortSet <- function(cdm,
@@ -603,7 +603,10 @@ cohortAttrition <- function(x) {
 
 #' @rdname cohortAttrition
 #' @export
-cohort_attrition <- cohortAttrition
+cohort_attrition <- function(x) {
+  lifecycle::deprecate_warn("1.3", "cohort_attrition()", "attrition()")
+  omopgenerics::attrition(x)
+}
 
 #' Get cohort settings from a cohort_table object
 #'
@@ -618,7 +621,10 @@ cohortSet <- function(x) {
 
 #' @rdname cohortSet
 #' @export
-cohort_set <- cohortSet
+cohort_set <- function(x) {
+  lifecycle::deprecate_warn("1.3", "cohort_set()", "settings()")
+  omopgenerics::settings(x)
+}
 
 #' Get cohort counts from a generated_cohort_set object.
 #'
@@ -867,7 +873,7 @@ caprConceptToDataframe <- function(x) {
 #'   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
 #' )
 #'
-#' cohortSet(cdm$new_cohort)
+#' settings(cdm$new_cohort)
 #' cohortCount(cdm$new_cohort)
 #' cohortAttrition(cdm$new_cohort)
 #'
@@ -878,7 +884,7 @@ caprConceptToDataframe <- function(x) {
 #'   cohort = cdm$new_cohort, reason = "Only events after 2010"
 #' )
 #'
-#' cohortSet(cdm$new_cohort)
+#' settings(cdm$new_cohort)
 #' cohortCount(cdm$new_cohort)
 #' cohortAttrition(cdm$new_cohort)
 #' }

@@ -41,11 +41,13 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% colnames(df)))
 
   expect_true(all(c("cohort_set", "cohort_attrition", "cdm_reference") %in% names(attributes(cdm$chrt0))))
-  attrition_df <- cohortAttrition(cdm$chrt0)
+  expect_warning(cohortAttrition(cdm$chrt0))
+  attrition_df <- attrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
-  expect_s3_class(cohortSet(cdm$chrt0), "data.frame")
+  expect_warning(settings(cdm$chrt0)) # deprecation warning
+  expect_s3_class(settings(cdm$chrt0), "data.frame")
   counts <- cohortCount(cdm$chrt0)
   expect_s3_class(counts, "data.frame")
   expect_equal(nrow(counts), 3)
@@ -58,7 +60,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   dropTable(cdm, dplyr::starts_with("chrt0_"))
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
-
+dbtype="duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")
@@ -77,20 +79,19 @@ test_that("Generation from Capr Cohorts", {
   skip_if_not_installed("Capr", minimum_version = "2.0.5")
   skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
-  library(Capr)
 
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
 
-  gibleed_cohort_definition <- cohort(
-    entry = Capr::conditionOccurrence(cs(descendants(192671), name = "test")),
-    attrition = attrition(
-      "no RA" = withAll(
-        exactly(0,
-                conditionOccurrence(cs(descendants(80809), name = "test")),
-                duringInterval(eventStarts(-Inf, Inf))))
+  gibleed_cohort_definition <- Capr::cohort(
+    entry = Capr::conditionOccurrence(Capr::cs(Capr::descendants(192671), name = "test")),
+    attrition = Capr::attrition(
+      "no RA" = Capr::withAll(
+        Capr::exactly(0,
+                      Capr::conditionOccurrence(Capr::cs(Capr::descendants(80809), name = "test")),
+                      Capr::duringInterval(Capr::eventStarts(-Inf, Inf))))
     )
   )
 
@@ -113,7 +114,7 @@ test_that("duckdb - phenotype library generation", {
     dplyr::pull("cohortId") %>%
     PhenotypeLibrary::getPlCohortDefinitionSet()
 
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
@@ -129,7 +130,7 @@ test_that("TreatmentPatterns cohort works", {
   skip_on_cran()
   skip("manual test")
   skip("failing test")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
@@ -174,13 +175,10 @@ test_that("TreatmentPatterns cohort works", {
 
 test_that("newGeneratedCohortSet works with prefix", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
   write_schema <- c(schema = "main", prefix = "test_")
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main",
-    write_schema = write_schema
-  )
+  cdm <- cdm_from_con(con, "main", write_schema, cdm_name = "eunomia")
 
   cdm$cohort <- cdm$condition_era %>%
     head(1) %>%
@@ -199,8 +197,11 @@ test_that("newGeneratedCohortSet works with prefix", {
   expect_true("test_cohort" %in% list_tables(con, "main"))
 
   expect_s3_class(cohort_count(cdm$cohort), "data.frame")
-  expect_s3_class(cohort_set(cdm$cohort), "data.frame")
-  expect_s3_class(cohort_attrition(cdm$cohort), "data.frame")
+  expect_warning(cohort_set(cdm$cohort), "deprecated")
+  expect_s3_class(settings(cdm$cohort), "data.frame")
+  expect_warning(cohort_attrition(cdm$cohort), "deprecated")
+
+  expect_s3_class(attrition(cdm$cohort), "data.frame")
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -210,7 +211,7 @@ test_that("newGeneratedCohortSet works with prefix", {
 test_that("no error is given if attrition table already exists and overwrite = TRUE", {
   skip_if_not_installed("CirceR")
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )

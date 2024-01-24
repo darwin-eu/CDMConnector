@@ -71,10 +71,10 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     overwrite = TRUE
   )
 
-  expect_identical(cohortSet(cdm$gibleed4)$limit, "first")
-  expect_identical(cohortSet(cdm$gibleed4)$end, "observation_period_end_date")
-  expect_identical(cohortSet(cdm$gibleed4)$prior_observation, 2)
-  expect_identical(cohortSet(cdm$gibleed4)$future_observation, 200)
+  expect_identical(settings(cdm$gibleed4)$limit, "first")
+  expect_identical(settings(cdm$gibleed4)$end, "observation_period_end_date")
+  expect_identical(settings(cdm$gibleed4)$prior_observation, 2)
+  expect_identical(settings(cdm$gibleed4)$future_observation, 200)
 
   expect_true({
     cohort_count(cdm$gibleed3)$number_records >= cohort_count(cdm$gibleed4)$number_records

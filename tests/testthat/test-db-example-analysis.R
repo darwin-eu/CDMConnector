@@ -2,7 +2,7 @@
 prepare_cdm <- function(con, write_schema) {
 
   # eunomia cdm
-  eunomia_con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   eunomia_cdm <- cdm_from_con(eunomia_con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main") %>%
     cdm_select_tbl("person", "observation_period")
 
@@ -10,6 +10,8 @@ prepare_cdm <- function(con, write_schema) {
                    cdm = eunomia_cdm,
                    schema = write_schema,
                    overwrite = TRUE)
+
+  DBI::dbDisconnect(eunomia_con, shutdown = TRUE)
 
   return(cdm)
 }
@@ -43,19 +45,18 @@ check_mutate <- function(cdm) {
 
   expect_true(all(c("F","M") %in%
    unique(cdm$person %>%
-    dplyr::mutate(new_var = dplyr::if_else(gender_concept_id == 8532,
-                                           "F", "M")) %>%
-    dplyr::pull("new_var"))))
+   dplyr::mutate(new_var = dplyr::if_else(gender_concept_id == 8532, "F", "M")) %>%
+   dplyr::pull("new_var"))))
 
  expect_no_error(cdm$observation_period %>%
-    dplyr::mutate(observation_period_start_date =
-                    as.Date(observation_period_start_date),
+    dplyr::mutate(observation_period_start_date = as.Date(observation_period_start_date),
                   new_date = as.Date("2000-01-01"),
                   missing_date = as.Date(NA)))
 
- expect_no_error(cdm$person %>%
-                   dplyr::mutate(gender_concept_id =
-                                   as.integer(gender_concept_id)))
+ expect_no_error({
+   cdm$person %>%
+    dplyr::mutate(gender_concept_id = as.integer(gender_concept_id))
+ })
 
  # expect_no_error(cdm$person %>%
  #    dplyr::mutate(year_1 = as.integer(1990),
@@ -64,8 +65,6 @@ check_mutate <- function(cdm) {
  #    dplyr::mutate(date_1=!!asDate(paste0(
  #      year_1, "/", month_1, "/", day_1))) %>%
  #    dplyr::select(date_1))
-
-
 }
 
 check_summarise_dplyr <- function(cdm) {
@@ -79,17 +78,17 @@ check_summarise_dplyr <- function(cdm) {
                                dplyr::collect())))
 
 
-  expect_true(all(c("gender_concept_id", "month_of_birth",
-                    "min",  "mean", "max") %in%
-  colnames(cdm$person %>%
+  nms <- cdm$person %>%
     dplyr::group_by(gender_concept_id, month_of_birth) %>%
     dplyr::summarise(min = min(year_of_birth, na.rm = TRUE),
                      mean = mean(year_of_birth, na.rm = TRUE),
                      max = max(year_of_birth, na.rm = TRUE),
                      .groups = "drop") %>%
     dplyr::ungroup() %>%
-    dplyr::collect())))
+    dplyr::collect() %>%
+    colnames()
 
+  expect_true(all(c("gender_concept_id", "month_of_birth", "min",  "mean", "max") %in% nms))
 }
 
 check_summarise_quantiles <- function(cdm){
@@ -197,7 +196,6 @@ checks <- list()
 
 for (dbtype in dbToTest) {
   if (dbtype == "bigquery") next
-  require(dplyr)
   test_that(glue::glue("{dbtype} - checking common usage"), {
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)

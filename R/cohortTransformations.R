@@ -7,27 +7,33 @@ cohort_collapse <- function(x) {
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
   checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
 
+
   # note this assumes all columns are fully populated and cohort_end_date >= cohort_start_date
   # TODO do we need to confirm this assumption?
+
+  con <- x$src$con
+  min_start_sql <- dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
+  max_end_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_end_date")})'))
+
   x %>%
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
     dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date) %>%
     dplyr::mutate(
       prev_start = dplyr::coalesce(
         dbplyr::win_over(
-          dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(x$src$con, "cohort_start_date")})')),
+          min_start_sql,
           partition = c("cohort_definition_id", "subject_id"),
           frame = c(-Inf, -1),
           order = "cohort_start_date",
-          con = x$src$con),
+          con = con),
         .data$cohort_start_date),
       prev_end = dplyr::coalesce(
         dbplyr::win_over(
-          dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(x$src$con, "cohort_end_date")})')),
+          max_end_sql,
           partition = c("cohort_definition_id", "subject_id"),
           frame = c(-Inf, -1),
           order = "cohort_start_date",
-          con = x$src$con),
+          con = con),
         .data$cohort_end_date)
     ) %>%
     dplyr::mutate(groups = cumsum(

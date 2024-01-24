@@ -75,10 +75,10 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     overwrite = TRUE
   )
 
-  expect_identical(cohortSet(cdm$gibleed4)$limit, "first")
-  expect_identical(cohortSet(cdm$gibleed4)$end, "observation_period_end_date")
-  expect_identical(cohortSet(cdm$gibleed4)$prior_observation, 2)
-  expect_identical(cohortSet(cdm$gibleed4)$future_observation, 200)
+  expect_identical(settings(cdm$gibleed4)$limit, "first")
+  expect_identical(settings(cdm$gibleed4)$end, "observation_period_end_date")
+  expect_identical(settings(cdm$gibleed4)$prior_observation, 2)
+  expect_identical(settings(cdm$gibleed4)$future_observation, 200)
 
   expect_true({
     cohort_count(cdm$gibleed3)$number_records >= cohort_count(cdm$gibleed4)$number_records
@@ -291,7 +291,7 @@ for (dbtype in dbToTest) {
 
 test_that("missing domains produce warning", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   ) %>%
@@ -307,13 +307,14 @@ test_that("missing domains produce warning", {
 
 test_that("Regimen domain does not cause error", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
   # create a fake concept with domain "Regimen"
   DBI::dbExecute(con, "UPDATE main.concept SET domain_id = 'Regimen' WHERE concept_id = 19129655")
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
+
   concept_set <- list(drug_1 = c(1127433, 19129655), drug_2 = 19129655, drug_3 = 1127433)
 
   expect_no_error({

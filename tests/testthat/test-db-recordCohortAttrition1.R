@@ -11,7 +11,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
   oldAttrition <- cohortAttrition(cdm$new_cohort)
   oldCounts <- cohortCount(cdm$new_cohort)
-  expect_true(nrow(cohortSet(cdm$new_cohort)) == 2)
+  expect_true(nrow(settings(cdm$new_cohort)) == 2)
 
   expect_no_error(cdm$new_cohort <- recordCohortAttrition(cdm$new_cohort, reason = "a reason"))
   # running again will produce an error if no new reason is given
@@ -19,7 +19,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
   expect_s3_class(cohortAttrition(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
-  expect_s3_class(cohortSet(cdm$new_cohort), "data.frame")
+  expect_s3_class(settings(cdm$new_cohort), "data.frame")
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
   expect_equal(nrow(cohortAttrition(cdm$new_cohort)), 4)
   expect_equal(cohortCount(cdm$new_cohort) %>% dplyr::arrange(.data$cohort_definition_id),
@@ -42,7 +42,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
   expect_s3_class(cohortAttrition(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
-  expect_s3_class(cohortSet(cdm$new_cohort), "data.frame")
+  expect_s3_class(settings(cdm$new_cohort), "data.frame")
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
   expect_true(nrow(cohortAttrition(cdm$new_cohort)) == 6)
@@ -63,7 +63,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
   expect_s3_class(cohortAttrition(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
-  expect_s3_class(cohortSet(cdm$new_cohort), "data.frame")
+  expect_s3_class(settings(cdm$new_cohort), "data.frame")
   expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
 
   expect_true(nrow(cohortAttrition(cdm$new_cohort)) == 7)

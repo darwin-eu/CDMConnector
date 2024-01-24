@@ -158,11 +158,9 @@ generateConceptCohortSet <- function(cdm,
   if(!is.null(subsetCohort)){
     assertTables(cdm, subsetCohort)
   }
-  if(!is.null(subsetCohort) && !is.null(subsetCohortId)){
-   if(!nrow(cohortSet(cdm[[subsetCohort]]) %>%
-      dplyr::filter(.data$cohort_definition_id %in% .env$subsetCohortId)) > 0){
-     cli::cli_abort("cohort_definition_id {subsetCohortId} not found in cohort set
-                    of {subsetCohort}")
+  if (!is.null(subsetCohort) && !is.null(subsetCohortId)){
+    if (!nrow(omopgenerics::settings(cdm[[subsetCohort]]) %>% dplyr::filter(.data$cohort_definition_id %in% .env$subsetCohortId)) > 0){
+      cli::cli_abort("cohort_definition_id {subsetCohortId} not found in cohort set of {subsetCohort}")
    }}
 
   # upload concept data to the database ----

@@ -101,7 +101,7 @@ attr(cdm$study_cohorts, "cohort_set")
 ```
 
 ```{r, eval=FALSE}
-cohortSet(cdm$study_cohorts)
+settings(cdm$study_cohorts)
 cohort_set(cdm$study_cohorts) 
 ```
 
@@ -162,7 +162,7 @@ cdm$gi_bleed <- omopgenerics::cohortTable(
 Now our custom cohort GI_bleed has the same attributes associated with it as if it had been created by `generateConceptCohortSet`. This will mean that it can be used by analytic packages designed to work with cdm cohorts.
 
 ```{r}
-cohortSet(cdm$gi_bleed)
+settings(cdm$gi_bleed)
 cohortCount(cdm$gi_bleed)
 cohortAttrition(cdm$gi_bleed)
 attr(cdm$gi_bleed, "cdm_reference")

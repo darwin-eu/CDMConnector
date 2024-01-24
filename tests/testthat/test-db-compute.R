@@ -95,7 +95,7 @@ test_that("uniqueTableName", {
 
 test_that("message does not duplicate when prefix is used", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb( eunomia_dir()))
   cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "main", write_schema = c(prefix = "a_", schema = "main"))
   DBI::dbWriteTable(con, inSchema(attr(attr(cdm, "cdm_source"), "write_schema"), "cars"), cars)
   expect_no_error(dropTable(cdm, "cars"))

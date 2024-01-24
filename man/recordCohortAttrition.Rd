@@ -36,7 +36,7 @@ cdm <- generateConceptCohortSet(
   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
 )
 
-cohortSet(cdm$new_cohort)
+settings(cdm$new_cohort)
 cohortCount(cdm$new_cohort)
 cohortAttrition(cdm$new_cohort)
 
@@ -47,7 +47,7 @@ cdm$new_cohort <- updateCohortAttributes(
   cohort = cdm$new_cohort, reason = "Only events after 2010"
 )
 
-cohortSet(cdm$new_cohort)
+settings(cdm$new_cohort)
 cohortCount(cdm$new_cohort)
 cohortAttrition(cdm$new_cohort)
 }
