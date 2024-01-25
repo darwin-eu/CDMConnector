@@ -11,7 +11,7 @@ jobs:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-base:v0.1
+      image: executionengine.azurecr.io/darwin-base:v0.2
       env:
         CDM5_POSTGRESQL_USER:           ${{ secrets.CDM5_POSTGRESQL_USER }}
         CDM5_POSTGRESQL_PORT:           ${{ secrets.CDM5_POSTGRESQL_PORT }}
@@ -45,6 +45,6 @@ jobs:
         shell: Rscript {0}
 
       - name: Run tests on postgres with RPostgres driver
-        run: R -e 'install.packages("omopgenerics"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
 
 
