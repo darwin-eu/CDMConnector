@@ -46,7 +46,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
-  expect_warning(settings(cdm$chrt0)) # deprecation warning
+  expect_warning(cohort_set(cdm$chrt0)) # deprecation warning
   expect_s3_class(settings(cdm$chrt0), "data.frame")
   counts <- cohortCount(cdm$chrt0)
   expect_s3_class(counts, "data.frame")
@@ -60,7 +60,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   dropTable(cdm, dplyr::starts_with("chrt0_"))
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
-dbtype="duckdb"
+
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")

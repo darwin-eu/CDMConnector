@@ -167,7 +167,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     conceptSet = list(gibleed = 192671),
     name = "gibleed",
     limit = "all",
-    end = 10,
+    end = "observation_period_end_date",
     overwrite = TRUE
   )
 
@@ -273,7 +273,8 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # clean up
   dropTable(cdm, dplyr::contains("gibleed"))
 }
-# dbtype="duckdb"
+
+dbtype="duckdb"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()

@@ -1,4 +1,6 @@
 
+visr <- function (x, ...) { UseMethod("visr", x) }
+
 #' Create an attrition diagram from a generated cohort set
 #'
 #' @param x A cohort_table object
@@ -9,7 +11,6 @@
 #' @return No return value. This function will create one attrition plot for each generated cohort.
 #'
 #' @export
-#' @importFrom visR visr
 #' @keywords internal
 #'
 #' @examples
@@ -43,3 +44,6 @@ visr.omop_attrition <- function(x, ...) {
 
   NextMethod(x)
 }
+
+
+

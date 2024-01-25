@@ -119,13 +119,13 @@ compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
 
   if (intermediate) {
     x <- x |>
-      computeQuery(
+      .computeQuery(
         name = intername, temporary = FALSE, schema = schema, overwrite = FALSE
       )
   }
 
   x <- x |>
-    computeQuery(
+    .computeQuery(
       name = name, temporary = temporary, schema = schema, overwrite = overwrite
     )
 

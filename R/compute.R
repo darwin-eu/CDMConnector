@@ -186,7 +186,24 @@ computeQuery <- function(x,
                          schema = NULL,
                          overwrite = TRUE,
                          ...) {
+
   lifecycle::deprecate_soft("1.3", "computeQuery()", with = "dplyr::compute()")
+
+  .computeQuery(x,
+                name = name,
+                temporary = temporary,
+                schema = schema,
+                overwrite = overwrite,
+                ...)
+}
+
+.computeQuery <- function(x,
+                         name = uniqueTableName(),
+                         temporary = TRUE,
+                         schema = NULL,
+                         overwrite = TRUE,
+                         ...) {
+
   if (is.data.frame(x) || (methods::is(x, "Table") && methods::is(x, "ArrowTabular"))) {
     return(x)
   }

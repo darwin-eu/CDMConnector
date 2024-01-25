@@ -154,8 +154,7 @@ cdmSubsetCohort <- function(cdm,
   person_subset <- subjects %>%
     dplyr::select(person_id = "subject_id") %>%
     dplyr::distinct() %>%
-    compute_query(name = glue::glue("person_sample{prefix}_"),
-                  temporary = TRUE)
+    dplyr::compute(name = glue::glue("person_sample{prefix}_"), temporary = FALSE)
 
   cdm_sample_person(cdm, person_subset)
 }
