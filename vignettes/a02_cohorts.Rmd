@@ -78,31 +78,30 @@ list.files(path_to_cohort_json_files)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("GiBleed"))
 cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 
-cohort_set <- read_cohort_set(path_to_cohort_json_files) |>
+cohort_details <- read_cohort_set(path_to_cohort_json_files) |>
   mutate(cohort_name = snakecase::to_snake_case(cohort_name))
 
-cohort_set
+cohort_details
 
 cdm <- generate_cohort_set(
   cdm = cdm, 
-  cohort_set = cohort_set,
+  cohort_set = cohort_details,
   name = "study_cohorts"
 )
 
 cdm$study_cohorts
-
 ```
 
-The generated cohort has associated metadata tables.
+The generated cohort has associated metadata tables. We can access these with utility functions.
 
 - `cohort_count` contains the person and record counts for each cohort in the cohort set
-- The `cohort_attrition` table contains the attrition information (persons, and records dropped at each sequential inclusion rule)
-- The `cohort_set` table contains the cohort id and cohort name
+- `settings` table contains the cohort id and cohort name
+- `attrition` table contains the attrition information (persons, and records dropped at each sequential inclusion rule)
 
 ```{r}
 cohort_count(cdm$study_cohorts)
-cohort_attrition(cdm$study_cohorts)
 cohort_set(cdm$study_cohorts)
+attrition(cdm$study_cohorts)
 ```
 
 Note the this cohort table is still in the database so it can be quite large. We can also join it to other CDM table or subset the entire cdm to just the persons in the cohort.
@@ -132,19 +131,17 @@ gibleed_male_definition <- cohort(
 )
 
 # create a named list of Capr cohort definitions
-cohort_set = list(gibleed = gibleed_definition,
+cohort_details = list(gibleed = gibleed_definition,
                   gibleed_male = gibleed_male_definition)
 
 # generate cohorts
 cdm <- generate_cohort_set(
   cdm,
-  cohort_set = cohort_set,
+  cohort_set = cohort_details,
   name = "gibleed" # name for the cohort table in the cdm
 )
 
 cdm$gibleed
-
-
 ```
 
 We should get the exact same result from Capr and Atlas if the definitions are equivalent.
@@ -165,7 +162,6 @@ Suppose you have a generated cohort and you would like to create a new cohort th
 First we will generate an example cohort set and then create a new cohort based on filtering the Atlas cohort.
 
 ```{r}
-
 library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
@@ -272,8 +268,18 @@ cdm$gibleed2 <- cdm$gibleed2 %>%
   ) %>% 
   record_cohort_attrition(reason = "Male")
   
-cohort_attrition(cdm$gibleed2) 
+attrition(cdm$gibleed2) 
 ```
+
+We could visualise attrition using a package like VisR
+```{r, fig.width= 7, fig.height=10}
+library(visR)
+gibleed2_attrition <- CDMConnector::attrition(cdm$gibleed2)  %>% 
+    dplyr::select(Criteria = "reason", `Remaining N` = "number_subjects")
+class(gibleed2_attrition) <- c("attrition", class(gibleed2_attrition))
+visr(gibleed2_attrition)
+```
+
 
 In the above example we built a cohort table from a concept set. The cohort essentially captures patient-time based off of the presence or absence of OMOP standard concept IDs. We then manually applied an inclusion criteria and recorded a new attrition record in the cohort. To learn more about this approach to building cohorts check out the [PatientProfiles](https://darwin-eu-dev.github.io/PatientProfiles/) R package.
 
@@ -310,23 +316,22 @@ cdm$cohort <- cohortTable(cdm$cohort)
 We can see that this cohort is now has the class "cohort_table" as well as the various metadata tables.
 
 ```{r}
-class(cdm$cohort)
 cohort_count(cdm$cohort)
 cohort_set(cdm$cohort)
-cohort_attrition(cdm$cohort)
+attrition(cdm$cohort)
 ```
-If you would like to override the attribute tables then pass additional dataframes into new_generated_cohort_set. 
+If you would like to override the attribute tables then pass additional dataframes to cohortTable 
 
 ```{r}
 cdm <- insertTable(cdm = cdm, name = "cohort2", table = cohort, overwrite = TRUE)
+cdm$cohort2 <- cohortTable(cdm$cohort2)
+settings(cdm$cohort2)
 
 cohort_set <- data.frame(cohort_definition_id = 1L,
                          cohort_name = "made_up_cohort")
+cdm$cohort2 <- cohortTable(cdm$cohort2, cohortSetRef = cohort_set)
 
-cdm$cohort2 <- new_generated_cohort_set(cdm$cohort2,
-                                        cohort_set_ref = cohort_set)
-
-cohort_set(cdm$cohort2)
+settings(cdm$cohort2)
 ```
 
 ```{r}
