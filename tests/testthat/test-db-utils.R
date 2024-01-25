@@ -86,7 +86,7 @@ test_that("getFullTableNameQuoted", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
 
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )
@@ -112,7 +112,7 @@ test_that(".dbIsValid", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
 
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
   result <- .dbIsValid(con)
   expect_true(result)

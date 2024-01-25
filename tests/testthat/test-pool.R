@@ -1,12 +1,12 @@
 test_that("pool connections work", {
   skip_if_not_installed("duckdb")
   skip_if_not_installed("pool")
-  pool <- pool::dbPool(
-    drv = duckdb::duckdb(),
-    dbdir = eunomia_dir()
-  )
+  drv <- duckdb::duckdb(eunomia_dir())
+  pool <- pool::dbPool(drv)
 
-  cdm <- cdm_from_con(con = pool, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
+  cdm <- cdm_from_con(con = pool,
+                      cdm_schema = "main",
+                      write_schema = "main")
 
   expect_s3_class(cdm, "cdm_reference")
   expect_equal(dbms(pool), "duckdb")
@@ -16,6 +16,7 @@ test_that("pool connections work", {
 
   expect_s3_class(df, "data.frame")
 
+  duckdb::duckdb_shutdown(drv)
   pool::poolClose(pool)
 })
 

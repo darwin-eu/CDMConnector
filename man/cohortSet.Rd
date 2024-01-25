@@ -5,7 +5,7 @@
 \alias{cohort_set}
 \title{Get cohort settings from a cohort_table object}
 \usage{
-settings(x)
+cohortSet(x)
 
 cohort_set(x)
 }

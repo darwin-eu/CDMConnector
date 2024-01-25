@@ -9,6 +9,7 @@
 #' @return No return value. This function will create one attrition plot for each generated cohort.
 #'
 #' @export
+#' @importFrom visR visr
 #' @keywords internal
 #'
 #' @examples
@@ -30,7 +31,6 @@
 #'
 visr.omop_attrition <- function(x, ...) {
   rlang::check_installed("visR")
-  if (!rlang::is_installed("visR")) cli::cli_abort("Please install the visR package.")
 
   ids <- unique(x$cohort_definition_id)
   if (length(ids) > 1) {

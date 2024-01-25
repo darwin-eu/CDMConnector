@@ -78,7 +78,7 @@ cdm <- generateCohortSet(cdm, cohortSet, name = "cohort")
 
 print(cdm$cohort)
 
-cohortAttrition(cdm$cohort)
+attrition(cdm$cohort)
 settings(cdm$cohort)
 cohortCount(cdm$cohort)
 }

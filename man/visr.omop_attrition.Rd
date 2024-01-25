@@ -4,7 +4,7 @@
 \alias{visr.omop_attrition}
 \title{Create an attrition diagram from a generated cohort set}
 \usage{
-visr.omop_attrition(x, ...)
+\method{visr}{omop_attrition}(x, ...)
 }
 \arguments{
 \item{x}{A cohort_table object}

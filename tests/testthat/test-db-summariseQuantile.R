@@ -3,7 +3,7 @@
 test_summarise_quantile <- function(con,
                                     write_schema) {
 
-  eunomia_con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
   eunomia_cdm <- cdm_from_con(
     con = eunomia_con, cdm_name = "eunomia", cdm_schema = "main",

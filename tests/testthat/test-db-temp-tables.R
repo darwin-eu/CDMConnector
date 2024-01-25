@@ -49,5 +49,6 @@ for (dbtype in dbToTest) {
     skip_if(get_write_schema(dbtype) == "")
     con <- get_connection(dbtype)
     test_temp_tables(dbtype)
+    disconnect(con)
   })
 }

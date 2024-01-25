@@ -4,7 +4,7 @@
 
 test_that("memory leak does not happen", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
   )

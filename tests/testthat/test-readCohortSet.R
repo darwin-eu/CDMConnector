@@ -1,6 +1,5 @@
 
 test_that("From csv camelCase", {
-  skip("failing test")
   pathCsv <- system.file(package = "CDMConnector", "cohorts1")
   data <- readCohortSet(pathCsv)
 
@@ -11,15 +10,14 @@ test_that("From csv camelCase", {
 
   expect_in(
     data$cohort_name,
-    c("cerebralVenousSinusThrombosis01", "deepVeinThrombosis01")
+    c("cerebral_venous_sinus_thrombosis_01", "deep_vein_thrombosis_01")
   )
 
   expect_identical(nrow(data), 2L)
-  expect_identical(ncol(data), 4L)
+  expect_identical(ncol(data), 5L)
 })
 
 test_that("From csv snake_case", {
-  skip("failing test")
   pathCsv <- system.file(package = "CDMConnector", "cohorts1")
   data <- read_cohort_set(pathCsv)
 
@@ -30,11 +28,11 @@ test_that("From csv snake_case", {
 
   expect_in(
     data$cohort_name,
-    c("cerebralVenousSinusThrombosis01", "deepVeinThrombosis01")
+    c("cerebral_venous_sinus_thrombosis_01", "deep_vein_thrombosis_01")
   )
 
   expect_identical(nrow(data), 2L)
-  expect_identical(ncol(data), 4L)
+  expect_identical(ncol(data), 5L)
 })
 
 test_that("From json camelCase", {
