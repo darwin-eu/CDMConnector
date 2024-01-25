@@ -50,7 +50,7 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
   ]
   for (i in cli::cli_progress_along(tables_to_copy)) {
     table_name <- tables_to_copy[i]
-    cohort <- inherits(cdm[[table_name]], "generated_cohort_set")
+    cohort <- inherits(cdm[[table_name]], "cohort_table")
     if (cohort) {
       set <- omopgenerics::settings(cdm[[table_name]]) |> dplyr::as_tibble()
       att <- omopgenerics::attrition(cdm[[table_name]]) |> dplyr::as_tibble()

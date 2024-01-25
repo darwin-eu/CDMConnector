@@ -301,13 +301,13 @@ cdm <- insertTable(cdm = cdm, name = "cohort", table = cohort, overwrite = TRUE)
 cdm$cohort
 ```
 
-To make this a true generated cohort object use the `generatedCohortSet`
+To make this a true generated cohort object use the `cohort_table`
 
 ```{r}
 cdm$cohort <- cohortTable(cdm$cohort)
 ```
 
-We can see that this cohort is now has the class "generated_cohort_set" as well as the various metadata tables.
+We can see that this cohort is now has the class "cohort_table" as well as the various metadata tables.
 
 ```{r}
 class(cdm$cohort)
