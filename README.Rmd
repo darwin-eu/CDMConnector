@@ -1,6 +1,5 @@
 ---
-title: "README"
-output: md_document
+output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -30,7 +29,7 @@ output: md_document
 
 ## Overview
 
-CDMConnector introduces a single R object that represents an OMOP CDM relational database inspired by the [dm](https://dm.cynkra.com/), [DatabaseConnector](http://ohdsi.github.io/DatabaseConnector/), and [Andromeda](https://ohdsi.github.io/Andromeda/) packages. The cdm object can be used in dplyr style data analysis pipelines and facilitates interactive data exploration. cdm objects encapsulate references to [OMOP CDM tables](https://ohdsi.github.io/CommonDataModel/) in a remote RDBMS as well as metadata necessary for interacting with a CDM. 
+CDMConnector introduces a single R object that represents an OMOP CDM relational database inspired by the [dm](https://dm.cynkra.com/), [DatabaseConnector](http://ohdsi.github.io/DatabaseConnector/), and [Andromeda](https://ohdsi.github.io/Andromeda/) packages. The cdm objects encapsulate references to [OMOP CDM tables](https://ohdsi.github.io/CommonDataModel/) in a remote RDBMS as well as metadata necessary for interacting with a CDM, allowing for dplyr style data analysis pipelines and interactive data exploration.
 
 
 [![OMOP CDM v5.4](https://ohdsi.github.io/CommonDataModel/images/cdm54.png)](https://ohdsi.github.io/CommonDataModel/)
@@ -64,27 +63,31 @@ devtools::install_github("darwin-eu/CDMConnector")
 
 ## Usage
 
-Create a `cdm_reference` object from any DBI connection. Use the `cdm_schema argument to point to a particular schema in your database.
+Create a cdm reference from any DBI connection to a database containing OMOP CDM tables. Use the cdm_schema argument to point to a particular schema in your database that contains your OMOP CDM tables and the write_schema to specify the schema where results tables can be created, and use cdm_name to provide a name for the database.
 
 ```{r}
 library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm <- cdm_from_con(con = con, 
+                    cdm_schema = "main", 
+                    write_schema = "main", 
+                    cdm_name = "my_duckdb_database")
 cdm
 ```
 
 A `cdm_reference` is a named list of table references:
 
-```{r}
-library(dplyr, warn.conflicts = FALSE)
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
 names(cdm)
 ```
 
 Use dplyr verbs with the table references.
 
 ```{r}
-tally(cdm$person)
+cdm$person %>% 
+  tally()
 ```
 
 Compose operations with the pipe.
@@ -95,26 +98,11 @@ cdm$condition_era %>%
   count(top_conditions = concept_name, sort = TRUE)
 ```
 
-Run a simple quality check on a cdm.
-
-```{r}
-cdm <- cdm_from_con(con, cdm_schema = "main")
-validate_cdm(cdm)
-```
-
+And much more besides. See vignettes for further explanations on how to create database connections, make a cdm reference, and start analysing your data.
 
 ```{r, include=FALSE}
-DBI::dbDisconnect(con)
+cdmDisconnect(cdm)
 ```
-
-## DBI Drivers
-
-CDMConnector is tested using the following DBI driver backends:
-
-- [RPostgres](https://rpostgres.r-dbi.org/) on Postgres and Redshift
-- [odbc](https://solutions.posit.co/connections/db/r-packages/odbc/) on Microsoft SQL Server, Oracle, and Databricks/Spark
-- [duckdb](https://duckdb.org/docs/api/r) 
-
 
 ## Getting help
 
