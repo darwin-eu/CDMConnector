@@ -47,7 +47,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
 
   # remove attributes since they are a bit different
-
+  # TODO should the attributes be the exact same? probably. but it will take time to implement that.
   attr(actual, 'cohort_attrition') <- attr(expected, 'cohort_attrition') <- NULL
   attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
   expect_equal(actual, expected)
@@ -208,8 +208,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # create our main cohort of interest
   cdm <- generateConceptCohortSet(
     cdm = cdm,
-    conceptSet = list(gibleed_1 = 192671,
-                      gibleed_2 = 4112343),
+    conceptSet = list(gibleed_1 = 192671, gibleed_2 = 4112343),
     name = "gibleed_exp",
     overwrite = TRUE
   )
@@ -274,7 +273,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   dropTable(cdm, dplyr::contains("gibleed"))
 }
 
-dbtype="duckdb"
+dbtype="postgres"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()

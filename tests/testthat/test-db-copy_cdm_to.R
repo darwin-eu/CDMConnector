@@ -3,17 +3,18 @@
 test_copy_cdm_to <- function(con, write_schema) {
   if (dbms(con) == "bigquery") return(testthat::skip("failing test"))
 
+  # copy a duckdb cdm to another database
   con1 <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   on.exit(DBI::dbDisconnect(con1, shutdown = TRUE), add = TRUE)
 
-  cdm <- cdm_from_con(con1, cdm_schema = "main", cdm_name = "test", write_schema = write_schema) %>%
+  cdm <- cdm_from_con(con1, cdm_schema = "main", cdm_name = "test", write_schema = "main") %>%
       cdm_select_tbl("person", "observation_period", "vocabulary")
 
   # create another cdm
   cdm2 <- copy_cdm_to(con = con, cdm = cdm, schema = write_schema)
   expect_setequal(names(cdm), names(cdm2))
   expect_s3_class(cdm2, "cdm_reference")
-  expect_error(copy_cdm_to(con, cdm = cdm, schema = write_schema))
+  expect_error(copy_cdm_to(con, cdm = cdm, schema = write_schema)) # cdm already exists
 
   # drop test tables
   list_tables(con, write_schema) %>%
@@ -21,7 +22,7 @@ test_copy_cdm_to <- function(con, write_schema) {
     purrr::walk(~DBI::dbRemoveTable(con, inSchema(write_schema, ., dbms(con))))
 }
 
-# dbtype = "bigquery" # bigquery is failing
+# dbtype = "postgres" # bigquery is failing
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - copy_cdm_to"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
