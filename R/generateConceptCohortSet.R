@@ -321,7 +321,7 @@ generateConceptCohortSet <- function(cdm,
       dplyr::mutate(cohort_start_date = !!asDate(.data$cohort_start_date),
                     cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
       dplyr::compute(name = name, temporary = FALSE, overwrite = overwrite)
-    }
+  }
 
   cohortSetRef <- concepts %>%
     dplyr::select(dplyr::any_of(c(
@@ -331,8 +331,29 @@ generateConceptCohortSet <- function(cdm,
     dplyr::distinct() %>%
     dplyr::collect()
 
+  cohortCountRef <- cohort %>%
+    dplyr::group_by(.data$cohort_definition_id) %>%
+    dplyr::summarise(
+      number_records = dplyr::n(),
+      number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
+    dplyr::collect()
+
+  cohortAttritionRef <- cohortSetRef %>%
+    dplyr::select("cohort_definition_id") %>%
+    dplyr::distinct() %>%
+    dplyr::left_join(cohortCountRef, by = "cohort_definition_id") %>%
+    dplyr::mutate(
+      number_records = dplyr::coalesce(.data$number_records, 0L),
+      number_subjects = dplyr::coalesce(.data$number_subjects, 0L),
+      reason_id = 1,
+      reason = "Initial qualifying events",
+      excluded_records = 0,
+      excluded_subjects = 0)
+
   cdm[[name]] <- omopgenerics::cohortTable(
-    table = cohortRef, cohortSetRef = cohortSetRef
+    table = cohortRef,
+    cohortSetRef = cohortSetRef,
+    cohortAttritionRef = cohortAttritionRef
   )
 
   return(cdm)

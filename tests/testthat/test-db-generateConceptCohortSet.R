@@ -206,6 +206,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   # cohort generation with a cohort subset ------
   # create our main cohort of interest
+
   cdm <- generateConceptCohortSet(
     cdm = cdm,
     conceptSet = list(gibleed_1 = 192671, gibleed_2 = 4112343),
@@ -273,7 +274,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   dropTable(cdm, dplyr::contains("gibleed"))
 }
 
-dbtype="postgres"
+# dbtype="postgres"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
