@@ -58,12 +58,12 @@ Suggests:
     tibble,
     testthat (>= 3.0.0),
     pool,
-    snakecase
+    snakecase,
+    visR
 Enhances:
     arrow,
     CirceR,
-    Capr,
-    visR
+    Capr
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 VignetteBuilder: knitr

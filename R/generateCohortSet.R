@@ -53,8 +53,8 @@ read_cohort_set <- function(path) {
       json_path = jsonFiles) %>%
       dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
       dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file)) %>%
-      dplyr::mutate(cohort_name = stringr::str_replace_all(tolower(cohort_name), "\\s", "_")) %>%
-      dplyr::mutate(cohort_name = stringr::str_remove_all(cohort_name, "[^a-z1-9_]"))
+      dplyr::mutate(cohort_name = stringr::str_replace_all(tolower(.data$cohort_name), "\\s", "_")) %>%
+      dplyr::mutate(cohort_name = stringr::str_remove_all(.data$cohort_name, "[^a-z1-9_]"))
   }
 
   # snakecase name can be used for column names or filenames
