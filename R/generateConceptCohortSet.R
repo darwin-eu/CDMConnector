@@ -331,7 +331,7 @@ generateConceptCohortSet <- function(cdm,
     dplyr::distinct() %>%
     dplyr::collect()
 
-  cohortCountRef <- cohort %>%
+  cohortCountRef <- cohortRef %>%
     dplyr::group_by(.data$cohort_definition_id) %>%
     dplyr::summarise(
       number_records = dplyr::n(),
