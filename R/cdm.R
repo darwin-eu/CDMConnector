@@ -163,7 +163,7 @@ cdm_from_con <- function(con,
 
 #' @export
 #' @importFrom dplyr tbl
-tbl.db_cdm <- function(src, schema, name) {
+tbl.db_cdm <- function(src, schema, name, ...) {
   con <- attr(src, "dbcon")
   fullName <- inSchema(schema = schema, table = name, dbms = dbms(con))
   x <- dplyr::tbl(src = con, fullName) |>
