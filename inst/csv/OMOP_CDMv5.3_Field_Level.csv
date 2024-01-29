@@ -189,7 +189,7 @@ note_nlp,note_nlp_id,TRUE,integer
 note_nlp,note_id,TRUE,integer
 note_nlp,section_concept_id,FALSE,integer
 note_nlp,snippet,FALSE,varchar(250)
-note_nlp,"""offset""",FALSE,varchar(50)
+note_nlp,offset,FALSE,varchar(50)
 note_nlp,lexical_variant,TRUE,varchar(250)
 note_nlp,note_nlp_concept_id,FALSE,integer
 note_nlp,note_nlp_source_concept_id,FALSE,integer

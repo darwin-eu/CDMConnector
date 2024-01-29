@@ -54,11 +54,11 @@ spec_cdm_table_54 <-  cdm_tables_src_54 %>%
          group_default = cdmTableName %in% default_tables)
 
 
-
 spec_cdm_field_54 <-  cdm_fields_src_54 %>%
   select(1:4) %>%
   mutate(across(everything(), tolower)) %>%
-  mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE))
+  mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE)) %>%
+  mutate(cdmFieldName = ifelse(cdmFieldName == '"offset"', "offset", cdmFieldName))
 
 
 spec_cdm_table_53 <-  cdm_tables_src_53 %>%
@@ -74,11 +74,11 @@ spec_cdm_table_53 <-  cdm_tables_src_53 %>%
 spec_cdm_field_53 <-  cdm_fields_src_53 %>%
   select(1:4) %>%
   mutate(across(everything(), tolower)) %>%
-  mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE))
+  mutate(isRequired = case_when(isRequired == "yes" ~ TRUE, isRequired == "no" ~ FALSE)) %>%
+  mutate(cdmFieldName = ifelse(cdmFieldName == '"offset"', "offset", cdmFieldName))
 
 spec_cdm_table <- list("5.4" = spec_cdm_table_54, "5.3" = spec_cdm_table_53)
 spec_cdm_field <- list("5.4" = spec_cdm_field_54, "5.3" = spec_cdm_field_53)
-
 
 readr::write_csv(spec_cdm_field_54, file.path("inst", "csv", "OMOP_CDMv5.4_Field_Level.csv"))
 readr::write_csv(spec_cdm_table_54, file.path("inst", "csv", "OMOP_CDMv5.4_Table_Level.csv"))
