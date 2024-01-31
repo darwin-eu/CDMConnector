@@ -91,7 +91,7 @@ dropTable.db_cdm <- function(cdm, name) {
 
 #' @export
 #' @importFrom dplyr compute
-compute.db_cdm <- function(x, name, temporary, overwrite, ...) {
+compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   # check source and name
   source <- attr(x, "tbl_source")
   if (is.null(source)) cli::cli_abort("table source not found.")

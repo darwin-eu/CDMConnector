@@ -206,7 +206,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
       rlang::abort(glue::glue("Data file does not contain any .parquet files to load into the database!\nTry removing the file {archiveLocation}."))
     }
 
-    con <- DBI::dbConnect(duckdb::duckdb(), dbdir = datasetLocation)
+    con <- DBI::dbConnect(duckdb::duckdb(datasetLocation))
     # If the function is successful dbDisconnect will be called twice generating a warning.
     # If this function is unsuccessful, still close connection on exit.
     on.exit(suppressWarnings(DBI::dbDisconnect(con, shutdown = TRUE)), add = TRUE)

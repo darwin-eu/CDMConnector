@@ -1,0 +1,180 @@
+---
+title: "CDMConnector"
+format: revealjs
+editor: visual
+execute:
+  echo: true
+---
+
+## 
+
+# OMOP CDM
+
+[![OMOP CDM v5.4](https://ohdsi.github.io/CommonDataModel/images/cdm54.png)](https://ohdsi.github.io/CommonDataModel/)
+
+## 
+
+# CDMConnector
+
+![](images/cdmconnector-hex.png)
+
+# CDMConnector
+
+Connecting to a CDM using an "Andromeda-like" object.
+
+Supported database systems: Postgres, Redshift, SQL Server, Snowflake, Databricks/Spark
+
+But.. it should feel like working in R.
+
+```{r}
+library(CDMConnector)
+library(dplyr, warn.conflicts = FALSE)
+# Use DBI (Database Interface) to connect
+con <- DBI::dbConnect(RPostgres::Postgres(),
+                      dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+                      host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+                      user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+                      password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+
+# we need two schemas
+write_schema <- Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")
+cdm_schema <- Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA")
+
+cdm <- cdm_from_con(con, 
+                    cdm_schema = cdm_schema, 
+                    write_schema = write_schema # write_schema now required
+                    # cdm_name = "my CDM", # also can be pulled from cdm_source_name,
+                    # achilles_schema = "main" # optional precomputed concept counts.
+                    )
+
+cdm
+```
+
+# Write prefix
+
+Create a sub-schema for your tables in the cdm. All tables created with Darwin tools will be prefixed in the database with the `write_prefix` making them easy to drop all at once.
+
+```{r}
+
+cdm <- cdm_from_con(con, 
+                    cdm_schema = cdm_schema, 
+                    write_schema = c(schema = "public", prefix = "temp123_"))
+
+cdm$persons_born_after_1950 <- cdm$person %>% 
+  filter(year_of_birth > 1950) %>% 
+  compute(name = "persons_born_after_1950", overwrite = TRUE, temporary = FALSE)
+
+list_tables(con, schema = "public") %>% stringr::str_subset("temp123_")
+
+list_tables(con, attr(cdm, "write_schema"))
+  
+
+```
+
+# Cohort Generation
+
+```{r}
+
+(folder_with_atlas_json <- system.file("cohorts1", package = "CDMConnector"))
+list.files(folder_with_atlas_json)
+cohort_set <- read_cohort_set(folder_with_atlas_json)
+
+cdm <- generate_cohort_set(cdm,
+                           cohort_set,
+                           name = "cohort",
+                           compute_attrition = TRUE,
+                           overwrite = TRUE)
+
+cdm$cohort # cdm[["cohort"]]
+```
+
+# Cohort Attributes
+
+Moving from current interface to a new one without breaking our code
+
+```{r}
+cohort_set(cdm$cohort)
+cohort_count(cdm$cohort)
+cohort_attrition(cdm$cohort)
+
+```
+
+New omopgenerics interface. Start using these instead. The old functions will be deprecated at some point.
+
+```{r}
+settings(cdm$cohort)
+attrition(cdm$cohort)
+
+```
+
+# Generate Concept Cohort Set
+
+Simple cohorts from concept sets. Should be the same as Atlas cohorts without inclusion/exclusion criteria. Code should run much faster for many cohorts.
+
+```{r}
+
+cdm <- generate_concept_cohort_set(
+         cdm = cdm,
+         name = "gibleed_medications_cohort", # use lowercase letters for names
+         concept_set = list("diclofenac" = 1124300,
+                            "acetaminophen" = 1127433),
+         limit = "first", # first occurrence only or all occurrences
+         required_observation = c(0,0), # pre and post index
+         end = "observation_period_end_date", # can also be a number of days post index
+         overwrite = TRUE)
+
+settings(cdm$gibleed_medications_cohort)
+
+```
+
+# Custom Inclusion Criteria 
+
+Add your own inclusion criteria
+
+```{r}
+
+new_cohort_name <- "gibleed_medications_cohort2"
+
+cdm[[new_cohort_name]] <- cdm$gibleed_medications_cohort %>% 
+  PatientProfiles::addAge() %>% 
+  dplyr::filter(age > 70) %>% 
+  dplyr::compute(name = new_cohort_name, temporary = FALSE, overwrite = TRUE) %>%
+  omopgenerics::cohortTable() %>% # used to be new_generated_cohort_set() 
+  record_cohort_attrition(reason = "age > 50")
+
+
+attrition(cdm[[new_cohort_name]])
+
+
+```
+
+# 
+
+# Easlily clean up your intermediate tables
+
+```{r}
+dropTable(cdm, starts_with("temp123_"))
+```
+
+# Cohort Generation next steps
+
+-   modify and replace existing cohorts (one or all)
+
+-   modify and add to existing cohorts (one or all)
+
+-   Higher level functions (filter vs require_prior_concept_occurrence)
+
+-   Try to avoid duplication of names (e.g. `cdm$my_table <- cohortTable(name = "my_table")`)
+
+# Other updates
+
+-   Support DatabaseConnector (for which dbms?)
+
+-   Better Spark support and testing
+
+-   Remove dependency on RJava (Circe/Atlas json -\> dplyr code)
+
+```{r}
+DBI::dbDisconnect(con)
+
+```
