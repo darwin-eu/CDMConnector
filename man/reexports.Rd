@@ -6,7 +6,7 @@
 \alias{cohortCount}
 \alias{settings}
 \alias{attrition}
-\alias{cohortTable}
+\alias{newCohortTable}
 \alias{insertTable}
 \alias{dropTable}
 \title{Objects exported from other packages}
@@ -16,6 +16,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{omopgenerics}{\code{\link[omopgenerics]{attrition}}, \code{\link[omopgenerics]{cohortCount}}, \code{\link[omopgenerics]{cohortTable}}, \code{\link[omopgenerics]{dropTable}}, \code{\link[omopgenerics]{insertTable}}, \code{\link[omopgenerics]{settings}}}
+  \item{omopgenerics}{\code{\link[omopgenerics]{attrition}}, \code{\link[omopgenerics]{cohortCount}}, \code{\link[omopgenerics]{dropTable}}, \code{\link[omopgenerics]{insertTable}}, \code{\link[omopgenerics]{newCohortTable}}, \code{\link[omopgenerics]{settings}}}
 }}
 

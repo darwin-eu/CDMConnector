@@ -403,11 +403,11 @@ generateCohortSet <- function(cdm,
   # }
 
   cdm[[name]] <- cohort_ref |>
-    omopgenerics::cdmTable(src = attr(cdm, "cdm_source"), name = name)
+    omopgenerics::newCdmTable(src = attr(cdm, "cdm_source"), name = name)
 
 # browser()
   # Create the object. Let the constructor handle getting the counts.----
-  cdm[[name]] <- omopgenerics::cohortTable(
+  cdm[[name]] <- omopgenerics::newCohortTable(
     table = cdm[[name]],
     cohortSetRef = cohortSet[,c("cohort_definition_id", "cohort_name")],
     cohortAttritionRef = cohort_attrition_ref)
@@ -437,7 +437,7 @@ generate_cohort_set <- function(cdm,
 #'
 #' `r lifecycle::badge("superseded")`
 #'
-#' Please use `omopgenerics::cohortTable()` instead.
+#' Please use `omopgenerics::newCohortTable()` instead.
 #'
 #' This constructor function is to be used by analytic package developers to
 #' create `cohort_table` objects.
@@ -563,7 +563,7 @@ new_generated_cohort_set <- function(cohort_ref,
   if (!missing(overwrite)) {
     cli::cli_warn("overwrite is no longer a required argument for new_generated_cohort_set")
   }
-  omopgenerics::cohortTable(
+  omopgenerics::newCohortTable(
     table = cohort_ref,
     cohortSetRef = cohort_set_ref,
     cohortAttritionRef = cohort_attrition_ref

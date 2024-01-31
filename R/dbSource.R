@@ -34,7 +34,7 @@ dbSource <- function(con,
     "write_schema" = writeSchema
   )
   class(source) <- "db_cdm"
-  source <- omopgenerics::cdmSource(src = source, sourceType = dbms(con))
+  source <- omopgenerics::newCdmSource(src = source, sourceType = dbms(con))
   return(source)
 }
 
@@ -56,7 +56,7 @@ insertTable.db_cdm <- function(cdm,
   }
   DBI::dbWriteTable(conn = con, name = fullName, value = table)
   x <- dplyr::tbl(src = con, fullName) |>
-    omopgenerics::cdmTable(src = src, name = name)
+    omopgenerics::newCdmTable(src = src, name = name)
   return(x)
 }
 
@@ -167,7 +167,7 @@ insertFromSource.db_cdm <- function(cdm, value) {
       remoteName <- substr(remoteName, nchar(prefix) + 1, nchar(remoteName))
     }
   }
-  value <- omopgenerics::cdmTable(
+  value <- omopgenerics::newCdmTable(
     table = value, src = attr(cdm, "cdm_source"), name = remoteName
   )
   return(value)

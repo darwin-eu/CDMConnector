@@ -40,7 +40,7 @@ Imports:
     fs,
     generics,
     tidyr,
-    omopgenerics
+    omopgenerics (>= 0.0.2)
 Suggests: 
     SqlRender,
     rJava,
