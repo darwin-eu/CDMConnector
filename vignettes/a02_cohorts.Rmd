@@ -310,7 +310,7 @@ cdm$cohort
 To make this a true generated cohort object use the `cohort_table`
 
 ```{r}
-cdm$cohort <- cohortTable(cdm$cohort)
+cdm$cohort <- newCohortTable(cdm$cohort)
 ```
 
 We can see that this cohort is now has the class "cohort_table" as well as the various metadata tables.
@@ -324,12 +324,12 @@ If you would like to override the attribute tables then pass additional datafram
 
 ```{r}
 cdm <- insertTable(cdm = cdm, name = "cohort2", table = cohort, overwrite = TRUE)
-cdm$cohort2 <- cohortTable(cdm$cohort2)
+cdm$cohort2 <- newCohortTable(cdm$cohort2)
 settings(cdm$cohort2)
 
 cohort_set <- data.frame(cohort_definition_id = 1L,
                          cohort_name = "made_up_cohort")
-cdm$cohort2 <- cohortTable(cdm$cohort2, cohortSetRef = cohort_set)
+cdm$cohort2 <- newCohortTable(cdm$cohort2, cohortSetRef = cohort_set)
 
 settings(cdm$cohort2)
 ```

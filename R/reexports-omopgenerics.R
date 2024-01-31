@@ -10,9 +10,9 @@ omopgenerics::settings
 #' @export
 omopgenerics::attrition
 
-#' @importFrom omopgenerics cohortTable
+#' @importFrom omopgenerics newCohortTable
 #' @export
-omopgenerics::cohortTable
+omopgenerics::newCohortTable
 
 #' @importFrom omopgenerics insertTable
 #' @export

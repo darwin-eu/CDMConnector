@@ -189,7 +189,7 @@ test_that("newGeneratedCohortSet works with prefix", {
     ) %>%
     compute(name = "cohort", temporary = FALSE, overwrite = TRUE)
 
-  cdm$cohort <- cohortTable(cdm$cohort)
+  cdm$cohort <- newCohortTable(cdm$cohort)
 
   expect_true("cohort" %in% list_tables(con, write_schema))
   expect_true("test_cohort" %in% list_tables(con, "main"))

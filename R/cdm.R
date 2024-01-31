@@ -99,7 +99,7 @@ cdm_from_con <- function(con,
     achillesTables <- list()
   }
 
-  cdm <- omopgenerics::cdmReference(
+  cdm <- omopgenerics::newCdmReference(
     tables = c(cdmTables, achillesTables),
     cdmName = cdm_name,
     cdmVersion = cdm_version
@@ -117,16 +117,15 @@ cdm_from_con <- function(con,
         NULL
       }
     })
-    cohort <- x[[1]]
-    if(is.null(cohort)) {
+    cdm[[cohort_table]] <- x[[1]]
+    if(is.null(cdm[[cohort_table]])) {
       rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
     }
-
-    cdm[[cohort_table]] <- omopgenerics::cohortTable(
-      table = cohort,
-      cohortSetRef = x[[2]],
-      cohortAttritionRef = x[[3]]
-    )
+    cdm[[cohort_table]] <- cdm[[cohort_table]] |>
+      omopgenerics::newCohortTable(
+        cohortSetRef = x[[2]],
+        cohortAttritionRef = x[[3]]
+      )
   }
 
   if (dbms(con) == "snowflake") {
@@ -168,7 +167,7 @@ tbl.db_cdm <- function(src, schema, name, ...) {
   fullName <- inSchema(schema = schema, table = name, dbms = dbms(con))
   x <- dplyr::tbl(src = con, fullName) |>
     dplyr::rename_all(tolower) |>
-    omopgenerics::cdmTable(src = src, name = tolower(name))
+    omopgenerics::newCdmTable(src = src, name = tolower(name))
   return(x)
 }
 

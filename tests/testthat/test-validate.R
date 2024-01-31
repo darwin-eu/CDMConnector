@@ -41,10 +41,18 @@ test_that("assert_tables works", {
   # add missing column error to collection
   err3 <- checkmate::makeAssertCollection()
   cdm <- cdm_from_con(con, "main", "main")
-  expect_error({
-    cdm$person <- cdm$person %>%
-       dplyr::select(-"person_id")
-  })
+
+  expect_no_error(cdm$person %>%
+                 dplyr::select(-"person_id"))
+  # but we can't assign it to the cdm
+  expect_error(cdm$person <- cdm$person %>%
+    dplyr::select(-"person_id"))
+
+  cdm$person <- cdm$person %>%
+    dplyr::select(-"ethnicity_source_concept_id")
+  expect_error(assertTables(cdm = cdm, tables = c("person"), add = err3), NA)
+  expect_length(err3$getMessages(), 1) # missing column
+  expect_error(assertTables(cdm = cdm, tables = c("person"), add = NULL)) # without error collection
 
   # use in a function (i.e. the typical use case)
   countDrugsByGender <- function(cdm) {
