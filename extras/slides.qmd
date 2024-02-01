@@ -139,7 +139,7 @@ cdm[[new_cohort_name]] <- cdm$gibleed_medications_cohort %>%
   PatientProfiles::addAge() %>% 
   dplyr::filter(age > 70) %>% 
   dplyr::compute(name = new_cohort_name, temporary = FALSE, overwrite = TRUE) %>%
-  omopgenerics::cohortTable() %>% # used to be new_generated_cohort_set() 
+  newCohortTable() %>% 
   record_cohort_attrition(reason = "age > 50")
 
 

@@ -49,7 +49,7 @@ to a cohort table in the write_schema of an OMOP CDM
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 }
 \details{
-Please use \code{omopgenerics::cohortTable()} instead.
+Please use \code{omopgenerics::newCohortTable()} instead.
 
 This constructor function is to be used by analytic package developers to
 create \code{cohort_table} objects.
