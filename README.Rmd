@@ -69,7 +69,7 @@ Create a cdm reference from any DBI connection to a database containing OMOP CDM
 library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
-debugonce(cdm_from_con)
+
 cdm <- cdm_from_con(con = con, 
                     cdm_schema = "main", 
                     write_schema = "main", 

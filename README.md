@@ -7,7 +7,7 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
-[![codecov.io](https://codecov.io/gh/OdyOSG/CDMConnector/coverage.svg?branch=main)](https://app.codecov.io/gh/OdyOSG/CDMConnector?branch=main)
+[![codecov.io](https://codecov.io/gh/darwin-eu/CDMConnector/coverage.svg?branch=main)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
 [![Build
 Status](https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check)
 [![duckdb
@@ -83,7 +83,8 @@ and use cdm_name to provide a name for the database.
 ``` r
 library(CDMConnector)
 
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
+
 cdm <- cdm_from_con(con = con, 
                     cdm_schema = "main", 
                     write_schema = "main", 
@@ -137,7 +138,7 @@ cdm$person %>%
 ```
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB 0.8.1 [eburn@Windows 10 x64:R 4.2.1/C:\Users\eburn\AppData\Local\Temp\RtmpKChJZB\file5340505f7413.duckdb]
+    ## # Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp4xm0ny/file13a410feee94.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -151,7 +152,7 @@ cdm$condition_era %>%
 ```
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB 0.8.1 [eburn@Windows 10 x64:R 4.2.1/C:\Users\eburn\AppData\Local\Temp\RtmpKChJZB\file5340505f7413.duckdb]
+    ## # Database:   DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp4xm0ny/file13a410feee94.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -175,7 +176,7 @@ your data.
 
 If you encounter a clear bug, please file an issue with a minimal
 [reproducible example](https://reprex.tidyverse.org/) on
-[GitHub](https://github.com/OdyOSG/CDMConnector/issues).
+[GitHub](https://github.com/darwin-eu/CDMConnector/issues).
 
 ------------------------------------------------------------------------
 
