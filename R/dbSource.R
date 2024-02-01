@@ -7,8 +7,7 @@
 #'
 #' @export
 #'
-dbSource <- function(con,
-                     writeSchema) {
+dbSource <- function(con, writeSchema) {
   # initial checks
   if (methods::is(con, "Pool")) {
     if (!rlang::is_installed("pool")) {

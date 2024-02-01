@@ -148,7 +148,6 @@ attrition(cdm[[new_cohort_name]])
 
 ```
 
-# 
 
 # Easlily clean up your intermediate tables
 
@@ -164,7 +163,7 @@ dropTable(cdm, starts_with("temp123_"))
 
 -   Higher level functions (filter vs require_prior_concept_occurrence)
 
--   Try to avoid duplication of names (e.g. `cdm$my_table <- cohortTable(name = "my_table")`)
+-   Try to avoid duplication of names (e.g. `cdm$my_table <- newCohortTable(name = "my_table")`)
 
 # Other updates
 
