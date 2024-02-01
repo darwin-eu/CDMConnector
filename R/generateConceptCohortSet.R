@@ -350,7 +350,7 @@ generateConceptCohortSet <- function(cdm,
       excluded_records = 0,
       excluded_subjects = 0)
 
-  cdm[[name]] <- omopgenerics::newCohortTable(
+  cdm[[name]] <- omopgenerics::cohortTable(
     table = cohortRef,
     cohortSetRef = cohortSetRef,
     cohortAttritionRef = cohortAttritionRef

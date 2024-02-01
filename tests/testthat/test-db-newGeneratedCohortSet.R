@@ -152,6 +152,7 @@ test_that("no error if cohort is empty", {
   cdm$cohort_3 <- cdm$cohorts2 %>%
     dplyr::filter(cohort_start_date > "2030-01-01") %>%
     compute(name = "cohort_3", temporary = FALSE) %>%
+    # omopgenerics::
     cohortTable()
 
   expect_true("cohort_table" %in% class(cdm$cohort_3))

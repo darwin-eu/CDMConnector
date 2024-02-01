@@ -68,3 +68,22 @@ Config/testthat/edition: 3
 Config/testthat/parallel: false
 VignetteBuilder: knitr
 Additional_repositories: https://OHDSI.github.io/drat
+Collate: 
+    'CDMConnector-package.R'
+    'Eunomia.R'
+    'cdm.R'
+    'cdmSubset.R'
+    'cdm_from_environment.R'
+    'cohortTransformations.R'
+    'cohort_ddl.R'
+    'compute.R'
+    'copy_cdm_to.R'
+    'dateadd.R'
+    'dbSource.R'
+    'reexports-omopgenerics.R'
+    'generateCohortSet.R'
+    'generateConceptCohortSet.R'
+    'summariseQuantile.R'
+    'utils.R'
+    'validate.R'
+    'zzz-deprecated.R'
