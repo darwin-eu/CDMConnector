@@ -89,26 +89,7 @@ cdm <- cdm_from_con(con = con,
                     cdm_schema = "main", 
                     write_schema = "main", 
                     cdm_name = "my_duckdb_database")
-cdm
 ```
-
-    ## 
-
-    ## ── # OMOP CDM reference (duckdb) of my_duckdb_database ─────────────────────────
-
-    ## • omop tables: person, observation_period, visit_occurrence, visit_detail,
-    ## condition_occurrence, drug_exposure, procedure_occurrence, device_exposure,
-    ## measurement, observation, death, note, note_nlp, specimen, fact_relationship,
-    ## location, care_site, provider, payer_plan_period, cost, drug_era, dose_era,
-    ## condition_era, metadata, cdm_source, concept, vocabulary, domain,
-    ## concept_class, concept_relationship, relationship, concept_synonym,
-    ## concept_ancestor, source_to_concept_map, drug_strength
-
-    ## • cohort tables: -
-
-    ## • achilles tables: -
-
-    ## • other tables: -
 
 A `cdm_reference` is a named list of table references:
 
@@ -138,7 +119,7 @@ cdm$person %>%
 ```
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp4xm0ny/file13a410feee94.duckdb]
+    ## # Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCS8sv9/file14a326c1d48b.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -152,7 +133,7 @@ cdm$condition_era %>%
 ```
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//Rtmp4xm0ny/file13a410feee94.duckdb]
+    ## # Database:   DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCS8sv9/file14a326c1d48b.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>

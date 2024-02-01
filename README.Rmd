@@ -74,7 +74,6 @@ cdm <- cdm_from_con(con = con,
                     cdm_schema = "main", 
                     write_schema = "main", 
                     cdm_name = "my_duckdb_database")
-cdm
 ```
 
 A `cdm_reference` is a named list of table references:
