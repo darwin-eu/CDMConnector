@@ -54,8 +54,22 @@ read_cohort_set <- function(path) {
       dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
       dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file)) %>%
       dplyr::mutate(cohort_name = stringr::str_replace_all(tolower(.data$cohort_name), "\\s", "_")) %>%
-      dplyr::mutate(cohort_name = stringr::str_remove_all(.data$cohort_name, "[^a-z1-9_]"))
-  }
+      dplyr::mutate(cohort_name = stringr::str_remove_all(.data$cohort_name, "[^a-z0-9_]")) %>%
+      # if the cohort filenames are numbers then use the number as the id and prefix the name with "cohort"
+      # Supress Warnings about NA conversion. If the string is not a number we don't treat it as a number.
+      dplyr::mutate(cohort_definition_id = dplyr::if_else(stringr::str_detect(.data$cohort_name, "^[0-9]+$"), suppressWarnings(as.integer(.data$cohort_name)), .data$cohort_definition_id)) %>%
+      dplyr::mutate(cohort_name = dplyr::if_else(stringr::str_detect(.data$cohort_name, "^[0-9]+$"), paste0("cohort_", .data$cohort_name), .data$cohort_name))
+
+      if (length(unique(cohortsToCreate$cohort_definition_id)) != nrow(cohortsToCreate) ||
+          length(unique(cohortsToCreate$cohort_name)) != nrow(cohortsToCreate)) {
+
+        tryCatch(
+          cli::cli_abort("Problem creating cohort IDs and names from json file names. IDs and filenames must be unique!"),
+          finally = print(cohortsToCreate[,1:2])
+        )
+      }
+
+    }
 
   # snakecase name can be used for column names or filenames
   cohortsToCreate <- cohortsToCreate %>%
@@ -559,12 +573,7 @@ new_generated_cohort_set <- function(cohort_ref,
     what = "new_generated_cohort_set()",
     with = "newCohortTable()"
   )
-  if (!is.null(cohort_count_ref)) {
-    cli::cli_warn("cohort_count_ref is no longer a required argument for new_generated_cohort_set")
-  }
-  if (!missing(overwrite)) {
-    cli::cli_warn("overwrite is no longer a required argument for new_generated_cohort_set")
-  }
+
   omopgenerics::newCohortTable(
     table = cohort_ref,
     cohortSetRef = cohort_set_ref,
@@ -580,9 +589,6 @@ newGeneratedCohortSet <- function(cohortRef,
                                   cohortAttritionRef = NULL,
                                   cohortCountRef = NULL,
                                   overwrite) {
-  if (!missing(overwrite)) {
-    cli::cli_warn("overwrite is no longer a required argument for new_generated_cohort_set")
-  }
   new_generated_cohort_set(
     cohort_ref = cohortRef,
     cohort_set_ref = cohortSetRef,

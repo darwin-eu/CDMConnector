@@ -52,7 +52,7 @@ test_that("From json camelCase", {
 
   expect_equal(
     sort(data$cohort_name_snakecase),
-    sort(c("cerebral_venous_sinus_thrombosis_1", "deep_vein_thrombosis_1", "gibleed_male"))
+    sort(c("cerebral_venous_sinus_thrombosis_01", "deep_vein_thrombosis_01", "gibleed_male"))
   )
 
   expect_identical(nrow(data), 3L)
@@ -75,4 +75,11 @@ test_that("From json snake_case", {
 
   expect_identical(nrow(data), 3L)
   expect_identical(ncol(data), 5L)
+})
+
+
+test_that("cohort json file names with numbers", {
+  df <- read_cohort_set(system.file("cohorts4", package = "CDMConnector"))
+  expect_equal(df$cohort_definition_id, 100)
+  expect_equal(df$cohort_name, "cohort_100")
 })
