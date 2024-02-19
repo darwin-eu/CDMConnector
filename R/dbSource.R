@@ -47,8 +47,8 @@ insertTable.db_cdm <- function(cdm,
   con <- attr(src, "dbcon")
   writeSchema <- attr(src, "write_schema")
   fullName <- inSchema(schema = writeSchema, table = name, dbms = dbms(con))
-  if (overwrite) {
-    omopgenerics::dropTable(cdm = src, name = name)
+  if (overwrite && (name %in% listTables(con, writeSchema))) {
+    DBI::dbRemoveTable(con, name = fullName)
   }
   if (!inherits(table, "data.frame")) {
     table <- table |> dplyr::collect()
@@ -66,11 +66,6 @@ dropTable.db_cdm <- function(cdm, name) {
   schema <- attr(cdm, "write_schema")
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(con))
-
-  # remove prefix to get full table names from listTables
-  if ("prefix" %in% names(schema)) {
-    schema <- schema[names(schema) != "prefix"]
-  }
 
   # correct names
   allTables <- listTables(con, schema = schema)
@@ -98,6 +93,7 @@ dropTable.db_cdm <- function(cdm, name) {
 compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   # check source and name
   source <- attr(x, "tbl_source")
+  con <- attr(source, "dbcon")
   if (is.null(source)) cli::cli_abort("table source not found.")
   oldName <- attr(x, "tbl_name")
   if (is.null(oldName)) cli::cli_abort("table name not found.")
@@ -106,7 +102,7 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   if (!temporary & !is.na(oldName)) {
     if (oldName == name) {
       intermediate <- TRUE
-      intername <- paste0(c(sample(letters, 5), "_test_table"), collapse = "")
+      intername <- paste0(c(sample(letters, 5), "_temp_table"), collapse = "")
     } else {
       intermediate <- FALSE
     }
@@ -134,7 +130,10 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
     )
 
   if (intermediate) {
-    dropTable(cdm = source, name = intername)
+    DBI::dbRemoveTable(con, name = inSchema(schema = schema, table = intername, dbms = dbms(con)))
+    if (intername %in% list_tables(con, write_schema)) {
+      cli::cli_warn("Intermediate table `{intername}` was not dropped as expected.")
+    }
   }
 
   return(x)

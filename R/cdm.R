@@ -339,6 +339,10 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
   DBI::dbRemoveTable(con, inSchema(write_schema, tablename, dbms = dbms(con)))
 
+  if (tablename %in% list_tables(con, write_schema)) {
+    cli::cli_inform("Write access verified but temp table `{name}` was not properly dropped!")
+  }
+
   if (!isTRUE(all.equal(df1, df2))) {
     msg <- paste("Write access to schema", write_schema, "could not be verified.")
 
