@@ -67,6 +67,11 @@ dropTable.db_cdm <- function(cdm, name) {
   con <- attr(cdm, "dbcon")
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
+  # remove prefix to get full table names from listTables
+  if ("prefix" %in% names(schema)) {
+    schema <- schema[names(schema) != "prefix"]
+  }
+
   # correct names
   allTables <- listTables(con, schema = schema)
   if(length(allTables) == 0) {
