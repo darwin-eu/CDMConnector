@@ -20,7 +20,7 @@ cohort_collapse <- function(x) {
     dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date) %>%
     dplyr::mutate(
       prev_start = dplyr::coalesce(
-        dbplyr::win_over(
+        !!dbplyr::win_over(
           min_start_sql,
           partition = c("cohort_definition_id", "subject_id"),
           frame = c(-Inf, -1),
@@ -28,7 +28,7 @@ cohort_collapse <- function(x) {
           con = con),
         .data$cohort_start_date),
       prev_end = dplyr::coalesce(
-        dbplyr::win_over(
+        !!dbplyr::win_over(
           max_end_sql,
           partition = c("cohort_definition_id", "subject_id"),
           frame = c(-Inf, -1),
@@ -208,7 +208,7 @@ cohort_pad_end <- function(x, days = NULL, from = "end") {
 
   x %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(cohort_end_date = CDMConnector::dateadd(date = date_col, number = days, interval = "day")) %>%
+    dplyr::mutate(cohort_end_date = !!CDMConnector::dateadd(date = date_col, number = days, interval = "day")) %>%
     cohort_collapse() %>% # TODO what if end < start, remove row?
     dplyr::filter(.data$cohort_start_date <= .data$cohort_end_date)
 }
@@ -237,7 +237,7 @@ cohort_pad_start <- function(x, days = NULL, from = "start") {
   date_col <- paste0("cohort_", from, "_date")
 
   x %>%
-    dplyr::mutate(cohort_start_date = CDMConnector::dateadd(date = date_col, number = days, interval = "day")) %>%
+    dplyr::mutate(cohort_start_date = !!CDMConnector::dateadd(date = date_col, number = days, interval = "day")) %>%
     dplyr::ungroup() %>%
     cohort_collapse() %>%
     dplyr::filter(.data$cohort_start_date <= .data$cohort_end_date)
