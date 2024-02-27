@@ -27,6 +27,18 @@ dbSource <- function(con, writeSchema) {
   }
   checkmate::assert_character(writeSchema, min.len = 1, max.len = 3)
 
+  if (length(writeSchema) != 3 & !"schema" %in% names(writeSchema)) {
+    cli::cli_inform(c(
+      "!" = "No prefix was supplied.",
+      "Please consider using a prefix for good practices as it prevents:",
+      "*" = "Working in your own subschema",
+      "*" = "Dropping others tables",
+      "*" = "Easily clean it at the end of the analysis",
+      "To use a prefix you have to specify it when you create the cdm_reference:",
+      "v" = "writeSchema = c(schema = \"main\", prefix = \"my_prefix_\")"
+    ))
+  }
+
   source <- structure(
     .Data = list(),
     "dbcon" = con,
