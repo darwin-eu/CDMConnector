@@ -44,7 +44,7 @@ cdm_from_con <- function(con,
   checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
 
-  # create source object and validate connecion
+  # create source object and validate connection
   src <- dbSource(con = con, writeSchema = write_schema)
   con <- attr(src, "dbcon")
 

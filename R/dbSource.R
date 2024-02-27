@@ -91,6 +91,7 @@ dropTable.db_cdm <- function(cdm, name) {
 #' @export
 #' @importFrom dplyr compute
 compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
+
   # check source and name
   source <- attr(x, "tbl_source")
   con <- attr(source, "dbcon")
@@ -114,7 +115,7 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   schema <- attr(source, "write_schema")
   if (is.null(schema)) cli::cli_abort("write_schema can not be NULL.")
 
-  # remove db_con class
+  # remove db_cdm class to avoid recursive call
   class(x) <- class(x)[!class(x) %in% "db_cdm"]
 
   if (intermediate) {
@@ -131,11 +132,12 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
 
   if (intermediate) {
     DBI::dbRemoveTable(con, name = inSchema(schema = schema, table = intername, dbms = dbms(con)))
-    if (intername %in% list_tables(con, write_schema)) {
+    if (intername %in% list_tables(con, schema)) {
       cli::cli_warn("Intermediate table `{intername}` was not dropped as expected.")
     }
   }
 
+  class(x) <- c("db_cdm", class(x))
   return(x)
 }
 
