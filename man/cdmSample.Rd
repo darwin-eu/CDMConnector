@@ -5,14 +5,18 @@
 \alias{cdm_sample}
 \title{Subset a cdm object to a random sample of individuals}
 \usage{
-cdmSample(cdm, n)
+cdmSample(cdm, n, seed = sample.int(1e+06, 1), name = "person_sample")
 
-cdm_sample(cdm, n)
+cdm_sample(cdm, n, seed = sample.int(1e+06, 1), name = "person_sample")
 }
 \arguments{
-\item{cdm}{A cdm_reference object}
+\item{cdm}{A cdm_reference object.}
 
-\item{n}{Number of persons to include in the cdm}
+\item{n}{Number of persons to include in the cdm.}
+
+\item{seed}{Seed for the random number generator.}
+
+\item{name}{Name of the table that will contain the sample of persons.}
 }
 \value{
 A modified cdm_reference object where all clinical tables are lazy
