@@ -322,7 +322,8 @@ generateCohortSet <- function(cdm,
         "included_events",
         "final_cohort",
         "inclusion_rules",
-        "BEST_EVENTS")
+        "BEST_EVENTS",
+        paste0("Inclusion_", 0:9))
 
       for (j in seq_along(tempTablesToDrop)) {
         DBI::dbExecute(con, paste("drop table if exists", tempTablesToDrop[j]))
