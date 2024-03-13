@@ -46,6 +46,11 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install R packages
+        run: |
+            install.packages("knitr")
+        shell: Rscript {0}
+
       - name: List contents of home directory
         run: |
             print("Home directory content before R check")
