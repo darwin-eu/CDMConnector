@@ -180,8 +180,10 @@ cdm_subset_cohort <- function(cdm,
 #'
 #' `r lifecycle::badge("experimental")`
 #'
-#' @param cdm A cdm_reference object
-#' @param n Number of persons to include in the cdm
+#' @param cdm A cdm_reference object.
+#' @param n Number of persons to include in the cdm.
+#' @param seed Seed for the random number generator.
+#' @param name Name of the table that will contain the sample of persons.
 #'
 #' @return A modified cdm_reference object where all clinical tables are lazy
 #' queries pointing to subset
@@ -210,21 +212,30 @@ cdm_subset_cohort <- function(cdm,
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-cdmSample <- function(cdm, n) {
+cdmSample <- function(cdm,
+                      n,
+                      seed = sample.int(1e6, 1),
+                      name = "person_sample") {
   checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertIntegerish(n, len = 1, lower = 1, upper = 1e9, null.ok = FALSE)
+  checkmate::assertIntegerish(seed, len = 1, lower = 1, null.ok = FALSE)
+  checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
 
-  assert_tables(cdm, "person")
+  subset <- cdm[["person"]] |>
+    dplyr::pull("person_id") |>
+    unique() |>
+    sort()
 
-  # Note temporary = TRUE in dbWriteTable does not work on all dbms but we want a temp table here.
-  person_subset <- cdm[["person"]] %>%
-    dplyr::select("person_id") %>%
-    dplyr::distinct() %>%
-    dplyr::slice_sample(n = n) %>%
-    dplyr::rename_all(tolower) %>%
-    dplyr::compute()
+  if (length(subset) > n) {
+    set.seed(seed)
+    subset <- sample(x = subset, size = n, replace = FALSE)
+  }
 
-  cdm_sample_person(cdm, person_subset)
+  subset <- dplyr::tibble("person_id" = subset)
+
+  cdm <- omopgenerics::insertTable(cdm = cdm, name = name, table = subset)
+
+  cdm_sample_person(cdm, cdm[[name]])
 }
 
 

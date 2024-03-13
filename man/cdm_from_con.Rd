@@ -12,7 +12,8 @@ cdm_from_con(
   cohort_tables = NULL,
   cdm_version = "5.3",
   cdm_name = NULL,
-  achilles_schema = NULL
+  achilles_schema = NULL,
+  .soft_validation = FALSE
 )
 
 cdmFromCon(
@@ -22,7 +23,8 @@ cdmFromCon(
   cohortTables = NULL,
   cdmVersion = "5.3",
   cdmName = NULL,
-  achillesSchema = NULL
+  achillesSchema = NULL,
+  .softValidation = FALSE
 )
 }
 \arguments{
@@ -47,6 +49,9 @@ heuristics. Cohort tables must be in the write_schema.}
 
 \item{achilles_schema, achillesSchema}{An optional schema in the CDM database
 that contains achilles tables.}
+
+\item{.soft_validation, .softValidation}{If TRUE fewer validation checks will
+be performed.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

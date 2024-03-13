@@ -15,6 +15,8 @@
 #'.  field in the CDM_SOURCE table will be used.
 #' @param achilles_schema,achillesSchema An optional schema in the CDM database
 #' that contains achilles tables.
+#' @param .soft_validation,.softValidation If TRUE fewer validation checks will
+#' be performed.
 #'
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @importFrom dplyr all_of matches starts_with ends_with contains
@@ -25,7 +27,8 @@ cdm_from_con <- function(con,
                          cohort_tables = NULL,
                          cdm_version = "5.3",
                          cdm_name = NULL,
-                         achilles_schema = NULL) {
+                         achilles_schema = NULL,
+                         .soft_validation = FALSE) {
 
   if (!DBI::dbIsValid(con)) {
     cli::cli_abort("The connection is not valid. Is the database connection open?")
@@ -124,7 +127,8 @@ cdm_from_con <- function(con,
     cdm[[cohort_table]] <- cdm[[cohort_table]] |>
       omopgenerics::newCohortTable(
         cohortSetRef = x[[2]],
-        cohortAttritionRef = x[[3]]
+        cohortAttritionRef = x[[3]],
+        .softValidation = .soft_validation
       )
   }
 
@@ -180,7 +184,8 @@ cdmFromCon <- function(con,
                        cohortTables = NULL,
                        cdmVersion = "5.3",
                        cdmName = NULL,
-                       achillesSchema = NULL) {
+                       achillesSchema = NULL,
+                       .softValidation = FALSE) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,
@@ -188,7 +193,8 @@ cdmFromCon <- function(con,
     cohort_tables = cohortTables,
     cdm_version = cdmVersion,
     cdm_name = cdmName,
-    achilles_schema = achillesSchema
+    achilles_schema = achillesSchema,
+    .soft_validation = .softValidation
   )
 }
 

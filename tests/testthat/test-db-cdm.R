@@ -177,3 +177,41 @@ test_that("adding achilles", {
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
+
+test_that("adding achilles", {
+  skip_if_not(eunomia_is_available())
+  skip_if_not_installed("duckdb")
+
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+
+  cohorts <- data.frame(
+    cohortId = c(1, 2, 3),
+    cohortName = c("X", "A", "B"),
+    type = c("target", "event", "event")
+  )
+
+  cohort_table <- dplyr::tribble(
+    ~cohort_definition_id, ~subject_id, ~cohort_start_date,    ~cohort_end_date,
+    1,                     5,           as.Date("2020-01-01"), as.Date("2020-01-01"),
+    2,                     5,           as.Date("2020-01-10"), as.Date("2020-03-10")
+  )
+
+  dplyr::copy_to(dest = con,
+                 df = cohort_table,
+                 name = "test_cohort_table",
+                 overwrite = TRUE)
+
+  expect_error(cdmFromCon(con,
+                    cdmSchema = "main",
+                    writeSchema = c(schema = "main"),
+                    cohortTables = "test_cohort_table",
+                    .softValidation = FALSE)) # error because cohorts out of obs
+
+  expect_no_error(cdmFromCon(con,
+                             cdmSchema = "main",
+                             writeSchema = c(schema = "main"),
+                             cohortTables = "test_cohort_table",
+                             .softValidation = TRUE)) # passes without validation
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
