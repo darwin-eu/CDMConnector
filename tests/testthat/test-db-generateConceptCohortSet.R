@@ -85,8 +85,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   })
 
   # default (with descendants) ----
-  if (FALSE) {
-    # if (rlang::is_installed("Capr")) { # failing for some reason. gives different results.
+    if (rlang::is_installed("Capr")) {
     # we need Capr to include descendants
     cdm <- generateConceptCohortSet(
       cdm = cdm,
@@ -111,13 +110,18 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
       dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
       dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
 
-    # setdiff(unique(expected$subject_id), unique(actual$subject_id))
-    # setdiff(unique(actual$subject_id), unique(expected$subject_id))
+    setdiff(unique(expected$subject_id), unique(actual$subject_id))
+    setdiff(unique(actual$subject_id), unique(expected$subject_id))
     expect_true(nrow(expected) > 0)
     expect_true(nrow(actual) == nrow(expected))
 
+    # note cohort table should be the same
+    # but some attributes might differ (e.g. cohort attrition)
     expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
-    expect_equal(actual, expected)
+    expect_equal(cohortCount(cdm$gibleed),
+                 cohortCount(cdm$gibleed2))
+    expect_equal(as.integer(sort(cdm$gibleed |> pull("subject_id"))),
+                 as.integer(sort(cdm$gibleed2 |> pull("subject_id"))))
   }
 
   # all occurrences (no descendants) ----
@@ -328,5 +332,33 @@ test_that("Regimen domain does not cause error", {
   expect_s3_class(cdm$cohort, "GeneratedCohortSet")
 
   DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+test_that("Eunomia", {
+
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomia_is_available())
+
+  # edge case with overlaps (issue 420)
+  db <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(
+    con = db,
+    cdm_schema = "main",
+    write_schema = "main"
+  )
+
+ expect_no_error(cdm <- cdm %>%
+    generate_concept_cohort_set(concept_set = list("acetaminophen" = c(1125315,
+                                                                       1127078,
+                                                                       1127433,
+                                                                       40229134,
+                                                                       40231925,
+                                                                       40162522,
+                                                                       19133768)),
+                                limit = "all",
+                                end = "event_end_date",
+                                name = "acetaminophen",
+                                overwrite = TRUE))
+
 })
 

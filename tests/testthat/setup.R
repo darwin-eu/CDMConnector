@@ -165,7 +165,7 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 if (Sys.getenv("CI_TEST_DB") == "") {
 
   dbToTest <- c(
-    "duckdb"
+     "duckdb"
     # ,
     # "postgres"
     # ,

@@ -71,6 +71,11 @@ test_cohort_collapse <- function(con, write_schema) {
     input_db <- dplyr::tbl(con, inSchema(write_schema, "tmp_cohort_collapse_input", dbms = dbms(con)))
   }
 
+  if (dbms(con) == "snowflake") {
+    DBI::dbExecute(con,
+                   glue::glue_sql("USE SCHEMA ATLAS.RESULTS"))
+  }
+
   actual_output <- input_db %>%
     cohort_collapse() %>%
     dplyr::collect() %>%

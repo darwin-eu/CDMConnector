@@ -179,9 +179,10 @@ generateConceptCohortSet <- function(cdm,
   concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm),
                                                       tempName,
                                                       dbms = dbms(con))) %>%
-    dplyr::rename_all(tolower) %>%
-    { if (any(df$include_descendants)) {
-      dplyr::filter(., .data$include_descendants) %>%
+    dplyr::rename_all(tolower)
+  if (any(df$include_descendants)) {
+    concepts <- concepts  %>%
+      dplyr::filter(.data$include_descendants) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
         dplyr::select(
           "cohort_definition_id", "cohort_name",
@@ -198,8 +199,10 @@ generateConceptCohortSet <- function(cdm,
             "limit", "prior_observation", "future_observation", "end"
           )))
         )
-    } else . } %>%
-    dplyr::filter(.data$is_excluded == FALSE) %>%
+    }
+
+  concepts <-  concepts %>%
+        dplyr::filter(.data$is_excluded == FALSE) %>%
     # Note that concepts that are not in the vocab will be silently ignored
     dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
     dplyr::select(
@@ -207,9 +210,10 @@ generateConceptCohortSet <- function(cdm,
       dplyr::any_of(c("limit", "prior_observation", "future_observation", "end"))
     ) %>%
     dplyr::distinct() %>%
-    dplyr::compute(temporary = TRUE, overwrite = overwrite)
+    dplyr::compute()
 
-  DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+  DBI::dbRemoveTable(cdmCon(cdm),
+                     name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs
