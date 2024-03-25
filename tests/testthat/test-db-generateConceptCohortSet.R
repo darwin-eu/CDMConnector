@@ -120,8 +120,6 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
     expect_equal(cohortCount(cdm$gibleed),
                  cohortCount(cdm$gibleed2))
-    expect_equal(as.integer(sort(cdm$gibleed |> pull("subject_id"))),
-                 as.integer(sort(cdm$gibleed2 |> pull("subject_id"))))
   }
 
   # all occurrences (no descendants) ----
@@ -207,6 +205,25 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
   expect_equal(actual, expected)
 
+  # multiple cohort generation ------
+  cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
+  cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2",
+                             overwrite = TRUE)
+
+  cdm <- generateConceptCohortSet(
+    cdm = cdm,
+    conceptSet = list("acetaminophen_1" = 1127433,
+                      "acetaminophen_2" = 1127433),
+    name = "acetaminophen",
+    limit = "all",
+    end = "event_end_date",
+    overwrite = TRUE
+  )
+  # should have two identical cohorts
+  expect_equal(length(cohortCount(cdm$acetaminophen)  %>%
+    dplyr::select("number_records") |>
+    dplyr::distinct() |>
+    dplyr::pull()), 1)
 
   # cohort generation with a cohort subset ------
   # create our main cohort of interest

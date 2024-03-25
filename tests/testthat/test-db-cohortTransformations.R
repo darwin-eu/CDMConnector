@@ -1,4 +1,9 @@
-test_cohort_collapse <- function(con, write_schema) {
+test_cohort_collapse <- function(con, cdm_schema, write_schema) {
+
+  cdm <- cdm_from_con(
+    con = con, cdm_name = "test", cdm_schema = cdm_schema,
+    write_schema = write_schema
+  )
 
   # Nuria's examples
   cohort_input <- tibble::tribble(
@@ -87,6 +92,117 @@ test_cohort_collapse <- function(con, write_schema) {
   expect_identical(actual_output, expected_output)
 
   DBI::dbRemoveTable(con, inSchema(write_schema, "tmp_cohort_collapse_input", dbms = dbms(con)))
+
+ # another example
+  ct_test_cohort <- dplyr::tibble(cohort_definition_id = 1L,
+                          subject_id = 1L,
+                          cohort_start_date = as.Date(c(
+                            "1950-04-18",
+                            "1956-05-30",
+                            "1956-05-30")),
+                          cohort_end_date = as.Date(c(
+                            "1950-05-02",
+                            "1956-05-30",
+                            "1956-08-28")))
+  ct_test_cohort_expected <- dplyr::tibble(cohort_definition_id = 1L,
+                                  subject_id = 1L,
+                                  cohort_start_date = as.Date(c(
+                                    "1950-04-18",
+                                    "1956-05-30")),
+                                  cohort_end_date = as.Date(c(
+                                    "1950-05-02",
+                                    "1956-08-28")))
+  cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
+  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+                 dplyr::collect() %>%
+                 dplyr::arrange(cohort_start_date),
+               ct_test_cohort_expected)
+
+  ct_test_cohort <- dplyr::tibble(cohort_definition_id = 1L,
+                          subject_id = 1L,
+                          cohort_start_date = as.Date(c(
+                            "1950-04-18",
+                            "1956-05-30",
+                            "1956-05-30")),
+                          cohort_end_date = as.Date(c(
+                            "1950-05-02",
+                            "1956-08-28",
+                            "1956-05-30")))
+  ct_test_cohort_expected <- dplyr::tibble(cohort_definition_id = 1L,
+                                           subject_id = 1L,
+                                           cohort_start_date = as.Date(c(
+                                             "1950-04-18",
+                                             "1956-05-30")),
+                                           cohort_end_date = as.Date(c(
+                                             "1950-05-02",
+                                             "1956-08-28")))
+  cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
+  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+                 dplyr::collect() %>%
+                 dplyr::arrange(cohort_start_date),
+               ct_test_cohort_expected)
+
+  ct_test_cohort <- dplyr::tibble(cohort_definition_id = 1L,
+                          subject_id = 1L,
+                          cohort_start_date = as.Date(c(
+                            "1950-04-18",
+                            "1956-05-30",
+                            "1956-05-30")),
+                          cohort_end_date = as.Date(c(
+                            "1950-05-02",
+                            "1956-08-28",
+                            "1956-06-10")))
+  ct_test_cohort_expected <- dplyr::tibble(cohort_definition_id = 1L,
+                                           subject_id = 1L,
+                                           cohort_start_date = as.Date(c(
+                                             "1950-04-18",
+                                             "1956-05-30")),
+                                           cohort_end_date = as.Date(c(
+                                             "1950-05-02",
+                                             "1956-08-28")))
+  cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
+  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+                 dplyr::collect() %>%
+                 dplyr::arrange(cohort_start_date),
+               ct_test_cohort_expected)
+
+  # multiple cohort ids
+  ct_test_cohort <- dplyr::tibble(cohort_definition_id = c(1L,1L,1L,2L, 2L, 2L),
+                                  subject_id = c(1L,1L,1L,2L, 1L, 1L),
+                                  cohort_start_date = as.Date(c(
+                                    "1950-04-18",
+                                    "1956-05-30",
+                                    "1956-05-30",
+                                    "2005-01-01",
+                                    "2000-01-01",
+                                    "2000-01-03")),
+                                  cohort_end_date = as.Date(c(
+                                    "1950-05-02",
+                                    "1956-08-28",
+                                    "1956-06-10",
+                                    "2005-01-01",
+                                    "2000-01-10",
+                                    "2000-01-08")))
+  ct_test_cohort_expected <- dplyr::tibble(cohort_definition_id = c(1L,1L, 2L, 2L),
+                                           subject_id = c(1L,1L,2L, 1L),
+                                           cohort_start_date = as.Date(c(
+                                             "1950-04-18",
+                                             "1956-05-30",
+                                             "2005-01-01",
+                                             "2000-01-01")),
+                                           cohort_end_date = as.Date(c(
+                                             "1950-05-02",
+                                             "1956-08-28",
+                                             "2005-01-01",
+                                             "2000-01-10")))
+  cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
+  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+                 dplyr::collect() %>%
+                 dplyr::arrange(cohort_start_date),
+               ct_test_cohort_expected %>%
+                 dplyr::arrange(cohort_start_date))
+  dropTable(cdm, name = "ct_test_cohort")
+
 
 
   # test every case (Allen's interval algebra) for two intervals and two people
@@ -257,10 +373,11 @@ for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - cohort_collapse"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+    cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
     con <- get_connection(dbtype)
     skip_if(any(write_schema == "") || is.null(con))
-    test_cohort_collapse(con, write_schema)
+    test_cohort_collapse(con, cdm_schema, write_schema)
     disconnect(con)
   })
 }

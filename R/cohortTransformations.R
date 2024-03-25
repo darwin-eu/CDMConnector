@@ -12,10 +12,12 @@ cohort_collapse <- function(x) {
   # TODO do we need to confirm this assumption?
 
   con <- x$src$con
-  min_start_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
+  min_start_sql <- dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
+  max_start_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
   max_end_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_end_date")})'))
 
   x <- x %>%
+    dplyr::distinct() %>%
     dplyr::mutate(dur = !!datediff("cohort_start_date",
                                    "cohort_end_date")) %>%
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
@@ -24,7 +26,7 @@ cohort_collapse <- function(x) {
     dplyr::mutate(
       prev_start = dplyr::coalesce(
         !!dbplyr::win_over(
-          min_start_sql,
+          max_start_sql,
           partition = c("cohort_definition_id", "subject_id"),
           frame = c(-Inf, -1),
           order = c("cohort_start_date", "dur"),
@@ -53,23 +55,23 @@ cohort_collapse <- function(x) {
   x <- x %>%
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
     dbplyr::window_order(.data$cohort_definition_id, .data$subject_id,
-                         .data$prev_start) %>%
+                         .data$cohort_start_date, .data$dur) %>%
     dplyr::mutate(groups = cumsum(
-      dplyr::case_when(is.na(.data$prev_start)  ~ 0L,
+      dplyr::case_when(is.na(.data$prev_start)  ~ NA,
         !is.na(.data$prev_start)  &&
         .data$prev_start <= .data$cohort_start_date &&
           .data$cohort_start_date <= .data$prev_end ~ 0L,
         TRUE ~ 1L)
       ))
 
-  x <- x %>%
+  x <- x  %>%
     dplyr::mutate(groups = dplyr::if_else(
-      is.na(.data$prev_start)  &&
-        .data$cohort_end_date < .data$next_start,
+      is.na(.data$groups)  &&
+        .data$cohort_end_date >= .data$next_start,
       0L, .data$groups
     ))
 
-  x <- x |>
+  x <- x %>%
     dplyr::group_by(.data$cohort_definition_id,
                     .data$subject_id, .data$groups, .add = FALSE) %>%
     dplyr::summarize(cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
