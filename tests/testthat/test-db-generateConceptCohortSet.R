@@ -312,6 +312,7 @@ for (dbtype in dbToTest) {
 
 
 test_that("missing domains produce warning", {
+  skip_on_cran()
   skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
@@ -328,6 +329,7 @@ test_that("missing domains produce warning", {
 })
 
 test_that("Regimen domain does not cause error", {
+  skip_on_cran()
   skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
@@ -352,7 +354,7 @@ test_that("Regimen domain does not cause error", {
 })
 
 test_that("Eunomia", {
-
+  skip_on_cran()
   skip_if_not_installed("duckdb")
   skip_if_not(eunomia_is_available())
 
