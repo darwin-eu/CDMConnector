@@ -27,20 +27,6 @@ dbSource <- function(con, writeSchema) {
   }
   checkmate::assert_character(writeSchema, min.len = 1, max.len = 3)
 
-  if (length(writeSchema) != 3 && interactive() && !("prefix" %in% names(writeSchema))) {
-
-    rlang::inform(c(
-      "No prefix was supplied. Consider adding a prefix in your write_schema.",
-      "A prefix",
-      "*" = "Allows you to work in your own subschema",
-      "*" = "Helps Prevent accidentally dropping tables of others using the same database schema",
-      "*" = "Allows you to easily clean up intermediate tables at the end of the analysis",
-      "To use a prefix you have to specify it when you create the cdm_reference:",
-      "`write_schema = c(schema = \"main\", prefix = \"my_prefix_\")`"),
-    .frequency = "once",
-    .frequency_id = "write_prefix_message")
-  }
-
   source <- structure(
     .Data = list(),
     "dbcon" = con,
