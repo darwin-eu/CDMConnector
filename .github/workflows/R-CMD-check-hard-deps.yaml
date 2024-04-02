@@ -1,6 +1,7 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # the purpose of this workflow is to run R CMD CHECK without installing suggested packages
 # CRAN will check this
+# duckdb should not be installed since it is not installed on cran servers.
 
 on:
   push:
@@ -51,6 +52,12 @@ jobs:
             install.packages("knitr")
         shell: Rscript {0}
 
+      - name: Check that suggested packages are not installed
+        run: |
+            stopifnot(is.null(tryCatch(packageVersion("duckdb"), error = function(e) NULL)))
+        shell: Rscript {0}
+
+
       - name: List contents of home directory
         run: |
             print("Home directory content before R check")
@@ -67,6 +74,11 @@ jobs:
           upload-snapshots: true
           args: 'c("--no-manual", "--as-cran", "--no-build-vignettes", "--ignore-vignettes")'
           error-on: '"error"'
+
+      - name: Check that suggested packages are not installed
+        run: |
+            stopifnot(is.null(tryCatch(packageVersion("duckdb"), error = function(e) NULL)))
+        shell: Rscript {0}
 
       -  name: List contents of home directory after R check
          run: |
