@@ -75,8 +75,9 @@ jobs:
           args: 'c("--no-manual", "--as-cran", "--no-build-vignettes", "--ignore-vignettes")'
           error-on: '"error"'
 
-      - name: Check that suggested packages are not installed
+      - name: Make sure that duckdb not installed since it will not be available on cran
         run: |
+            tryCatch(remove.packages("duckdb"), error = function(e) NULL)
             stopifnot(is.null(tryCatch(packageVersion("duckdb"), error = function(e) NULL)))
         shell: Rscript {0}
 
