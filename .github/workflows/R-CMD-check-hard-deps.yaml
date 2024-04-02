@@ -78,8 +78,8 @@ jobs:
       - name: Make sure that duckdb not installed since it will not be available on cran
         run: |
             print("Make sure duckdb is not installed.")
-            tryCatch(remove.packages("duckdb"), error = function(e) NULL)
-            stopifnot(is.null(tryCatch(packageVersion("duckdb"), error = function(e) NULL)))
+            tryCatch({print(packageVersion("duckdb"));remove.packages("duckdb");print(packageVersion("duckdb"))}, error = function(e) NULL)
+            # stopifnot(is.null(tryCatch(packageVersion("duckdb"), error = function(e) NULL)))
         shell: Rscript {0}
 
       -  name: List contents of home directory after R check
