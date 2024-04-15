@@ -354,14 +354,6 @@ generateConceptCohortSet <- function(cdm,
       excluded_records = 0,
       excluded_subjects = 0)
 
-  if(utils::packageVersion("omopgenerics") < 0.1){
-  cdm[[name]] <- omopgenerics::newCohortTable(
-    table = cohortRef,
-    cohortSetRef = cohortSetRef,
-    cohortAttritionRef = cohortAttritionRef
-  )
-  } else {
-
     cohortCodelistRef <-df  %>%
       dplyr::mutate(type = "index event") %>%
       dplyr::select("cohort_definition_id",
@@ -375,7 +367,6 @@ generateConceptCohortSet <- function(cdm,
       cohortAttritionRef = cohortAttritionRef,
       cohortCodelistRef = cohortCodelistRef
     )
-  }
 
   return(cdm)
 }

@@ -1,3 +1,8 @@
+# CDMConnector 1.3.1
+
+- Bug fix for collapse cohort
+- dbplyr 2.5.0 fixes
+
 # CDMConnector 1.3.0
 
 - Incorporate omopgenerics
@@ -12,7 +17,7 @@
 
 # CDMConnector 1.1.4
 
--   Fix recursive edge cases with cdm reference issue. 
+- Fix recursive edge cases with cdm reference issue. 
 
 # CDMConnector 1.1.3
 
