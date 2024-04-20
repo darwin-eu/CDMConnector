@@ -41,7 +41,8 @@ dbSource <- function(con, writeSchema) {
 insertTable.db_cdm <- function(cdm,
                                name,
                                table,
-                               overwrite = TRUE) {
+                               overwrite = TRUE,
+                               ...) {
   src <- cdm
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
   con <- attr(src, "dbcon")
