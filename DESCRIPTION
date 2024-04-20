@@ -59,7 +59,8 @@ Suggests:
     testthat (>= 3.0.0),
     pool,
     snakecase,
-    visR
+    visR,
+    palmerpenguins
 Enhances:
     arrow,
     CirceR,
