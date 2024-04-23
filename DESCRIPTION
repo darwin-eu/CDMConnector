@@ -60,7 +60,8 @@ Suggests:
     pool,
     snakecase,
     visR,
-    palmerpenguins
+    palmerpenguins,
+    tictoc
 Enhances:
     arrow,
     CirceR,
@@ -72,6 +73,7 @@ Additional_repositories: https://OHDSI.github.io/drat
 Collate: 
     'CDMConnector-package.R'
     'Eunomia.R'
+    'benchmarkCDMConnector.R'
     'cdm.R'
     'cdmSubset.R'
     'cdm_from_environment.R'
