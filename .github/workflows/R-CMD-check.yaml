@@ -58,6 +58,8 @@ jobs:
             install.packages("arrow")
             install.packages("tibble")
             install.packages("visR")
+            install.packages("tictoc")
+            install.packages("palmerpenguins")
         shell: Rscript {0}
 
       - name: Install CirceR
