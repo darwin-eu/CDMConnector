@@ -26,7 +26,7 @@ test_that("generate_cohort_set works with write_prefix on snowflake", {
   on.exit(DBI::dbDisconnect(con), add = TRUE)
   cdm <- generate_cohort_set(cdm, cohort_set, name = cohort_table_name, overwrite = TRUE)
 
-  expect_s3_class(cdm[[cohort_table_name]], "GeneratedCohortSet")
+  expect_s3_class(cdm[[cohort_table_name]], "cohort_table")
 })
 
 

@@ -62,6 +62,17 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     )
   })
 
+  # bind both cohorts
+  cdm <- bind(cdm$gibleed, cdm$gibleed2, name = "new_gibleed")
+  expect_true("new_gibleed" %in% names(cdm))
+  expect_true(inherits("cohort_table", cdm$new_gibleed))
+  expect_identical(
+    settings(cdm$new_gibleed),
+    settings(cdm$gibleed) |>
+      dplyr::bind_rows(
+        settings(cdm$gibleed2) |> dplyr::mutate("cohort_definition_id" = 2L)
+      )
+  )
 
   cdm <- generateConceptCohortSet(cdm,
     conceptSet = list(gibleed = 192671), name = "gibleed3",
@@ -348,7 +359,7 @@ test_that("Regimen domain does not cause error", {
                                     overwrite = TRUE)
   })
 
-  expect_s3_class(cdm$cohort, "GeneratedCohortSet")
+  expect_s3_class(cdm$cohort, "cohort_table")
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })

@@ -206,3 +206,4 @@ if (!rlang::is_installed("duckdb")) {
   dbToTest <- dbToTest[dbToTest != "duckdb"]
   print("CI tests not run on snowflake - duckdb package is not installed")
 }
+

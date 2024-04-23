@@ -66,7 +66,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
         cohort_name = "pharyngitis"
       ))
 
-  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+  expect_s3_class(cdm$new_cohort, "cohort_table")
 
   expect_true(all(
     c("cdm_reference", "cohort_set", "cohort_attrition", "tbl_name") %in% names(attributes(cdm$new_cohort))

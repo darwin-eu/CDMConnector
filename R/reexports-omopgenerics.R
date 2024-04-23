@@ -22,4 +22,6 @@ omopgenerics::insertTable
 #' @export
 omopgenerics::dropTable
 
-
+#' @importFrom omopgenerics bind
+#' @export
+omopgenerics::bind

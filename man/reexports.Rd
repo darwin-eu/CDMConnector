@@ -9,6 +9,7 @@
 \alias{newCohortTable}
 \alias{insertTable}
 \alias{dropTable}
+\alias{bind}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -16,6 +17,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{omopgenerics}{\code{\link[omopgenerics]{attrition}}, \code{\link[omopgenerics]{cohortCount}}, \code{\link[omopgenerics]{dropTable}}, \code{\link[omopgenerics]{insertTable}}, \code{\link[omopgenerics]{newCohortTable}}, \code{\link[omopgenerics]{settings}}}
+  \item{omopgenerics}{\code{\link[omopgenerics]{attrition}}, \code{\link[omopgenerics]{bind}}, \code{\link[omopgenerics]{cohortCount}}, \code{\link[omopgenerics]{dropTable}}, \code{\link[omopgenerics]{insertTable}}, \code{\link[omopgenerics]{newCohortTable}}, \code{\link[omopgenerics]{settings}}}
 }}
 
