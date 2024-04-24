@@ -1,6 +1,6 @@
-# Copyright 2022 DARWIN EU®
+# Copyright 2024 DARWIN EU®
 #
-# This file is part of DrugUtilisation
+# This file is part of CDMConnector
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
