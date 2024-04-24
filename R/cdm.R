@@ -286,6 +286,8 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 version <- function(cdm) {
+  lifecycle::deprecate_warn("1.3.2", "version()",
+                            with = "cdmVersion()")
   checkmate::assert_class(cdm, "cdm_reference")
   versionNumber <- attr(cdm, "cdm_version")
   if (!(versionNumber %in% c("5.3", "5.4"))) {
@@ -315,8 +317,7 @@ version <- function(cdm) {
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 cdmName <- function(cdm) {
-  checkmate::assert_class(cdm, "cdm_reference")
-  return(attr(cdm, "cdm_name"))
+  omopgenerics::cdmName(cdm)
 }
 
 

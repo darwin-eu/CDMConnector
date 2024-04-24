@@ -25,3 +25,7 @@ omopgenerics::dropTable
 #' @importFrom omopgenerics bind
 #' @export
 omopgenerics::bind
+
+#' @importFrom omopgenerics cdmVersion
+#' @export
+omopgenerics::cdmVersion
