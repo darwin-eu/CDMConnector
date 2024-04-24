@@ -280,7 +280,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "eunomia", "main")
+#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 #' version(cdm)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
@@ -310,7 +310,7 @@ version <- function(cdm) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "eunomia", "main")
+#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 #' cdmName(cdm)
 #' #> [1] "eunomia"
 #'

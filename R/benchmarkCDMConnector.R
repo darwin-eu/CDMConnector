@@ -22,6 +22,14 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+#' benchmarkCDMConnector(cdm)
+#'
+#' DBI::dbDisconnect(con, shutdown = TRUE)
+#' }
 benchmarkCDMConnector <- function(cdm) {
 
   checkmate::assertClass(cdm, "cdm_reference")
@@ -49,7 +57,7 @@ benchmarkCDMConnector <- function(cdm) {
   cli::cli_inform("Getting {task}")
   tictoc::tic()
   cdm[["concept_relationship"]] |>
-    dplyr::group_by(relationship_id) |>
+    dplyr::group_by(.data$relationship_id) |>
     dplyr::tally() |>
     dplyr::collect()
   t <- tictoc::toc()

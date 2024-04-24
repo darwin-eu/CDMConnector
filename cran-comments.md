@@ -1,9 +1,9 @@
 ## R CMD check results
 
-This is a new minor release that fixes a breaking change from a dependency.
+This is a new minor release that fixes the failing test seen for the CRAN check on r-devel-linux-x86_64-fedora-gcc. 
 
 One NOTE is expected:
-Suggests or Enhances not in mainstream repositories: CirceR, Capr
+Suggests or Enhances not in mainstream repositories: Capr
 
 RCMD check passed on the following platforms with 0 errors, 0 warnings, and 0 notes 
 
