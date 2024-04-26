@@ -373,9 +373,11 @@ generateConceptCohortSet <- function(cdm,
     dplyr::collect(),
     by = "cohort_definition_id")  %>%
     dplyr::mutate(number_records = dplyr::if_else(is.na(.data$number_records),
-                                                  0, .data$number_records),
+                                                  0L,
+                                                  as.integer(.data$number_records)),
                   number_subjects = dplyr::if_else(is.na(.data$number_subjects),
-                                                  0, .data$number_subjects))
+                                                  0L,
+                                                  as.integer(.data$number_subjects)))
 
   cohortAttritionRef <- cohort_set_ref %>%
     dplyr::select("cohort_definition_id") %>%

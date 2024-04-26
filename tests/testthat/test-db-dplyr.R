@@ -8,6 +8,9 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
   )
   penguinsTbl <- omopgenerics::uniqueTableName(prefix = "penguins_")
   penguinsDf <- palmerpenguins::penguins
+  penguinsDf <- penguinsDf %>%
+    dplyr::mutate_if(is.factor, as.character)
+
   cdm <- insertTable(cdm,
                      name = penguinsTbl,
                      table = penguinsDf,
@@ -31,20 +34,26 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
 
   # count records
   expect_equal(penguinsDf |>
-                 dplyr::tally(),
+                 dplyr::tally() |>
+                 dplyr::mutate(n = as.integer(n)),
     cdm[[penguinsTbl]] |>
     dplyr::tally()|>
-      dplyr::collect())
+      dplyr::collect() |>
+      dplyr::mutate(n = as.integer(n)))
   expect_equal(penguinsDf |>
-                 dplyr::count(),
+                 dplyr::count() |>
+                 dplyr::mutate(n = as.integer(n)),
                cdm[[penguinsTbl]] |>
                  dplyr::count()|>
-                 dplyr::collect())
+                 dplyr::collect() |>
+                 dplyr::mutate(n = as.integer(n)))
   expect_equal(penguinsDf |>
-                 dplyr::summarise(n = dplyr::n()),
+                 dplyr::summarise(n = dplyr::n()) |>
+                 dplyr::mutate(n = as.integer(n)),
                cdm[[penguinsTbl]] |>
                  dplyr::summarise(n = n()) |>
-                 dplyr::collect())
+                 dplyr::collect() |>
+                 dplyr::mutate(n = as.integer(n)))
 
 
   # filter
@@ -69,25 +78,31 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
   # count distinct records
   expect_equal(penguinsDf  |>
                  dplyr::distinct() |>
-                 dplyr::tally(),
+                 dplyr::tally() |>
+                 dplyr::mutate(n = as.integer(n)),
                cdm[[penguinsTbl]] |>
                     dplyr::distinct() |>
                     dplyr::tally()|>
-                    dplyr::collect())
+                    dplyr::collect() |>
+                 dplyr::mutate(n = as.integer(n)))
   expect_equal(penguinsDf  |>
                  dplyr::distinct() |>
-                 dplyr::count(),
+                 dplyr::count() |>
+                 dplyr::mutate(n = as.integer(n)),
                cdm[[penguinsTbl]] |>
                  dplyr::distinct() |>
                  dplyr::count()|>
-                 dplyr::collect())
+                 dplyr::collect() |>
+                 dplyr::mutate(n = as.integer(n)))
   expect_equal(penguinsDf  |>
                  dplyr::distinct() |>
-                 dplyr::summarise(n = dplyr::n()),
+                 dplyr::summarise(n = dplyr::n()) |>
+                 dplyr::mutate(n = as.integer(n)),
                cdm[[penguinsTbl]] |>
                  dplyr::distinct() |>
                  dplyr::summarise(n = dplyr::n()) |>
-                 dplyr::collect())
+                 dplyr::collect() |>
+                 dplyr::mutate(n = as.integer(n)))
 
   dropTable(cdm = cdm, name = penguinsTbl)
 
