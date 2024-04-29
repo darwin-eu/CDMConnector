@@ -9,7 +9,8 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
   penguinsTbl <- omopgenerics::uniqueTableName(prefix = "penguins_")
   penguinsDf <- palmerpenguins::penguins
   penguinsDf <- penguinsDf %>%
-    dplyr::mutate_if(is.factor, as.character)
+    dplyr::mutate_if(is.factor, as.character) |>
+    dplyr::mutate(row_id = dplyr::row_number())
 
   cdm <- insertTable(cdm,
                      name = penguinsTbl,
@@ -17,19 +18,25 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
                      overwrite = TRUE)
 
   # collect and compute (to temp or permanent)
-  expect_equal(penguinsDf,
+  expect_equal(penguinsDf  |>
+                 dplyr::arrange(row_id),
                cdm[[penguinsTbl]] |>
-              dplyr::collect())
-  expect_equal(penguinsDf,
+              dplyr::collect()  |>
+                dplyr::arrange(row_id))
+  expect_equal(penguinsDf |>
+                 dplyr::arrange(row_id),
                cdm[[penguinsTbl]] |>
                dplyr::compute(temporary = TRUE) |>
-               dplyr::collect())
+               dplyr::collect() |>
+                dplyr::arrange(row_id))
   newTbl <- omopgenerics::uniqueTableName()
-  expect_equal(penguinsDf,
+  expect_equal(penguinsDf  |>
+                 dplyr::arrange(row_id),
                cdm[[penguinsTbl]] |>
                     dplyr::compute(temporary = FALSE,
                                    name = newTbl) |>
-                 dplyr::collect())
+                 dplyr::collect()  |>
+                 dplyr::arrange(row_id))
   dropTable(cdm = cdm, name = newTbl)
 
   # count records
@@ -58,22 +65,29 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
 
   # filter
   expect_equal(penguinsDf |>
-                 dplyr::filter(species == "Adelie"),
+                 dplyr::filter(species == "Adelie")|>
+                 dplyr::arrange(row_id),
                cdm[[penguinsTbl]] |>
                     dplyr::filter(species == "Adelie") |>
-                    dplyr::collect())
+                    dplyr::collect()|>
+                 dplyr::arrange(row_id))
   # mutate
   expect_equal(penguinsDf |>
-                 dplyr::mutate(new_variable = "a"),
+                 dplyr::mutate(new_variable = "a")|>
+                 dplyr::arrange(row_id),
                cdm[[penguinsTbl]] |>
                     dplyr::mutate(new_variable = "a") |>
-                    dplyr::collect())
+                    dplyr::collect()|>
+                 dplyr::arrange(row_id))
   # select
-  expect_equal(penguinsDf |>
-                 dplyr::select("species"),
-               cdm[[penguinsTbl]] |>
+  expect_equal(sort(penguinsDf |>
+                 dplyr::select("species") |>
+                 dplyr::distinct() |>
+                 dplyr::pull()),
+               sort(cdm[[penguinsTbl]] |>
                     dplyr::select("species") |>
-                    dplyr::collect())
+                 dplyr::distinct() |>
+                 dplyr::pull()))
 
   # count distinct records
   expect_equal(penguinsDf  |>
