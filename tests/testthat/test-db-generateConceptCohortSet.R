@@ -403,14 +403,14 @@ test_that("Eunomia", {
  expect_true(settings(cdm$ankle_sprain) |>
    dplyr::pull("cohort_name") == "ankle_sprain")
 
- expect_no_error(cdm <- generateConceptCohortSet(
+ expect_warning(cdm <- generateConceptCohortSet(
    cdm = cdm,
    name = "ankle_sprain",
    conceptSet = list("ankle_sprain" = 1),
    end = "event_end_date",
    limit = "all",
    overwrite = TRUE
- ))
+ ), "None of the input concept IDs found for the cdm reference")
  expect_true(settings(cdm$ankle_sprain) |>
                dplyr::pull("cohort_name") == "ankle_sprain")
 
