@@ -192,8 +192,6 @@ cdm$cohort_subset <- cdm$cohort %>%
   compute(name = "cohort_subset", temporary = FALSE, overwrite = TRUE) %>% 
   new_generated_cohort_set()
 
-cdm$cohort2
-
 cohort_count(cdm$cohort_subset)
 
 ```

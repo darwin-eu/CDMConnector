@@ -288,7 +288,7 @@ generateCohortSet <- function(cdm,
 
   generate <- function(i) {
     pct <- ""
-    cli::cli_progress_step("Generating cohort ({i}/{nrow(cohortSet)}{pct}) - {cohortSet$cohort_name[i]})", spinner = interactive())
+    cli::cli_progress_step("Generating cohort ({i}/{nrow(cohortSet)}{pct}) - {cohortSet$cohort_name[i]}", spinner = interactive())
 
     sql <- cohortSet$sql[i] %>%
       SqlRender::render(
