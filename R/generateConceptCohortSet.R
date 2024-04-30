@@ -354,7 +354,7 @@ generateConceptCohortSet <- function(cdm,
       excluded_records = 0,
       excluded_subjects = 0)
 
-  if(utils::packageVersion("omopgenerics") < 0.1){
+  if(utils::packageVersion("omopgenerics") < "0.1"){
   cdm[[name]] <- omopgenerics::newCohortTable(
     table = cohortRef,
     cohortSetRef = cohortSetRef,
