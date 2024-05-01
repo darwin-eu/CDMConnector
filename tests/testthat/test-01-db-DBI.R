@@ -1,4 +1,6 @@
 # Test DBI functions we rely on
+# DBI::dbRemoveTable
+# DBI::dbWriteTable (using temporary and overwrite arguments)
 
 test_dbi <- function(con, cdm_schema, write_schema) {
   df <- dplyr::tibble(

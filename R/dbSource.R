@@ -21,7 +21,6 @@
 #' write access to it.
 #'
 #' @export
-#'
 dbSource <- function(con, writeSchema) {
   # initial checks
   if (methods::is(con, "Pool")) {
@@ -32,7 +31,7 @@ dbSource <- function(con, writeSchema) {
   }
   if (methods::is(con, "DatabaseConnectorConnection")) {
     cli::cli_warn(
-      "Not all functionality is supported when DatabaseConnector as your
+      "Not all functionality is supported when DatabaseConnector is your
       database driver! Some issues may occur."
     )
   }
@@ -57,6 +56,7 @@ insertTable.db_cdm <- function(cdm,
                                name,
                                table,
                                overwrite = TRUE,
+                               temporary = FALSE,
                                ...) {
   src <- cdm
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
@@ -193,4 +193,3 @@ insertFromSource.db_cdm <- function(cdm, value) {
   )
   return(value)
 }
-
