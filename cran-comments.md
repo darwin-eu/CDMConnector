@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a new minor release that fixes the failing test seen for the CRAN check on r-devel-linux-x86_64-fedora-gcc. 
+This is a new patch release that fixes an issue on one of the cran servers.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: Capr

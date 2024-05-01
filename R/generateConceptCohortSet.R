@@ -391,7 +391,7 @@ generateConceptCohortSet <- function(cdm,
       excluded_records = 0,
       excluded_subjects = 0)
 
-    cohortCodelistRef <-df  %>%
+    cohortCodelistRef <- df  %>%
       dplyr::mutate(type = "index event") %>%
       dplyr::select("cohort_definition_id",
                     "codelist_name" = "cohort_name",

@@ -69,7 +69,7 @@ insertTable.db_cdm <- function(cdm,
   if (!inherits(table, "data.frame")) {
     table <- table |> dplyr::collect()
   }
-  DBI::dbWriteTable(conn = con, name = fullName, value = table)
+  DBI::dbWriteTable(conn = con, name = fullName, value = table, temporary = temporary)
   x <- dplyr::tbl(src = con, fullName) |>
     omopgenerics::newCdmTable(src = src, name = name)
   return(x)
