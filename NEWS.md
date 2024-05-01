@@ -1,3 +1,11 @@
+# CDMConnector 1.3.2
+
+- fix issue on cran server
+
+# CDMConnector 1.3.1
+
+- bugfix
+
 # CDMConnector 1.3.0
 
 - Incorporate omopgenerics

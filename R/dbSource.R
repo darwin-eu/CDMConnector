@@ -41,7 +41,8 @@ dbSource <- function(con, writeSchema) {
 insertTable.db_cdm <- function(cdm,
                                name,
                                table,
-                               overwrite = TRUE) {
+                               overwrite = TRUE,
+                               temporary = FALSE) {
   src <- cdm
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
   con <- attr(src, "dbcon")
@@ -53,7 +54,7 @@ insertTable.db_cdm <- function(cdm,
   if (!inherits(table, "data.frame")) {
     table <- table |> dplyr::collect()
   }
-  DBI::dbWriteTable(conn = con, name = fullName, value = table)
+  DBI::dbWriteTable(conn = con, name = fullName, value = table, temporary = temporary)
   x <- dplyr::tbl(src = con, fullName) |>
     omopgenerics::newCdmTable(src = src, name = name)
   return(x)
