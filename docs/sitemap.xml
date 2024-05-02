@@ -58,7 +58,13 @@
     <loc>/reference/assert_write_schema.html</loc>
   </url>
   <url>
+    <loc>/reference/benchmarkCDMConnector.html</loc>
+  </url>
+  <url>
     <loc>/reference/cash-.cdm_reference.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cdmCon.html</loc>
   </url>
   <url>
     <loc>/reference/cdmDisconnect.html</loc>
@@ -77,6 +83,9 @@
   </url>
   <url>
     <loc>/reference/cdmSubsetCohort.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cdmWriteSchema.html</loc>
   </url>
   <url>
     <loc>/reference/cdm_from_con.html</loc>
@@ -98,6 +107,9 @@
   </url>
   <url>
     <loc>/reference/cohortSet.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cohort_count.html</loc>
   </url>
   <url>
     <loc>/reference/cohort_erafy.html</loc>
@@ -122,6 +134,9 @@
   </url>
   <url>
     <loc>/reference/datepart.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dbSource.html</loc>
   </url>
   <url>
     <loc>/reference/dbms.html</loc>
@@ -176,6 +191,9 @@
   </url>
   <url>
     <loc>/reference/recordCohortAttrition.html</loc>
+  </url>
+  <url>
+    <loc>/reference/reexports.html</loc>
   </url>
   <url>
     <loc>/reference/snapshot.html</loc>
