@@ -22,6 +22,18 @@ omopgenerics::insertTable
 #' @export
 omopgenerics::dropTable
 
+#' @importFrom omopgenerics readSourceTable
+#' @export
+omopgenerics::readSourceTable
+
+#' @importFrom omopgenerics dropSourceTable
+#' @export
+omopgenerics::dropSourceTable
+
+#' @importFrom omopgenerics listSourceTables
+#' @export
+omopgenerics::listSourceTables
+
 #' @importFrom omopgenerics bind
 #' @export
 omopgenerics::bind
@@ -29,3 +41,4 @@ omopgenerics::bind
 #' @importFrom omopgenerics cdmVersion
 #' @export
 omopgenerics::cdmVersion
+

@@ -193,3 +193,73 @@ insertFromSource.db_cdm <- function(cdm, value) {
   )
   return(value)
 }
+
+#' @export
+#' @importFrom omopgenerics cdmTableFromSource
+cdmTableFromSource.db_cdm <- function(cdm, value) {
+  if (inherits(value, "data.frame")) {
+    cli::cli_abort(
+      "To insert a local table to a cdm_reference object use insertTable
+      function."
+    )
+  }
+  if (!inherits(value, "tbl_lazy")) {
+    cli::cli_abort(
+      "Can't assign an object of class: {paste0(class(value), collapse = ", ")}
+      to a db_con cdm_reference object."
+    )
+  }
+  con <- cdmCon(cdm)
+  schema <- cdmWriteSchema(cdm)
+  if (!identical(con, dbplyr::remote_con(value))) {
+    cli::cli_abort(
+      "The cdm object and the table have different connection sources."
+    )
+  }
+  remoteName <- dbplyr::remote_name(value)
+  if ("dbplyr" == substr(remoteName, 1, 6)) {
+    remoteName <- NA_character_
+  } else if ("prefix" %in% names(schema)) {
+    prefix <- schema["prefix"] |> unname()
+    if (substr(remoteName, 1, nchar(prefix)) == prefix) {
+      remoteName <- substr(remoteName, nchar(prefix) + 1, nchar(remoteName))
+    }
+  }
+  value <- omopgenerics::newCdmTable(
+    table = value, src = attr(cdm, "cdm_source"), name = remoteName
+  )
+  return(value)
+}
+
+#' @export
+listSourceTables.db_cdm <- function(cdm) {
+  listTables(con = attr(cdm, "dbcon"), schema = attr(cdm, "write_schema"))
+}
+
+#' @export
+dropSourceTable.db_cdm <- function(cdm, name) {
+  # initial checks
+  schema <- attr(cdm, "write_schema")
+  con <- attr(cdm, "dbcon")
+  checkmate::assertTRUE(DBI::dbIsValid(con))
+
+  # drop tables
+  for (i in seq_along(name)) {
+    DBI::dbRemoveTable(conn = con, name = inSchema(
+      schema = schema, table = name[i], dbms = dbms(con)
+    ))
+  }
+
+  return(cdm)
+}
+
+#' @export
+readSourceTable.db_cdm <- function(cdm, name) {
+  con <- attr(cdm, "dbcon")
+  schema <- attr(cdm, "write_schema")
+  fullName <- inSchema(schema = schema, table = name, dbms = dbms(con))
+  dplyr::tbl(src = con, fullName) |>
+    dplyr::rename_all(tolower) |>
+    omopgenerics::newCdmTable(src = cdm, name = tolower(name))
+}
+
