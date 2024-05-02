@@ -1,6 +1,7 @@
-# CDMConnector 1.3.2
+# CDMConnector 1.4.0
 
 - fix issue on cran server
+- new omopgenerics methods
 
 # CDMConnector 1.3.1
 
