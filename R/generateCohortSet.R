@@ -43,6 +43,7 @@ read_cohort_set <- function(path) {
 
 
   if (file.exists(file.path(path, "CohortsToCreate.csv"))) {
+    readr::local_edition(1)
     cohortsToCreate <- readr::read_csv(file.path(path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
       dplyr::mutate(jsonPath = file.path(path, .data$jsonPath)) %>%
       dplyr::mutate(cohort = purrr::map(.data$jsonPath, jsonlite::read_json)) %>%
