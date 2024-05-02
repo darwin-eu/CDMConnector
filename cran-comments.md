@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a new patch release that fixes an issue on one of the cran servers.
+This is a new minor release that includes several bug fixes.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: Capr
