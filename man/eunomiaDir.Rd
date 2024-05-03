@@ -40,7 +40,7 @@ eunomia_dir(
 "synthea-veterans-10k",
 "synthea-weight_loss-10k"}
 
-\item{cdmVersion, cdm_version}{The OMOP CDM version. Currently only "5.3" is supported.}
+\item{cdmVersion, cdm_version}{The OMOP CDM version. Must be "5.3" or "5.4".}
 
 \item{databaseFile, database_file}{The full path to the new copy of the example CDM dataset.}
 }

@@ -8,11 +8,11 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   cdm <- cdm_from_con(con, cdm_schema = cdm_schema, cdm_name = "test", write_schema = write_schema)
   expect_s3_class(cdm, "cdm_reference")
   expect_error(assert_tables(cdm, "person"), NA)
-  expect_true(version(cdm) %in% c("5.3", "5.4"))
+  expect_warning(version(cdm))
+  expect_true(cdmVersion(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
-
 
   cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
   expect_s3_class(cdm, "cdm_reference")
@@ -37,7 +37,6 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
     dplyr::collect()
 
   expect_s3_class(df, "data.frame")
-
 }
 
 for (dbtype in dbToTest) {
@@ -137,11 +136,12 @@ test_that("adding achilles", {
  cdm$achilles_analysis <- dplyr::tbl(con, "achilles_analysis")
  # but should not work if tables are not in db (as cdm is db side)
  expect_error(
- cdm$achilles_analysis <- dplyr::tibble(
-   analysis_id = 1, analysis_name = 1, stratum_1_name = 1,
-   stratum_2_name = 1, stratum_3_name = 1, stratum_4_name = 1,
-   stratum_5_name = 1, is_default = 1, category = 1
- ))
+   cdm$achilles_analysis <- dplyr::tibble(
+     analysis_id = 1, analysis_name = 1, stratum_1_name = 1,
+     stratum_2_name = 1, stratum_3_name = 1, stratum_4_name = 1,
+     stratum_5_name = 1, is_default = 1, category = 1
+   )
+  )
 # if local tables, insert table would take care of this
 
  achilles_analysis_tibble <- dplyr::tibble(
@@ -150,11 +150,12 @@ test_that("adding achilles", {
    stratum_5_name = 1, is_default = 1, category = 1
  )
  cdm <- omopgenerics::insertTable(cdm = cdm,
-                                                    table = achilles_analysis_tibble,
-                                                    name = "achilles_analysis",
-                                                    overwrite = TRUE)
+                                  table = achilles_analysis_tibble,
+                                  name = "achilles_analysis",
+                                  overwrite = TRUE)
 
  cdm$achilles_analysis <- dplyr::tbl(con, "achilles_analysis")
+
  # but should not work if tables are not in db (as cdm is db side)
   expect_error(
     cdm$achilles_analysis <- dplyr::tibble(

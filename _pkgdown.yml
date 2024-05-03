@@ -15,7 +15,7 @@ reference:
 - subtitle: CDM Object
   desc: Create or transform a CDM reference object. These accept and return cdm objects.
 - contents:
-  - matches("^cdm|stow|print.cdm_reference|snapshot|tbl_group|validate_cdm|validateCdm|collect.cdm_reference|assert_write_schema|assert_tables|version|dropTable|dropStemTables|cdm_reference|copy_cdm_to|insertTable|insert_table")
+  - matches("^cdm|stow|print.cdm_reference|snapshot|tbl_group|validate_cdm|validateCdm|collect.cdm_reference|assert_write_schema|assert_tables|version|dropTable|dropStemTables|cdm_reference|copy_cdm_to|insertTable|insert_table|dbSource")
 - subtitle: Cohort Creation and Transformation
   desc: A cohort is a set of person-days representing the time during which people in a CDM exhibited some observable characteristics. Cohorts are often the foundation of downstream analyses.
 - contents:
@@ -32,6 +32,11 @@ reference:
   desc: Easily create and use example CDMs in a [duckdb](https://duckdb.org/) database
 - contents:
   - matches("eunomia|downloadEunomiaData|exampleDatasets|example_datasets")
+- subtitle: Benchmarking
+  desc: Run benchmarking of simple queries against your CDM reference
+- contents:
+  - matches("benchmarkCDMConnector")
+
 
 
 

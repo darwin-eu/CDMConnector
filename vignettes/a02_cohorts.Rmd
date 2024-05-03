@@ -193,7 +193,6 @@ cdm$cohort_subset <- cdm$cohort %>%
   new_generated_cohort_set()
 
 cohort_count(cdm$cohort_subset)
-
 ```
 In this case we can see that cohorts 1 and 5 were dropped completely and some patients were dropped from cohorts 2, 3, and 4.
 

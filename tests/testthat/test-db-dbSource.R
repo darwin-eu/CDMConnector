@@ -13,6 +13,27 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_true(inherits(cdm$x_test, "cdm_table"))
   expect_error(cdm$other_name <- x)
   expect_error(cdm$local <- tab)
+  # insertTable
+  expect_no_error(cdm <- insertTable(cdm = cdm, name = "xxx", table = cars))
+  expect_true("xxx" %in% names(cdm))
+  # list tables
+  expect_no_error(ls <- listSourceTables(cdm = cdm))
+  expect_identical(sort(ls), c("x_test", "xxx"))
+  cdm[["x_test"]] <- NULL
+  expect_false("x_test" %in% names(cdm))
+  expect_true("x_test" %in% listSourceTables(cdm = cdm))
+  expect_no_error(cdm <- readSourceTable(cdm = cdm, name = "x_test"))
+  expect_true("x_test" %in% names(cdm))
+  expect_identical(
+    dplyr::as_tibble(cars),
+    cdm[["x_test"]] |> dplyr::collect() |> dplyr::as_tibble()
+  )
+  expect_no_error(cdm <- dropSourceTable(cdm = cdm, "x_test"))
+  expect_false("x_test" %in% names(cdm))
+  expect_false("x_test" %in% listSourceTables(cdm = cdm))
+  expect_true(setdiff(ls, listSourceTables(cdm = cdm)) == "x_test")
+  expect_no_error(dropSourceTable(cdm = cdm, dplyr::everything()))
+  expect_identical(listSourceTables(cdm = cdm), character())
 }
 
 for (dbtype in dbToTest) {

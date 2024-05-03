@@ -11,7 +11,7 @@ jobs:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-base:v0.2
+      image: executionengine.azurecr.io/darwin-base:v0.3
       env:
         CDM5_REDSHIFT_USER:           ${{ secrets.CDM5_REDSHIFT_USER }}
         CDM5_REDSHIFT_PORT:           ${{ secrets.CDM5_REDSHIFT_PORT }}
@@ -33,7 +33,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install R packages
+        run: |
+          print(getwd())
+          print(list.files())
+          install.packages("devtools", repos = "https://cloud.r-project.org/")
+          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
+          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages("tictoc", repos = "https://cloud.r-project.org/")
+        shell: Rscript {0}
+
       - name: Run tests on Redshift with RPostgres driver
-        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "redshift"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
 
 

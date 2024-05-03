@@ -1,3 +1,19 @@
+# Copyright 2024 DARWIN EU®
+#
+# This file is part of CDMConnector
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 #' Download Eunomia data files
 #'
 #' Download the Eunomia data files from https://github.com/darwin-eu/EunomiaDatasets
@@ -5,7 +21,7 @@
 #' @param dataset_name,datasetName The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
 #'  data set name corresponds to the folder with the data set ZIP files
 #' @param cdm_version,cdmVersion The OMOP CDM version. This version will appear in the suffix of the data file,
-#'  for example: synpuf_5.3.zip. Default: '5.3'
+#'  for example: synpuf_5.3.zip. Must be '5.3' (default) or '5.4'.
 #' @param path_to_data,pathToData    The path where the Eunomia data is stored on the file system., By default the
 #'  value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
 #' @param overwrite Control whether the existing archive file will be overwritten should it already exist.
@@ -25,10 +41,7 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
                                 overwrite = FALSE) {
 
   checkmate::assertChoice(datasetName, choices = exampleDatasets())
-
-  if (cdmVersion != "5.3") {
-    rlang::abort("Only CDM v5.3 is supported currently!")
-  }
+  checkmate::assertChoice(cdmVersion, c("5.3", "5.4"))
 
   if (is.null(pathToData) || is.na(pathToData) || pathToData == "") {
     stop("The pathToData argument must be specified. Consider setting the EUNOMIA_DATA_FOLDER environment variable, for example in the .Renviron file.")
@@ -154,7 +167,7 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' "synthea-veterans-10k",
 #' "synthea-weight_loss-10k"
 #'
-#' @param cdmVersion,cdm_version The OMOP CDM version. Currently only "5.3" is supported.
+#' @param cdmVersion,cdm_version The OMOP CDM version. Must be "5.3" or "5.4".
 #' @param databaseFile,database_file The full path to the new copy of the example CDM dataset.
 #'
 #' @return The file path to the new Eunomia dataset copy
@@ -171,7 +184,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
   if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {
     rlang::abort("Set the `EUNOMIA_DATA_FOLDER` environment variable in your .Renviron file.")
   }
-  checkmate::assertChoice(cdmVersion, c("5.3"))
+  checkmate::assertChoice(cdmVersion, c("5.3", "5.4"))
   rlang::check_installed("duckdb")
 
   checkmate::assertChoice(datasetName, choices = exampleDatasets())

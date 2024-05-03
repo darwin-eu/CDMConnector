@@ -1,10 +1,12 @@
-# CDMConnector 1.3.2
+# CDMConnector 1.4.0
 
 - fix issue on cran server
+- new omopgenerics methods
 
 # CDMConnector 1.3.1
 
-- bugfix
+- Bug fix for collapse cohort
+- dbplyr 2.5.0 fixes
 
 # CDMConnector 1.3.0
 
@@ -20,7 +22,7 @@
 
 # CDMConnector 1.1.4
 
--   Fix recursive edge cases with cdm reference issue. 
+- Fix recursive edge cases with cdm reference issue. 
 
 # CDMConnector 1.1.3
 

@@ -1,3 +1,7 @@
+# Copyright 2024 DARWIN EU®
+#
+# This file is part of CDMConnector
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -39,6 +43,7 @@ read_cohort_set <- function(path) {
 
 
   if (file.exists(file.path(path, "CohortsToCreate.csv"))) {
+    readr::local_edition(1)
     cohortsToCreate <- readr::read_csv(file.path(path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
       dplyr::mutate(jsonPath = file.path(path, .data$jsonPath)) %>%
       dplyr::mutate(cohort = purrr::map(.data$jsonPath, jsonlite::read_json)) %>%

@@ -11,7 +11,7 @@ jobs:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-base:v0.2
+      image: executionengine.azurecr.io/darwin-base:v0.3
       env:
         CDM5_SQL_SERVER_USER:           ${{ secrets.CDM5_SQL_SERVER_USER }}
         CDM5_SQL_SERVER_PORT:           ${{ secrets.CDM5_SQL_SERVER_PORT }}
@@ -34,7 +34,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install R packages
+        run: |
+          print(getwd())
+          print(list.files())
+          install.packages("devtools", repos = "https://cloud.r-project.org/")
+          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
+          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages("tictoc", repos = "https://cloud.r-project.org/")
+        shell: Rscript {0}
+
       - name: Run tests on SQL Server with odbc driver
-        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
 
 

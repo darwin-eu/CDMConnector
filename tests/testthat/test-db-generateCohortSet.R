@@ -19,7 +19,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
                            overwrite = TRUE,
                            computeAttrition = TRUE)
 
-  expect_true(methods::is(cdm$chrt0, "GeneratedCohortSet"))
+  expect_true(methods::is(cdm$chrt0, "cohort_table"))
 
   expect_error(generateCohortSet(cdm, name = "blah", cohortSet = "not a cohort"))
 
@@ -32,7 +32,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   expect_true("chrt0" %in% tolower(listTables(con, schema = write_schema)))
 
-  expect_true("GeneratedCohortSet" %in% class(cdm$chrt0))
+  expect_true("cohort_table" %in% class(cdm$chrt0))
 
   df <- cdm$chrt0 %>% head() %>% dplyr::collect()
   expect_s3_class(df, "data.frame")
@@ -144,7 +144,7 @@ test_that("TreatmentPatterns cohort works", {
     overwrite = TRUE
   )
 
-  expect_s3_class(cdm$cohorttable, "GeneratedCohortSet")
+  expect_s3_class(cdm$cohorttable, "cohort_table")
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 

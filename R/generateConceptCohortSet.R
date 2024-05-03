@@ -1,4 +1,18 @@
-
+# Copyright 2024 DARWIN EU®
+#
+# This file is part of CDMConnector
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 table_refs <- function(domain_id) {
   dplyr::tribble(
@@ -132,6 +146,8 @@ generateConceptCohortSet <- function(cdm,
       )
 
   } else {
+    # remove any empty concept sets
+    conceptSet <- conceptSet[lengths(conceptSet) > 0]
     # conceptSet must be a named list of integer-ish vectors
     purrr::walk(conceptSet, ~checkmate::assert_integerish(., lower = 0, min.len = 1, any.missing = FALSE))
 
@@ -153,6 +169,11 @@ generateConceptCohortSet <- function(cdm,
                        include_descendants = FALSE,
                        is_excluded = FALSE)
   }
+
+  cohort_set_ref <- df |>
+    dplyr::select("cohort_definition_id", "cohort_name", "limit",
+                  "prior_observation", "future_observation", "end") |>
+    dplyr::distinct()
 
   # check target cohort -----
   if(!is.null(subsetCohort)){
@@ -180,6 +201,7 @@ generateConceptCohortSet <- function(cdm,
                                                       tempName,
                                                       dbms = dbms(con))) %>%
     dplyr::rename_all(tolower)
+
   if (any(df$include_descendants)) {
     concepts <- concepts  %>%
       dplyr::filter(.data$include_descendants) %>%
@@ -219,7 +241,22 @@ generateConceptCohortSet <- function(cdm,
   domains <- domains[!is.na(domains)] # remove NAs
   domains <- domains[domains %in% c("condition", "drug", "procedure", "observation", "measurement", "visit", "device")]
 
-  if (length(domains) == 0) cli::cli_abort("None of the input concept IDs are in the CDM concept table!")
+  if (length(domains) == 0){
+    cli::cli_warn("None of the input concept IDs found for the cdm reference - returning an empty cohort")
+    cdm <- insertTable(cdm = cdm, name = name,
+                       table = dplyr::tibble(
+                         cohort_definition_id = numeric(),
+                         subject_id = numeric(),
+                         cohort_start_date = as.Date(character()),
+                         cohort_end_date = as.Date(character())
+                       ),
+                       overwrite = overwrite)
+    cdm[[name]] <- omopgenerics::newCohortTable(
+      table = cdm[[name]],
+      cohortSetRef = cohort_set_ref
+    )
+    return(cdm)
+  }
 
   # check we have references to all required tables ----
   missing_tables <- dplyr::setdiff(table_refs(domain_id = domains) %>% dplyr::pull("table_name"), names(cdm))
@@ -327,22 +364,22 @@ generateConceptCohortSet <- function(cdm,
       dplyr::compute(name = name, temporary = FALSE, overwrite = overwrite)
   }
 
-  cohortSetRef <- concepts %>%
-    dplyr::select(dplyr::any_of(c(
-      "cohort_definition_id", "cohort_name", "limit", "prior_observation",
-      "future_observation", "end"
-    ))) %>%
-    dplyr::distinct() %>%
-    dplyr::collect()
-
-  cohortCountRef <- cohortRef %>%
+  cohortCountRef <- cohort_set_ref  %>%
+    dplyr::left_join(cohortRef %>%
     dplyr::group_by(.data$cohort_definition_id) %>%
     dplyr::summarise(
       number_records = dplyr::n(),
       number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
-    dplyr::collect()
+    dplyr::collect(),
+    by = "cohort_definition_id")  %>%
+    dplyr::mutate(number_records = dplyr::if_else(is.na(.data$number_records),
+                                                  0L,
+                                                  as.integer(.data$number_records)),
+                  number_subjects = dplyr::if_else(is.na(.data$number_subjects),
+                                                  0L,
+                                                  as.integer(.data$number_subjects)))
 
-  cohortAttritionRef <- cohortSetRef %>%
+  cohortAttritionRef <- cohort_set_ref %>%
     dplyr::select("cohort_definition_id") %>%
     dplyr::distinct() %>%
     dplyr::left_join(cohortCountRef, by = "cohort_definition_id") %>%
@@ -354,15 +391,7 @@ generateConceptCohortSet <- function(cdm,
       excluded_records = 0,
       excluded_subjects = 0)
 
-  if(utils::packageVersion("omopgenerics") < "0.1"){
-  cdm[[name]] <- omopgenerics::newCohortTable(
-    table = cohortRef,
-    cohortSetRef = cohortSetRef,
-    cohortAttritionRef = cohortAttritionRef
-  )
-  } else {
-
-    cohortCodelistRef <-df  %>%
+    cohortCodelistRef <- df  %>%
       dplyr::mutate(type = "index event") %>%
       dplyr::select("cohort_definition_id",
                     "codelist_name" = "cohort_name",
@@ -371,11 +400,10 @@ generateConceptCohortSet <- function(cdm,
 
     cdm[[name]] <- omopgenerics::newCohortTable(
       table = cohortRef,
-      cohortSetRef = cohortSetRef,
+      cohortSetRef = cohort_set_ref,
       cohortAttritionRef = cohortAttritionRef,
       cohortCodelistRef = cohortCodelistRef
     )
-  }
 
   return(cdm)
 }

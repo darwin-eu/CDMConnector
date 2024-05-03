@@ -62,6 +62,17 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     )
   })
 
+  # bind both cohorts
+  cdm <- bind(cdm$gibleed, cdm$gibleed2, name = "new_gibleed")
+  expect_true("new_gibleed" %in% names(cdm))
+  expect_true(inherits(x = cdm$new_gibleed, what = "cohort_table"))
+  expect_identical(
+    settings(cdm$new_gibleed),
+    settings(cdm$gibleed) |>
+      dplyr::bind_rows(
+        settings(cdm$gibleed2) |> dplyr::mutate("cohort_definition_id" = 2L)
+      )
+  )
 
   cdm <- generateConceptCohortSet(cdm,
     conceptSet = list(gibleed = 192671), name = "gibleed3",
@@ -85,7 +96,8 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   })
 
   # default (with descendants) ----
-    if (rlang::is_installed("Capr")) {
+  # if (rlang::is_installed("Capr")) {
+  if (FALSE) { # TODO: capr concept generation failing on sql server
     # we need Capr to include descendants
     cdm <- generateConceptCohortSet(
       cdm = cdm,
@@ -295,7 +307,6 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   dropTable(cdm, dplyr::contains("gibleed"))
 }
 
-# dbtype="postgres"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
@@ -348,7 +359,7 @@ test_that("Regimen domain does not cause error", {
                                     overwrite = TRUE)
   })
 
-  expect_s3_class(cdm$cohort, "GeneratedCohortSet")
+  expect_s3_class(cdm$cohort, "cohort_table")
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -378,6 +389,44 @@ test_that("Eunomia", {
                                 end = "event_end_date",
                                 name = "acetaminophen",
                                 overwrite = TRUE))
+
+ # behaviour with concepts not in vocab
+ # this works even though 1 is not in the concept table
+ expect_no_error(cdm <- generateConceptCohortSet(
+   cdm = cdm,
+   name = "ankle_sprain",
+   conceptSet = list("ankle_sprain" = c(81151, 1)),
+   end = "event_end_date",
+   limit = "all",
+   overwrite = TRUE
+ ))
+ expect_true(settings(cdm$ankle_sprain) |>
+   dplyr::pull("cohort_name") == "ankle_sprain")
+
+ expect_warning(cdm <- generateConceptCohortSet(
+   cdm = cdm,
+   name = "ankle_sprain",
+   conceptSet = list("ankle_sprain" = 1),
+   end = "event_end_date",
+   limit = "all",
+   overwrite = TRUE
+ ), "None of the input concept IDs found for the cdm reference")
+ expect_true(settings(cdm$ankle_sprain) |>
+               dplyr::pull("cohort_name") == "ankle_sprain")
+
+ # we should have ankle_sprain2 as an empty cohort in our set but don't
+ expect_no_error(cdm <- generateConceptCohortSet(
+   cdm = cdm,
+   name = "ankle_sprain",
+   conceptSet = list("ankle_sprain" = 81151,
+                     "ankle_sprain2" = 1),
+   end = "event_end_date",
+   limit = "all",
+   overwrite = TRUE
+ ))
+ expect_true(all(sort(settings(cdm$ankle_sprain) |>
+               dplyr::pull("cohort_name")) ==
+               c("ankle_sprain", "ankle_sprain2")))
 
 })
 

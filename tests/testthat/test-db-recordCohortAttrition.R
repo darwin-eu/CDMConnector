@@ -23,7 +23,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_s3_class(attrition(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
   expect_s3_class(settings(cdm$new_cohort), "data.frame")
-  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+  expect_s3_class(cdm$new_cohort, "cohort_table")
   expect_equal(nrow(attrition(cdm$new_cohort)), 4)
   expect_equal(cohortCount(cdm$new_cohort) %>% dplyr::arrange(.data$cohort_definition_id),
                oldCounts %>% dplyr::arrange(.data$cohort_definition_id))
@@ -32,7 +32,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
     dplyr::filter(cohort_start_date >= as.Date("2010-01-01")) %>%
     compute(temporary = FALSE, name = "new_cohort", overwrite = TRUE)
 
-  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+  expect_s3_class(cdm$new_cohort, "cohort_table")
 
   expect_no_error({
     cdm$new_cohort <- recordCohortAttrition(
@@ -43,7 +43,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_s3_class(attrition(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
   expect_s3_class(settings(cdm$new_cohort), "data.frame")
-  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+  expect_s3_class(cdm$new_cohort, "cohort_table")
 
   expect_true(nrow(attrition(cdm$new_cohort)) == 6)
   expect_true(nrow(cohortCount(cdm$new_cohort)) == 2)
@@ -64,7 +64,7 @@ test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
   expect_s3_class(attrition(cdm$new_cohort), "data.frame")
   expect_s3_class(cohortCount(cdm$new_cohort), "data.frame")
   expect_s3_class(settings(cdm$new_cohort), "data.frame")
-  expect_s3_class(cdm$new_cohort, "GeneratedCohortSet")
+  expect_s3_class(cdm$new_cohort, "cohort_table")
 
   expect_true(nrow(attrition(cdm$new_cohort)) == 7)
   expect_true(nrow(cohortCount(cdm$new_cohort)) == 2)

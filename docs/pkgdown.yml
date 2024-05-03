@@ -1,5 +1,5 @@
 pandoc: 3.1.1
-pkgdown: 2.0.7
+pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   a01_getting-started: a01_getting-started.html
@@ -8,5 +8,5 @@ articles:
   a04_DBI_connection_examples: a04_DBI_connection_examples.html
   a05_cdm_reference_backends: a05_cdm_reference_backends.html
   a06_using_cdm_attributes: a06_using_cdm_attributes.html
-last_built: 2024-01-22T18:12Z
+last_built: 2024-05-03T10:11Z
 

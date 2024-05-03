@@ -1,3 +1,19 @@
+# Copyright 2024 DARWIN EU®
+#
+# This file is part of CDMConnector
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 #' Create a CDM reference object from a database connection
 #'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
@@ -264,12 +280,14 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "eunomia", "main")
+#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 #' version(cdm)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 version <- function(cdm) {
+  lifecycle::deprecate_warn("1.3.2", "version()",
+                            with = "cdmVersion()")
   checkmate::assert_class(cdm, "cdm_reference")
   versionNumber <- attr(cdm, "cdm_version")
   if (!(versionNumber %in% c("5.3", "5.4"))) {
@@ -292,15 +310,14 @@ version <- function(cdm) {
 #' \dontrun{
 #' library(CDMConnector)
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "eunomia", "main")
+#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
 #' cdmName(cdm)
 #' #> [1] "eunomia"
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 cdmName <- function(cdm) {
-  checkmate::assert_class(cdm, "cdm_reference")
-  return(attr(cdm, "cdm_name"))
+  omopgenerics::cdmName(cdm)
 }
 
 
