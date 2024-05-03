@@ -196,7 +196,7 @@ insertFromSource.db_cdm <- function(cdm, value) {
 
 #' @export
 #' @importFrom omopgenerics cdmTableFromSource
-cdmTableFromSource.db_cdm <- function(cdm, value) {
+cdmTableFromSource.db_cdm <- function(src, value) {
   if (inherits(value, "data.frame")) {
     cli::cli_abort(
       "To insert a local table to a cdm_reference object use insertTable
@@ -205,12 +205,12 @@ cdmTableFromSource.db_cdm <- function(cdm, value) {
   }
   if (!inherits(value, "tbl_lazy")) {
     cli::cli_abort(
-      "Can't assign an object of class: {paste0(class(value), collapse = ", ")}
+      "Can't assign an object of class: {paste0(class(value), collapse = ', ')}
       to a db_con cdm_reference object."
     )
   }
-  con <- cdmCon(cdm)
-  schema <- cdmWriteSchema(cdm)
+  con <- attr(src, "dbcon")
+  schema <- attr(src, "write_schema")
   if (!identical(con, dbplyr::remote_con(value))) {
     cli::cli_abort(
       "The cdm object and the table have different connection sources."
@@ -226,7 +226,7 @@ cdmTableFromSource.db_cdm <- function(cdm, value) {
     }
   }
   value <- omopgenerics::newCdmTable(
-    table = value, src = attr(cdm, "cdm_source"), name = remoteName
+    table = value, src = src, name = remoteName
   )
   return(value)
 }
