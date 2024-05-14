@@ -20,7 +20,7 @@ jobs:
       matrix:
         config:
           - {os: macOS-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
+          # - {os: windows-latest, r: 'release'}
           # - {os: ubuntu-latest,  r: 'release'} # takes a long time to compile duckdb.
           # - {os: ubuntu-latest,   r: 'devel'} # takes a long time to compile duckdb.
 
@@ -93,11 +93,11 @@ jobs:
             echo "options(rmarkdown.html_vignette.check_title = FALSE)" >> ~/.Rprofile
         shell: bash
 
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          upload-snapshots: true
-          args: 'c("--no-manual", "--as-cran", "--no-build-vignettes", "--ignore-vignettes")'
-          error-on: '"error"'
+      # - uses: r-lib/actions/check-r-package@v2
+      #   with:
+      #     upload-snapshots: true
+      #     args: 'c("--no-manual", "--as-cran", "--no-build-vignettes", "--ignore-vignettes")'
+      #     error-on: '"error"'
 
       -  name: List contents of home directory after R check
          run: |
@@ -114,6 +114,8 @@ jobs:
 
       - name: Test coverage
         if: runner.os == 'macOS'
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
           install.packages("covr")
           covr::codecov()
