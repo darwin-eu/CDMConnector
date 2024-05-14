@@ -107,8 +107,8 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         if: runner.os == 'macOS'
-          uses: codecov/codecov-action@v4.0.1
-          with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            slug: ablack3/CDMConnector
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: ablack3/CDMConnector
 
