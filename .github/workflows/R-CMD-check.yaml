@@ -106,7 +106,7 @@ jobs:
          shell: Rscript {0}
 
       - name: Upload coverage reports to Codecov
-          if: runner.os == 'macOS'
+        if: runner.os == 'macOS'
           uses: codecov/codecov-action@v4.0.1
           with:
             token: ${{ secrets.CODECOV_TOKEN }}
