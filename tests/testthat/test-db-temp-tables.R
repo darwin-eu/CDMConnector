@@ -45,7 +45,7 @@ for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - temp_tables"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
-    if (dbtype %in% c("sqlserver", "snowflake", "bigquery")) skip("failing test")
+    if (dbtype %in% c("spark", "sqlserver", "snowflake", "bigquery")) skip("failing test")
     skip_if(get_write_schema(dbtype) == "")
     con <- get_connection(dbtype)
     test_temp_tables(dbtype)

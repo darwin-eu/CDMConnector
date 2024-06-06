@@ -86,34 +86,29 @@ cdm_from_con <- function(con,
   ) %>%
     rlang::set_names(tolower(omop_tables))
 
-  if(is.null(cdm_name)){
-  if("cdm_source" %in% names(cdmTables)){
+  if (is.null(cdm_name) && ("cdm_source" %in% names(cdmTables))) {
     cdm_name <- cdmTables$cdm_source %>%
     utils::head(1) %>%
     dplyr::pull("cdm_source_name")
   }
-  }
 
-  if(is.null(cdm_name) ||
-     length(cdm_name) != 1 ||
-     is.na(cdm_name))  {
-     cli::cli_alert_warning("cdm name not specified and could not be inferred from the cdm source table")
+  if (is.null(cdm_name) || length(cdm_name) != 1 || is.na(cdm_name)) {
+    cli::cli_alert_warning("cdm name not specified and could not be inferred from the cdm source table")
     cdm_name <- "An OMOP CDM database"
-      }
-
+  }
 
   if (!is.null(achilles_schema)) {
     achillesReqTables <- omopgenerics::achillesTables()
     acTables <- listTables(con, schema = achilles_schema)
     achilles_tables <- acTables[which(tolower(acTables) %in% achillesReqTables)]
+
     if (length(achilles_tables) != 3) {
       cli::cli_abort("Achilles tables not found in {achilles_schema}!")
     }
-    achillesTables <- purrr::map(
-      achilles_tables,
-      ~ dplyr::tbl(src = src, schema = achilles_schema, .)
-    ) %>%
+
+    achillesTables <- purrr::map(achilles_tables, ~dplyr::tbl(src = src, schema = achilles_schema, .)) %>%
       rlang::set_names(tolower(achilles_tables))
+
   } else {
     achillesTables <- list()
   }
@@ -125,6 +120,7 @@ cdm_from_con <- function(con,
   )
 
   write_schema_tables <- listTables(con, schema = write_schema)
+
   for (cohort_table in cohort_tables) {
     nms <- paste0(cohort_table, c("", "_set", "_attrition"))
     x <- purrr::map(nms, function(nm) {

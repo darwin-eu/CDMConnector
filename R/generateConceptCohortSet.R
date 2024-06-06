@@ -176,9 +176,10 @@ generateConceptCohortSet <- function(cdm,
     dplyr::distinct()
 
   # check target cohort -----
-  if(!is.null(subsetCohort)){
+  if (!is.null(subsetCohort)) {
     assertTables(cdm, subsetCohort)
   }
+
   if (!is.null(subsetCohort) && !is.null(subsetCohortId)){
     if (!nrow(omopgenerics::settings(cdm[[subsetCohort]]) %>% dplyr::filter(.data$cohort_definition_id %in% .env$subsetCohortId)) > 0){
       cli::cli_abort("cohort_definition_id {subsetCohortId} not found in cohort set of {subsetCohort}")
@@ -204,7 +205,7 @@ generateConceptCohortSet <- function(cdm,
 
   if (any(df$include_descendants)) {
     concepts <- concepts  %>%
-      dplyr::filter(.data$include_descendants) %>%
+      dplyr::filter(.data$include_descendants == TRUE) %>%
         dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
         dplyr::select(
           "cohort_definition_id", "cohort_name",
@@ -223,7 +224,7 @@ generateConceptCohortSet <- function(cdm,
         )
     }
 
-  concepts <-  concepts %>%
+  concepts <- concepts %>%
         dplyr::filter(.data$is_excluded == FALSE) %>%
     # Note that concepts that are not in the vocab will be silently ignored
     dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
@@ -234,8 +235,12 @@ generateConceptCohortSet <- function(cdm,
     dplyr::distinct() %>%
     dplyr::compute()
 
-  DBI::dbRemoveTable(cdmCon(cdm),
-                     name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+  on.exit({
+    if (DBI::dbIsValid(cdmCon(cdm))) {
+      DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+    }},
+    add = TRUE
+  )
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs
@@ -297,7 +302,6 @@ generateConceptCohortSet <- function(cdm,
     cohort <- purrr::map(domains, ~get_domain(., cdm = cdm, concepts = concepts)) %>%
       purrr::reduce(dplyr::union_all)
   }
-
 
   if (is.null(cohort)) {
     # no domains included. Create empty cohort.

@@ -110,6 +110,11 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   # check source and name
   source <- attr(x, "tbl_source")
   con <- attr(source, "dbcon")
+
+  if (dbms(con) == "spark" & isTRUE(temporary)) {
+    rlang::abort("Temporary tables on are not supported when using Spark. Set `temporary = FALSE`.")
+  }
+
   if (is.null(source)) cli::cli_abort("table source not found.")
   oldName <- attr(x, "tbl_name")
   if (is.null(oldName)) cli::cli_abort("table name not found.")

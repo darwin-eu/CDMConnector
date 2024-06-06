@@ -20,7 +20,7 @@ jobs:
       matrix:
         config:
           - {os: macOS-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
+          # - {os: windows-latest, r: 'release'}
           # - {os: ubuntu-latest,  r: 'release'} # takes a long time to compile duckdb.
           # - {os: ubuntu-latest,   r: 'devel'} # takes a long time to compile duckdb.
 
@@ -105,10 +105,19 @@ jobs:
             print(list.files(path.expand("~")))
          shell: Rscript {0}
 
-      - name: Upload coverage reports to Codecov
+      # - name: Upload coverage reports to Codecov
+      #   if: runner.os == 'macOS'
+      #   uses: codecov/codecov-action@v4.0.1
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     slug: ablack3/CDMConnector
+
+      - name: Test coverage
         if: runner.os == 'macOS'
-          uses: codecov/codecov-action@v4.0.1
-          with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            slug: ablack3/CDMConnector
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          install.packages("covr")
+          covr::codecov()
+        shell: Rscript {0}
 

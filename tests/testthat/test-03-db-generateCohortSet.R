@@ -60,6 +60,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 }
 
 for (dbtype in dbToTest) {
+  # dbtype = "spark"
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
@@ -77,6 +78,7 @@ test_that("Generation from Capr Cohorts", {
   skip_if_not_installed("Capr", minimum_version = "2.0.5")
   skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
+  skip_if_not("duckdb" %in% dbToTest)
 
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
@@ -171,8 +173,10 @@ test_that("TreatmentPatterns cohort works", {
 # cdm$gibleed
 # cohort_count(cdm$gibleed)
 
+
 test_that("newGeneratedCohortSet works with prefix", {
   skip_if_not_installed("duckdb")
+  skip_if_not("duckdb" %in% dbToTest)
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
   write_schema <- c(schema = "main", prefix = "test_")

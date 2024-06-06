@@ -185,9 +185,6 @@ generateCohortSet <- function(cdm,
   con <- cdmCon(cdm)
   checkmate::assertTRUE(DBI::dbIsValid(con))
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
-
-  assert_write_schema(cdm)
-
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
 
@@ -203,8 +200,6 @@ generateCohortSet <- function(cdm,
   } else {
     prefix <- ""
   }
-
-
 
   # Handle OHDSI cohort sets
   if ("cohortId" %in% names(cohortSet) && !("cohort_definition_id" %in% names(cohortSet))) {
@@ -364,18 +359,40 @@ generateCohortSet <- function(cdm,
     # --([^\n])*?\n => match strings starting with -- followed by anything except a newline
     sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
 
-    sql <- SqlRender::translate(sql,
-                                targetDialect = CDMConnector::dbms(con),
-                                tempEmulationSchema = "SQL ERROR")
+    if (dbms(con) != "spark") {
+      sql <- SqlRender::translate(sql,
+                                  targetDialect = CDMConnector::dbms(con),
+                                  tempEmulationSchema = "SQL ERROR")
 
-    if (stringr::str_detect(sql, "SQL ERROR")) {
-      cli::cli_abort("sqlRenderTempEmulationSchema being used for cohort generation!
+      if (stringr::str_detect(sql, "SQL ERROR")) {
+        cli::cli_abort("sqlRenderTempEmulationSchema being used for cohort generation!
         Please open a github issue at {.url https://github.com/darwin-eu/CDMConnector/issues} with your cohort definition.")
+      }
+    } else {
+      # we need temp emulation on spark as there are no temp tables
+
+      if ("schema" %in% names(write_schema)) {
+        s <- unname(write_schema["schema"])
+      } else if (length(write_schema) == 1) {
+        s <- unname(write_schema)
+      } else {
+        s <- unname(write_schema[2])
+      }
+
+      sql <- SqlRender::translate(sql,
+                                  targetDialect = CDMConnector::dbms(con),
+                                  tempEmulationSchema = s)
     }
 
     if (dbms(con) == "duckdb") {
       # hotfix for duckdb sql translation https://github.com/OHDSI/SqlRender/issues/340
       sql <- gsub("'-1 \\* (\\d+) day'", "'-\\1 day'", sql)
+    }
+
+    if (dbms(con) == "spark") {
+      # issue with date add translation on spark
+      sql <- stringr::str_replace_all(sql, "date_add", "dateadd")
+      sql <- stringr::str_replace_all(sql, "DATE_ADD", "DATEADD")
     }
 
     sql <- stringr::str_replace_all(sql, "\\s+", " ")
@@ -384,6 +401,15 @@ generateCohortSet <- function(cdm,
       stringr::str_trim() %>%
       stringr::str_c(";") %>% # remove empty statements
       stringr::str_subset("^;$", negate = TRUE)
+
+    # drop temp tables if they already exist
+    drop_statements <- stringr::str_subset(sql, "DROP TABLE") %>%
+      stringr::str_replace("DROP TABLE", "DROP TABLE IF EXISTS") %>%
+      purrr::map_chr(~SqlRender::translate(., dbms(con)))
+
+    for (k in seq_along(drop_statements)) {
+      DBI::dbExecute(con, drop_statements[k], immediate = TRUE)
+    }
 
     for (k in seq_along(sql)) {
       # cli::cat_rule(glue::glue("sql {k} with {nchar(sql[k])} characters."))

@@ -25,10 +25,7 @@ test_custom_derived_cohort <- function(con, cdm_schema, write_schema) {
   }, "deprecated")
 
   expect_s3_class(cdm$cohort2, "GeneratedCohortSet")
-
 }
-
-# dbToTest <- c("duckdb", "snowflake", "postgres", "sqlserver", "redshift")
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - test_custom_derived_cohort"), {
