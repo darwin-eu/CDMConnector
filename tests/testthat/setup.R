@@ -99,8 +99,16 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
                           DRIVER = Sys.getenv("SNOWFLAKE_DRIVER")))
   }
 
-  if (dbms == "spark" && "Databricks" %in% odbc::odbcListDataSources()$name) {
-    return(DBI::dbConnect(odbc::odbc(), "Databricks", bigint = "numeric"))
+  if (dbms == "spark" && Sys.getenv("DATABRICKS_HTTPPATH") != "") {
+    # requires two other environment variables: DATABRICKS_HOST and DATABRICKS_TOKEN
+    message("connecting to databricks")
+    con <- DBI::dbConnect(
+      odbc::databricks(),
+      httpPath = Sys.getenv("DATABRICKS_HTTPPATH"),
+      useNativeQuery = FALSE,
+      bigint = "numeric"
+    )
+    return(con)
   }
 
   rlang::abort("Could not create connection. Are some environment variables missing?")
@@ -116,7 +124,7 @@ get_cdm_schema <- function(dbms) {
           "duckdb" = "main",
           "bigquery" = Sys.getenv("BIGQUERY_CDM_SCHEMA"),
           "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_CDM_SCHEMA"), "\\.")[[1]],
-          "spark" = Sys.getenv("SPARK_CDM_SCHEMA"),
+          "spark" = Sys.getenv("DATABRICKS_CDM_SCHEMA"),
           NULL
   )
   if (length(s) == 0) s <- ""
@@ -133,7 +141,7 @@ get_write_schema <- function(dbms, prefix = paste0("temp", floor(as.numeric(Sys.
           "duckdb" = "main",
           "bigquery" = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"),
           "snowflake" = strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]],
-          "spark" = Sys.getenv("SPARK_SCRATCH_SCHEMA"),
+          "spark" = Sys.getenv("DATABRICKS_SCRATCH_SCHEMA"),
           NULL
   )
   if (length(s) == 0) s <- ""
@@ -165,7 +173,7 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 if (Sys.getenv("CI_TEST_DB") == "") {
 
   dbToTest <- c(
-     "duckdb"
+     # "duckdb"
     # ,
     # "postgres"
     # ,
@@ -175,7 +183,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
     # ,
     # "snowflake"
     # ,
-    # "spark"
+    "spark"
   )
 
   } else {
@@ -206,4 +214,7 @@ if (!rlang::is_installed("duckdb")) {
   dbToTest <- dbToTest[dbToTest != "duckdb"]
   print("CI tests not run on snowflake - duckdb package is not installed")
 }
-
+if ("spark" %in% dbToTest & Sys.getenv("DATABRICKS_HTTPPATH") == "") {
+  dbToTest <- dbToTest[dbToTest != "spark"]
+  print("CI tests not run on spark/databricks - DATABRICKS_HTTPPATH not found")
+}

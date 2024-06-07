@@ -12,33 +12,35 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
 
   x <- compute(q,
                name = new_table_name,
-               temporary = TRUE,
+               temporary = FALSE,
                overwrite = FALSE)
 
 
-  expect_true(new_table_name %in% list_tables(con))
+  expect_true(new_table_name %in% list_tables(con, schema = write_schema))
 
   expect_error({
     compute(q,
             name = new_table_name,
-            temporary = TRUE,
+            temporary = FALSE,
             overwrite = FALSE)
   })
 
 
   expect_s3_class(dplyr::collect(x), "data.frame")
 
-  # test overwrite for temp tables.
+  # test overwrite
   expect_warning({
     x <- computeQuery(q,
                       name = new_table_name,
-                      temporary = TRUE,
+                      schema = write_schema,
+                      temporary = FALSE,
                       overwrite = TRUE)
-  })
+  }, "deprecated")
+
   expect_s3_class(dplyr::collect(x), "data.frame")
 
-  # test removal of temp tables
-  DBI::dbRemoveTable(con, inSchema(NULL, table = new_table_name, dbms = dbms(con)))
+  # test removal of tables
+  DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = new_table_name, dbms = dbms(con)))
   expect_false(new_table_name %in% list_tables(con))
 
   # permanent table creation from query ----

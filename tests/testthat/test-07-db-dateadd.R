@@ -148,132 +148,94 @@ test_that('dateadd works without pipe', {
   DBI::dbDisconnect(con, shutdown = T)
 })
 
+# expect_equal(test_translate_sql(difftime(start_date, end_date, units = "days")), sql("DATEDIFF(`end_date`, `start_date`)"))
+# expect_equal(test_translate_sql(difftime(start_date, end_date)), sql("DATEDIFF(`end_date`, `start_date`)"))
+
+# expect_equal(test_translate_sql(add_years(x, 1)), sql("ADD_MONTHS(`x`, 1.0 * 12.0)"))
+# expect_equal(test_translate_sql(add_days(x, 1)), sql("DATE_ADD(`x`, 1.0)"))
+# expect_equal(test_translate_sql(date_build(2020, 1, 1)), sql("MAKE_DATE(2020.0, 1.0, 1.0)"))
+# expect_equal(test_translate_sql(date_build(year_column, 1L, 1L)), sql("MAKE_DATE(`year_column`, 1, 1)"))
+# expect_equal(test_translate_sql(get_year(date_column)), sql("DATE_PART('YEAR', `date_column`)"))
+# expect_equal(test_translate_sql(get_month(date_column)), sql("DATE_PART('MONTH', `date_column`)"))
+# expect_equal(test_translate_sql(get_day(date_column)), sql("DATE_PART('DAY', `date_column`)"))
+
 
 # The development version of dbplyr contains translations for clock functions that we can use instead of the workarounds.
 
 # TODO add tests for clock translations
 
-# test_clock_functions <- function(con, write_schema) {
-#
-#   skip("manual test")
-#   skip_if_not_installed("dbplyr", "2.4.0.9000")
-#
-#   date_df <- dplyr::tibble(
-#     date1 = as.Date(c("2000-12-01", "2000-12-01", "2000-12-01", "2000-12-01")),
-#     date2 = as.Date(c("2001-12-01", "2001-12-02", "2001-11-30", "2001-01-01")),
-#     y = 2000L, m = 10L, d = 11L
-#   )
-#
-#   # upload the date table
-#   if ("tmpdate" %in% list_tables(con, write_schema)) {
-#     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
-#   }
-#
-#   # TODO can this be fixed?
-#   if (dbms(con) == "oracle") {
-#     # uploading date types gives 'Numeric value out of range' error
-#     date_df %>%
-#       dplyr::mutate(date1 = as.character(.data$date1), date2 = as.character(.data$date2)) %>%
-#       {DBI::dbWriteTable(con,
-#                          inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con)),
-#                          value = .,
-#                          overwrite = TRUE)}
-#
-#     date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con))) %>%
-#       dplyr::mutate(date1 = !!asDate(date1), date2 = !!asDate(date2)) %>%
-#       compute(temporary = FALSE, name = "tmpdate", overwrite = TRUE)
-#
-#     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con)))
-#   } else {
-#     DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)), date_df)
-#     expect_true("tmpdate" %in% list_tables(con, write_schema))
-#     date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
-#   }
-#
-#   # this fails
-#   # expect_no_error(dplyr::mutate(date_tbl, date3 = clock::add_years(date1, 1)))
-#
-#   # test datediff
-#   library(clock)
-#   df <- date_tbl %>%
-#     dplyr::mutate(date3 = clock::add_years("date1", 1)) %>%
-#     dplyr::mutate(dif_years = difftime(date1, date2)) %>%
-#     dplyr::mutate(dif_days = !!datediff("date1", "date2", interval = "day")) %>%
-#     dplyr::select("date1", "date2", "date3", "dif_years", "dif_days") %>%
-#     dplyr::collect() %>%
-#     dplyr::left_join(date_df, ., by = c("date1", "date2")) %>%
-#     dplyr::mutate(dif_years = as.numeric(dif_years), dif_days = as.numeric(dif_days))
-#
-#   expect_true(all((lubridate::interval(df$date1, df$date3) / lubridate::years(1)) == 1))
-#   expect_equal(df$dif_years, c(1, 1, 0, 0))
-#   expect_equal(df$dif_days, c(365, 366, 364,  31))
-#
-#   df <- date_tbl %>%
-#     dplyr::mutate(date2 = !!dateadd("date1", 1, interval = "day")) %>%
-#     dplyr::mutate(date3 = !!dateadd("date1", -1, interval = "day")) %>%
-#     dplyr::mutate(dif_days2 = !!datediff("date1", "date2", interval = "day")) %>%
-#     dplyr::mutate(dif_days3 = !!datediff("date1", "date3", interval = "day")) %>%
-#     dplyr::collect() %>%
-#     # dplyr::mutate(dplyr::across(1:3, ~as.Date(., origin = "1970-01-01"))) %>%
-#     dplyr::mutate(dif_days2 = as.integer(dif_days2), dif_days3 = as.integer(dif_days3))
-#
-#   expect_true(all(lubridate::interval(df$date1, df$date2) / lubridate::days(1) == 1))
-#   expect_true(all(lubridate::interval(df$date1, df$date3) / lubridate::days(1) == -1))
-#   expect_true(all(df$dif_days2 == 1))
-#   expect_true(all(df$dif_days3 == -1))
-#
-#   # can add a date and an integer column
-#   df <- date_tbl %>%
-#     dplyr::mutate(number1 = 1L, minus1 = -1L) %>%
-#     dplyr::mutate(date2 = !!dateadd("date1", "number1", interval = "day")) %>%
-#     dplyr::mutate(date3 = !!dateadd("date1", "minus1", interval = "day")) %>%
-#     dplyr::collect()
-#
-#   expect_true(all(lubridate::interval(df$date1, df$date2) / lubridate::days(1) == 1))
-#   expect_true(all(lubridate::interval(df$date1, df$date3) / lubridate::days(1) == -1))
-#
-#   # test creation of date from parts
-#   if (dbms(con) != "bigquery") {
-#     # TODO paste0 translation incorrect on bigquery
-#     df <- date_tbl %>%
-#       dplyr::transmute(date_from_parts = paste0(
-#         as.character(.data$y), "-",
-#         as.character(.data$m), "-",
-#         as.character(.data$d)
-#       )) %>%
-#       dplyr::mutate(date_from_parts = !!asDate(date_from_parts)) %>%
-#       dplyr::collect() %>%
-#       dplyr::distinct()
-#
-#     expect_equal(as.Date(df$date_from_parts), as.Date("2000-10-11"))
-#   }
-#
-#   # test datepart
-#   df <- date_tbl %>%
-#     dplyr::transmute(
-#       year  = !!datepart("date1", "year"),
-#       month = !!datepart("date1", "month"),
-#       day   = !!datepart("date1", "day")) %>%
-#     dplyr::collect() %>%
-#     dplyr::distinct()
-#
-#   expect_equal(df$year, 2000)
-#   expect_equal(df$month, 12)
-#   expect_equal(df$day, 1)
-# }
-# dbtype = "duckdb"
-# for (dbtype in dbToTest) {
-#   test_that(glue::glue("{dbtype} - date functions"), {
-#     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
-#     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
-#     write_schema <- get_write_schema(dbtype)
-#     skip_if(any(write_schema == ""))
-#     con <- get_connection(dbtype)
-#     skip_if(is.null(con))
-#     test_clock_functions(con, write_schema)
-#     disconnect(con)
-#   })
-# }
+test_clock_functions <- function(con, write_schema) {
+
+  # skip("manual test")
+  skip_if_not_installed("dbplyr", "2.5.0")
+
+  date_df <- dplyr::tibble(
+    date1 = as.Date(c("2000-12-01", "2000-12-01", "2000-12-01", "2000-12-01")),
+    date2 = as.Date(c("2001-12-01", "2001-12-02", "2001-11-30", "2001-01-01")),
+    y = 2000L, m = 10L, d = 11L
+  )
+
+  # upload the date table
+  if ("tmpdate" %in% list_tables(con, write_schema)) {
+    DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
+  }
+
+  # Note there is an issue with uploading date types to Oracle
+  DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)), date_df)
+  expect_true("tmpdate" %in% list_tables(con, write_schema))
+  date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
+
+  # add_years is not working on spark
+  # add_years and add_days return datetimes on postgres making the as.Date() conversion is needed
+  # date_build does not work on redshift https://github.com/tidyverse/dbplyr/pull/1513
+
+  library(clock)
+  # on postgres we need the as.Date conversion around add_years and add_days
+  df <- date_tbl %>%
+    dplyr::mutate(date3 = as.Date(clock::add_years(date1, 1L)),
+                  date4 = as.Date(clock::add_days(date1, 1L)),
+                  dif_days = difftime(date1, date2)) %>%
+    dplyr::mutate(y2 = get_year(date1),
+                  m2 = get_month(date1),
+                  d2 = get_day(date1),
+                  date7 = as.Date(add_years(date1, m)),
+                  date8 = as.Date(add_days(date1, m)))
+
+  if (dbms(con) != "redshift") {
+    df <- dplyr::mutate(df, date5 = date_build(2020L, 1L, 1L), date6 = date_build(y, m, d))
+  }
+
+  df <- dplyr::collect(df)
+
+  expect_equal(df$dif_days, c(365, 366, 364, 31))
+  if (dbms(con) != "spark") expect_equal(unique(df$date3), as.Date("2001-12-01")) # fails on spark
+  expect_equal(unique(df$date4), as.Date("2000-12-02"))
+  if (dbms(con) != "redshift") expect_equal(unique(df$date5), as.Date("2020-01-01"))
+  if (dbms(con) != "redshift") expect_equal(unique(df$date6), as.Date("2000-10-11"))
+  expect_equal(unique(df$y2), 2000)
+  expect_equal(unique(df$m2), 12)
+  expect_equal(unique(df$d2), 1)
+  if (dbms(con) != "spark") expect_equal(unique(df$date7), as.Date("2010-12-01")) # fails on spark
+  expect_equal(unique(df$date8), as.Date("2000-12-11"))
+
+  DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
+}
+
+# dbtype = "spark"
+dbToTest = "redshift"
+ciTestDbs = ""
+for (dbtype in dbToTest) {
+  test_that(glue::glue("{dbtype} - date functions"), {
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+    write_schema <- get_write_schema(dbtype)
+    skip_if(any(write_schema == ""))
+    con <- get_connection(dbtype)
+    skip_if(is.null(con))
+    test_clock_functions(con, write_schema)
+    disconnect(con)
+  })
+}
 
 
 

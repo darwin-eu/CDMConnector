@@ -1,8 +1,8 @@
 on:
   push:
-    branches: [main, master, test]
+    branches: [main, master, test, develop]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, develop]
 
 name: postgres-test
 
@@ -46,6 +46,8 @@ jobs:
           install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
           install.packages("tictoc", repos = "https://cloud.r-project.org/")
+          CDMConnector::download_eunomia_data()
+          print(paste("eunomia_is_available():", CDMConnector::eunomia_is_available()))
         shell: Rscript {0}
 
       - name: Run tests on postgres with RPostgres driver

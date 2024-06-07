@@ -2,13 +2,15 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   skip_if_not_installed("CirceR")
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
   cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = cdm_schema,
+    con = con,
+    cdm_name = "cdm",
+    cdm_schema = cdm_schema,
     write_schema = write_schema
   )
 
-  # check that we have records
+  # check that we have records. Need the eunomia gibleed data for this.
   cdm$condition_occurrence %>%
-    dplyr::filter(condition_concept_id == 192671) %>%
+    dplyr::filter(condition_concept_id == 192671L) %>%
     dplyr::count() %>%
     dplyr::pull("n") %>%
     expect_gt(10)
@@ -17,7 +19,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # debugonce(generateConceptCohortSet)
   cdm <- generateConceptCohortSet(
     cdm = cdm,
-    conceptSet = list(gibleed = 192671),
+    conceptSet = list(gibleed = 192671L),
     name = "gibleed",
     overwrite = TRUE
   )
@@ -25,6 +27,9 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
     dplyr::filter(cohort_name %in% c("gibleed_default", "GiBleed_default")) %>%
     dplyr::mutate(cohort_definition_id = 1L)
+
+  # TODO add gibleed data to spark test server
+  # if (dbms(con) == "spark") cohort$json <- stringr::str_replace_all(cohort$json, "192671", "40481087")[[1]]
 
   stopifnot(nrow(cohort) == 1)
 
@@ -56,11 +61,11 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     # should be fail fast case
     generateConceptCohortSet(
       cdm = cdm,
-      conceptSet = list(gibleed = 192671),
+      conceptSet = list(gibleed = 192671L),
       name = "gibleed",
       overwrite = FALSE
     )
-  })
+  }, "gibleed already exists in the CDM")
 
   # bind both cohorts
   cdm <- bind(cdm$gibleed, cdm$gibleed2, name = "new_gibleed")
@@ -75,13 +80,13 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   cdm <- generateConceptCohortSet(cdm,
-    conceptSet = list(gibleed = 192671), name = "gibleed3",
+    conceptSet = list(gibleed = 192671L), name = "gibleed3",
     requiredObservation = c(2, 2),
     overwrite = TRUE
   )
 
   cdm <- generateConceptCohortSet(cdm,
-    conceptSet = list(gibleed = 192671), name = "gibleed4",
+    conceptSet = list(gibleed = 192671L), name = "gibleed4",
     requiredObservation = c(2, 200),
     overwrite = TRUE
   )
@@ -137,7 +142,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # all occurrences (no descendants) ----
   cdm <- generateConceptCohortSet(
     cdm = cdm,
-    conceptSet = list(gibleed = 192671),
+    conceptSet = list(gibleed = 192671L),
     name = "gibleed",
     limit = "all",
     overwrite = TRUE
@@ -178,7 +183,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # all occurrences (no descendants) fixed end date ----
   cdm <- generateConceptCohortSet(
     cdm = cdm,
-    conceptSet = list(gibleed = 192671),
+    conceptSet = list(gibleed = 192671L),
     name = "gibleed",
     limit = "all",
     end = "observation_period_end_date",
@@ -218,10 +223,6 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_equal(actual, expected)
 
   # multiple cohort generation ------
-  cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
-  cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2",
-                             overwrite = TRUE)
-
   cdm <- generateConceptCohortSet(
     cdm = cdm,
     conceptSet = list("acetaminophen_1" = 1127433,
@@ -242,7 +243,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   cdm <- generateConceptCohortSet(
     cdm = cdm,
-    conceptSet = list(gibleed_1 = 192671, gibleed_2 = 4112343),
+    conceptSet = list(gibleed_1 = 192671L, gibleed_2 = 4112343),
     name = "gibleed_exp",
     overwrite = TRUE
   )
@@ -286,22 +287,25 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                                       by = "subject_id") %>%
                      dplyr::collect()) == 0)
   # expected errors
- expect_error(generate_concept_cohort_set(cdm = cdm,
-                              name = "gibleed_medications2",
-                              concept_set = list("diclofenac" = 1124300,
-                                                 "acetaminophen" = 1127433),
-                              subset_cohort = "not_a_table",
-                              subset_cohort_id = 1,
-                              overwrite = TRUE))
+  expect_error(
+    generate_concept_cohort_set(cdm = cdm,
+                                name = "gibleed_medications2",
+                                concept_set = list("diclofenac" = 1124300,
+                                                   "acetaminophen" = 1127433),
+                                subset_cohort = "not_a_table",
+                                subset_cohort_id = 1,
+                                overwrite = TRUE)
+  )
 
- expect_error(generate_concept_cohort_set(cdm = cdm,
-                                     name = "gibleed_medications2",
-                                     concept_set = list("diclofenac" = 1124300,
-                                                        "acetaminophen" = 1127433),
-                                     subset_cohort = "gibleed_exp",
-                                     subset_cohort_id = c(99,100,101),
-                                     overwrite = TRUE))
-
+ expect_error(
+   generate_concept_cohort_set(cdm = cdm,
+                               name = "gibleed_medications2",
+                               concept_set = list("diclofenac" = 1124300,
+                                                  "acetaminophen" = 1127433),
+                               subset_cohort = "gibleed_exp",
+                               subset_cohort_id = c(99,100,101), # these cohort ids not in cohort table
+                               overwrite = TRUE)
+  )
 
   # clean up
   dropTable(cdm, dplyr::contains("gibleed"))
@@ -325,6 +329,7 @@ for (dbtype in dbToTest) {
 test_that("missing domains produce warning", {
   skip_on_cran()
   skip_if_not_installed("duckdb")
+  skip_if_not("duckdb" %in% dbToTest)
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
@@ -341,6 +346,7 @@ test_that("missing domains produce warning", {
 
 test_that("Regimen domain does not cause error", {
   skip_on_cran()
+  skip_if_not("duckdb" %in% dbToTest)
   skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
@@ -367,6 +373,7 @@ test_that("Regimen domain does not cause error", {
 test_that("Eunomia", {
   skip_on_cran()
   skip_if_not_installed("duckdb")
+  skip_if_not("duckdb" %in% dbToTest)
   skip_if_not(eunomia_is_available())
 
   # edge case with overlaps (issue 420)
@@ -424,6 +431,7 @@ test_that("Eunomia", {
    limit = "all",
    overwrite = TRUE
  ))
+
  expect_true(all(sort(settings(cdm$ankle_sprain) |>
                dplyr::pull("cohort_name")) ==
                c("ankle_sprain", "ankle_sprain2")))
