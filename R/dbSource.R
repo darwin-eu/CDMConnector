@@ -103,6 +103,10 @@ dropTable.db_cdm <- function(cdm, name) {
   return(invisible(TRUE))
 }
 
+#' @importFrom dplyr compute
+#' @export
+dplyr::compute
+
 #' @export
 #' @importFrom dplyr compute
 compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
