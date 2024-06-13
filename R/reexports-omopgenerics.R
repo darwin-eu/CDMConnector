@@ -46,6 +46,10 @@ omopgenerics::cdmVersion
 #' @export
 omopgenerics::cdmFromTables
 
+#' @importFrom omopgenerics cohortCodelist
+#' @export
+omopgenerics::cohortCodelist
+
 #' Create a cdm object from local tables
 #'
 #' @param tables List of tables to be part of the cdm object.

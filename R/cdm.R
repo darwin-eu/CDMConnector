@@ -122,7 +122,7 @@ cdm_from_con <- function(con,
   write_schema_tables <- listTables(con, schema = write_schema)
 
   for (cohort_table in cohort_tables) {
-    nms <- paste0(cohort_table, c("", "_set", "_attrition"))
+    nms <- paste0(cohort_table, c("", "_set", "_attrition", "_codelist"))
     x <- purrr::map(nms, function(nm) {
       if (nm %in% write_schema_tables) {
         dplyr::tbl(src = src, schema = write_schema, name = nm)
@@ -140,6 +140,7 @@ cdm_from_con <- function(con,
       omopgenerics::newCohortTable(
         cohortSetRef = x[[2]],
         cohortAttritionRef = x[[3]],
+        cohortCodelistRef = x[[4]],
         .softValidation = .soft_validation
       )
   }
