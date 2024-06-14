@@ -198,9 +198,7 @@ generateConceptCohortSet <- function(cdm,
   }
 
   # realize full list of concepts ----
-  concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm),
-                                                      tempName,
-                                                      dbms = dbms(con))) %>%
+  concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))) %>%
     dplyr::rename_all(tolower)
 
   if (any(df$include_descendants)) {
@@ -248,14 +246,15 @@ generateConceptCohortSet <- function(cdm,
 
   if (length(domains) == 0){
     cli::cli_warn("None of the input concept IDs found for the cdm reference - returning an empty cohort")
-    cdm <- insertTable(cdm = cdm, name = name,
+    cdm <- insertTable(cdm = cdm,
+                       name = name,
                        table = dplyr::tibble(
                          cohort_definition_id = numeric(),
                          subject_id = numeric(),
                          cohort_start_date = as.Date(character()),
-                         cohort_end_date = as.Date(character())
-                       ),
+                         cohort_end_date = as.Date(character())),
                        overwrite = overwrite)
+
     cdm[[name]] <- omopgenerics::newCohortTable(
       table = cdm[[name]],
       cohortSetRef = cohort_set_ref
@@ -293,7 +292,10 @@ generateConceptCohortSet <- function(cdm,
                        subject_id = .data$person_id,
                        cohort_start_date = !!rlang::parse_expr(df$start_date),
                        cohort_end_date = dplyr::coalesce(!!rlang::parse_expr(df$end_date),
-                                                         !!dateadd(df$start_date, 1)))
+                                                         !!dateadd(df$start_date, 1))) %>%
+      # silently ignore cdm records where end date is before start.
+      # Another reasonable option could be to set end to start if end is before start.
+      dplyr::filter(cohort_start_date <= cohort_end_date)
   }
 
   if (length(domains) == 0) {

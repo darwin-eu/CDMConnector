@@ -438,3 +438,62 @@ test_that("Eunomia", {
 
 })
 
+
+test_that("invalid cdm records are ignored in generateConceptCohortSet", {
+
+  cdm <- cdmFromTables(
+    tables = list(
+      "person" = tibble(
+        person_id = 1, gender_concept_id = 0, year_of_birth = 1900,
+        race_concept_id = 0, ethnicity_concept_id = 0
+      ),
+      "observation_period" = tibble(
+        observation_period_id = 1, person_id = 1,
+        observation_period_start_date = as.Date("1900-01-01"),
+        observation_period_end_date = as.Date("2000-01-01"),
+        period_type_concept_id = 0
+      ),
+      "drug_exposure" = tibble(
+        drug_exposure_id = 1, person_id = 1, drug_concept_id = 1,
+        drug_exposure_start_date = as.Date(c("1950-01-01", "1951-01-01")),
+        drug_exposure_end_date = as.Date(c("1945-01-01", "1952-01-01")),
+        drug_type_concept_id = 0
+      ),
+      "concept" = tibble(
+        concept_id = 1, concept_name = "my_drug", domain_id = "Drug",
+        vocabulary_id = 0, concept_class_id = 0, concept_code = 0,
+        valid_start_date = 0, valid_end_date = 0, standard_concept = 0,
+        invalid_reason = 0
+      )
+    ),
+    cdmName = "test"
+  )
+
+  con <- DBI::dbConnect(duckdb::duckdb())
+  cdm <- copyCdmTo(con, cdm = cdm, schema = "main")
+
+  cdm <- generateConceptCohortSet(cdm = cdm,
+                                  conceptSet = list(custom = 1),
+                                  name = "my_cohort",
+                                  end = "event_end_date")
+
+  actual <- dplyr::collect(cdm$my_cohort) %>%
+    tibble()
+
+  # names(attributes(actual))
+
+  # remove cohort attribues
+  attr(actual, "cohort_set") <- NULL
+  attr(actual, "cohort_attrition") <- NULL
+
+  expected <- tibble(
+    cohort_definition_id = 1L,
+    subject_id = 1L,
+    cohort_start_date = as.Date("1951-01-01"),
+    cohort_end_date = as.Date("1952-01-01"),
+  )
+
+  expect_equal(actual, expected)
+
+})
+
