@@ -126,7 +126,7 @@ cdm_from_con <- function(con,
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
-  checkmate::assert_character(write_schema, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
+  checkmate::assert_character(write_prefix, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
 
   # users can give write_schema = "catalog.schema"
   if (length(write_schema) == 1 && stringr::str_detect(write_schema, "\\.")) {
