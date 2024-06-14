@@ -13,7 +13,8 @@ cdm_from_con(
   cdm_version = "5.3",
   cdm_name = NULL,
   achilles_schema = NULL,
-  .soft_validation = FALSE
+  .soft_validation = FALSE,
+  write_prefix = NULL
 )
 
 cdmFromCon(
@@ -24,7 +25,8 @@ cdmFromCon(
   cdmVersion = "5.3",
   cdmName = NULL,
   achillesSchema = NULL,
-  .softValidation = FALSE
+  .softValidation = FALSE,
+  writePrefix = NULL
 )
 }
 \arguments{
@@ -55,10 +57,70 @@ have overlapping observation periods for a single person. If \code{.softValidati
 validation check that looks for overlapping observation periods will be skipped.
 Other analytic packages may break or produce incorrect results if \code{softValidation} is \code{TRUE} and
 the observation period table contains overlapping observation periods.}
+
+\item{write_prefix, writePrefix}{A prefix that will be added to all tables created in the write_schema. This
+can be used to create namespace in your database write_schema for your tables.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables
 }
 \description{
 Create a CDM reference object from a database connection
+}
+\details{
+cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI compliant database connection.
+In addition to the connection the user needs to pass in the schema in the database where the cdm data can
+be found as well as another schema where the user has write access to create tables. Nearly all
+downstream analytic packages need the ability to create temporary data in the database so the
+write_schema is required.
+
+Some database systems have the idea of a catalog or a compound schema with two components.
+See examples below for how to pass in catalogs and schemas.
+
+You can also specify a \code{write_prefix}. This is a short character string that will be added
+to any tables created in the \code{write_schema} effectively a namespace in the schema just for your
+analysis. This makes it easy to ensure you do not overwrite someone elses tables if the write_schema is shared
+and allows you to easily clean up tables by dropping all tables that start with the prefix.
+The prefix is considered part of the write_schema since it is effectively a sub-schema. See examples.
+}
+\examples{
+\dontrun{
+library(CDMConnector)
+con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+
+# minimal example
+cdm <- cdm_from_con(con,
+                    cdm_schema = "main",
+                    write_schema = "scratch")
+
+cdm <- cdm_from_con(con,
+                    cdm_schema = "main",
+                    write_schema = "scratch",
+                    write_prefix = "tmp_")
+
+# There are a few differen options for using catalogs
+cdm <- cdm_from_con(con,
+                    cdm_schema = "catalog.main",
+                    write_schema = "catalog.scratch",
+                    write_prefix = "tmp_")
+
+cdm <- cdm_from_con(con,
+                    cdm_schema = c(catalog = "catalog", schema = "main"),
+                    write_schema = c(catalog = "catalog", schema = "scratch"))
+
+cdm <- cdm_from_con(con,
+                    cdm_schema = c("catalog", "main"),
+                    write_schema = c("catalog", "scratch"))
+
+cdm <- cdm_from_con(con,
+                    cdm_schema = c(catalog = "catalog", schema = "main"),
+                    write_schema = c(catalog = "catalog",
+                                     schema = "scratch",
+                                     prefix = "tmp_"))
+
+ DBI::dbDisconnect(con)
+
+}
+
+
 }

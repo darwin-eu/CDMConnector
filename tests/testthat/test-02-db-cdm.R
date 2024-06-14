@@ -216,3 +216,41 @@ test_that("adding achilles", {
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
+
+test_that("write_schema argument specification works", {
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, "main", "main", write_prefix = "tmp_")
+
+  expect_equal(attr(cdm, "write_schema"), c(schema = "main", prefix = "tmp_"))
+
+  DBI::dbDisconnect(con, shutdown = TRUE)
+})
+
+test_that("schema specification with . works", {
+  # skip("manual test")
+  con <- DBI::dbConnect(odbc::odbc(),
+                        SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
+                        UID = Sys.getenv("SNOWFLAKE_USER"),
+                        PWD = Sys.getenv("SNOWFLAKE_PASSWORD"),
+                        DATABASE = Sys.getenv("SNOWFLAKE_DATABASE"),
+                        WAREHOUSE = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
+                        DRIVER = Sys.getenv("SNOWFLAKE_DRIVER"))
+
+  cdm_schema <- Sys.getenv("SNOWFLAKE_CDM_SCHEMA")
+  write_schema <- Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA")
+
+  cdm <- cdm_from_con(con, cdm_schema, write_schema, write_prefix = "tmp_", cdm_name = "test")
+
+  write_schema_split <- stringr::str_split(write_schema, "\\.")[[1]] %>%
+    purrr::set_names("catalog", "schema") %>%
+    c(., prefix = "tmp_")
+
+  cdm_schema_split <- stringr::str_split(cdm_schema, "\\.")[[1]] %>%
+    purrr::set_names("catalog", "schema")
+
+  expect_equal(attr(cdm, "write_schema"), write_schema_split)
+  expect_equal(attr(cdm, "cdm_schema"), cdm_schema_split)
+
+  DBI::dbDisconnect(con)
+
+})

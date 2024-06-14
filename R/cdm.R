@@ -37,7 +37,67 @@
 #' Other analytic packages may break or produce incorrect results if `softValidation` is `TRUE` and
 #' the observation period table contains overlapping observation periods.
 #'
+#' @param write_prefix,writePrefix A prefix that will be added to all tables created in the write_schema. This
+#' can be used to create namespace in your database write_schema for your tables.
+#'
 #' @return A list of dplyr database table references pointing to CDM tables
+#'
+#' @details
+#' cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI compliant database connection.
+#' In addition to the connection the user needs to pass in the schema in the database where the cdm data can
+#' be found as well as another schema where the user has write access to create tables. Nearly all
+#' downstream analytic packages need the ability to create temporary data in the database so the
+#' write_schema is required.
+#'
+#' Some database systems have the idea of a catalog or a compound schema with two components.
+#' See examples below for how to pass in catalogs and schemas.
+#'
+#' You can also specify a `write_prefix`. This is a short character string that will be added
+#' to any tables created in the `write_schema` effectively a namespace in the schema just for your
+#' analysis. This makes it easy to ensure you do not overwrite someone elses tables if the write_schema is shared
+#' and allows you to easily clean up tables by dropping all tables that start with the prefix.
+#' The prefix is considered part of the write_schema since it is effectively a sub-schema. See examples.
+#'
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#'
+#' # minimal example
+#' cdm <- cdm_from_con(con,
+#'                     cdm_schema = "main",
+#'                     write_schema = "scratch")
+#'
+#' cdm <- cdm_from_con(con,
+#'                     cdm_schema = "main",
+#'                     write_schema = "scratch",
+#'                     write_prefix = "tmp_")
+#'
+#' # There are a few differen options for using catalogs
+#' cdm <- cdm_from_con(con,
+#'                     cdm_schema = "catalog.main",
+#'                     write_schema = "catalog.scratch",
+#'                     write_prefix = "tmp_")
+#'
+#' cdm <- cdm_from_con(con,
+#'                     cdm_schema = c(catalog = "catalog", schema = "main"),
+#'                     write_schema = c(catalog = "catalog", schema = "scratch"))
+#'
+#' cdm <- cdm_from_con(con,
+#'                     cdm_schema = c("catalog", "main"),
+#'                     write_schema = c("catalog", "scratch"))
+#'
+#' cdm <- cdm_from_con(con,
+#'                     cdm_schema = c(catalog = "catalog", schema = "main"),
+#'                     write_schema = c(catalog = "catalog",
+#'                                      schema = "scratch",
+#'                                      prefix = "tmp_"))
+#'
+#'  DBI::dbDisconnect(con)
+#'
+#' }
+#'
+#'
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @export
 cdm_from_con <- function(con,
@@ -47,7 +107,8 @@ cdm_from_con <- function(con,
                          cdm_version = "5.3",
                          cdm_name = NULL,
                          achilles_schema = NULL,
-                         .soft_validation = FALSE) {
+                         .soft_validation = FALSE,
+                         write_prefix = NULL) {
 
   if (!DBI::dbIsValid(con)) {
     cli::cli_abort("The connection is not valid. Is the database connection open?")
@@ -65,6 +126,33 @@ cdm_from_con <- function(con,
   checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
   checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
+  checkmate::assert_character(write_schema, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
+
+  # users can give write_schema = "catalog.schema"
+  if (length(write_schema) == 1 && stringr::str_detect(write_schema, "\\.")) {
+    if (stringr::str_count(write_schema, "\\.") != 1) cli::cli_abort("`write_schema` can only have one .")
+    write_schema <- stringr::str_split(write_schema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
+  }
+
+  if (length(cdm_schema) == 1 && stringr::str_detect(cdm_schema, "\\.")) {
+    if (stringr::str_count(cdm_schema, "\\.") != 1) cli::cli_abort("`cdm_schema` can only have one .")
+    cdm_schema <- stringr::str_split(cdm_schema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
+  }
+
+  if (!is.null(write_prefix)) {
+    if (!rlang::is_named(write_schema)) {
+      if (length(write_schema) == 1) {
+        write_schema <- c("schema" = write_schema)
+      } else if (length(write_schema) == 2) {
+        write_schema <- c("catalog" = write_schema[1], "schema" = write_schema[2])
+      } else {
+        rlang::abort("If `write_schema` is unnamed then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
+      }
+    }
+    write_schema["prefix"] <- write_prefix
+  }
+
+
 
   # create source object and validate connection
   src <- dbSource(con = con, writeSchema = write_schema)
@@ -202,7 +290,8 @@ cdmFromCon <- function(con,
                        cdmVersion = "5.3",
                        cdmName = NULL,
                        achillesSchema = NULL,
-                       .softValidation = FALSE) {
+                       .softValidation = FALSE,
+                       writePrefix = NULL) {
   cdm_from_con(
     con = con,
     cdm_schema = cdmSchema,
