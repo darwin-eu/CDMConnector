@@ -35,3 +35,20 @@ test_that("assertTables works with local cdms", {
 })
 
 
+
+test_that("softValidation is passed correctly", {
+  library(CDMConnector)
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+
+  # create overlapping observation periods
+  op <- dplyr::tbl(con, "observation_period") |> dplyr::collect()
+  DBI::dbAppendTable(con, "observation_period", op)
+
+  expect_error(cdm_from_con(con, "main", "main", .soft_validation = F),
+               "overlap")
+
+  # soft validation ignores this
+  expect_no_error(cdm_from_con(con, "main", "main", .soft_validation = T))
+
+  DBI::dbDisconnect(con, shutdown = T)
+})

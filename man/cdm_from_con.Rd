@@ -50,8 +50,11 @@ heuristics. Cohort tables must be in the write_schema.}
 \item{achilles_schema, achillesSchema}{An optional schema in the CDM database
 that contains achilles tables.}
 
-\item{.soft_validation, .softValidation}{If TRUE fewer validation checks will
-be performed.}
+\item{.soft_validation, .softValidation}{Normally the observation period table should not
+have overlapping observation periods for a single person. If \code{.softValidation} is \code{TRUE} the
+validation check that looks for overlapping observation periods will be skipped.
+Other analytic packages may break or produce incorrect results if \code{softValidation} is \code{TRUE} and
+the observation period table contains overlapping observation periods.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables

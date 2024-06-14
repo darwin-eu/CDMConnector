@@ -116,7 +116,8 @@ cdm_from_con <- function(con,
   cdm <- omopgenerics::newCdmReference(
     tables = c(cdmTables, achillesTables),
     cdmName = cdm_name,
-    cdmVersion = cdm_version
+    cdmVersion = cdm_version,
+    .softValidation = .soft_validation
   )
 
   write_schema_tables <- listTables(con, schema = write_schema)
