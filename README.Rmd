@@ -109,6 +109,13 @@ cdmDisconnect(cdm)
 If you encounter a clear bug, please file an issue with a minimal [reproducible example](https://reprex.tidyverse.org/) on [GitHub](https://github.com/darwin-eu/CDMConnector/issues).
 
 
+## Citation
+
+```{r, echo=FALSE, warning=FALSE}
+citation("CDMConnector")
+```
+
+
 ---
 
 License: Apache 2.0

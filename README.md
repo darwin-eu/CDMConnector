@@ -119,7 +119,7 @@ cdm$person %>%
 ```
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCS8sv9/file14a326c1d48b.duckdb]
+    ## # Database: DuckDB v1.0.1-dev5 [root@Darwin 23.0.0:R 4.3.1//private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/Rtmp9UjDOa/file25a7230b0dc2.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -133,7 +133,7 @@ cdm$condition_era %>%
 ```
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB v0.9.2 [root@Darwin 23.0.0:R 4.3.1//var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T//RtmpCS8sv9/file14a326c1d48b.duckdb]
+    ## # Database:   DuckDB v1.0.1-dev5 [root@Darwin 23.0.0:R 4.3.1//private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/Rtmp9UjDOa/file25a7230b0dc2.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -158,6 +158,23 @@ your data.
 If you encounter a clear bug, please file an issue with a minimal
 [reproducible example](https://reprex.tidyverse.org/) on
 [GitHub](https://github.com/darwin-eu/CDMConnector/issues).
+
+## Citation
+
+    ## To cite package 'CDMConnector' in publications use:
+    ## 
+    ##   Black A, Gorbachev A, Burn E, Catala Sabate M (????). _CDMConnector:
+    ##   Connect to an OMOP Common Data Model_.
+    ##   https://darwin-eu.github.io/CDMConnector/,
+    ##   https://github.com/darwin-eu/CDMConnector.
+    ## 
+    ## A BibTeX entry for LaTeX users is
+    ## 
+    ##   @Manual{,
+    ##     title = {CDMConnector: Connect to an OMOP Common Data Model},
+    ##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate}},
+    ##     note = {https://darwin-eu.github.io/CDMConnector/, https://github.com/darwin-eu/CDMConnector},
+    ##   }
 
 ------------------------------------------------------------------------
 
