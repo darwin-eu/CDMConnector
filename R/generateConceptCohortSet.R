@@ -324,22 +324,11 @@ generateConceptCohortSet <- function(cdm,
                     "observation_period_end_date")
 
     # subset to target cohort
-    if(!is.null(subsetCohort)){
-      if(is.null(subsetCohortId)){
-        obs_period <- obs_period %>%
-          dplyr::inner_join(cdm[[subsetCohort]] %>%
-                       dplyr::select("subject_id") %>%
-                       dplyr::distinct(),
-                     by = "subject_id")
-      } else {
-        obs_period <- obs_period %>%
-          dplyr::inner_join(cdm[[subsetCohort]] %>%
-                       dplyr::filter(.data$cohort_definition_id %in%
-                                       .env$subsetCohortId) %>%
-                       dplyr::select("subject_id") %>%
-                       dplyr::distinct(),
-                     by = "subject_id")
-      }
+    if (!is.null(subsetCohort)) {
+      obs_period <- cdm[[subsetCohort]] %>%
+        {if (!is.null(subsetCohortId)) dplyr::filter(., .data$cohort_definition_id %in% .env$subsetCohortId) else .} %>%
+        dplyr::distinct(.data$subject_id) %>%
+        dplyr::inner_join(obs_period, by = "subject_id")
     }
 
     # TODO remove this variable since it is confusing
@@ -434,5 +423,4 @@ generate_concept_cohort_set <- function(cdm,
                            subsetCohortId = subset_cohort_id,
                            overwrite = overwrite)
 }
-
 
