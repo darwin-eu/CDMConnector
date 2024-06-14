@@ -186,20 +186,20 @@ test_clock_functions <- function(con, write_schema) {
   date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
 
   # add_years is not working on spark or duckdb
-  # add_days does not work on duckdb
+  # add_days, difftime does not work on duckdb
   # add_years and add_days return datetimes on postgres making the as.Date() conversion is needed
   # date_build does not work on redshift or duckdb https://github.com/tidyverse/dbplyr/pull/1513
 
   library(clock)
   # on postgres we need the as.Date conversion around add_years and add_days
   df <- date_tbl %>%
-    dplyr::mutate(dif_days = difftime(date1, date2),
-                  y2 = get_year(date1),
+    dplyr::mutate(y2 = get_year(date1),
                   m2 = get_month(date1),
                   d2 = get_day(date1))
 
   if (dbms(con) != "duckdb") {
     df <- dplyr::mutate(df,
+                        dif_days = difftime(date1, date2),
                         date3 = as.Date(clock::add_years(date1, 1L)),
                         date4 = as.Date(clock::add_days(date1, 1L)),
                         date7 = as.Date(add_years(date1, m)),
@@ -207,21 +207,30 @@ test_clock_functions <- function(con, write_schema) {
   }
 
   if (!(dbms(con) %in% c("duckdb", "redshift"))) {
-    df <- dplyr::mutate(df, date5 = date_build(2020L, 1L, 1L), date6 = date_build(y, m, d))
+    df <- dplyr::mutate(df,
+                        date5 = date_build(2020L, 1L, 1L),
+                        date6 = date_build(y, m, d))
   }
 
   df <- dplyr::collect(df)
 
-  expect_equal(df$dif_days, c(365, 366, 364, 31))
-  if (!(dbms(con) %in% c("spark", "duckdb"))) expect_equal(unique(df$date3), as.Date("2001-12-01")) # fails on spark
-  expect_equal(unique(df$date4), as.Date("2000-12-02"))
-  if (dbms(con) != "redshift") expect_equal(unique(df$date5), as.Date("2020-01-01"))
-  if (dbms(con) != "redshift") expect_equal(unique(df$date6), as.Date("2000-10-11"))
   expect_equal(unique(df$y2), 2000)
   expect_equal(unique(df$m2), 12)
   expect_equal(unique(df$d2), 1)
+
+  # some of these translations are failing on certain database platforms
+  if (!(dbms(con) %in% c("duckdb"))) {
+    expect_equal(df$dif_days, c(365, 366, 364, 31))
+    expect_equal(unique(df$date3), as.Date("2001-12-01"))
+    expect_equal(unique(df$date4), as.Date("2000-12-02"))
+    expect_equal(unique(df$date8), as.Date("2000-12-11"))
+  }
   if (!(dbms(con) %in% c("spark", "duckdb"))) expect_equal(unique(df$date7), as.Date("2010-12-01")) # fails on spark
-  expect_equal(unique(df$date8), as.Date("2000-12-11"))
+
+  if (!(dbms(con) %in% c("duckdb", "redshift"))) {
+    expect_equal(unique(df$date5), as.Date("2020-01-01"))
+    expect_equal(unique(df$date6), as.Date("2000-10-11"))
+  }
 
   DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
 }
