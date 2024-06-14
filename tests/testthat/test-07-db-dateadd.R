@@ -162,8 +162,6 @@ test_that('dateadd works without pipe', {
 
 # The development version of dbplyr contains translations for clock functions that we can use instead of the workarounds.
 
-# TODO add tests for clock translations
-
 test_clock_functions <- function(con, write_schema) {
 
   # skip("manual test")
@@ -247,6 +245,45 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
+
+test_as.Date <- function(con, cdm_schema, write_schema) {
+
+ # debugonce(cdm_from_con)
+ cdm <- cdm_from_con(con,
+                     cdm_schema = cdm_schema,
+                     write_schema = write_schema,
+                     cdm_name = "test")
+
+  df <- cdm$person %>%
+    head(1) %>%
+    dplyr::mutate(string = paste(
+      as.character(.data$year_of_birth),
+      as.character(.data$month_of_birth),
+      as.character(.data$day_of_birth), sep = "-")) %>%
+    dplyr::transmute(date1 = as.Date("2020-01-01"),
+                     date2 = as.Date(.data$string)) %>%
+    dplyr::collect()
+
+  expect_equal(df$date1, as.Date("2020-01-01"))
+  expect_s3_class(df$date2, "Date")
+}
+
+for (dbtype in dbToTest) {
+  test_that(glue::glue("{dbtype} - date functions"), {
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+    cdm_schema <- get_cdm_schema(dbtype)
+    write_schema <- get_write_schema(dbtype)
+    skip_if(any(cdm_schema == "", write_schema == ""))
+    con <- get_connection(dbtype)
+    skip_if(is.null(con))
+    test_as.Date(con, cdm_schema, write_schema)
+    disconnect(con)
+  })
+}
+
+
+
 
 
 

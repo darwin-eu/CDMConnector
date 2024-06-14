@@ -186,6 +186,7 @@ datediff <- function(start, end, interval = "day") {
 #'   dplyr::collect()
 #' }
 asDate <- function(x) {
+  lifecycle::deprecate_soft("1.4.1", "CDMConnector::asDate()", "as.Date()")
   x_quo <- rlang::enquo(x)
   .data <- get(".", envir = parent.frame())
   dialect <- CDMConnector::dbms(.data$src$con)
