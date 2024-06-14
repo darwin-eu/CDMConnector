@@ -226,6 +226,8 @@ assertTables <- assert_tables
 #' @return Invisibly returns the cdm object
 #' @export
 assert_write_schema <- function(cdm, add = NULL) {
+  lifecycle::deprecate_soft("1.4.1", "CDMConnector::assert_write_schema()")
+
   checkmate::assert_class(cdm, "cdm_reference")
   if (is.null(cdmCon(cdm))) {
     rlang::abort("Local cdm objects do not have a write schema.")
