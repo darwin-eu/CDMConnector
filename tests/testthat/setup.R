@@ -174,16 +174,16 @@ if (Sys.getenv("CI_TEST_DB") == "") {
 
   dbToTest <- c(
      "duckdb"
-    # ,
-    # "postgres"
-    # ,
-    # "redshift"
-    # ,
-    # "sqlserver"
-    # ,
-    # "snowflake"
-    # ,
-    # "spark"
+    ,
+    "postgres"
+    ,
+    "redshift"
+    ,
+    "sqlserver"
+    ,
+    "snowflake"
+    ,
+    "spark"
   )
 
   } else {

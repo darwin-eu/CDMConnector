@@ -114,12 +114,11 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   # check source and name
   source <- attr(x, "tbl_source")
   con <- attr(source, "dbcon")
-  cdm - attr(x, "cdm_reference")
-
-  checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertTRUE(DBI::dbIsValid(con))
 
   if (dbms(con) == "spark" & isTRUE(temporary)) {
+    cdm <- attr(x, "cdm_reference")
+    checkmate::assertClass(cdm, "cdm_reference")
     prefix <- attr(cdm, "temp_emulation_prefix")
     if (is.null(prefix)) {
       rlang::abort("temp_emulation_prefix is missing! Please open an issue at https://github.com/darwin-eu/CDMConnector")
