@@ -203,7 +203,7 @@ computeQuery <- function(x,
                          overwrite = TRUE,
                          ...) {
 
-  lifecycle::deprecate_soft("1.3", "computeQuery()", with = "dplyr::compute()")
+  lifecycle::deprecate_warn("1.3", "CDMConnector::computeQuery()", with = "dplyr::compute()")
 
   .computeQuery(x,
                 name = name,
