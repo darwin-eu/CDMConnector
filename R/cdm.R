@@ -211,6 +211,10 @@ cdm_from_con <- function(con,
     .softValidation = .soft_validation
   )
 
+  # on spark we use permanent tables prefixed with this whenever the user asks for temp tables
+  attr(cdm, "temp_emulation_prefix") <- paste0(
+    "temp", Sys.getpid() + rpois(1, as.integer(Sys.time())) %% 1e6, "_")
+
   write_schema_tables <- listTables(con, schema = write_schema)
 
   for (cohort_table in cohort_tables) {
@@ -835,6 +839,11 @@ snapshot <- function(cdm) {
 
 #' Disconnect the connection of the cdm object
 #'
+#' This function will disconnect from the database as well as drop
+#' "temporary" tables that were created on database systems that do not support
+#' actual temporary tables. Currently temp tables are emulated on
+#' Spark/Databricks systems.
+#'
 #' @param cdm cdm reference
 #'
 #' @export
@@ -842,7 +851,19 @@ cdmDisconnect <- function(cdm) {
   if (!("cdm_reference" %in% class(cdm))) {
     cli::cli_abort("cdm should be a cdm_reference")
   }
-  DBI::dbDisconnect(cdmCon(cdm), shutdown = TRUE)
+
+  con <- cdmCon(cdm)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  if (dbms(cdm) == "spark") {
+    schema <- attr(cdm, "write_schema")
+    tbls <- list_tables(con, schema = schema)
+    tempEmulationTablesToDrop <- stringr::str_subset(tbls, attr(cdm, "temp_emulation_prefix"))
+    # try to drop the temp emulation tables
+    purrr::walk(tempEmulationTablesToDrop,
+                ~tryCatch(DBI::dbRemoveTable(con, inSchema(schema, ., dbms = dbms(con))),
+                          error = function(e) invisible(NULL)))
+  }
 }
 
 #' @rdname cdmDisconnect

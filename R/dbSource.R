@@ -114,9 +114,18 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   # check source and name
   source <- attr(x, "tbl_source")
   con <- attr(source, "dbcon")
+  cdm - attr(x, "cdm_reference")
+
+  checkmate::assertClass(cdm, "cdm_reference")
+  checkmate::assertTRUE(DBI::dbIsValid(con))
 
   if (dbms(con) == "spark" & isTRUE(temporary)) {
-    rlang::abort("Temporary tables on are not supported when using Spark. Set `temporary = FALSE`.")
+    prefix <- attr(cdm, "temp_emulation_prefix")
+    if (is.null(prefix)) {
+      rlang::abort("temp_emulation_prefix is missing! Please open an issue at https://github.com/darwin-eu/CDMConnector")
+    }
+    name <- paste0(prefix, name)
+    temporary <- FALSE
   }
 
   if (is.null(source)) cli::cli_abort("table source not found.")
