@@ -227,7 +227,7 @@ test_that("write_schema argument specification works", {
 })
 
 test_that("schema specification with . works", {
-  # skip("manual test")
+  skip("manual test")
   con <- DBI::dbConnect(odbc::odbc(),
                         SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
                         UID = Sys.getenv("SNOWFLAKE_USER"),

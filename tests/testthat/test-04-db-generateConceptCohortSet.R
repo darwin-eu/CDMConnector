@@ -499,6 +499,7 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
 
 
 test_that("attrition columns are correct", {
+  skip_if_not_installed("Capr")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main")
 
@@ -507,27 +508,38 @@ test_that("attrition columns are correct", {
                                      name = "cohort1")
 
 
-  ch <- Capr::cohort(
-    entry = Capr::entry(Capr::drugExposure(Capr::cs(1127433, name = "acetaminophen")))
-  )
-
-  cdm <- generate_cohort_set(cdm,
-                             cohort_set = list(acetaminophen = ch),
-                             name = "cohort2")
-
-
   cohort_set <- read_cohort_set(system.file("cohorts1", package = "CDMConnector"))[1,]
 
   cdm <- generate_cohort_set(cdm,
                              cohort_set = cohort_set,
-                             name = "cohort3")
+                             name = "cohort2")
 
   expected_colnames <- c("cohort_definition_id", "number_records", "number_subjects",
                          "reason_id", "reason", "excluded_records", "excluded_subjects")
 
   expect_equal(expected_colnames, colnames(attrition(cdm$cohort1)))
   expect_equal(expected_colnames, colnames(attrition(cdm$cohort2)))
-  expect_equal(expected_colnames, colnames(attrition(cdm$cohort3)))
+
+  DBI::dbDisconnect(con, shutdown = T)
+})
+
+
+test_that("attrition columns are correct", {
+  skip_if_not_installed("Capr")
+  skip_on_cran()
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdm_from_con(con, "main", "main")
+
+  ch <- Capr::cohort(
+    entry = Capr::entry(Capr::drugExposure(Capr::cs(1127433, name = "acetaminophen")))
+  )
+
+  cdm <- generate_cohort_set(cdm,
+                             cohort_set = list(acetaminophen = ch),
+                             name = "cohort")
+
+
+  expect_equal(expected_colnames, colnames(attrition(cdm$cohort)))
 
   DBI::dbDisconnect(con, shutdown = T)
 })
