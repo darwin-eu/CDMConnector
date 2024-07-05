@@ -9,7 +9,7 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   server = "~/Desktop/synthea-covid19-10k-achilles.duckdb"
 )
 
-debugonce(Achilles::achilles)
+# debugonce(Achilles::achilles)
 
 Achilles::achilles(
   connectionDetails,

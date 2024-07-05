@@ -72,7 +72,7 @@ p1 <- collect(cdm1$observation_period) %>% arrange(person_id, observation_period
 waldo::compare(p0, p1)
 
 
-debugonce(IncidencePrevalence::generateDenominatorCohortSet)
+# debugonce(IncidencePrevalence::generateDenominatorCohortSet)
 cdm <- IncidencePrevalence::generateDenominatorCohortSet(
   cdm = cdm,
   name = "denom"
@@ -132,7 +132,7 @@ testIncidencePrevalence <- function(con, cdm_schema, write_schema) {
     name = cohortTableName
   )
 
-  debugonce(IncidencePrevalence::generateDenominatorCohortSet)
+  # debugonce(IncidencePrevalence::generateDenominatorCohortSet)
 
   cdm <- IncidencePrevalence::generateDenominatorCohortSet(
     cdm = cdm,
