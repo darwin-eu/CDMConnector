@@ -247,7 +247,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
         unlist()
 
       DBI::dbCreateTable(con,
-                         inSchema("main", specs$cdmTableName[i], dbms = dbms(con)),
+                         .inSchema("main", specs$cdmTableName[i], dbms = dbms(con)),
                          fields = fields)
 
       cols <- paste(glue::glue('"{names(fields)}"'), collapse = ", ")
