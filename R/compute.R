@@ -39,7 +39,7 @@
   if (name %in% existingTables) {
     if (overwrite) {
       # DBI::dbRemoveTable(x$src$con, DBI::SQL(fullNameQuoted))
-      DBI::dbRemoveTable(x$src$con, inSchema(schema, name, dbms = dbms(x$src$con)))
+      DBI::dbRemoveTable(x$src$con, .inSchema(schema, name, dbms = dbms(x$src$con)))
     } else {
       rlang::abort(paste(fullNameQuoted, "already exists.",
                          "Set overwrite = TRUE to recreate it."))
@@ -73,7 +73,7 @@
 
   DBI::dbExecute(x$src$con, sql)
 
-  dplyr::tbl(x$src$con, inSchema(schema = schema, table = name, dbms = dbms(x$src$con)))
+  dplyr::tbl(x$src$con, .inSchema(schema = schema, table = name, dbms = dbms(x$src$con)))
 }
 
 #' Run a dplyr query and add the result set to an existing
@@ -137,7 +137,7 @@ appendPermanent <- function(x, name, schema = NULL) {
   }
   sql <- glue::glue("{insertStatment} {fullNameQuoted} {dbplyr::sql_render(x)}")
   DBI::dbExecute(x$src$con, sql)
-  dplyr::tbl(x$src$con, inSchema(schema, name, dbms = dbms(x$src$con)))
+  dplyr::tbl(x$src$con, .inSchema(schema, name, dbms = dbms(x$src$con)))
 }
 
 
@@ -231,8 +231,8 @@ computeQuery <- function(x,
   checkmate::assertLogical(temporary, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
 
-  if (nchar(dbplyr::sql_render(x)) > 10000) {
-    rlang::warn("Your SQL query is over 10,000 characters which can cause issues on some database platforms!\nTry calling computeQuery earlier in your pipeline.")
+  if (nchar(dbplyr::sql_render(x)) > 20000) {
+    rlang::warn("Your SQL query is over 20,000 characters which can cause issues on some database platforms!\nTry calling computeQuery earlier in your pipeline.")
   }
 
   if (isFALSE(temporary)) {

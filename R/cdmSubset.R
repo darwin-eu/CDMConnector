@@ -294,22 +294,21 @@ cdmSubset <- function(cdm, personId) {
 
   writeSchema <- cdmWriteSchema(cdm)
   if (is.null(writeSchema)) rlang::abort("write_schema is required for subsetting a cdm!")
-  assertWriteSchema(cdm)
   con <- cdmCon(cdm)
 
   prefix <- unique_prefix()
   DBI::dbWriteTable(con,
-                    name = inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)),
+                    name = .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)),
                     value = data.frame(person_id = as.integer(personId)),
                     overwrite = TRUE)
 
   # Note temporary = TRUE in dbWriteTable does not work on all dbms but we want a temp table here.
 
-  person_subset <- dplyr::tbl(con, inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con))) %>%
+  person_subset <- dplyr::tbl(con, .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con))) %>%
     dplyr::rename_all(tolower) %>% # just in case
     compute(name = glue::glue("person_subset_{prefix}"), temporary = TRUE)
 
-  DBI::dbRemoveTable(con, inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)))
+  DBI::dbRemoveTable(con, .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)))
 
   cdm_sample_person(cdm, person_subset)
 }

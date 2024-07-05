@@ -32,11 +32,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
   existingTables <- list_tables(con, writeSchema)
 
   if (name %in% existingTables) {
-    DBI::dbRemoveTable(con, inSchema(writeSchema, name, dbms(con)))
+    DBI::dbRemoveTable(con, .inSchema(writeSchema, name, dbms(con)))
   }
 
   DBI::dbCreateTable(con,
-                     name = inSchema(writeSchema, name, dbms(con)),
+                     name = .inSchema(writeSchema, name, dbms(con)),
                      fields = c(
                        cohort_definition_id = "INT",
                        subject_id = "BIGINT",
@@ -51,11 +51,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     nm <- paste0(name, "_inclusion")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
+      DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm, dbms(con)),
+                       name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
                          rule_sequence = "INT",
@@ -66,11 +66,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     nm <- paste0(name, "_inclusion_result") # used for attrition
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
+      DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm, dbms(con)),
+                       name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
                          inclusion_rule_mask = "INT",
@@ -81,11 +81,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     nm <- paste0(name, "_inclusion_stats")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
+      DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm, dbms(con)),
+                       name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
                          rule_sequence = "INT",
@@ -99,11 +99,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     nm <- paste0(name, "_summary_stats")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
+      DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm, dbms(con)),
+                       name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
                          base_count = "INT",
@@ -114,11 +114,11 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     nm <- paste0(name, "_censor_stats")
 
     if (nm %in% existingTables) {
-      DBI::dbRemoveTable(con, inSchema(writeSchema, nm, dbms(con)))
+      DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
     DBI::dbCreateTable(con,
-                       name = inSchema(writeSchema, nm, dbms(con)),
+                       name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
                          lost_count = "INT")

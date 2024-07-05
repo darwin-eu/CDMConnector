@@ -91,7 +91,6 @@ generateConceptCohortSet <- function(cdm,
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
   assertTables(cdm, "observation_period", empty.ok = FALSE)
-  assertWriteSchema(cdm)
 
   # check name ----
   checkmate::assertLogical(overwrite, len = 1, any.missing = FALSE)
@@ -189,7 +188,7 @@ generateConceptCohortSet <- function(cdm,
   tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
   DBI::dbWriteTable(cdmCon(cdm),
-                    name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
+                    name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
                     value = df,
                     overwrite = TRUE)
 
@@ -198,7 +197,7 @@ generateConceptCohortSet <- function(cdm,
   }
 
   # realize full list of concepts ----
-  concepts <- dplyr::tbl(cdmCon(cdm), inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))) %>%
+  concepts <- dplyr::tbl(cdmCon(cdm), .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))) %>%
     dplyr::rename_all(tolower)
 
   if (any(df$include_descendants)) {
@@ -213,7 +212,7 @@ generateConceptCohortSet <- function(cdm,
         dplyr::union_all(
           dplyr::tbl(
             cdmCon(cdm),
-            inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))
+            .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))
           ) %>%
           dplyr::select(dplyr::any_of(c(
             "cohort_definition_id", "cohort_name", "concept_id", "is_excluded",
@@ -235,7 +234,7 @@ generateConceptCohortSet <- function(cdm,
 
   on.exit({
     if (DBI::dbIsValid(cdmCon(cdm))) {
-      DBI::dbRemoveTable(cdmCon(cdm), name = inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+      DBI::dbRemoveTable(cdmCon(cdm), name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
     }},
     add = TRUE
   )
@@ -354,8 +353,8 @@ generateConceptCohortSet <- function(cdm,
       # TODO order_by = .data$cohort_start_date
       {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
       cohort_collapse() %>%
-      dplyr::mutate(cohort_start_date = !!asDate(.data$cohort_start_date),
-                    cohort_end_date = !!asDate(.data$cohort_end_date)) %>%
+      dplyr::mutate(cohort_start_date = as.Date(.data$cohort_start_date),
+                    cohort_end_date = as.Date(.data$cohort_end_date)) %>%
       dplyr::compute(name = name, temporary = FALSE, overwrite = overwrite)
   }
 

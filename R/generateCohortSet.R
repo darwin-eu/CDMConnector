@@ -236,7 +236,7 @@ generateCohortSet <- function(cdm,
   for (x in paste0(name, c("", "_count", "_set", "_attrition"))) {
     if (x %in% existingTables) {
       if (overwrite) {
-        DBI::dbRemoveTable(con, inSchema(write_schema, x, dbms = dbms(con)))
+        DBI::dbRemoveTable(con, .inSchema(write_schema, x, dbms = dbms(con)))
       } else {
         cli::cli_abort("The cohort table {paste0(prefix, name)} already exists.\nSpecify overwrite = TRUE to overwrite it.")
       }
@@ -428,7 +428,7 @@ generateCohortSet <- function(cdm,
     generate(i)
   }
 
-  cohort_ref <- dplyr::tbl(con, inSchema(write_schema, name, dbms = dbms(con)))
+  cohort_ref <- dplyr::tbl(con, .inSchema(write_schema, name, dbms = dbms(con)))
 
   # Create attrition attribute ----
   if (computeAttrition) {
@@ -736,14 +736,14 @@ computeAttritionTable <- function(cdm,
 
   if (paste0(cohortStem, "_attrition") %in% listTables(con, schema = schema)) {
     if (overwrite) {
-      DBI::dbRemoveTable(con, inSchema(schema, paste0(cohortStem, "_attrition"), dbms = dbms(con)))
+      DBI::dbRemoveTable(con, .inSchema(schema, paste0(cohortStem, "_attrition"), dbms = dbms(con)))
     } else {
       rlang::abort(paste0(cohortStem, "_attrition already exists in the database. Set overwrite = TRUE."))
     }
   }
 
   # Bring the inclusion result table to R memory
-  inclusionResult <- dplyr::tbl(con, inSchema(schema, inclusionResultTableName, dbms(con))) %>%
+  inclusionResult <- dplyr::tbl(con, .inSchema(schema, inclusionResultTableName, dbms(con))) %>%
     dplyr::collect() %>%
     dplyr::rename_all(tolower) %>%
     dplyr::mutate(inclusion_rule_mask = as.numeric(.data$inclusion_rule_mask))
@@ -770,13 +770,13 @@ computeAttritionTable <- function(cdm,
       cohortTableName <- cohortStem
       attrition <- dplyr::tibble(
         cohort_definition_id = id,
-        number_records = dplyr::tbl(con, inSchema(schema, cohortTableName, dbms(con))) %>%
+        number_records = dplyr::tbl(con, .inSchema(schema, cohortTableName, dbms(con))) %>%
           dplyr::rename_all(tolower) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::tally() %>%
           dplyr::pull("n") %>%
           as.numeric(),
-        number_subjects = dplyr::tbl(con, inSchema(schema, cohortTableName, dbms(con))) %>%
+        number_subjects = dplyr::tbl(con, .inSchema(schema, cohortTableName, dbms(con))) %>%
           dplyr::rename_all(tolower) %>%
           dplyr::filter(.data$cohort_definition_id == id) %>%
           dplyr::select("subject_id") %>%
@@ -838,10 +838,10 @@ computeAttritionTable <- function(cdm,
 
   # upload attrition table to database
   DBI::dbWriteTable(con,
-                    name = inSchema(schema, paste0(cohortStem, "_attrition"), dbms = dbms(con)),
+                    name = .inSchema(schema, paste0(cohortStem, "_attrition"), dbms = dbms(con)),
                     value = attrition)
 
-  dplyr::tbl(con, inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con))) %>%
+  dplyr::tbl(con, .inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con))) %>%
     dplyr::rename_all(tolower)
 }
 

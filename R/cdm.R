@@ -277,7 +277,7 @@ cdm_from_con <- function(con,
 #' @importFrom dplyr tbl
 tbl.db_cdm <- function(src, schema, name, ...) {
   con <- attr(src, "dbcon")
-  fullName <- inSchema(schema = schema, table = name, dbms = dbms(con))
+  fullName <- .inSchema(schema = schema, table = name, dbms = dbms(con))
   x <- dplyr::tbl(src = con, fullName) |>
     dplyr::rename_all(tolower) |>
     omopgenerics::newCdmTable(src = src, name = tolower(name))
@@ -320,7 +320,7 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
   }
 
   cdm <- purrr::map(
-    cdm_tables, ~dplyr::tbl(con, inSchema(cdm_schema, ., dbms(con))) %>%
+    cdm_tables, ~dplyr::tbl(con, .inSchema(cdm_schema, ., dbms(con))) %>%
                       dplyr::rename_all(tolower)) %>%
     rlang::set_names(tolower(cdm_tables))
 
@@ -441,20 +441,20 @@ verify_write_access <- function(con, write_schema, add = NULL) {
   # Note: ROracle does not support integer round trip
   suppressMessages(
     DBI::dbWriteTable(con,
-                      name = inSchema(schema = write_schema, table = tablename, dbms = dbms(con)),
+                      name = .inSchema(schema = write_schema, table = tablename, dbms = dbms(con)),
                       value = df1,
                       overwrite = TRUE)
   )
 
   withr::with_options(list(databaseConnectorIntegerAsNumeric = FALSE), {
-    df2 <- dplyr::tbl(con, inSchema(write_schema, tablename, dbms = dbms(con))) %>%
+    df2 <- dplyr::tbl(con, .inSchema(write_schema, tablename, dbms = dbms(con))) %>%
       dplyr::collect() %>%
       as.data.frame() %>%
       dplyr::rename_all(tolower) %>% # dbWriteTable can create uppercase column names on snowflake
       dplyr::select("chr_col", "numeric_col") # bigquery can reorder columns
   })
 
-  DBI::dbRemoveTable(con, inSchema(write_schema, tablename, dbms = dbms(con)))
+  DBI::dbRemoveTable(con, .inSchema(write_schema, tablename, dbms = dbms(con)))
 
   if (tablename %in% list_tables(con, write_schema)) {
     cli::cli_inform("Write access verified but temp table `{name}` was not properly dropped!")
@@ -861,7 +861,7 @@ cdmDisconnect <- function(cdm) {
     tempEmulationTablesToDrop <- stringr::str_subset(tbls, attr(cdm, "temp_emulation_prefix"))
     # try to drop the temp emulation tables
     purrr::walk(tempEmulationTablesToDrop,
-                ~tryCatch(DBI::dbRemoveTable(con, inSchema(schema, ., dbms = dbms(con))),
+                ~tryCatch(DBI::dbRemoveTable(con, .inSchema(schema, ., dbms = dbms(con))),
                           error = function(e) invisible(NULL)))
   }
 }

@@ -50,7 +50,14 @@ NULL
 #' @return A DBI::Id that represents a qualified table and schema
 #' @export
 inSchema <- function(schema, table, dbms = NULL) {
-  lifecycle::deprecate_soft("1.4.1", "CDMConnector::inSchema()", "dbplyr::in_schema()")
+  # TODO deprecate this function after removing it from all tests
+  # lifecycle::deprecate_soft("1.4.1", "CDMConnector::inSchema()", "dbplyr::in_schema()")
+  .inSchema(schema, table, dbms)
+}
+
+# internal function
+.inSchema <- function(schema, table, dbms = NULL) {
+  # lifecycle::deprecate_soft("1.4.1", "CDMConnector::inSchema()", "dbplyr::in_schema()")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 3, null.ok = TRUE)
   checkmate::assertCharacter(table, len = 1)
   checkmate::assertCharacter(dbms, len = 1, null.ok = TRUE)
@@ -263,7 +270,7 @@ execute_ddl <- function(con, cdm_schema, cdm_version = "5.3", dbms = "duckdb", t
       dplyr::pull(.data$col) %>%
       unlist()
 
-    DBI::dbCreateTable(con, inSchema(cdm_schema, paste0(prefix, tables[i]), dbms = dbms(con)), fields = fields)
+    DBI::dbCreateTable(con, .inSchema(cdm_schema, paste0(prefix, tables[i]), dbms = dbms(con)), fields = fields)
   }
 }
 
