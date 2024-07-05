@@ -13,5 +13,8 @@ cdm_disconnect(cdm)
 \item{cdm}{cdm reference}
 }
 \description{
-Disconnect the connection of the cdm object
+This function will disconnect from the database as well as drop
+"temporary" tables that were created on database systems that do not support
+actual temporary tables. Currently temp tables are emulated on
+Spark/Databricks systems.
 }
