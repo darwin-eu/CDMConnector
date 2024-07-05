@@ -51,6 +51,7 @@ jobs:
         run: |
             install.packages("knitr")
             install.packages("rmarkdown")
+            install.packages("testthat")
         shell: Rscript {0}
 
       - name: Check that suggested packages are not installed

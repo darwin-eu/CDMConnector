@@ -112,12 +112,12 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       #     slug: ablack3/CDMConnector
 
-      - name: Test coverage
-        if: runner.os == 'macOS'
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: |
-          install.packages("covr")
-          covr::codecov()
-        shell: Rscript {0}
+      # - name: Test coverage
+      #   if: runner.os == 'macOS'
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      #   run: |
+      #     install.packages("covr")
+      #     covr::codecov()
+      #   shell: Rscript {0}
 
