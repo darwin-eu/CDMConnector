@@ -50,6 +50,7 @@ jobs:
       - name: Install R packages
         run: |
             install.packages("knitr")
+            install.packages("rmarkdown")
         shell: Rscript {0}
 
       - name: Check that suggested packages are not installed
