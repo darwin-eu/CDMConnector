@@ -294,7 +294,7 @@ generateConceptCohortSet <- function(cdm,
                                                          !!dateadd(df$start_date, 1))) %>%
       # silently ignore cdm records where end date is before start.
       # Another reasonable option could be to set end to start if end is before start.
-      dplyr::filter(cohort_start_date <= cohort_end_date)
+      dplyr::filter(cohort_start_date <= .data$cohort_end_date)
   }
 
   if (length(domains) == 0) {

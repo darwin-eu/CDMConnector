@@ -99,6 +99,7 @@
 #'
 #'
 #' @importFrom dplyr all_of matches starts_with ends_with contains
+#' @importFrom stats rpois
 #' @export
 cdm_from_con <- function(con,
                          cdm_schema,
@@ -213,7 +214,7 @@ cdm_from_con <- function(con,
 
   # on spark we use permanent tables prefixed with this whenever the user asks for temp tables
   attr(cdm, "temp_emulation_prefix") <- paste0(
-    "temp", Sys.getpid() + rpois(1, as.integer(Sys.time())) %% 1e6, "_")
+    "temp", Sys.getpid() + stats::rpois(1, as.integer(Sys.time())) %% 1e6, "_")
 
   write_schema_tables <- listTables(con, schema = write_schema)
 
