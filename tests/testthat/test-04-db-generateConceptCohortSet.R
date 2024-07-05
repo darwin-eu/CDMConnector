@@ -499,7 +499,7 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
 
 
 test_that("attrition columns are correct", {
-  skip_if_not_installed("Capr")
+  skip_if_not("duckdb" %in% dbToTest)
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main")
 
@@ -526,6 +526,7 @@ test_that("attrition columns are correct", {
 
 test_that("attrition columns are correct", {
   skip_if_not_installed("Capr")
+  skip_if_not("duckdb" %in% dbToTest)
   skip_on_cran()
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main")
