@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 1.4.0
+Version: 1.4.1
 Authors@R: c(
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
@@ -21,9 +21,10 @@ Depends:
     R (>= 4.0)
 Imports: 
     dplyr,
+    dbplyr (>= 2.5.0),
     DBI (>= 0.3.0),
     checkmate,
-    dbplyr (>= 2.4.0),
+    dbplyr (>= 2.5.0),
     cli,
     purrr,
     rlang,
@@ -67,7 +68,7 @@ Enhances:
     arrow,
     Capr
 Config/testthat/edition: 3
-Config/testthat/parallel: true
+Config/testthat/parallel: false
 VignetteBuilder: knitr
 Additional_repositories: https://OHDSI.github.io/drat
 Collate: 

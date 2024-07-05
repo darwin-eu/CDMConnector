@@ -1,6 +1,6 @@
 ## R CMD check results
 
-This is a new minor release that includes several bug fixes.
+This is a new patch release that fixes issues on Databricks/Spark.
 
 One NOTE is expected:
 Suggests or Enhances not in mainstream repositories: Capr

@@ -1,3 +1,10 @@
+# CDMConnector 1.4.1
+
+- Get all tests passing on Databricks/Spark using odbc driver
+- Emulate temporary tables on Databricks/Spark when compute is called with temporary = TRUE
+- soft deprecate asDate in favor of as.Date
+- soft deprecate assertWriteSchema since cdm object are now required to always have a write schema
+
 # CDMConnector 1.4.0
 
 - fix issue on cran server
