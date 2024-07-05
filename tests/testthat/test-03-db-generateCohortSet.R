@@ -2,7 +2,7 @@
 test_cohort_generation <- function(con, cdm_schema, write_schema) {
   skip_if_not_installed("CirceR")
 
-  cdm <- cdm_from_con(con, cdm_schema, write_schema)
+  cdm <- cdm_from_con(con, cdm_schema, write_schema, cdm_name = "test cdm")
 
   # test read cohort set with a cohortsToCreate.csv
   expect_error(readCohortSet(path = "does_not_exist"))

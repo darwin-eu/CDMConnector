@@ -1,9 +1,11 @@
 
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = cdm_schema,
+    con = con, cdm_name = "eunomia",
+    cdm_schema = cdm_schema,
     write_schema = write_schema
   )
+
   # insert table
   tab <- datasets::cars
   nam <- inSchema(schema = write_schema, table = "x_test")
@@ -24,9 +26,11 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_true("x_test" %in% listSourceTables(cdm = cdm))
   expect_no_error(cdm <- readSourceTable(cdm = cdm, name = "x_test"))
   expect_true("x_test" %in% names(cdm))
+
+  # row order is not deterministic
   expect_identical(
-    dplyr::as_tibble(cars),
-    cdm[["x_test"]] |> dplyr::collect() |> dplyr::as_tibble()
+    dplyr::as_tibble(cars) |> dplyr::arrange(speed, dist),
+    cdm[["x_test"]] |> dplyr::collect() |> dplyr::as_tibble() |> dplyr::arrange(speed, dist)
   )
   expect_no_error(cdm <- dropSourceTable(cdm = cdm, "x_test"))
   expect_false("x_test" %in% names(cdm))

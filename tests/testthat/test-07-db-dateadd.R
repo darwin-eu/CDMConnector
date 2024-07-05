@@ -23,7 +23,7 @@ test_date_functions <- function(con, write_schema) {
                          overwrite = TRUE)}
 
     date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con))) %>%
-      dplyr::mutate(date1 = !!asDate(date1), date2 = !!asDate(date2)) %>%
+      dplyr::mutate(date1 = as.Date(date1), date2 = as.Date(date2)) %>%
       compute(temporary = FALSE, name = "tmpdate", overwrite = TRUE)
 
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con)))
@@ -79,7 +79,7 @@ test_date_functions <- function(con, write_schema) {
         as.character(.data$m), "-",
         as.character(.data$d)
       )) %>%
-      dplyr::mutate(date_from_parts = !!asDate(date_from_parts)) %>%
+      dplyr::mutate(date_from_parts = as.Date(date_from_parts)) %>%
       dplyr::collect() %>%
       dplyr::distinct()
 
@@ -204,13 +204,21 @@ test_clock_functions <- function(con, write_schema) {
                         date8 = as.Date(add_days(date1, m)))
   }
 
+  if (dbms(con) == "spark") {
+    # clock::add_years does not work on spark. must use add_days
+    # https://github.com/tidyverse/dbplyr/pull/1511 fixes it
+    # for now we can always use add_days
+    df <- dplyr::mutate(df, date3 = as.Date(clock::add_days(date1, 1L*365L)))
+  }
+
   if (!(dbms(con) %in% c("duckdb", "redshift"))) {
     df <- dplyr::mutate(df,
                         date5 = date_build(2020L, 1L, 1L),
                         date6 = date_build(y, m, d))
   }
 
-  df <- dplyr::collect(df)
+  df <- dplyr::collect(df) %>%
+    dplyr::mutate_if(~class(.) == "integer64", as.integer)
 
   expect_equal(unique(df$y2), 2000)
   expect_equal(unique(df$m2), 12)
@@ -218,7 +226,7 @@ test_clock_functions <- function(con, write_schema) {
 
   # some of these translations are failing on certain database platforms
   if (!(dbms(con) %in% c("duckdb"))) {
-    expect_equal(df$dif_days, c(365, 366, 364, 31))
+    expect_equal(sort(df$dif_days), sort(c(365, 366, 364, 31))) # row order is not preserved on snowflake
     expect_equal(unique(df$date3), as.Date("2001-12-01"))
     expect_equal(unique(df$date4), as.Date("2000-12-02"))
     expect_equal(unique(df$date8), as.Date("2000-12-11"))
@@ -232,7 +240,7 @@ test_clock_functions <- function(con, write_schema) {
 
   DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
 }
-
+# dbtype = "spark"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - date functions"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()

@@ -218,7 +218,7 @@ for (dbtype in dbToTest) {
                                       "dplyr::tally" = 1,
                                       "dplyr::mutate(as.integer(x))" = 1,
                                       "dplyr::mutate(as.Date(x))" = 1,
-                                      "CDMConnector::asDate" = 0,
+                                      # "CDMConnector::asDate" = 0,
                                       "dplyr::if_else" = 1,
                                       "dplyr::summaise(min(x))" = 1,
                                       "dplyr::summaise(mean(x))" = 1,

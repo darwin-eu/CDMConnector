@@ -76,6 +76,7 @@ test_that("assert_tables works", {
 test_that("assert_write_schema", {
   skip_if_not_installed("duckdb", "0.6")
   skip_if_not(eunomia_is_available())
+  skip_if_not("duckdb" %in% dbToTest)
 
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
 
@@ -84,7 +85,9 @@ test_that("assert_write_schema", {
   }, "maine does not exist!")
 
   cdm <- cdm_from_con(con, "main", write_schema = "main")
-  result <- assert_write_schema(cdm)
+  expect_warning({
+    result <- assert_write_schema(cdm)
+  }, "deprecated")
   expect_equal(result, cdm)
 
   DBI::dbDisconnect(con, shutdown = TRUE)

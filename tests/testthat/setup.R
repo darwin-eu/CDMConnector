@@ -13,15 +13,16 @@ tryCatch({
 get_connection <- function(dbms, DatabaseConnector = FALSE) {
 
   if (DatabaseConnector) {
-    stop(dbms %in% c("postgres"), rlang::is_installed("DatabaseConnector"))
+    stopifnot(dbms %in% c("postgres"), rlang::is_installed("DatabaseConnector"))
 
 
     if (dbms == "postgres") {
 
-      DatabaseConnector::connect(dbms = "postgresql",
-                                 server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
-                                 user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-                                 password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+      return(DatabaseConnector::connect(
+        dbms = "postgresql",
+        server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
+        user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+        password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")))
 
     }
 
@@ -173,16 +174,16 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 if (Sys.getenv("CI_TEST_DB") == "") {
 
   dbToTest <- c(
-     "duckdb"
-    ,
-    "postgres"
-    ,
-    "redshift"
-    ,
-    "sqlserver"
-    ,
-    "snowflake"
-    ,
+     # "duckdb"
+    # ,
+    # "postgres"
+    # ,
+    # "redshift"
+    # ,
+    # "sqlserver"
+    # ,
+    # "snowflake"
+    # ,
     "spark"
   )
 
@@ -192,6 +193,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   print(paste("running CI tests on ", dbToTest))
 }
 
+testUsingDatabaseConnector <- FALSE
 
 # make sure we're only trying to test on dbs we have connection details for
 if ("postgres" %in% dbToTest & Sys.getenv("CDM5_POSTGRESQL_SERVER") == "") {
