@@ -268,15 +268,6 @@ cdm$gibleed2 <- cdm$gibleed2 %>%
 attrition(cdm$gibleed2) 
 ```
 
-We could visualise attrition using a package like VisR
-```{r, fig.width= 7, fig.height=10}
-library(visR)
-gibleed2_attrition <- CDMConnector::attrition(cdm$gibleed2)  %>% 
-    dplyr::select(Criteria = "reason", `Remaining N` = "number_subjects")
-class(gibleed2_attrition) <- c("attrition", class(gibleed2_attrition))
-visr(gibleed2_attrition)
-```
-
 
 In the above example we built a cohort table from a concept set. The cohort essentially captures patient-time based off of the presence or absence of OMOP standard concept IDs. We then manually applied an inclusion criteria and recorded a new attrition record in the cohort. To learn more about this approach to building cohorts check out the [PatientProfiles](https://darwin-eu-dev.github.io/PatientProfiles/) R package.
 

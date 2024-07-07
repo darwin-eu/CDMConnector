@@ -61,7 +61,6 @@ Suggests:
     testthat (>= 3.0.0),
     pool,
     snakecase,
-    visR,
     palmerpenguins,
     tictoc
 Enhances:

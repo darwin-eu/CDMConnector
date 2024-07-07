@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,7 +70,8 @@
 <span>  cdm_version <span class="op">=</span> <span class="st">"5.3"</span>,</span>
 <span>  cdm_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  achilles_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  .soft_validation <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  .soft_validation <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  write_prefix <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">cdmFromCon</span><span class="op">(</span></span>
@@ -81,7 +82,8 @@
 <span>  cdmVersion <span class="op">=</span> <span class="st">"5.3"</span>,</span>
 <span>  cdmName <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  achillesSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  .softValidation <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  .softValidation <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  writePrefix <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -124,8 +126,16 @@ that contains achilles tables.</p></dd>
 
 
 <dt>.soft_validation, .softValidation</dt>
-<dd><p>If TRUE fewer validation checks will
-be performed.</p></dd>
+<dd><p>Normally the observation period table should not
+have overlapping observation periods for a single person. If <code>.softValidation</code> is <code>TRUE</code> the
+validation check that looks for overlapping observation periods will be skipped.
+Other analytic packages may break or produce incorrect results if <code>softValidation</code> is <code>TRUE</code> and
+the observation period table contains overlapping observation periods.</p></dd>
+
+
+<dt>write_prefix, writePrefix</dt>
+<dd><p>A prefix that will be added to all tables created in the write_schema. This
+can be used to create namespace in your database write_schema for your tables.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -134,7 +144,65 @@ be performed.</p></dd>
 
 <p>A list of dplyr database table references pointing to CDM tables</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI compliant database connection.
+In addition to the connection the user needs to pass in the schema in the database where the cdm data can
+be found as well as another schema where the user has write access to create tables. Nearly all
+downstream analytic packages need the ability to create temporary data in the database so the
+write_schema is required.</p>
+<p>Some database systems have the idea of a catalog or a compound schema with two components.
+See examples below for how to pass in catalogs and schemas.</p>
+<p>You can also specify a <code>write_prefix</code>. This is a short character string that will be added
+to any tables created in the <code>write_schema</code> effectively a namespace in the schema just for your
+analysis. This makes it easy to ensure you do not overwrite someone elses tables if the write_schema is shared
+and allows you to easily clean up tables by dropping all tables that start with the prefix.
+The prefix is considered part of the write_schema since it is effectively a sub-schema. See examples.</p>
+    </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="eunomiaDir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># minimal example</span></span></span>
+<span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdm_from_con</span><span class="op">(</span><span class="va">con</span>,</span></span>
+<span class="r-in"><span>                    cdm_schema <span class="op">=</span> <span class="st">"main"</span>,</span></span>
+<span class="r-in"><span>                    write_schema <span class="op">=</span> <span class="st">"scratch"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdm_from_con</span><span class="op">(</span><span class="va">con</span>,</span></span>
+<span class="r-in"><span>                    cdm_schema <span class="op">=</span> <span class="st">"main"</span>,</span></span>
+<span class="r-in"><span>                    write_schema <span class="op">=</span> <span class="st">"scratch"</span>,</span></span>
+<span class="r-in"><span>                    write_prefix <span class="op">=</span> <span class="st">"tmp_"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># There are a few differen options for using catalogs</span></span></span>
+<span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdm_from_con</span><span class="op">(</span><span class="va">con</span>,</span></span>
+<span class="r-in"><span>                    cdm_schema <span class="op">=</span> <span class="st">"catalog.main"</span>,</span></span>
+<span class="r-in"><span>                    write_schema <span class="op">=</span> <span class="st">"catalog.scratch"</span>,</span></span>
+<span class="r-in"><span>                    write_prefix <span class="op">=</span> <span class="st">"tmp_"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdm_from_con</span><span class="op">(</span><span class="va">con</span>,</span></span>
+<span class="r-in"><span>                    cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>catalog <span class="op">=</span> <span class="st">"catalog"</span>, schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    write_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>catalog <span class="op">=</span> <span class="st">"catalog"</span>, schema <span class="op">=</span> <span class="st">"scratch"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdm_from_con</span><span class="op">(</span><span class="va">con</span>,</span></span>
+<span class="r-in"><span>                    cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"catalog"</span>, <span class="st">"main"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    write_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"catalog"</span>, <span class="st">"scratch"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdm_from_con</span><span class="op">(</span><span class="va">con</span>,</span></span>
+<span class="r-in"><span>                    cdm_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>catalog <span class="op">=</span> <span class="st">"catalog"</span>, schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                    write_schema <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>catalog <span class="op">=</span> <span class="st">"catalog"</span>,</span></span>
+<span class="r-in"><span>                                     schema <span class="op">=</span> <span class="st">"scratch"</span>,</span></span>
+<span class="r-in"><span>                                     prefix <span class="op">=</span> <span class="st">"tmp_"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

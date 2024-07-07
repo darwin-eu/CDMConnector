@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -122,8 +122,9 @@ associate results with a particular cdm. We can use <code>cdmName</code>
 name.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmName.html">cdmName</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "eunomia"</span></span>
-<span><span class="fu"><a href="../reference/cdmName.html">cdm_name</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "eunomia"</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmName.html">cdm_name</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "eunomia"</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -131,7 +132,7 @@ name.</p>
 </h3>
 <p>The OMOP CDM has various versions. We also have an attribute giving
 the version of the cdm we have connected to.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu-dev.github.io/omopgenerics/reference/cdmVersion.html" class="external-link">cdmVersion</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "5.3"</span></span></code></pre></div>
 </div>
@@ -140,16 +141,16 @@ the version of the cdm we have connected to.</p>
 </h3>
 <p>We also have an attribute identifying the database connection
 underlying the cdm reference.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;duckdb_connection 4eca0 driver=&lt;duckdb_driver dbdir='/private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/Rtmpa5CpIk/file17ed127044b2e.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;duckdb_connection fe5a0 driver=&lt;duckdb_driver dbdir='/private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/RtmpOlOTFG/file128865c99b33d.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
 <p>This can be useful, for example, if we want to make use of DBI
 functions to work with the database. For example we could use
 <code>dbListTables</code> to list the names of remote tables accessible
 through the connection, <code>dbListFields</code> to list the field
 names of a specific remote table, and <code>dbGetQuery</code> to returns
 the result of a query</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListTables.html" class="external-link">dbListTables</a></span><span class="op">(</span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "care_site"             "cdm_source"            "concept"              </span></span>
 <span><span class="co">#&gt;  [4] "concept_ancestor"      "concept_class"         "concept_relationship" </span></span>
@@ -162,8 +163,9 @@ the result of a query</p>
 <span><span class="co">#&gt; [25] "observation_period"    "payer_plan_period"     "person"               </span></span>
 <span><span class="co">#&gt; [28] "procedure_occurrence"  "provider"              "relationship"         </span></span>
 <span><span class="co">#&gt; [31] "source_to_concept_map" "specimen"              "visit_detail"         </span></span>
-<span><span class="co">#&gt; [34] "visit_occurrence"      "vocabulary"</span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListFields.html" class="external-link">dbListFields</a></span><span class="op">(</span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>, <span class="st">"person"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [34] "visit_occurrence"      "vocabulary"</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListFields.html" class="external-link">dbListFields</a></span><span class="op">(</span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>, <span class="st">"person"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "person_id"                   "gender_concept_id"          </span></span>
 <span><span class="co">#&gt;  [3] "year_of_birth"               "month_of_birth"             </span></span>
 <span><span class="co">#&gt;  [5] "day_of_birth"                "birth_datetime"             </span></span>
@@ -172,8 +174,9 @@ the result of a query</p>
 <span><span class="co">#&gt; [11] "care_site_id"                "person_source_value"        </span></span>
 <span><span class="co">#&gt; [13] "gender_source_value"         "gender_source_concept_id"   </span></span>
 <span><span class="co">#&gt; [15] "race_source_value"           "race_source_concept_id"     </span></span>
-<span><span class="co">#&gt; [17] "ethnicity_source_value"      "ethnicity_source_concept_id"</span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>, <span class="st">"SELECT * FROM person LIMIT 5"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [17] "ethnicity_source_value"      "ethnicity_source_concept_id"</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>, <span class="st">"SELECT * FROM person LIMIT 5"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   person_id gender_concept_id year_of_birth month_of_birth day_of_birth</span></span>
 <span><span class="co">#&gt; 1         6              8532          1963             12           31</span></span>
 <span><span class="co">#&gt; 2       123              8507          1950              4           12</span></span>
@@ -216,7 +219,7 @@ the result of a query</p>
 also have various attributes that can be useful for subsequent
 analysis.</p>
 <p>Here we create a cohort table with a single cohort.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateConceptCohortSet.html">generateConceptCohortSet</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, </span>
 <span>                                conceptSet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"gi_bleed"</span> <span class="op">=</span> <span class="fl">192671</span>,</span>
 <span>                                                  <span class="st">"celecoxib"</span> <span class="op">=</span> <span class="fl">1118084</span><span class="op">)</span>, </span>
@@ -228,17 +231,17 @@ analysis.</p>
 <p>We have a cohort set attribute that gives details on the settings
 associated with the cohorts (along with utility functions to make it
 easier to access this attribute).</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu-dev.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cohortSet.html">cohort_set</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span> </span></code></pre></div>
 <p>We have a cohort_count attribute with counts for each of the
 cohorts.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu-dev.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cohort_count.html">cohort_count</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span></code></pre></div>
 <p>And we also have an attribute, cohort attrition, with a summary of
 attrition when creating the cohorts.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cohortAttrition.html">cohortAttrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cohortAttrition.html">cohort_attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -247,7 +250,7 @@ attrition when creating the cohorts.</p>
 </h3>
 <p>Say we create a custom GI bleed cohort with the standard cohort
 structure</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">gi_bleed</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">192671</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cohort_definition_id <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
@@ -263,7 +266,7 @@ structure</p>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; Database: DuckDB v0.10.1 [root@Darwin 23.0.0:R 4.3.1//private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/Rtmpa5CpIk/file17ed127044b2e.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB v1.0.0 [root@Darwin 23.0.0:R 4.3.1//private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/RtmpOlOTFG/file128865c99b33d.duckdb]</span></span>
 <span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</span></span>
 <span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 273, 61, 351, 579, 549, 116, 163, 304, 326, 285, …</span></span>
 <span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …</span></span>
@@ -272,7 +275,7 @@ structure</p>
 <code>newCohortTable</code> function. The minimum requirement for this
 is that we also define the cohort set to associate with our set of
 custom cohorts.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">GI_bleed_cohort_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>cohort_definition_id <span class="op">=</span> <span class="fl">1</span>, cohort_name <span class="op">=</span> <span class="st">"custom_gi_bleed"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">gi_bleed</span> <span class="op">&lt;-</span> <span class="fu">omopgenerics</span><span class="fu">::</span><span class="fu"><a href="https://darwin-eu-dev.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span></span>
@@ -282,18 +285,20 @@ custom cohorts.</p>
 with it as if it had been created by
 <code>generateConceptCohortSet</code>. This will mean that it can be
 used by analytic packages designed to work with cdm cohorts.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu-dev.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gi_bleed</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id cohort_name    </span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 custom_gi_bleed</span></span>
-<span><span class="fu"><a href="https://darwin-eu-dev.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gi_bleed</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 custom_gi_bleed</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu-dev.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gi_bleed</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span>
-<span><span class="fu"><a href="../reference/cohortAttrition.html">cohortAttrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gi_bleed</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cohortAttrition.html">cohortAttrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gi_bleed</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: `cohortAttrition()` was deprecated in CDMConnector 1.3.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `attrition()` instead.</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
