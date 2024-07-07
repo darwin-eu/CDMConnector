@@ -539,6 +539,8 @@ test_that("attrition columns are correct", {
                              cohort_set = list(acetaminophen = ch),
                              name = "cohort")
 
+  expected_colnames <- c("cohort_definition_id", "number_records", "number_subjects",
+                         "reason_id", "reason", "excluded_records", "excluded_subjects")
 
   expect_equal(expected_colnames, colnames(attrition(cdm$cohort)))
 
