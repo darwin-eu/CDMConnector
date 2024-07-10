@@ -856,7 +856,7 @@ cdmDisconnect <- function(cdm) {
   con <- cdmCon(cdm)
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
-  if (dbms(cdm) == "spark") {
+  if (dbms(con) == "spark") {
     schema <- attr(cdm, "write_schema")
     tbls <- list_tables(con, schema = schema)
     tempEmulationTablesToDrop <- stringr::str_subset(tbls, attr(cdm, "temp_emulation_prefix"))

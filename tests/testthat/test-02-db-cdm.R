@@ -217,13 +217,13 @@ test_that("adding achilles", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-test_that("write_schema argument specification works", {
+test_that("write_schema argument specification and cdm_disconnect works", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main", write_prefix = "tmp_")
 
   expect_equal(attr(cdm, "write_schema"), c(schema = "main", prefix = "tmp_"))
 
-  DBI::dbDisconnect(con, shutdown = TRUE)
+  cdm_disconnect(cdm)
 })
 
 test_that("schema specification with . works", {
