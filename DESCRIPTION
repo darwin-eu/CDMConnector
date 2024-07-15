@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 1.4.1
+Version: 1.5.0
 Authors@R: c(
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
@@ -64,12 +64,10 @@ Suggests:
     palmerpenguins,
     tictoc
 Enhances:
-    arrow,
-    Capr
+    arrow
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 VignetteBuilder: knitr
-Additional_repositories: https://OHDSI.github.io/drat
 Collate: 
     'CDMConnector-package.R'
     'Eunomia.R'

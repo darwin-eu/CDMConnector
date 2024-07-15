@@ -123,9 +123,7 @@ readCohortSet <- read_cohort_set
 #'   specified.
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables.
-#' @param cohort_set,cohortSet Can be a cohortSet object created with `readCohortSet()`,
-#' a single Capr cohort definition,
-#' or a named list of Capr cohort definitions.
+#' @param cohort_set,cohortSet Can be a cohortSet object created with `readCohortSet()`
 #' @param compute_attrition,computeAttrition Should attrition be computed? TRUE (default) or FALSE
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE (default) or FALSE
@@ -155,27 +153,33 @@ generateCohortSet <- function(cdm,
   rlang::check_installed("CirceR")
   rlang::check_installed("SqlRender")
 
+
   if (!is.data.frame(cohortSet)) {
-    if (!is.list(cohortSet)) {
-      rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
-    }
-
-    checkmate::assertList(cohortSet,
-                          types = "Cohort",
-                          min.len = 1,
-                          names = "strict",
-                          any.missing = FALSE)
-
-    cohortSet <- dplyr::tibble(
-      cohort_definition_id = seq_along(cohortSet),
-      cohort_name = names(cohortSet),
-      cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)),
-      json = purrr::map_chr(cohortSet, generics::compile)
-    )
-    class(cohortSet) <- c("CohortSet", class(cohortSet))
+    rlang::abort("`cohortSet` must be a dataframe from the output of `readCohortSet()`.")
   }
 
+  # if (!is.data.frame(cohortSet)) {
+  #   if (!is.list(cohortSet)) {
+  #     rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
+  #   }
+  #
+  #   checkmate::assertList(cohortSet,
+  #                         types = "Cohort",
+  #                         min.len = 1,
+  #                         names = "strict",
+  #                         any.missing = FALSE)
+  #
+  #   cohortSet <- dplyr::tibble(
+  #     cohort_definition_id = seq_along(cohortSet),
+  #     cohort_name = names(cohortSet),
+  #     cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)),
+  #     json = purrr::map_chr(cohortSet, generics::compile)
+  #   )
+  #   class(cohortSet) <- c("CohortSet", class(cohortSet))
+  # }
+
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
+  stopifnot(all(c("cohort_definition_id", "cohort_name", "cohort", "json") %in% names(cohortSet)))
 
   cli::cli_alert_info("Generating {nrow(cohortSet)} cohort{?s}")
   withr::local_options(list("cli.progress_show_after" = 0, "cli.progress_clear" = FALSE))

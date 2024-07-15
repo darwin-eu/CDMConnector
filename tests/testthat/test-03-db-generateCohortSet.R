@@ -73,38 +73,39 @@ for (dbtype in dbToTest) {
   })
 }
 
-test_that("Generation from Capr Cohorts", {
-  skip_if_not(eunomia_is_available())
-  skip_if_not_installed("Capr", minimum_version = "2.0.5")
-  skip_if_not_installed("duckdb")
-  skip_if_not_installed("CirceR")
-  skip_if_not("duckdb" %in% dbToTest)
-
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
-  )
-
-  gibleed_cohort_definition <- Capr::cohort(
-    entry = Capr::conditionOccurrence(Capr::cs(Capr::descendants(192671), name = "test")),
-    attrition = Capr::attrition(
-      "no RA" = Capr::withAll(
-        Capr::exactly(0,
-                      Capr::conditionOccurrence(Capr::cs(Capr::descendants(80809), name = "test")),
-                      Capr::duringInterval(Capr::eventStarts(-Inf, Inf))))
-    )
-  )
-
-  cdm <- generateCohortSet(
-    cdm,
-    list(gibleed = gibleed_cohort_definition),
-    name = "gibleed",
-    overwrite = TRUE
-  )
-
-  expect_gt(nrow(dplyr::collect(cdm$gibleed)), 10)
-  DBI::dbDisconnect(con, shutdown = TRUE)
-})
+# can't depend on Capr until it's on CRAN so removing this test
+# test_that("Generation from Capr Cohorts", {
+#   skip_if_not(eunomia_is_available())
+#   skip_if_not_installed("Capr", minimum_version = "2.0.5")
+#   skip_if_not_installed("duckdb")
+#   skip_if_not_installed("CirceR")
+#   skip_if_not("duckdb" %in% dbToTest)
+#
+#   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+#   cdm <- cdm_from_con(
+#     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+#   )
+#
+#   gibleed_cohort_definition <- Capr::cohort(
+#     entry = Capr::conditionOccurrence(Capr::cs(Capr::descendants(192671), name = "test")),
+#     attrition = Capr::attrition(
+#       "no RA" = Capr::withAll(
+#         Capr::exactly(0,
+#                       Capr::conditionOccurrence(Capr::cs(Capr::descendants(80809), name = "test")),
+#                       Capr::duringInterval(Capr::eventStarts(-Inf, Inf))))
+#     )
+#   )
+#
+#   cdm <- generateCohortSet(
+#     cdm,
+#     list(gibleed = gibleed_cohort_definition),
+#     name = "gibleed",
+#     overwrite = TRUE
+#   )
+#
+#   expect_gt(nrow(dplyr::collect(cdm$gibleed)), 10)
+#   DBI::dbDisconnect(con, shutdown = TRUE)
+# })
 
 test_that("duckdb - phenotype library generation", {
   skip("manual test")

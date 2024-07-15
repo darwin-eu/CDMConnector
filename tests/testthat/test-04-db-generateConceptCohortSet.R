@@ -102,42 +102,91 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
 
   # default (with descendants) ----
   # if (rlang::is_installed("Capr")) {
-  if (FALSE) { # TODO: capr concept generation failing on sql server
-    # we need Capr to include descendants
-    cdm <- generateConceptCohortSet(
-      cdm = cdm,
-      conceptSet = list(gibleed = Capr::cs(Capr::descendants(192671), name = "gibleed")),
-      name = "gibleed",
-      overwrite = TRUE
-    )
+  # if (FALSE) { # TODO: capr concept generation failing on sql server
+  #   # we need Capr to include descendants
+  #   cdm <- generateConceptCohortSet(
+  #     cdm = cdm,
+  #     conceptSet = list(gibleed = Capr::cs(Capr::descendants(192671), name = "gibleed")),
+  #     name = "gibleed",
+  #     overwrite = TRUE
+  #   )
+  #
+  #   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
+  #     dplyr::filter(cohort_name %in% c("gibleed_default_with_descendants", "GiBleed_default_with_descendants")) %>%
+  #     dplyr::mutate(cohort_definition_id = 1L)
+  #
+  #   stopifnot(nrow(cohort) == 1)
+  #
+  #   cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
+  #
+  #   expected <- dplyr::collect(cdm$gibleed2) %>%
+  #     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
+  #     dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
+  #
+  #   actual <- dplyr::collect(cdm$gibleed) %>%
+  #     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
+  #     dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
+  #
+  #   setdiff(unique(expected$subject_id), unique(actual$subject_id))
+  #   setdiff(unique(actual$subject_id), unique(expected$subject_id))
+  #   expect_true(nrow(expected) > 0)
+  #   expect_true(nrow(actual) == nrow(expected))
+  #
+  #   # note cohort table should be the same
+  #   # but some attributes might differ (e.g. cohort attrition)
+  #   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
+  #   expect_equal(cohortCount(cdm$gibleed),
+  #                cohortCount(cdm$gibleed2))
+  # }
 
-    cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
-      dplyr::filter(cohort_name %in% c("gibleed_default_with_descendants", "GiBleed_default_with_descendants")) %>%
-      dplyr::mutate(cohort_definition_id = 1L)
 
-    stopifnot(nrow(cohort) == 1)
+  # use omopgenerics conceptSetExpression to include descendants
 
-    cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
+  # Capr::cs(Capr::descendants(192671), name = "gibleed")
+  conceptSet <- omopgenerics::newConceptSetExpression(
+    list("gibleed" = dplyr::tibble(
+      "concept_id" = 192671,
+      "excluded" = FALSE,
+      "descendants" = TRUE,
+      "mapped" = FALSE
+    ))
+  )
 
-    expected <- dplyr::collect(cdm$gibleed2) %>%
-      dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-      dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
+  cdm <- generateConceptCohortSet(
+    cdm = cdm,
+    conceptSet = conceptSet,
+    name = "gibleed",
+    overwrite = TRUE
+  )
 
-    actual <- dplyr::collect(cdm$gibleed) %>%
-      dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
-      dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
+  cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
+    dplyr::filter(cohort_name %in% c("gibleed_default_with_descendants", "GiBleed_default_with_descendants")) %>%
+    dplyr::mutate(cohort_definition_id = 1L)
 
-    setdiff(unique(expected$subject_id), unique(actual$subject_id))
-    setdiff(unique(actual$subject_id), unique(expected$subject_id))
-    expect_true(nrow(expected) > 0)
-    expect_true(nrow(actual) == nrow(expected))
+  stopifnot(nrow(cohort) == 1)
 
-    # note cohort table should be the same
-    # but some attributes might differ (e.g. cohort attrition)
-    expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
-    expect_equal(cohortCount(cdm$gibleed),
-                 cohortCount(cdm$gibleed2))
-  }
+  cdm <- generateCohortSet(cdm, cohortSet = cohort, name = "gibleed2", overwrite = TRUE)
+
+  expected <- dplyr::collect(cdm$gibleed2) %>%
+    dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
+
+  actual <- dplyr::collect(cdm$gibleed) %>%
+    dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date, .data$cohort_end_date) %>%
+    dplyr::mutate_if(~ "integer64" %in% class(.), as.integer)
+
+  # setdiff(unique(expected$subject_id), unique(actual$subject_id))
+  # setdiff(unique(actual$subject_id), unique(expected$subject_id))
+  expect_equal(sort(unique(expected$subject_id)), sort(unique(actual$subject_id)))
+  expect_true(nrow(expected) > 0)
+  expect_true(nrow(actual) == nrow(expected))
+
+  # note cohort table should be the same
+  # but some attributes might differ (e.g. cohort attrition)
+  expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
+  expect_equal(cohortCount(cdm$gibleed),
+               cohortCount(cdm$gibleed2))
+
 
   # all occurrences (no descendants) ----
   cdm <- generateConceptCohortSet(
@@ -310,6 +359,8 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # clean up
   dropTable(cdm, dplyr::contains("gibleed"))
 }
+
+# dbtype = "duckdb"
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - generateConceptCohortSet"), {
@@ -531,12 +582,10 @@ test_that("attrition columns are correct", {
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
   cdm <- cdm_from_con(con, "main", "main")
 
-  ch <- Capr::cohort(
-    entry = Capr::entry(Capr::drugExposure(Capr::cs(1127433, name = "acetaminophen")))
-  )
+  cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
 
   cdm <- generate_cohort_set(cdm,
-                             cohort_set = list(acetaminophen = ch),
+                             cohort_set = cohort_set,
                              name = "cohort")
 
   expected_colnames <- c("cohort_definition_id", "number_records", "number_subjects",

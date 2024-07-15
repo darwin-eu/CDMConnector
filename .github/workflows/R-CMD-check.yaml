@@ -65,8 +65,9 @@ jobs:
         run: |
             install.packages("rJava")
             install.packages("RJSONIO")
-            install.packages("CirceR", repos = "https://OHDSI.github.io/drat", type = "source")
-            install.packages("Capr", repos = "https://OHDSI.github.io/drat", type = "source")
+            install.packages("CirceR")
+            # install.packages("CirceR", repos = "https://OHDSI.github.io/drat", type = "source")
+            # install.packages("Capr", repos = "https://OHDSI.github.io/drat", type = "source")
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2

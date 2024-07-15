@@ -32,7 +32,8 @@ generate_concept_cohort_set(
 \arguments{
 \item{cdm}{A cdm reference object created by \code{CDMConnector::cdmFromCon} or \code{CDMConnector::cdm_from_con}}
 
-\item{conceptSet, concept_set}{A named list of numeric vectors or Capr concept sets}
+\item{conceptSet, concept_set}{A named list of numeric vectors or a Concept Set Expression created
+\code{omopgenerics::newConceptSetExpression}}
 
 \item{name}{The name of the new generated cohort table as a character string}
 

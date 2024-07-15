@@ -111,49 +111,6 @@ cdm_gibleed <- cdm %>%
   cdm_subset_cohort(cohort_table = "study_cohorts")
 ```
 
-### Capr cohort definitions
-
-Capr allows us to use R code to create the same cohorts that can be created in Atlas. This is helpful when you need to create a large number of similar cohort definitions. Below we create a single Cohort definition with one inclusion criteria
-
-`generate_cohort_set` will accept a named list of Capr
-
-```{r}
-library(Capr)
-
-gibleed_concept_set <- cs(192671, name = "gibleed")
-
-gibleed_definition <- cohort(
-  entry = conditionOccurrence(gibleed_concept_set)
-)
-
-gibleed_male_definition <- cohort(
-  entry = conditionOccurrence(gibleed_concept_set, male())
-)
-
-# create a named list of Capr cohort definitions
-cohort_details = list(gibleed = gibleed_definition,
-                  gibleed_male = gibleed_male_definition)
-
-# generate cohorts
-cdm <- generate_cohort_set(
-  cdm,
-  cohort_set = cohort_details,
-  name = "gibleed" # name for the cohort table in the cdm
-)
-
-cdm$gibleed
-```
-
-We should get the exact same result from Capr and Atlas if the definitions are equivalent.
-
-Learn more about Capr at the package website <https://ohdsi.github.io/Capr/>.
-
-
-```{r}
-DBI::dbDisconnect(con, shutdown = TRUE)
-```
-
-
 ### Subset a cohort
 
 Suppose you have a generated cohort and you would like to create a new cohort that is a subset of the first. This can be done using the 

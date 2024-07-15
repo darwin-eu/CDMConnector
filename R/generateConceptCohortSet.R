@@ -49,7 +49,8 @@ table_refs <- function(domain_id) {
 #' observation domains, the the start date will be used as the end date.
 #'
 #' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
-#' @param conceptSet,concept_set A named list of numeric vectors or Capr concept sets
+#' @param conceptSet,concept_set A named list of numeric vectors or a Concept Set Expression created
+#' `omopgenerics::newConceptSetExpression`
 #' @param name The name of the new generated cohort table as a character string
 #' @param limit Include "first" (default) or "all" occurrences of events in the cohort
 #' \itemize{
@@ -118,11 +119,33 @@ generateConceptCohortSet <- function(cdm,
   }
 
   # check ConceptSet ----
-  checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet"), names = "named")
+  checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet", "data.frame"), names = "named")
   checkmate::assertList(conceptSet, min.len = 1, names = "named")
   CDMConnector::assert_tables(cdm, "concept")
 
-  if (methods::is(conceptSet[[1]], "ConceptSet")) {
+  if (methods::is(conceptSet, "conceptSetExpression")) {
+    # omopgenerics conceptSetExpression
+
+    df <- dplyr::tibble(cohort_definition_id = seq_along(conceptSet),
+                        cohort_name = names(conceptSet),
+                        df = conceptSet) %>%
+      tidyr::unnest(cols = df) %>%
+      dplyr::mutate(
+        "limit" = .env$limit,
+        "prior_observation" = .env$requiredObservation[1],
+        "future_observation" = .env$requiredObservation[2],
+        "end" = .env$end
+      ) %>%
+      dplyr::select(
+        "cohort_definition_id", "cohort_name", "concept_id",
+        "include_descendants" = "descendants",
+        "is_excluded" = "excluded",
+        # dplyr::any_of(c(
+        "limit", "prior_observation", "future_observation", "end"
+        # ))
+      )
+  } else if (methods::is(conceptSet[[1]], "ConceptSet")) {
+    # handling of Capr Concept set expressions.
     purrr::walk(conceptSet, ~checkmate::assertClass(., "ConceptSet"))
 
     df <- dplyr::tibble(cohort_definition_id = seq_along(conceptSet),
@@ -145,6 +168,7 @@ generateConceptCohortSet <- function(cdm,
       )
 
   } else {
+    # conceptSet should be a named list of int vectors
     # remove any empty concept sets
     conceptSet <- conceptSet[lengths(conceptSet) > 0]
     # conceptSet must be a named list of integer-ish vectors
