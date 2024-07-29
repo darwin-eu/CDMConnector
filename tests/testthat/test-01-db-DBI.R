@@ -24,12 +24,13 @@ test_dbi <- function(con, cdm_schema, write_schema) {
     #   "logical"
     # )
   # } else {
-    # DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df)
-    DBI::dbWriteTable(con, DBI::Id(write_schema, "temp_test"), df)
+    DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df)
+    # DBI::dbWriteTable(con, DBI::Id(write_schema, "temp_test"), df)
   # }
 
   expect_no_error({
-    DBI::dbWriteTable(con, DBI::Id(write_schema, "temp_test"), df, overwrite = T)
+    DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df, overwrite = T)
+    # DBI::dbWriteTable(con, DBI::Id(write_schema, "temp_test"), df, overwrite = T)
   })
 
   expect_true("temp_test" %in% list_tables(con, schema = write_schema))
