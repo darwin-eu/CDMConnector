@@ -13,8 +13,8 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 
   # TODO make sure that overwrite works
   if ("temp_test" %in% list_tables(con, write_schema)) {
-    # DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
-    DBI::dbRemoveTable(con, DBI::Id(write_schema, "temp_test"))
+    DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
+    # DBI::dbRemoveTable(con, DBI::Id(write_schema, "temp_test"))
   }
 
   # if (methods::is(con, "DatabaseConnectorConnection")) {
