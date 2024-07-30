@@ -71,7 +71,8 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 
   expect_true(nrow(person) == 1)
 
-  DBI::dbRemoveTable(con, DBI::Id(write_schema, "temp_test"))
+  # DBI::dbRemoveTable(con, DBI::Id(write_schema, "temp_test"))
+  DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
   # TODO add this test
   # DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "temp_test"))
   # expect_false("temp_test" %in% list_tables(con, schema = write_schema))
@@ -94,7 +95,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 }
 
 # dbToTest = c("")
-dbtype = "snowflake"
+# dbtype = "snowflake"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - dbi"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
