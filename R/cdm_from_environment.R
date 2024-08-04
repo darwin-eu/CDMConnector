@@ -69,6 +69,7 @@ cdm_from_environment <- function(write_prefix = "") {
             "DBMS_PORT",
             "DBMS_USERNAME",
             "DBMS_PASSWORD",
+            "DBMS_WAREHOUSE",
             "CDM_SCHEMA",
             "WRITE_SCHEMA")
 
@@ -90,9 +91,9 @@ cdm_from_environment <- function(write_prefix = "") {
     return(cdm)
   }
 
-  # "DBMS_CATALOG" is not required
+  # "DBMS_CATALOG" and "DBMS_WAREHOUSE" is not required
   for (v in vars) {
-    if (Sys.getenv(v) == "" && v != "DBMS_CATALOG") {
+    if (Sys.getenv(v) == "" && v != "DBMS_CATALOG" && v != "DBMS_WAREHOUSE") {
       cli::cli_abort("Environment variable {v} is required but not set!")
     }
   }
@@ -140,7 +141,7 @@ cdm_from_environment <- function(write_prefix = "") {
                           DATABASE  = Sys.getenv("DBMS_NAME"),
                           UID       = Sys.getenv("DBMS_USERNAME"),
                           PWD       = Sys.getenv("DBMS_PASSWORD"),
-                          WAREHOUSE = "COMPUTE_WH_XS")
+                          WAREHOUSE = Sys.getenv("DBMS_WAREHOUSE"))
 
     if (!DBI::dbIsValid(con)) {
       cli::cli_abort("Database connection failed!")
