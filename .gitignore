@@ -45,3 +45,5 @@ inst/doc
 # Local work files
 /scratch/
 /work/
+errorReportSql.txt
+*.DS_Store*

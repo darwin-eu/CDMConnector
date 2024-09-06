@@ -73,7 +73,7 @@
 #'                     write_schema = "scratch",
 #'                     write_prefix = "tmp_")
 #'
-#' # There are a few differen options for using catalogs
+#' # There are a few different options for using catalogs
 #' cdm <- cdm_from_con(con,
 #'                     cdm_schema = "catalog.main",
 #'                     write_schema = "catalog.scratch",
