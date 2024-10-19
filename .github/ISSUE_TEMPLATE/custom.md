@@ -1,10 +1,12 @@
 ---
-name: Custom issue template
-about: Describe this issue template's purpose here.
+name: Other
+about: Used to share something whioh is not a Bug or a Feature
 title: ''
 labels: ''
-assignees: ''
+assignees: 'PRijnbeek, ablack3'
+type: 'Task'
 
 ---
 
+**Clearly describe the issue**
 
