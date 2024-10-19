@@ -1,12 +1,12 @@
 ---
-name: Other
-about: Used to share something which is not a Bug or a Feature
+name: Documentation
+about: Use to share an improvement for the documention.
 title: ''
-labels: ''
+labels: 'Documentation'
 assignees: 'PRijnbeek, ablack3'
 type: 'Task'
 
 ---
 
-**Clearly describe the issue**
+**Clearly describe the requested improvement**
 
