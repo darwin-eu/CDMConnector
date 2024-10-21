@@ -81,6 +81,14 @@ read_cohort_set <- function(path) {
     dplyr::mutate(cohort_name_snakecase = snakecase::to_snake_case(.data$cohort_name)) %>%
     dplyr::select("cohort_definition_id", "cohort_name", "cohort", "json", "cohort_name_snakecase")
 
+  for (i in seq_len(nrow(cohortsToCreate))) {
+    first_chr <- substr(cohortsToCreate$cohort_name[i], 1, 1)
+    if (!grepl("[a-zA-Z]", first_chr)) {
+      cli::cli_abort("Cohort names must start with a letter but {cohortsToCreate$cohort_name[i]} does not.
+                     Rename the json file or use a CohortsToCreate.csv file to explicity set cohort names.")
+    }
+  }
+
   class(cohortsToCreate) <- c("CohortSet", class(cohortsToCreate))
   return(cohortsToCreate)
 }
@@ -330,7 +338,9 @@ generateCohortSet <- function(cdm,
         paste0("Inclusion_", 0:9))
 
       for (j in seq_along(tempTablesToDrop)) {
-        DBI::dbExecute(con, paste("drop table if exists", tempTablesToDrop[j]))
+        suppressMessages({
+          DBI::dbExecute(con, paste("drop table if exists", tempTablesToDrop[j]))
+        })
       }
 
       namesToQuote <- c("cohort_definition_id",
