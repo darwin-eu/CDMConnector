@@ -408,7 +408,7 @@ generateCohortSet <- function(cdm,
 
     # drop temp tables if they already exist
     drop_statements <- stringr::str_subset(sql, "DROP TABLE") %>%
-      stringr::str_replace("DROP TABLE", "DROP TABLE IF EXISTS") %>%
+      # stringr::str_replace("DROP TABLE", "DROP TABLE IF EXISTS") %>%
       purrr::map_chr(~SqlRender::translate(., dbms(con)))
 
     for (k in seq_along(drop_statements)) {
