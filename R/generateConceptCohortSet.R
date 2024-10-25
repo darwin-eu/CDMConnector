@@ -448,4 +448,3 @@ generate_concept_cohort_set <- function(cdm,
                            subsetCohortId = subset_cohort_id,
                            overwrite = overwrite)
 }
-

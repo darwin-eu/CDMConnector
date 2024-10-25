@@ -955,4 +955,3 @@ cdmWriteSchema <- function(cdm) {
 cdmCon <- function(cdm) {
   attr(attr(cdm, "cdm_source"), "dbcon")
 }
-
