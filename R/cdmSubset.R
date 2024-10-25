@@ -516,5 +516,3 @@ cdm_flatten <- function(cdm,
              domain = domain,
              includeConceptName = include_concept_name)
 }
-
-

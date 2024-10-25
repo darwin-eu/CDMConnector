@@ -397,6 +397,7 @@ generateCohortSet <- function(cdm,
       # issue with date add translation on spark
       sql <- stringr::str_replace_all(sql, "date_add", "dateadd")
       sql <- stringr::str_replace_all(sql, "DATE_ADD", "DATEADD")
+      sql <- stringr::str_replace_all(sql, "TRUNCATE TABLE", "DELETE FROM")
     }
 
     sql <- stringr::str_replace_all(sql, "\\s+", " ")

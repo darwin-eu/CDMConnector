@@ -309,4 +309,3 @@ eunomiaIsAvailable <- function(datasetName = "GiBleed",
   eunomia_is_available(dataset_name = datasetName,
                        cdm_version = cdmVersion)
 }
-

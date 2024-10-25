@@ -278,4 +278,3 @@ readSourceTable.db_cdm <- function(cdm, name) {
     dplyr::rename_all(tolower) |>
     omopgenerics::newCdmTable(src = cdm, name = tolower(name))
 }
-
