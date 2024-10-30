@@ -105,19 +105,19 @@ jobs:
             print(list.files(path.expand("~")))
          shell: Rscript {0}
 
-      # - name: Upload coverage reports to Codecov
-      #   if: runner.os == 'macOS'
-      #   uses: codecov/codecov-action@v4.0.1
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     slug: ablack3/CDMConnector
+       - name: Test coverage
+        if: runner.os == 'macOS'
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          install.packages("covr")
+          covr::codecov()
+        shell: Rscript {0}
 
-      # - name: Test coverage
-      #   if: runner.os == 'macOS'
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      #   run: |
-      #     install.packages("covr")
-      #     covr::codecov()
-      #   shell: Rscript {0}
+      - name: Upload coverage reports to Codecov
+        if: runner.os == 'macOS'
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: darwin-eu-dev/CDMConnector
 
