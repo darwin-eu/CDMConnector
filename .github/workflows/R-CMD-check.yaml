@@ -111,6 +111,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN_REPOS }}
         run: |
           install.packages("covr")
+          install.packages("xml2")
           covr::codecov()
         shell: Rscript {0}
 
