@@ -108,7 +108,7 @@ jobs:
       - name: Test coverage
         if: runner.os == 'macOS'
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN_REPOS }}
         run: |
           install.packages("covr")
           covr::codecov()
@@ -118,6 +118,6 @@ jobs:
         if: runner.os == 'macOS'
         uses: codecov/codecov-action@v4.0.1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN_REPOS }}
           slug: darwin-eu-dev/CDMConnector
 
