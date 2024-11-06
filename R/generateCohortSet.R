@@ -407,18 +407,18 @@ generateCohortSet <- function(cdm,
       stringr::str_subset("^;$", negate = TRUE)
 
     # drop temp tables if they already exist
-      drop_statements <- c(
-        stringr::str_subset(sql, "DROP TABLE") %>%
-          stringr::str_subset("IF EXISTS", negate = TRUE) %>%
-          stringr::str_replace("DROP TABLE", "DROP TABLE IF EXISTS"),
-
-        stringr::str_subset(sql, "DROP TABLE IF EXISTS")
-      ) %>%
-      purrr::map_chr(~SqlRender::translate(., dbms(con)))
-
-    for (k in seq_along(drop_statements)) {
-      DBI::dbExecute(con, drop_statements[k], immediate = TRUE)
-    }
+    #   drop_statements <- c(
+    #     stringr::str_subset(sql, "DROP TABLE") %>%
+    #       stringr::str_subset("IF EXISTS", negate = TRUE) %>%
+    #       stringr::str_replace("DROP TABLE", "DROP TABLE IF EXISTS"),
+    #
+    #     stringr::str_subset(sql, "DROP TABLE IF EXISTS")
+    #   ) %>%
+    #   purrr::map_chr(~SqlRender::translate(., dbms(con)))
+    #
+    # for (k in seq_along(drop_statements)) {
+    #   DBI::dbExecute(con, drop_statements[k], immediate = TRUE)
+    # }
 
     for (k in seq_along(sql)) {
       # cli::cat_rule(glue::glue("sql {k} with {nchar(sql[k])} characters."))
