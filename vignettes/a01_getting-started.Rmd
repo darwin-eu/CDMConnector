@@ -135,7 +135,7 @@ For example a "cohort definition" is a set of criteria that persons must satisfy
 
 ## Saving query results to the database
 
-Sometime it is helpful to save query results to the database instead of reading the result into R. dplyr provides the `compute` function but due to differences between database systems CDMConnector has needed to export a its own method that handles the slight differences.  Internally CDMConnector runs `compute_query` function that is tested across the OHDSI supported database platforms.
+Sometimes it is helpful to save query results to the database instead of reading the result into R. dplyr provides the `compute` function but due to differences between database systems CDMConnector has needed to export its own method that handles the slight differences.  Internally CDMConnector runs `compute_query` function that is tested across the OHDSI supported database platforms.
 
 If we are writing data to the CDM database we need to add one more argument when creating our cdm reference object, the "write_schema". This is a schema in the database where you have write permissions. Typically this should be a separate schema from the "cdm_schema".
 
