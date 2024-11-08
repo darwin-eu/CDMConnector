@@ -255,3 +255,16 @@ test_that("readCohortSet works from working directory", {
   })
   expect_equal(nrow(cohortSet), 2)
 })
+
+test_that("invalid cohort table names give an error", {
+  skip_if_not_installed("CirceR")
+  skip_if_not_installed("duckdb")
+  skip_if_not("duckdb" %in% dbToTest)
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  cdm <- cdmFromCon(con, "main", "main")
+  cohortSet <- readCohortSet(system.file("cohorts1", package = "CDMConnector", mustWork = TRUE))
+  expect_error(cdm <- generateCohortSet(cdm, cohortSet, name = "4test", overwrite = TRUE))
+  expect_error(cdm <- generateCohortSet(cdm, cohortSet, name = "Test", overwrite = TRUE))
+  expect_error(cdm <- generateCohortSet(cdm, cohortSet, name = "te$t", overwrite = TRUE))
+  cdmDisconnect(cdm)
+})

@@ -130,7 +130,8 @@ readCohortSet <- read_cohort_set
 #' @param cdm A cdm reference created by CDMConnector. write_schema must be
 #'   specified.
 #' @param name Name of the cohort table to be created. This will also be used
-#' as a prefix for the cohort attribute tables.
+#' as a prefix for the cohort attribute tables. This must be a lowercase character string
+#' that starts with a letter and only contains letters, numbers, and underscores.
 #' @param cohort_set,cohortSet Can be a cohortSet object created with `readCohortSet()`
 #' @param compute_attrition,computeAttrition Should attrition be computed? TRUE (default) or FALSE
 #' @param overwrite Should the cohort table be overwritten if it already
@@ -191,12 +192,19 @@ generateCohortSet <- function(cdm,
 
   cli::cli_alert_info("Generating {nrow(cohortSet)} cohort{?s}")
   withr::local_options(list("cli.progress_show_after" = 0, "cli.progress_clear" = FALSE))
-
-
   checkmate::assertClass(cdm, "cdm_reference")
   con <- cdmCon(cdm)
   checkmate::assertTRUE(DBI::dbIsValid(con))
-  checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
+  checkmate::assertCharacter(name, len = 1, min.chars = 1, any.missing = FALSE)
+  if (name != tolower(name)) {
+    rlang::abort("Cohort table name {name} must be lowercase!")
+  }
+  if (!grepl("^[a-z]", substr(name, 1, 1))) {
+    cli::cli_abort("Cohort table name {name} must start with a letter!")
+  }
+  if (!grepl("^[a-z][a-z0-9_]*$", name)) {
+    cli::cli_abort("Cohort table name {name} must only contain letters, numbers, and underscores!")
+  }
   checkmate::assertLogical(computeAttrition, len = 1)
   checkmate::assertLogical(overwrite, len = 1)
 
