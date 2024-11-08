@@ -62,9 +62,16 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
   pb <- cli::cli_progress_bar(format = "[:bar] :percent :elapsed",
                               type = "download")
 
+  # synpuf is the only dataset we have in both 5.3 and 5.4 at the moment.
+  if (datasetName != "synpuf-1k") {
+    url = glue::glue("https://example-data.ohdsi.dev/{datasetName}.zip")
+  } else {
+    url = glue::glue("https://example-data.ohdsi.dev/synpuf-1k_{cdmVersion}.zip")
+  }
+
   withr::with_options(list(timeout = 5000), {
     utils::download.file(
-      url = glue::glue("https://example-data.ohdsi.dev/{datasetName}.zip"),
+      url = url,
       destfile = file.path(pathToData, zipName),
       mode = "wb",
       method = "auto",
@@ -118,6 +125,7 @@ exampleDatasets <- function() {
     "synthea-veteran_prostate_cancer-10k",
     "synthea-veterans-10k",
     "synthea-weight_loss-10k",
+    "synpuf-1k",
     "empty_cdm")
 }
 
@@ -141,9 +149,35 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' Create a copy of an example OMOP CDM dataset
 #'
 #' @description
-#' Creates a copy of a Eunomia database, and returns the path to the new database file.
-#' If the dataset does not yet exist on the user's computer it will attempt to download the source data
-#' to the the path defined by the EUNOMIA_DATA_FOLDER environment variable.
+#' Eunomia is an OHDSI project that provides several example OMOP CDM datasets for testing and development.
+#' This function creates a copy of a Eunomia database in \href{https://duckdb.org/}{duckdb} and returns
+#' the path to the new database file. If the dataset does not yet exist on the user's computer it
+#' will attempt to download the source data to the the path defined by the EUNOMIA_DATA_FOLDER environment variable.
+#'
+#' @details
+#' Most of the Eunomia datasets available in CDMConnector are from the Synthea project. Synthea is an open-source
+#' synthetic patient generator that models the medical history of synthetic patients. The Synthea datasets are
+#' generated using the Synthea tool and then converted to the OMOP CDM format using the OHDSI
+#' ETL-Synthea project \url{https://ohdsi.github.io/ETL-Synthea/}. Currently the synthea datasets
+#' are only available in the OMOP CDM v5.3 format. See \url{https://synthetichealth.github.io/synthea/}
+#' for details on the Synthea project.
+#'
+#' In addition to Synthea, the Eunomia project provides the CMS Synthetic Public Use Files (SynPUFs) in both
+#' 5.3 and 5.4 OMOP CDM formats. This data is synthetic US Medicare claims data mapped to OMOP CDM format.
+#' The OMOP CDM has a set of optional metadata tables, called Achilles tables, that
+#' include pre-computed analytics about the entire dataset such as record and person counts.
+#' The Eunomia Synpuf datasets include the Achilles tables.
+#'
+#' Eunomia also provides empty cdms that can be used as a starting point for creating a new example CDM.
+#' This is useful for creating test data for studies or analytic packages.
+#' The empty CDM includes the vocabulary tables and all OMOP CDM tables but
+#' the clinical tables are empty and need to be populated with data. For additional information on
+#' creating small test CDM datasets see \url{https://ohdsi.github.io/omock} and
+#' \url{https://darwin-eu.github.io/TestGenerator/}.
+#'
+#' To contribute synthetic observational health data to the Eunomia project please
+#' open an issue at \url{https://github.com/OHDSI/Eunomia/issues}
+#'
 #'
 #' @param datasetName,dataset_name One of "GiBleed" (default),
 #' "synthea-allergies-10k",
@@ -165,7 +199,9 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' "synthea-total_joint_replacement-10k",
 #' "synthea-veteran_prostate_cancer-10k",
 #' "synthea-veterans-10k",
-#' "synthea-weight_loss-10k"
+#' "synthea-weight_loss-10k",
+#' "empty_cdm",
+#' "synpuf-1k"
 #'
 #' @param cdmVersion,cdm_version The OMOP CDM version. Must be "5.3" or "5.4".
 #' @param databaseFile,database_file The full path to the new copy of the example CDM dataset.
@@ -173,8 +209,23 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' @return The file path to the new Eunomia dataset copy
 #' @examples
 #' \dontrun{
-#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
-#'  DBI::dbDisconnect(con, shutdown = TRUE)
+#'
+#'  # The defaults GiBleed dataset is a small dataset that is useful for testing
+#'  library(CDMConnector)
+#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#'  cdm <- cdm_from_con(con, "main", "main")
+#'  cdmDisconnect(cdm)
+#'
+#'  # Synpuf datasets include the Achilles tables
+#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.3"))
+#'  cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+#'  cdmDisconnect(cdm)
+#'
+#'  # Currently the only 5.4 dataset is synpuf-1k
+#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.4"))
+#'  cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+#'  cdmDisconnect(cdm)
+#'
 #' }
 #' @export
 eunomiaDir <- function(datasetName = "GiBleed",
@@ -225,34 +276,31 @@ eunomiaDir <- function(datasetName = "GiBleed",
     on.exit(suppressWarnings(DBI::dbDisconnect(con, shutdown = TRUE)), add = TRUE)
     on.exit(unlink(tempFileLocation), add = TRUE)
 
-    specs <- spec_cdm_field[[cdmVersion]] %>%
-      dplyr::mutate(cdmDatatype = dplyr::if_else(.data$cdmDatatype == "varchar(max)", "varchar(2000)", .data$cdmDatatype)) %>%
-      dplyr::mutate(cdmFieldName = dplyr::if_else(.data$cdmFieldName == '"offset"', "offset", .data$cdmFieldName)) %>%
-      dplyr::mutate(cdmDatatype = dplyr::case_when(
-        dbms(con) == "postgresql" & .data$cdmDatatype == "datetime" ~ "timestamp",
-        dbms(con) == "redshift" & .data$cdmDatatype == "datetime" ~ "timestamp",
-        TRUE ~ cdmDatatype)) %>%
-      tidyr::nest(col = -"cdmTableName") %>%
-      dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
+    specs <- omopgenerics::omopTableFields(cdmVersion) %>%
+      dplyr::filter(type %in% c("cdm_table", "achilles")) %>%
+      dplyr::mutate(cdm_datatype = dplyr::if_else(.data$cdm_datatype == "varchar(max)", "varchar(2000)", .data$cdm_datatype)) %>%
+      dplyr::mutate(cdm_field_name = dplyr::if_else(.data$cdm_field_name == '"offset"', "offset", .data$cdm_field_name)) %>%
+      tidyr::nest(col = -"cdm_table_name") %>%
+      dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdm_datatype), .$cdm_field_name)))
 
     files <- tools::file_path_sans_ext(basename(list.files(unzipLocation)))
-    tables <- specs$cdmTableName
+    tables <- specs$cdm_table_name
 
     for (i in cli::cli_progress_along(tables)) {
       if (isFALSE(tables[i] %in% files)) next
 
       fields <- specs %>%
-        dplyr::filter(.data$cdmTableName == specs$cdmTableName[i]) %>%
+        dplyr::filter(.data$cdm_table_name == specs$cdm_table_name[i]) %>%
         dplyr::pull(.data$col) %>%
         unlist()
 
       DBI::dbCreateTable(con,
-                         .inSchema("main", specs$cdmTableName[i], dbms = dbms(con)),
+                         .inSchema("main", specs$cdm_table_name[i], dbms = dbms(con)),
                          fields = fields)
 
       cols <- paste(glue::glue('"{names(fields)}"'), collapse = ", ")
 
-      table_path <- file.path(unzipLocation, paste0(specs$cdmTableName[i], ".parquet"))
+      table_path <- file.path(unzipLocation, paste0(specs$cdm_table_name[i], ".parquet"))
       sql <- glue::glue("INSERT INTO main.{tables[i]}({cols})
                          SELECT {cols} FROM '{table_path}'")
       DBI::dbExecute(con, sql)

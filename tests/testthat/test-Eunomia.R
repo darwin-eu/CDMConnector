@@ -55,6 +55,24 @@ test_that("empty cdm works", {
   DBI::dbDisconnect(con, shutdown = T)
 })
 
+test_that("synpuf-1k example data has achilles tables", {
+  skip_on_cran()
+  skip_on_ci() # datasets are large and take a while to download
+  skip_if_not_installed("duckdb")
+
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.3"))
+  cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+  expect_true(all(c("achilles_analysis", "achilles_results", "achilles_results_dist") %in% names(cdm)))
+  cdmDisconnect(cdm)
+  expect_true(eunomiaIsAvailable("synpuf-1k", "5.3"))
+
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.4"))
+  cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+  expect_true(all(c("achilles_analysis", "achilles_results", "achilles_results_dist") %in% names(cdm)))
+  cdmDisconnect(cdm)
+  expect_true(eunomiaIsAvailable("synpuf-1k", "5.4"))
+})
+
 test_that("requireEunomia", {
   withr::with_envvar(list("EUNOMIA_DATA_FOLDER" = ""), {
     expect_identical(Sys.getenv("EUNOMIA_DATA_FOLDER"), "")
@@ -62,7 +80,5 @@ test_that("requireEunomia", {
     expect_true(Sys.getenv("EUNOMIA_DATA_FOLDER") != "")
     expect_no_error(con <- duckdb::dbConnect(duckdb::duckdb(), eunomiaDir()))
     duckdb::dbDisconnect(conn = con)
-  })
-})
-
+ })
 
