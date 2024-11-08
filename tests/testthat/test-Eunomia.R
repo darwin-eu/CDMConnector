@@ -55,4 +55,14 @@ test_that("empty cdm works", {
   DBI::dbDisconnect(con, shutdown = T)
 })
 
+test_that("requireEunomia", {
+  withr::with_envvar(list("EUNOMIA_DATA_FOLDER" = ""), {
+    expect_identical(Sys.getenv("EUNOMIA_DATA_FOLDER"), "")
+    expect_no_error(requireEunomia())
+    expect_true(Sys.getenv("EUNOMIA_DATA_FOLDER") != "")
+    expect_no_error(con <- duckdb::dbConnect(duckdb::duckdb(), eunomiaDir()))
+    duckdb::dbDisconnect(conn = con)
+  })
+})
+
 

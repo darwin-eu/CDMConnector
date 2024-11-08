@@ -16,7 +16,7 @@ URL: https://darwin-eu.github.io/CDMConnector/, https://github.com/darwin-eu/CDM
 BugReports: https://github.com/darwin-eu/CDMConnector/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.0)
 Imports: 

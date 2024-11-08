@@ -310,3 +310,49 @@ eunomiaIsAvailable <- function(datasetName = "GiBleed",
                        cdm_version = cdmVersion)
 }
 
+
+#' Require eunomia to be available. The function makes sure that you can later
+#' create a eunomia database with `eunomiaDir()`.
+#'
+#' @param dataset_name,datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
+#' @param cdm_version,cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
+#'
+#' @return Path to eunomia database.
+#' @export
+#'
+requireEunomia <- function(datasetName = "GiBleed",
+                           cdmVersion = "5.3") {
+  # input check
+  omopgenerics::assertChoice(datasetName, exampleDatasets(), length = 1)
+  omopgenerics::assertChoice(cdmVersion, c("5.3", "5.4"), length = 1)
+
+  # set EUNOMIA_DATA_FOLDER if not defined before
+  if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {
+    Sys.setenv("EUNOMIA_DATA_FOLDER" = tempdir())
+    cli::cli_inform(c("i" = "`EUNOMIA_DATA_FOLDER` set to: {.path {Sys.getenv('EUNOMIA_DATA_FOLDER')}}."))
+  }
+
+  # create dir if it does not exist
+  if (!dir.exists(Sys.getenv("EUNOMIA_DATA_FOLDER"))) {
+    dir.create(Sys.getenv("EUNOMIA_DATA_FOLDER"), recursive = TRUE)
+    cli::cli_inform(c("i" = "folder {.path {Sys.getenv('EUNOMIA_DATA_FOLDER')}} created."))
+  }
+
+  # download eunomia if not downloaded before
+  if (!eunomiaIsAvailable(datasetName = datasetName, cdmVersion = cdmVersion)) {
+    downloadEunomiaData(
+      datasetName = datasetName,
+      cdmVersion = cdmVersion,
+      overwrite = TRUE
+    )
+  }
+
+  return(invisible(TRUE))
+}
+
+#' @rdname requireEunomia
+#' @export
+require_eunomia <- function(dataset_name = "GiBleed",
+                           cdm_version = "5.3") {
+  requireEunomia(datasetName = dataset_name, cdmVersion = cdm_version)
+}
