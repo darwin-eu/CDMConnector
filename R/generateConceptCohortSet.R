@@ -272,8 +272,8 @@ generateConceptCohortSet <- function(cdm,
     cdm <- insertTable(cdm = cdm,
                        name = name,
                        table = dplyr::tibble(
-                         cohort_definition_id = numeric(),
-                         subject_id = numeric(),
+                         cohort_definition_id = integer(),
+                         subject_id = integer(),
                          cohort_start_date = as.Date(character()),
                          cohort_end_date = as.Date(character())),
                        overwrite = overwrite)
@@ -404,13 +404,14 @@ generateConceptCohortSet <- function(cdm,
     dplyr::mutate(
       number_records = dplyr::coalesce(.data$number_records, 0L),
       number_subjects = dplyr::coalesce(.data$number_subjects, 0L),
-      reason_id = 1,
+      reason_id = 1L,
       reason = "Initial qualifying events",
-      excluded_records = 0,
-      excluded_subjects = 0)
+      excluded_records = 0L,
+      excluded_subjects = 0L)
 
     cohortCodelistRef <- df  %>%
-      dplyr::mutate(type = "index event") %>%
+      dplyr::mutate(type = "index event",
+                    concept_id = as.integer(concept_id)) %>%
       dplyr::select("cohort_definition_id",
                     "codelist_name" = "cohort_name",
                     "concept_id",

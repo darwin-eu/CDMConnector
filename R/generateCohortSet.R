@@ -347,7 +347,7 @@ generateCohortSet <- function(cdm,
 
       for (j in seq_along(tempTablesToDrop)) {
         suppressMessages({
-          DBI::dbExecute(con, paste("drop table if exists", tempTablesToDrop[j]))
+          invisible(DBI::dbExecute(con, paste("drop table if exists", tempTablesToDrop[j])))
         })
       }
 
@@ -478,11 +478,15 @@ generateCohortSet <- function(cdm,
   cdm[[name]] <- cohort_ref |>
     omopgenerics::newCdmTable(src = attr(cdm, "cdm_source"), name = name)
 
-# browser()
   # Create the object. Let the constructor handle getting the counts.----
+
+  cohortSetRef <- dplyr::transmute(cohortSet,
+    cohort_definition_id = as.integer(cohort_definition_id),
+    cohort_name = as.character(cohort_name))
+
   cdm[[name]] <- omopgenerics::newCohortTable(
     table = cdm[[name]],
-    cohortSetRef = cohortSet[,c("cohort_definition_id", "cohort_name")],
+    cohortSetRef = cohortSetRef,
     cohortAttritionRef = cohort_attrition_ref)
 
   cli::cli_progress_done()
@@ -861,7 +865,16 @@ computeAttritionTable <- function(cdm,
 
   attrition <- attritionList %>%
     dplyr::bind_rows() %>%
-    dplyr::rename_all(tolower)
+    dplyr::rename_all(tolower) %>%
+    dplyr::transmute(
+      cohort_definition_id = as.integer(.data$cohort_definition_id),
+      number_records = as.integer(.data$number_records),
+      number_subjects = as.integer(.data$number_subjects),
+      reason_id = as.integer(.data$reason_id),
+      reason = as.character(.data$reason),
+      excluded_records = as.integer(.data$excluded_records),
+      excluded_subjects = as.integer(.data$excluded_subjects)
+    )
 
   # upload attrition table to database
   DBI::dbWriteTable(con,
@@ -961,6 +974,7 @@ recordCohortAttrition <- function(cohort,
   omopgenerics::recordCohortAttrition(cohort = cohort,
                                       reason = reason,
                                       cohortId = cohortId)
+
 }
 
 #' @export

@@ -7,7 +7,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
   x <- cdm$condition_occurrence %>%
     dplyr::filter(condition_concept_id == 4112343) %>%
-    dplyr::mutate(cohort_definition_id = 1) %>%
+    dplyr::mutate(cohort_definition_id = 1L) %>%
     dplyr::select(
       "cohort_definition_id",
       subject_id = "person_id",
@@ -60,11 +60,11 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
     compute(name = "new_cohort", temporary = FALSE, overwrite = TRUE)
 
   cdm$new_cohort <- omopgenerics::newCohortTable(
-      cdm$new_cohort,
-      cohortSetRef = dplyr::tibble(
-        cohort_definition_id = 1,
-        cohort_name = "pharyngitis"
-      ))
+    cdm$new_cohort,
+    cohortSetRef = dplyr::tibble(
+      cohort_definition_id = 1L,
+      cohort_name = "pharyngitis"
+  ))
 
   expect_s3_class(cdm$new_cohort, "cohort_table")
 
@@ -117,7 +117,7 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
                   "cohort_start_date" = "condition_start_date",
                   "cohort_end_date" = "condition_end_date")
 
-  expect_error(omopgenerics::newCohortTable(cohort_ref))
+  expect_error(suppressWarnings(omopgenerics::newCohortTable(cohort_ref)))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -149,10 +149,12 @@ test_that("no error if cohort is empty", {
   #   dplyr::filter(cohort_start_date > "2030-01-01") %>%
   #   computeQuery(name = "cohorts_3", temporary = FALSE, schema = cdmWriteSchema(cdm))
 
-  cdm$cohort_3 <- cdm$cohorts2 %>%
-    dplyr::filter(cohort_start_date > "2030-01-01") %>%
-    compute(name = "cohort_3", temporary = FALSE) %>%
-    newCohortTable()
+  # suppressWarnings({
+    cdm$cohort_3 <- cdm$cohorts2 %>%
+      dplyr::filter(cohort_start_date > "2030-01-01") %>%
+      compute(name = "cohort_3", temporary = FALSE) %>%
+      newCohortTable()
+  # })
 
   expect_true("cohort_table" %in% class(cdm$cohort_3))
   # we won't have cohort set or cohort count as we didn't provide the cohort set ref

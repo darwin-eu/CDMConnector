@@ -249,7 +249,7 @@ listTables <- list_tables
 
 #' @importFrom dbplyr dbplyr_edition
 #' @export
-dbplyr_edition.BigQueryConnection<- function(con) 2L
+dbplyr_edition.BigQueryConnection <- function(con) 2L
 
 # Create the cdm tables in a database
 execute_ddl <- function(con, cdm_schema, cdm_version = "5.3", dbms = "duckdb", tables = tbl_group("all"), prefix = "") {

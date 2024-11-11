@@ -39,8 +39,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
                      name = .inSchema(writeSchema, name, dbms(con)),
                      fields = c(
                        cohort_definition_id = "INT",
-                       subject_id = "BIGINT",
-                       # subject_id = "INT",
+                       subject_id = "INT",
                        cohort_start_date = "DATE",
                        cohort_end_date = "DATE"))
 

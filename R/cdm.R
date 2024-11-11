@@ -112,6 +112,10 @@ cdm_from_con <- function(con,
     cli::cli_abort("The connection is not valid. Is the database connection open?")
   }
 
+  if (dbms(con) == "sqlite") {
+    cli::cli_abort("SQLite is not supported by CDMConnector. Please use duckdb instead.")
+  }
+
   if (missing(write_schema)) {
     cli::cli_abort("{.arg write_schema} is now required to create a cdm object with a database backend.
                    Please make sure you have a schema in your database where you can create new tables and provide it in the `write_schema` argument.
@@ -238,6 +242,7 @@ cdm_from_con <- function(con,
     if(is.null(cdm[[cohort_table]])) {
       rlang::abort(glue::glue("cohort table `{cohort_table}` not found!"))
     }
+
     cdm[[cohort_table]] <- cdm[[cohort_table]] |>
       omopgenerics::newCohortTable(
         cohortSetRef = x[[2]],
@@ -245,6 +250,7 @@ cdm_from_con <- function(con,
         cohortCodelistRef = x[[4]],
         .softValidation = .soft_validation
       )
+
   }
 
   if (dbms(con) == "snowflake") {

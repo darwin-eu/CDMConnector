@@ -30,6 +30,11 @@ jobs:
 
       - name: Test coverage
         run: |
+          eunomia_data_folder <- file.path(tempdir(), "eunomia_data")
+          dir.create(eunomia_data_folder)
+          Sys.setenv(EUNOMIA_DATA_FOLDER = eunomia_data_folder)
+          print(paste("eunomia data folder:", Sys.getenv("EUNOMIA_DATA_FOLDER")))
+
           cov <- covr::package_coverage(
             quiet = FALSE,
             clean = FALSE,
@@ -54,7 +59,7 @@ jobs:
         shell: bash
 
       - name: Upload test results
-        if: failure()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-test-failures

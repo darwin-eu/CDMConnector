@@ -30,14 +30,13 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
   # Backtrace:
   #   1. test_in_schema(con, write_schema, get_cdm_schema("bigquery"))
 
-  suppressWarnings({
     df <- dplyr::tbl(con, inSchema(write_schema, "temp_test", dbms = dbms(con))) %>%
       dplyr::mutate(a = 1) %>% # needed for duckdb for some reason??
       dplyr::collect() %>%
       dplyr::select("speed", "dist") %>%
       as.data.frame() %>%
       dplyr::arrange(.data$speed, .data$dist)
-  })
+
   expect_equal(df, dplyr::arrange(cars, .data$speed, .data$dist))
 
   tables <- list_tables(con, cdm_schema) %>% tolower()

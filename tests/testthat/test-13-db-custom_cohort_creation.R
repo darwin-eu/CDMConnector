@@ -7,16 +7,16 @@ test_custom_derived_cohort <- function(con, cdm_schema, write_schema) {
 
   cdm$cohort2 <- cdm$cohort %>%
     dplyr::filter(!!datediff("cohort_start_date", "cohort_end_date") >= 14) %>%
-    dplyr::mutate(cohort_definition_id = 10 + cohort_definition_id) %>%
+    dplyr::mutate(cohort_definition_id = 10L + cohort_definition_id) %>%
     dplyr::union_all(
       cdm$cohort %>%
         dplyr::filter(!!datediff("cohort_start_date", "cohort_end_date") >= 21) %>%
-        dplyr::mutate(cohort_definition_id = 100 + cohort_definition_id)
+        dplyr::mutate(cohort_definition_id = 100L + cohort_definition_id)
     ) %>%
     dplyr::union_all(
       cdm$cohort %>%
         dplyr::filter(!!datediff("cohort_start_date", "cohort_end_date") >= 28) %>%
-        dplyr::mutate(cohort_definition_id = 1000 + cohort_definition_id)
+        dplyr::mutate(cohort_definition_id = 1000L + cohort_definition_id)
     ) %>%
     compute(name = "cohort2", temporary = FALSE, overwrite = TRUE)
 

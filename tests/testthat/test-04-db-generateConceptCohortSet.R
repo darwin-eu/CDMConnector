@@ -489,32 +489,31 @@ test_that("Eunomia", {
 
 })
 
-
 test_that("invalid cdm records are ignored in generateConceptCohortSet", {
-
   cdm <- cdmFromTables(
     tables = list(
       "person" = tibble(
-        person_id = 1, gender_concept_id = 0, year_of_birth = 1900,
-        race_concept_id = 0, ethnicity_concept_id = 0
+        person_id = 1L, gender_concept_id = 0L, year_of_birth = 1900L,
+        race_concept_id = 0L, ethnicity_concept_id = 0L
       ),
       "observation_period" = tibble(
-        observation_period_id = 1, person_id = 1,
+        observation_period_id = 1L, person_id = 1L,
         observation_period_start_date = as.Date("1900-01-01"),
         observation_period_end_date = as.Date("2000-01-01"),
-        period_type_concept_id = 0
+        period_type_concept_id = 0L
       ),
       "drug_exposure" = tibble(
-        drug_exposure_id = 1, person_id = 1, drug_concept_id = 1,
+        drug_exposure_id = 1L, person_id = 1L, drug_concept_id = 1L,
         drug_exposure_start_date = as.Date(c("1950-01-01", "1951-01-01")),
         drug_exposure_end_date = as.Date(c("1945-01-01", "1952-01-01")),
-        drug_type_concept_id = 0
+        drug_type_concept_id = 0L
       ),
       "concept" = tibble(
-        concept_id = 1, concept_name = "my_drug", domain_id = "Drug",
-        vocabulary_id = 0, concept_class_id = 0, concept_code = 0,
-        valid_start_date = 0, valid_end_date = 0, standard_concept = 0,
-        invalid_reason = 0
+        concept_id = 1L, concept_name = "my_drug", domain_id = "Drug",
+        vocabulary_id = "vocab", concept_class_id = "0", concept_code = "0",
+        valid_start_date = as.Date("1900-01-01"), valid_end_date = as.Date("2030-01-01"),
+        standard_concept = "S",
+        invalid_reason = ""
       )
     ),
     cdmName = "test"
@@ -533,7 +532,7 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
 
   # names(attributes(actual))
 
-  # remove cohort attribues
+  # remove cohort attributes
   attr(actual, "cohort_set") <- NULL
   attr(actual, "cohort_attrition") <- NULL
 
@@ -545,7 +544,6 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
   )
 
   expect_equal(actual, expected)
-
 })
 
 
