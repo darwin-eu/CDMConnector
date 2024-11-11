@@ -153,7 +153,8 @@ cdm_from_con <- function(con,
   } else {
     checkmate::assertTRUE(all(names(write_schema) %in% c("catalog", "schema", "prefix")))
     if ("prefix" %in% names(write_schema)) {
-      cli::cli_inform("Support for 'prefix' in write_schema is deprecated and will be removed in a future release. Please use the `write_prefix` argument instead.")
+      rlang::inform("Support for 'prefix' in write_schema is deprecated and will be removed in a future release. Please use the `writePrefix` argument in `cdmFromCon()` instead.",
+                    .frequency = "once", .frequency_id = "write_prefix_deprecation")
     }
   }
 
