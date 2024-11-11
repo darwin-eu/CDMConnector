@@ -6,7 +6,10 @@ output: github_document
 
 # [CDMConnector](https://darwin-eu.github.io/CDMConnector/)
 
+ 
+
 <!-- badges: start -->
+[![Lifecycle:stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![CRAN status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
 [![codecov.io](https://codecov.io/gh/darwin-eu/CDMConnector/coverage.svg?branch=main)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
 [![Build Status](https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg)](https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check)

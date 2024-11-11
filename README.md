@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![Lifecycle:stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/CDMConnector)](https://CRAN.R-project.org/package=CDMConnector)
 [![codecov.io](https://codecov.io/gh/darwin-eu/CDMConnector/coverage.svg?branch=main)](https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main)
@@ -91,6 +92,10 @@ cdm <- cdm_from_con(con = con,
                     cdm_name = "my_duckdb_database")
 ```
 
+    ## Note: method with signature 'DBIConnection#Id' chosen for function 'dbExistsTable',
+    ##  target signature 'duckdb_connection#Id'.
+    ##  "duckdb_connection#ANY" would also be valid
+
 A `cdm_reference` is a named list of table references:
 
 ``` r
@@ -119,7 +124,7 @@ cdm$person %>%
 ```
 
     ## # Source:   SQL [1 x 1]
-    ## # Database: DuckDB v1.0.1-dev5 [root@Darwin 23.0.0:R 4.3.1//private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/Rtmp9UjDOa/file25a7230b0dc2.duckdb]
+    ## # Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmpo91CdK/file62e371c580a2.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -133,7 +138,7 @@ cdm$condition_era %>%
 ```
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB v1.0.1-dev5 [root@Darwin 23.0.0:R 4.3.1//private/var/folders/xx/01v98b6546ldnm1rg1_bvk000000gn/T/Rtmp9UjDOa/file25a7230b0dc2.duckdb]
+    ## # Database:   DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmpo91CdK/file62e371c580a2.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -164,16 +169,17 @@ If you encounter a clear bug, please file an issue with a minimal
     ## To cite package 'CDMConnector' in publications use:
     ## 
     ##   Black A, Gorbachev A, Burn E, Catala Sabate M (????). _CDMConnector:
-    ##   Connect to an OMOP Common Data Model_.
-    ##   https://darwin-eu.github.io/CDMConnector/,
-    ##   https://github.com/darwin-eu/CDMConnector.
+    ##   Connect to an OMOP Common Data Model_. R package version 1.5.0,
+    ##   https://github.com/darwin-eu/CDMConnector,
+    ##   <https://darwin-eu.github.io/CDMConnector/>.
     ## 
     ## A BibTeX entry for LaTeX users is
     ## 
     ##   @Manual{,
     ##     title = {CDMConnector: Connect to an OMOP Common Data Model},
     ##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate}},
-    ##     note = {https://darwin-eu.github.io/CDMConnector/, https://github.com/darwin-eu/CDMConnector},
+    ##     note = {R package version 1.5.0, https://github.com/darwin-eu/CDMConnector},
+    ##     url = {https://darwin-eu.github.io/CDMConnector/},
     ##   }
 
 ------------------------------------------------------------------------
