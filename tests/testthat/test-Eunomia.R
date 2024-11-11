@@ -80,5 +80,6 @@ test_that("requireEunomia", {
     expect_true(Sys.getenv("EUNOMIA_DATA_FOLDER") != "")
     expect_no_error(con <- duckdb::dbConnect(duckdb::duckdb(), eunomiaDir()))
     duckdb::dbDisconnect(conn = con)
- })
+  })
+})
 

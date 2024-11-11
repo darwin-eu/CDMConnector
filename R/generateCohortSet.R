@@ -435,7 +435,7 @@ generateCohortSet <- function(cdm,
       purrr::map_chr(~SqlRender::translate(., dbms(con)))
 
     for (k in seq_along(drop_statements)) {
-      DBI::dbExecute(con, drop_statements[k], immediate = TRUE)
+      suppressMessages(DBI::dbExecute(con, drop_statements[k], immediate = TRUE))
     }
 
     for (k in seq_along(sql)) {
