@@ -43,7 +43,7 @@
 #' @return A list of dplyr database table references pointing to CDM tables
 #'
 #' @details
-#' cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI compliant database connection.
+#' cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI database connection.
 #' In addition to the connection the user needs to pass in the schema in the database where the cdm data can
 #' be found as well as another schema where the user has write access to create tables. Nearly all
 #' downstream analytic packages need the ability to create temporary data in the database so the
@@ -54,9 +54,9 @@
 #'
 #' You can also specify a `write_prefix`. This is a short character string that will be added
 #' to any tables created in the `write_schema` effectively a namespace in the schema just for your
-#' analysis. This makes it easy to ensure you do not overwrite someone elses tables if the write_schema is shared
-#' and allows you to easily clean up tables by dropping all tables that start with the prefix.
-#' The prefix is considered part of the write_schema since it is effectively a sub-schema. See examples.
+#' analysis. If the write_schema is a shared between multiple users setting a unique write_prefix
+#' ensures you do not overwrite existing tables and allows you to easily clean up tables by
+#' dropping all tables that start with the prefix.
 #'
 #' @examples
 #' \dontrun{
@@ -68,33 +68,30 @@
 #'                     cdm_schema = "main",
 #'                     write_schema = "scratch")
 #'
+#' # write prefix is optional but recommended if write_schema is shared
 #' cdm <- cdm_from_con(con,
 #'                     cdm_schema = "main",
 #'                     write_schema = "scratch",
 #'                     write_prefix = "tmp_")
 #'
-#' # There are a few different options for using catalogs
+#' # Some database systems use catalogs or compound schemas.
+#' # These can be specified as follows:
 #' cdm <- cdm_from_con(con,
 #'                     cdm_schema = "catalog.main",
 #'                     write_schema = "catalog.scratch",
 #'                     write_prefix = "tmp_")
 #'
 #' cdm <- cdm_from_con(con,
-#'                     cdm_schema = c(catalog = "catalog", schema = "main"),
-#'                     write_schema = c(catalog = "catalog", schema = "scratch"))
+#'                     cdm_schema = c("my_catalog", "main"),
+#'                     write_schema = c("my_catalog", "scratch"),
+#'                     write_prefix = "tmp_")
 #'
 #' cdm <- cdm_from_con(con,
-#'                     cdm_schema = c("catalog", "main"),
-#'                     write_schema = c("catalog", "scratch"))
-#'
-#' cdm <- cdm_from_con(con,
-#'                     cdm_schema = c(catalog = "catalog", schema = "main"),
-#'                     write_schema = c(catalog = "catalog",
-#'                                      schema = "scratch",
-#'                                      prefix = "tmp_"))
+#'                     cdm_schema = c(catalog = "my_catalog", schema = "main"),
+#'                     write_schema = c(catalog = "my_catalog", schema = "scratch"),
+#'                     write_prefix = "tmp_")
 #'
 #'  DBI::dbDisconnect(con)
-#'
 #' }
 #'
 #'
@@ -118,7 +115,7 @@ cdm_from_con <- function(con,
   if (missing(write_schema)) {
     cli::cli_abort("{.arg write_schema} is now required to create a cdm object with a database backend.
                    Please make sure you have a schema in your database where you can create new tables and provide it in the `write_schema` argument.
-                   If your schema has muliple parts please provide a length 2 character vector: `write_schema = c('my_db', 'my_schema')`")
+                   If your schema has multiple parts please provide a length 2 character vector: `write_schema = c('my_db', 'my_schema')`")
   }
 
   checkmate::assert_character(cdm_name, any.missing = FALSE, len = 1, null.ok = TRUE)
@@ -140,19 +137,27 @@ cdm_from_con <- function(con,
     cdm_schema <- stringr::str_split(cdm_schema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
   }
 
-  if (!is.null(write_prefix)) {
-    if (!rlang::is_named(write_schema)) {
-      if (length(write_schema) == 1) {
-        write_schema <- c("schema" = write_schema)
-      } else if (length(write_schema) == 2) {
-        write_schema <- c("catalog" = write_schema[1], "schema" = write_schema[2])
-      } else {
-        rlang::abort("If `write_schema` is unnamed then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
-      }
+  # make sure write_schema is named
+  if (!rlang::is_named(write_schema)) {
+    if (length(write_schema) == 1) {
+      write_schema <- c("schema" = write_schema)
+    } else if (length(write_schema) == 2) {
+      write_schema <- c("catalog" = write_schema[1], "schema" = write_schema[2])
+    } else {
+      rlang::abort("If `write_schema` is unnamed then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
     }
-    write_schema["prefix"] <- write_prefix
+  } else {
+    checkmate::assertTRUE(all(names(write_schema) %in% c("catalog", "schema", "prefix")))
+    if ("prefix" %in% names(write_schema)) {
+      cli::cli_inform("Support for 'prefix' in write_schema is deprecated and will be removed in a future release. Please use the `write_prefix` argument instead.")
+    }
   }
 
+  # if write_prefix argument is pass it will be override the prefix in write_schema
+  if (!is.null(write_prefix)) {
+    checkmate::assert_character(write_prefix, min.chars = 1, len = 1, pattern = "^[a-z0-9_]+$")
+    write_schema["prefix"] <- write_prefix
+  }
 
 
   # create source object and validate connection
@@ -305,7 +310,8 @@ cdmFromCon <- function(con,
     cdm_version = cdmVersion,
     cdm_name = cdmName,
     achilles_schema = achillesSchema,
-    .soft_validation = .softValidation
+    .soft_validation = .softValidation,
+    write_prefix = writePrefix
   )
 }
 
