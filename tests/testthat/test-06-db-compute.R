@@ -12,36 +12,30 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
 
   x <- compute(q,
                name = new_table_name,
-               temporary = FALSE,
+               temporary = TRUE,
                overwrite = FALSE)
 
-
-  expect_true(new_table_name %in% list_tables(con, schema = write_schema))
+  expect_s3_class(dplyr::collect(x), "data.frame")
 
   expect_error({
     compute(q,
             name = new_table_name,
-            temporary = FALSE,
+            temporary = TRUE,
             overwrite = FALSE)
   })
-
 
   expect_s3_class(dplyr::collect(x), "data.frame")
 
   # test overwrite
-  expect_warning({
-    x <- computeQuery(q,
-                      name = new_table_name,
-                      schema = write_schema,
-                      temporary = FALSE,
-                      overwrite = TRUE)
-  }, "deprecated")
+    x <- compute(q,
+                 name = new_table_name,
+                 schema = write_schema,
+                 temporary = TRUE,
+                 overwrite = TRUE)
 
   expect_s3_class(dplyr::collect(x), "data.frame")
 
-  # test removal of tables
-  DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = new_table_name, dbms = dbms(con)))
-  expect_false(new_table_name %in% list_tables(con))
+  # TODO: test removal of temp tables. Also need to be able to get temp table names.
 
   # permanent table creation from query ----
   new_table_name <- paste0("temp", floor(10*as.numeric(Sys.time()) %% 1e7))
@@ -76,7 +70,6 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
   expect_false(new_table_name %in% list_tables(con, write_schema))
 }
 
-# dbtype = "bigquery"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - compute_query"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
