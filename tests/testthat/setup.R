@@ -197,9 +197,9 @@ if (Sys.getenv("CI_TEST_DB") == "") {
 testUsingDatabaseConnector <- FALSE
 
 # make sure we're only trying to test on dbs we have connection details for
-if ("postgres" %in% dbToTest & Sys.getenv("CDM5_POSTGRESQL_SERVER") == "") {
+if ("postgres" %in% dbToTest & Sys.getenv("CDM5_POSTGRESQL_DBNAME") == "") {
   dbToTest <- dbToTest[dbToTest != "postgres"]
-  print("CI tests not run on postgres - CDM5_POSTGRESQL_SERVER not found")
+  print("CI tests not run on postgres - CDM5_POSTGRESQL_DBNAME not found")
 }
 if ("redshift" %in% dbToTest & Sys.getenv("CDM5_REDSHIFT_DBNAME") == "") {
   dbToTest <- dbToTest[dbToTest != "redshift"]
