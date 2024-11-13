@@ -2,7 +2,9 @@
 
 - fix bug in copyCdmTo where attribute tables were not being copied #231 @catalamarti
 - check that overwrite argument works in compute when using temp tables #222 @ablack3
-- added synpuf1k with achilles tables to example datasets #230 @ablack3
+- added synpuf1k with Achilles tables to example datasets #230 @ablack3
+- add requireEunomia function #481 @catalamarti
+
 
 # CDMConnector 1.5.0
 
