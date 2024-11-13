@@ -203,7 +203,7 @@ list_tables <- function(con, schema = NULL) {
 
   if (methods::is(con, "Spark SQL")) {
     # spark odbc connection
-    sql <- paste("SHOW TABLES", if (!is.null(schema)) paste("IN", schema[[1]]))
+    sql <- paste("SHOW TABLES", if (!is.null(schema)) paste("IN", paste(schema, collapse = ".")))
     out <- DBI::dbGetQuery(con, sql) %>%
       dplyr::filter(.data$isTemporary == FALSE) %>%
       dplyr::pull(.data$tableName)

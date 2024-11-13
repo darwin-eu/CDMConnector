@@ -33,3 +33,32 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
+
+# https://github.com/darwin-eu/CDMConnector/issues/28
+test_that("catalog works on spark", {
+  # skip("manual test") # spark tests are manual because the test server needs to be started
+
+  con <- DBI::dbConnect(
+    odbc::databricks(),
+    httpPath = Sys.getenv("DATABRICKS_HTTPPATH"),
+    useNativeQuery = FALSE
+  )
+
+  # DBI::dbGetQuery(con, "show catalogs;")
+  # DBI::dbExecute(con, "USE CATALOG spark_catalog;")
+
+  debugonce(CDMConnector::cdmFromCon)
+  cdm <- cdmFromCon(con = con,
+                    cdmSchema = "spark_catalog.gibleed",
+                    writeSchema = "spark_catalog.scratch")
+
+  expect_s3_class(cdm, "cdm_reference")
+
+  cdm <- cdmFromCon(con = con,
+                    cdmSchema = c(catalog="spark_catalog", schema="gibleed"),
+                    writeSchema = c(catalog="spark_catalog", schema="scratch"))
+
+  expect_s3_class(cdm, "cdm_reference")
+  cdmDisconnect(cdm)
+})
+
