@@ -1,9 +1,8 @@
 ## R CMD check results
 
-This is a new minor release that fixes issues on Databricks/Spark
-
-One NOTE is expected:
-Suggests or Enhances not in mainstream repositories: Capr
+This is a resubmission of a new minor release. 
+I removed the revdep folder that does not need to be included.
+I also fixed errors identified in incoming cran checks.
 
 RCMD check passed on the following platforms with 0 errors, 0 warnings, and 0 notes 
 

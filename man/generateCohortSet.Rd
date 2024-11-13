@@ -26,7 +26,8 @@ generate_cohort_set(
 specified.}
 
 \item{name}{Name of the cohort table to be created. This will also be used
-as a prefix for the cohort attribute tables.}
+as a prefix for the cohort attribute tables. This must be a lowercase character string
+that starts with a letter and only contains letters, numbers, and underscores.}
 
 \item{overwrite}{Should the cohort table be overwritten if it already
 exists? TRUE (default) or FALSE}

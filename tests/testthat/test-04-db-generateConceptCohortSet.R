@@ -490,6 +490,7 @@ test_that("Eunomia", {
 })
 
 test_that("invalid cdm records are ignored in generateConceptCohortSet", {
+  skip_if_not_installed("duckdb")
   cdm <- cdmFromTables(
     tables = list(
       "person" = tibble(

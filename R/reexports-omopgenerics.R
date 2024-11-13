@@ -63,10 +63,10 @@ omopgenerics::cohortCodelist
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' library(CDMConnector)
 #'
-#' person <- tibble(
+#' person <- dplyr::tibble(
 #'   person_id = 1, gender_concept_id = 0, year_of_birth = 1990,
 #'   race_concept_id = 0, ethnicity_concept_id = 0
 #' )

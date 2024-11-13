@@ -226,7 +226,7 @@ attrition(cdm$gibleed2)
 ```
 
 
-In the above example we built a cohort table from a concept set. The cohort essentially captures patient-time based off of the presence or absence of OMOP standard concept IDs. We then manually applied an inclusion criteria and recorded a new attrition record in the cohort. To learn more about this approach to building cohorts check out the [PatientProfiles](https://darwin-eu-dev.github.io/PatientProfiles/) R package.
+In the above example we built a cohort table from a concept set. The cohort essentially captures patient-time based off of the presence or absence of OMOP standard concept IDs. We then manually applied an inclusion criteria and recorded a new attrition record in the cohort. To learn more about this approach to building cohorts check out the [PatientProfiles](https://darwin-eu.github.io/PatientProfiles/) R package.
 
 You can also create a generated cohort set using any method you choose. As long as the table is in the CDM database and has the four required columns it can be added to the CDM object as a generated cohort set.
 

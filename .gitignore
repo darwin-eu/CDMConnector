@@ -47,3 +47,4 @@ inst/doc
 /work/
 errorReportSql.txt
 *.DS_Store*
+/revdep/

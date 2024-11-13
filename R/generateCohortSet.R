@@ -481,8 +481,8 @@ generateCohortSet <- function(cdm,
   # Create the object. Let the constructor handle getting the counts.----
 
   cohortSetRef <- dplyr::transmute(cohortSet,
-    cohort_definition_id = as.integer(cohort_definition_id),
-    cohort_name = as.character(cohort_name))
+    cohort_definition_id = as.integer(.data$cohort_definition_id),
+    cohort_name = as.character(.data$cohort_name))
 
   cdm[[name]] <- omopgenerics::newCohortTable(
     table = cdm[[name]],

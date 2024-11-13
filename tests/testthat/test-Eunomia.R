@@ -75,6 +75,7 @@ test_that("synpuf-1k example data has achilles tables", {
 
 test_that("requireEunomia", {
   withr::with_envvar(list("EUNOMIA_DATA_FOLDER" = ""), {
+    skip_if_not_installed("duckdb")
     expect_identical(Sys.getenv("EUNOMIA_DATA_FOLDER"), "")
     expect_no_error(requireEunomia())
     expect_true(Sys.getenv("EUNOMIA_DATA_FOLDER") != "")

@@ -1,7 +1,7 @@
 library(CDMConnector)
 library(testthat)
 test_that("cohort codelist attributes are preserved", {
-
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
   cdm <- cdm_from_con(
     con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"

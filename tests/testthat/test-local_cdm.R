@@ -37,7 +37,7 @@ test_that("assertTables works with local cdms", {
 
 
 test_that("softValidation is passed correctly", {
-  library(CDMConnector)
+  skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
   # create overlapping observation periods

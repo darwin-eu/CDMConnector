@@ -18,3 +18,4 @@ LICENSE
 ^vignettes2/*
 ^a/*
 ^work/*
+^revdep/*

@@ -55,7 +55,6 @@ Suggests:
     odbc,
     ggplot2,
     bigrquery,
-    DatabaseConnector,
     lubridate,
     clock,
     tibble,

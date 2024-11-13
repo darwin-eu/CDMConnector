@@ -38,7 +38,9 @@ eunomia_dir(
 "synthea-total_joint_replacement-10k",
 "synthea-veteran_prostate_cancer-10k",
 "synthea-veterans-10k",
-"synthea-weight_loss-10k"}
+"synthea-weight_loss-10k",
+"empty_cdm",
+"synpuf-1k"}
 
 \item{cdmVersion, cdm_version}{The OMOP CDM version. Must be "5.3" or "5.4".}
 
@@ -48,13 +50,53 @@ eunomia_dir(
 The file path to the new Eunomia dataset copy
 }
 \description{
-Creates a copy of a Eunomia database, and returns the path to the new database file.
-If the dataset does not yet exist on the user's computer it will attempt to download the source data
-to the the path defined by the EUNOMIA_DATA_FOLDER environment variable.
+Eunomia is an OHDSI project that provides several example OMOP CDM datasets for testing and development.
+This function creates a copy of a Eunomia database in \href{https://duckdb.org/}{duckdb} and returns
+the path to the new database file. If the dataset does not yet exist on the user's computer it
+will attempt to download the source data to the the path defined by the EUNOMIA_DATA_FOLDER environment variable.
+}
+\details{
+Most of the Eunomia datasets available in CDMConnector are from the Synthea project. Synthea is an open-source
+synthetic patient generator that models the medical history of synthetic patients. The Synthea datasets are
+generated using the Synthea tool and then converted to the OMOP CDM format using the OHDSI
+ETL-Synthea project \url{https://ohdsi.github.io/ETL-Synthea/}. Currently the synthea datasets
+are only available in the OMOP CDM v5.3 format. See \url{https://synthetichealth.github.io/synthea/}
+for details on the Synthea project.
+
+In addition to Synthea, the Eunomia project provides the CMS Synthetic Public Use Files (SynPUFs) in both
+5.3 and 5.4 OMOP CDM formats. This data is synthetic US Medicare claims data mapped to OMOP CDM format.
+The OMOP CDM has a set of optional metadata tables, called Achilles tables, that
+include pre-computed analytics about the entire dataset such as record and person counts.
+The Eunomia Synpuf datasets include the Achilles tables.
+
+Eunomia also provides empty cdms that can be used as a starting point for creating a new example CDM.
+This is useful for creating test data for studies or analytic packages.
+The empty CDM includes the vocabulary tables and all OMOP CDM tables but
+the clinical tables are empty and need to be populated with data. For additional information on
+creating small test CDM datasets see \url{https://ohdsi.github.io/omock/} and
+\url{https://darwin-eu.github.io/TestGenerator/}.
+
+To contribute synthetic observational health data to the Eunomia project please
+open an issue at \url{https://github.com/OHDSI/Eunomia/issues/}
 }
 \examples{
 \dontrun{
- con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
- DBI::dbDisconnect(con, shutdown = TRUE)
+
+ # The defaults GiBleed dataset is a small dataset that is useful for testing
+ library(CDMConnector)
+ con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+ cdm <- cdm_from_con(con, "main", "main")
+ cdmDisconnect(cdm)
+
+ # Synpuf datasets include the Achilles tables
+ con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.3"))
+ cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+ cdmDisconnect(cdm)
+
+ # Currently the only 5.4 dataset is synpuf-1k
+ con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.4"))
+ cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+ cdmDisconnect(cdm)
+
 }
 }

@@ -172,11 +172,11 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' This is useful for creating test data for studies or analytic packages.
 #' The empty CDM includes the vocabulary tables and all OMOP CDM tables but
 #' the clinical tables are empty and need to be populated with data. For additional information on
-#' creating small test CDM datasets see \url{https://ohdsi.github.io/omock} and
+#' creating small test CDM datasets see \url{https://ohdsi.github.io/omock/} and
 #' \url{https://darwin-eu.github.io/TestGenerator/}.
 #'
 #' To contribute synthetic observational health data to the Eunomia project please
-#' open an issue at \url{https://github.com/OHDSI/Eunomia/issues}
+#' open an issue at \url{https://github.com/OHDSI/Eunomia/issues/}
 #'
 #'
 #' @param datasetName,dataset_name One of "GiBleed" (default),
@@ -277,7 +277,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
     on.exit(unlink(tempFileLocation), add = TRUE)
 
     specs <- omopgenerics::omopTableFields(cdmVersion) %>%
-      dplyr::filter(type %in% c("cdm_table", "achilles")) %>%
+      dplyr::filter(.data$type %in% c("cdm_table", "achilles")) %>%
       dplyr::mutate(cdm_datatype = dplyr::if_else(.data$cdm_datatype == "varchar(max)", "varchar(2000)", .data$cdm_datatype)) %>%
       dplyr::mutate(cdm_field_name = dplyr::if_else(.data$cdm_field_name == '"offset"', "offset", .data$cdm_field_name)) %>%
       tidyr::nest(col = -"cdm_table_name") %>%

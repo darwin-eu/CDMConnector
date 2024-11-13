@@ -1,3 +1,9 @@
+# CDMConnector 1.6.0
+
+- fix bug in copyCdmTo where attribute tables were not being copied #231 @catalamarti
+- check that overwrite argument works in compute when using temp tables #222 @ablack3
+- added synpuf1k with achilles tables to example datasets #230 @ablack3
+
 # CDMConnector 1.5.0
 
 - Get all tests passing on Databricks/Spark using odbc driver

@@ -203,7 +203,7 @@ for (dbtype in dbToTest) {
     write_prefix <- paste0("test", as.integer(Sys.time()), "_")
     write_schema <- get_write_schema(dbtype, prefix = write_prefix)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
-
+    skip_if_not_installed("duckdb") # prepare_cdm require duckdb
     cdm <- prepare_cdm(con, write_schema)
     check_counts(cdm)
     check_mutate(cdm)
