@@ -84,7 +84,7 @@ inSchema <- function(schema, table, dbms = NULL) {
     checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
   }
 
-  if (isFALSE(dbms %in% c("snowflake", "sql server"))) {
+  if (isFALSE(dbms %in% c("snowflake", "sql server", "spark"))) {
     # only a few dbms support three part names
     checkmate::assertCharacter(schema, len = 1)
   }
