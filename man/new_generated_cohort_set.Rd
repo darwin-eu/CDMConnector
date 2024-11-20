@@ -46,7 +46,7 @@ A \code{cohort_table} object that is a \code{tbl_sql} reference
 to a cohort table in the write_schema of an OMOP CDM
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \details{
 Please use \code{omopgenerics::newCohortTable()} instead.
@@ -132,11 +132,11 @@ will be created if not supplied.
    cdm[[name]] <- cohort_ref
 
    # create the generated cohort set object using the constructor
-   cdm[[name]] <- new_generated_cohort_set(
+   cdm[[name]] <- newGeneratedCohortSet(
       cdm[[name]],
-      cohort_set_ref = cohort_set_ref,
-      cohort_attrition_ref = cohort_attrition_ref,
-      cohort_count_ref = cohort_count_ref)
+      cohortSetRef = cohort_set_ref,
+      cohortAttritionRef = cohort_attrition_ref,
+      cohortCountRef = cohort_count_ref)
 
    return(cdm)
  }

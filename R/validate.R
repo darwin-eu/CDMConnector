@@ -20,6 +20,7 @@
 #' checking that column names are correct and that no tables are empty. A short
 #' report is printed to the console. This function is meant for interactive use.
 #'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param cdm A cdm reference object.
 #'
@@ -28,12 +29,13 @@
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, cdm_schema = "main")
-#' validate_cdm(cdm)
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con, cdmSchema = "main")
+#' validateCdm(cdm)
 #' DBI::dbDisconnect(con)
 #' }
 validate_cdm <- function(cdm) {
+  lifecycle::deprecate_soft("1.7.0", "validate_cdm()", "validateCdm()")
   checkmate::assert_class(cdm, "cdm_reference")
   if (is.null(cdmCon(cdm))) {
     rlang::abort("validate_cdm is not implement for local cdms")
@@ -113,6 +115,8 @@ validate_cdm_rowcounts <- function(cdm) {
 #' are in the cdm object, have the correct columns/fields,
 #' and (optionally) are not empty.
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param cdm A cdm object
 #' @param tables A character vector of table names to check.
 #' @param empty.ok Should an empty table (0 rows) be considered an error?
@@ -137,8 +141,8 @@ validate_cdm_rowcounts <- function(cdm) {
 #' }
 #'
 #' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' cdm <- cdm_from_con(con)
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+#' cdm <- cdmFromCon(con)
 #'
 #' countDrugsByGender(cdm)
 #'
@@ -146,6 +150,7 @@ validate_cdm_rowcounts <- function(cdm) {
 #'
 #' }
 assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "assert_tables()", "assertTables()")
   checkmate::assertClass(add, "AssertCollection", null.ok = TRUE)
   checkmate::assertLogical(empty.ok, len = 1, null.ok = FALSE)
   checkmate::assertCharacter(tables,
@@ -219,6 +224,8 @@ assertTables <- assert_tables
 #' "write_schema" attribute and tests that local dataframes can be written
 #' to tables in this schema.
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param cdm A cdm object
 #' @param add An optional AssertCollection created by
 #' `checkmate::makeAssertCollection()` that errors should be added to.
@@ -241,6 +248,10 @@ assert_write_schema <- function(cdm, add = NULL) {
 }
 
 
+#' `r lifecycle::badge("deprecated")`
 #' @rdname assert_write_schema
 #' @export
-assertWriteSchema <- assert_write_schema
+assertWriteSchema <- function(cdm, add = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "CDMConnector::assertWriteSchema()")
+  assert_write_schema(cdm, add)
+}

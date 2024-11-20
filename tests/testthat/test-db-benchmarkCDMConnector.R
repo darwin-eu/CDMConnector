@@ -1,9 +1,9 @@
 
 test_benchmarkCDMConnector <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "test", cdm_schema = cdm_schema,
-    write_schema = write_schema
+  cdm <- cdmFromCon(
+    con = con, cdmName = "test", cdmSchema = cdm_schema,
+    writeSchema = write_schema
   )
 
   expect_no_error(bench <- benchmarkCDMConnector(cdm))

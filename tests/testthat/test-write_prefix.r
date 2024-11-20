@@ -1,6 +1,6 @@
 test_that("write_prefix works with cdm_from_con", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
+  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
 
   DBI::dbExecute(con, "create schema scratch")
   cdm <- cdmFromCon(con, "main", "scratch", writePrefix = "tmp_")

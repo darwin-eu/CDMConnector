@@ -14,4 +14,6 @@ cohort_set(x)
 }
 \description{
 Get cohort settings from a cohort_table object
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

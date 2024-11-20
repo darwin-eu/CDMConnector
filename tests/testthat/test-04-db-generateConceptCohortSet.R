@@ -1,11 +1,11 @@
 test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   skip_if_not_installed("CirceR")
   # withr::local_options("CDMConnector.cohort_as_temp" = FALSE) # temp cohort tables are not implemented yet
-  cdm <- cdm_from_con(
+  cdm <- cdmFromCon(
     con = con,
-    cdm_name = "cdm",
-    cdm_schema = cdm_schema,
-    write_schema = write_schema
+    cdmName = "cdm",
+    cdmSchema = cdm_schema,
+    writeSchema = write_schema
   )
 
   # check that we have records. Need the eunomia gibleed data for this.
@@ -97,7 +97,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_identical(settings(cdm$gibleed4)$future_observation, 200)
 
   expect_true({
-    cohort_count(cdm$gibleed3)$number_records >= cohort_count(cdm$gibleed4)$number_records
+    cohortCount(cdm$gibleed3)$number_records >= cohortCount(cdm$gibleed4)$number_records
   })
 
   # default (with descendants) ----
@@ -298,11 +298,11 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   start_person_count <- cdm$person %>% dplyr::tally() %>% dplyr::pull("n")
-  cdm <- generate_concept_cohort_set(cdm = cdm,
+  cdm <- generateConceptCohortSet(cdm = cdm,
                                      name = "gibleed_medications",
-                                     concept_set = list("diclofenac" = 1124300,
+                                     conceptSet = list("diclofenac" = 1124300,
                                                         "acetaminophen" = 1127433),
-                                     subset_cohort = "gibleed_exp",
+                                     subsetCohort = "gibleed_exp",
                                      overwrite = TRUE)
   # we should still have our original cdm
   end_person_count <- cdm$person %>% dplyr::tally() %>% dplyr::pull("n")
@@ -318,13 +318,13 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     dplyr::collect()) == 0)
 
   # specifying cohort ids
-  cdm <- generate_concept_cohort_set(cdm = cdm,
-                                     name = "gibleed_medications2",
-                                     concept_set = list("diclofenac" = 1124300,
-                                                        "acetaminophen" = 1127433),
-                                     subset_cohort = "gibleed_exp",
-                                     subset_cohort_id = 1,
-                                     overwrite = TRUE)
+  cdm <- generateConceptCohortSet(cdm = cdm,
+                                  name = "gibleed_medications2",
+                                  conceptSet = list("diclofenac" = 1124300,
+                                                    "acetaminophen" = 1127433),
+                                  subsetCohort = "gibleed_exp",
+                                  subsetCohortId = 1,
+                                  overwrite = TRUE)
 
   expect_true(nrow(cdm$gibleed_medications2 %>%
                      dplyr::select("subject_id") %>%
@@ -337,23 +337,23 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
                      dplyr::collect()) == 0)
   # expected errors
   expect_error(
-    generate_concept_cohort_set(cdm = cdm,
-                                name = "gibleed_medications2",
-                                concept_set = list("diclofenac" = 1124300,
-                                                   "acetaminophen" = 1127433),
-                                subset_cohort = "not_a_table",
-                                subset_cohort_id = 1,
-                                overwrite = TRUE)
+    generateConceptCohortSet(cdm = cdm,
+                             name = "gibleed_medications2",
+                             conceptSet = list("diclofenac" = 1124300,
+                                               "acetaminophen" = 1127433),
+                              subsetCohort = "not_a_table",
+                              subsetCohortId = 1,
+                              overwrite = TRUE)
   )
 
  expect_error(
-   generate_concept_cohort_set(cdm = cdm,
-                               name = "gibleed_medications2",
-                               concept_set = list("diclofenac" = 1124300,
-                                                  "acetaminophen" = 1127433),
-                               subset_cohort = "gibleed_exp",
-                               subset_cohort_id = c(99,100,101), # these cohort ids not in cohort table
-                               overwrite = TRUE)
+   generateConceptCohortSet(cdm = cdm,
+                            name = "gibleed_medications2",
+                            conceptSet = list("diclofenac" = 1124300,
+                                              "acetaminophen" = 1127433),
+                            subsetCohort = "gibleed_exp",
+                            subsetCohortId = c(99,100,101), # these cohort ids not in cohort table
+                            overwrite = TRUE)
   )
 
   # clean up
@@ -381,11 +381,11 @@ test_that("missing domains produce warning", {
   skip_on_cran()
   skip_if_not_installed("duckdb")
   skip_if_not("duckdb" %in% dbToTest)
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   ) %>%
-    cdm_select_tbl(-drug_exposure)
+    cdmSelectTbl(-drug_exposure)
 
   expect_warning({
     cdm <- generateConceptCohortSet(cdm, name = "celecoxib",
@@ -399,12 +399,12 @@ test_that("Regimen domain does not cause error", {
   skip_on_cran()
   skip_if_not("duckdb" %in% dbToTest)
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
   # create a fake concept with domain "Regimen"
   DBI::dbExecute(con, "UPDATE main.concept SET domain_id = 'Regimen' WHERE concept_id = 19129655")
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
 
   concept_set <- list(drug_1 = c(1127433, 19129655), drug_2 = 19129655, drug_3 = 1127433)
@@ -425,28 +425,28 @@ test_that("Eunomia", {
   skip_on_cran()
   skip_if_not_installed("duckdb")
   skip_if_not("duckdb" %in% dbToTest)
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
 
   # edge case with overlaps (issue 420)
-  db <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(
+  db <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(
     con = db,
-    cdm_schema = "main",
-    write_schema = "main"
+    cdmSchema = "main",
+    writeSchema = "main"
   )
 
  expect_no_error(cdm <- cdm %>%
-    generate_concept_cohort_set(concept_set = list("acetaminophen" = c(1125315,
-                                                                       1127078,
-                                                                       1127433,
-                                                                       40229134,
-                                                                       40231925,
-                                                                       40162522,
-                                                                       19133768)),
-                                limit = "all",
-                                end = "event_end_date",
-                                name = "acetaminophen",
-                                overwrite = TRUE))
+    generateConceptCohortSet(conceptSet = list("acetaminophen" = c(1125315,
+                                                                   1127078,
+                                                                   1127433,
+                                                                   40229134,
+                                                                   40231925,
+                                                                   40162522,
+                                                                   19133768)),
+                             limit = "all",
+                             end = "event_end_date",
+                             name = "acetaminophen",
+                             overwrite = TRUE))
 
  # behaviour with concepts not in vocab
  # this works even though 1 is not in the concept table
@@ -550,19 +550,19 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
 
 test_that("attrition columns are correct", {
   skip_if_not("duckdb" %in% dbToTest)
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", "main")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con, "main", "main")
 
-  cdm <- generate_concept_cohort_set(cdm,
-                                     concept_set = list(acetaminophen = 1127433),
-                                     name = "cohort1")
+  cdm <- generateConceptCohortSet(cdm,
+                                  conceptSet = list(acetaminophen = 1127433),
+                                  name = "cohort1")
 
 
-  cohort_set <- read_cohort_set(system.file("cohorts1", package = "CDMConnector"))[1,]
+  cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))[1,]
 
-  cdm <- generate_cohort_set(cdm,
-                             cohort_set = cohort_set,
-                             name = "cohort2")
+  cdm <- generateCohortSet(cdm,
+                           cohortSet = cohort_set,
+                           name = "cohort2")
 
   expected_colnames <- c("cohort_definition_id", "number_records", "number_subjects",
                          "reason_id", "reason", "excluded_records", "excluded_subjects")
@@ -578,14 +578,14 @@ test_that("attrition columns are correct", {
   skip_if_not_installed("Capr")
   skip_if_not("duckdb" %in% dbToTest)
   skip_on_cran()
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main", "main")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con, "main", "main")
 
   cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
 
-  cdm <- generate_cohort_set(cdm,
-                             cohort_set = cohort_set,
-                             name = "cohort")
+  cdm <- generateCohortSet(cdm,
+                           cohortSet = cohort_set,
+                           name = "cohort")
 
   expected_colnames <- c("cohort_definition_id", "number_records", "number_subjects",
                          "reason_id", "reason", "excluded_records", "excluded_subjects")

@@ -4,8 +4,8 @@
 # check that the eunomia data is the same
 
 library(CDMConnector)
-con1 <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-cdm1 <- cdm_from_con(con1, "main", "main")
+con1 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+cdm1 <- cdmFromCon(con1, "main", "main")
 
 con <- DBI::dbConnect(
   odbc::databricks(),
@@ -20,9 +20,9 @@ write_schema <- Sys.getenv("DATABRICKS_SCRATCH_SCHEMA")
 
 library(CDMConnector)
 
-cdm <- cdm_from_con(con,
-                    cdm_schema = cdm_schema,
-                    write_schema = write_schema)
+cdm <- cdmFromCon(con,
+                  cdmSchema = cdm_schema,
+                  writeSchema = write_schema)
 
 cdm
 
@@ -113,10 +113,10 @@ DBI::dbDisconnect(con)
 
 testIncidencePrevalence <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(
+  cdm <- cdmFromCon(
     con = con,
-    cdm_schema = cdm_schema,
-    write_schema = write_schema
+    cdmSchema = cdm_schema,
+    writeSchema = write_schema
   )
 
   DBI::dbIsValid(con)
@@ -144,8 +144,8 @@ testIncidencePrevalence <- function(con, cdm_schema, write_schema) {
 
 
   library(CDMConnector)
-  con2 <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm2 <- cdm_from_con(con2, "main", "main")
+  con2 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm2 <- cdmFromCon(con2, "main", "main")
 
 
     cdm2 <- IncidencePrevalence::generateDenominatorCohortSet(

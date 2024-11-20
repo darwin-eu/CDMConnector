@@ -21,7 +21,6 @@
 # The person_subset table should be a temporary table in the database.
 # These requirements are not checked but assumed to be true.
 cdm_sample_person <- function(cdm, person_subset) {
-
   checkmate::assert_class(cdm, "cdm_reference")
   checkmate::assert_class(person_subset, "tbl_sql")
 
@@ -61,9 +60,9 @@ cdm_sample_person <- function(cdm, person_subset) {
 #' library(CDMConnector)
 #' library(dplyr, warn.conflicts = FALSE)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 #'
-#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+#' cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 #'
 #' # generate a cohort
 #' path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")
@@ -165,6 +164,7 @@ cdm_subset_cohort <- function(cdm,
                               cohort_table = "cohort",
                               cohort_id = NULL,
                               verbose = FALSE) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_subset_cohort()", "cdmSubsetCohort()")
   cdmSubsetCohort(cdm = cdm,
                   cohortTable = cohort_table,
                   cohortId = cohort_id,
@@ -195,9 +195,9 @@ cdm_subset_cohort <- function(cdm,
 #' library(CDMConnector)
 #' library(dplyr, warn.conflicts = FALSE)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 #'
-#' cdm <- cdm_from_con(con, cdm_schema = "main")
+#' cdm <- cdmFromCon(con, cdmSchema = "main")
 #'
 #' cdmSampled <- cdmSample(cdm, n = 2)
 #'
@@ -238,10 +238,19 @@ cdmSample <- function(cdm,
   cdm_sample_person(cdm, cdm[[name]])
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname cdmSample
 #' @export
-cdm_sample <- cdmSample
+cdm_sample <- function(cdm,
+                        n,
+                        seed = sample.int(1e6, 1),
+                        name = "person_sample") {
+  lifecycle::deprecate_soft("1.7.0", "cdm_sample()", "cdmSample()")
+  cdmSample(cdm = cdm,
+            n = n,
+            seed = seed,
+            name = name)
+}
 
 
 #' Subset a cdm object to a set of persons
@@ -254,7 +263,7 @@ cdm_sample <- cdmSample
 #' `r lifecycle::badge("experimental")`
 #'
 #' @param cdm A cdm_reference object
-#' @param person_id,personId A numeric vector of person IDs to include in the cdm
+#' @param personId,person_id A numeric vector of person IDs to include in the cdm
 #'
 #' @return A modified cdm_reference object where all clinical tables are lazy
 #' queries pointing to subset
@@ -266,9 +275,9 @@ cdm_sample <- cdmSample
 #' library(CDMConnector)
 #' library(dplyr, warn.conflicts = FALSE)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 #'
-#' cdm <- cdm_from_con(con, cdm_schema = "main")
+#' cdm <- cdmFromCon(con, cdmSchema = "main")
 #'
 #' cdm2 <- cdmSubset(cdm, personId = c(2, 18, 42))
 #'
@@ -314,10 +323,11 @@ cdmSubset <- function(cdm, personId) {
 }
 
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname cdmSubset
 #' @export
 cdm_subset <- function(cdm, person_id){
+  lifecycle::deprecate_soft("1.7.0", "cdm_subset()", "cdmSubset()")
   cdmSubset(cdm = cdm, personId = person_id)
 }
 
@@ -333,7 +343,7 @@ cdm_subset <- function(cdm, person_id){
 #' @param cdm A cdm_reference object
 #' @param domain Domains to include. Must be a subset of "condition", "drug",
 #' "procedure", "measurement", "visit", "death", "observation".
-#' @param include_concept_name,includeConceptName Should concept_name and type_concept_name be
+#' @param includeConceptName,include_concept_name Should concept_name and type_concept_name be
 #' include in the output table? TRUE (default) or FALSE
 #'
 #' @return A lazy query that when evaluated will result in a single cdm table
@@ -344,9 +354,9 @@ cdm_subset <- function(cdm, person_id){
 #' library(CDMConnector)
 #' library(dplyr, warn.conflicts = FALSE)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 #'
-#' cdm <- cdm_from_con(con, cdm_schema = "main")
+#' cdm <- cdmFromCon(con, cdmSchema = "main")
 #'
 #' all_observations <- cdmSubset(cdm, personId = c(2, 18, 42)) %>%
 #'   cdmFlatten() %>%
@@ -391,7 +401,7 @@ cdmFlatten <- function(cdm,
   queryList <- list()
 
   if ("condition" %in% domain) {
-    assert_tables(cdm, "condition_occurrence")
+    assertTables(cdm, "condition_occurrence")
     queryList[["condition"]] <- cdm$condition_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -404,7 +414,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("drug" %in% domain) {
-    assert_tables(cdm, "drug_exposure")
+    assertTables(cdm, "drug_exposure")
     queryList[["drug"]] <- cdm$drug_exposure %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -417,7 +427,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("procedure" %in% domain) {
-    assert_tables(cdm, "procedure_occurrence")
+    assertTables(cdm, "procedure_occurrence")
     queryList[["procedure"]] <- cdm$procedure_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -430,7 +440,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("measurement" %in% domain) {
-    assert_tables(cdm, "measurement")
+    assertTables(cdm, "measurement")
     queryList[["measurement"]] <- cdm$measurement %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -443,7 +453,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("visit" %in% domain) {
-    assert_tables(cdm, "visit")
+    assertTables(cdm, "visit")
     queryList[["visit"]] <- cdm$visit_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -456,7 +466,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("death" %in% domain) {
-    assert_tables(cdm, "death")
+    assertTables(cdm, "death")
     queryList[["death"]] <- cdm$death %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -469,7 +479,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("observation" %in% domain) {
-    assert_tables(cdm, "observation")
+    assertTables(cdm, "observation")
     queryList[["death"]] <- cdm$observation %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -482,7 +492,7 @@ cdmFlatten <- function(cdm,
   }
 
   if (includeConceptName) {
-    assert_tables(cdm, "concept")
+    assertTables(cdm, "concept")
     out <- queryList %>%
       purrr::reduce(dplyr::union) %>%
       dplyr::left_join(dplyr::transmute(cdm$concept,
@@ -506,15 +516,17 @@ cdmFlatten <- function(cdm,
   return(out)
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname cdmFlatten
 #' @export
 cdm_flatten <- function(cdm,
                         domain = c("condition", "drug", "procedure"),
                         include_concept_name = TRUE){
+  lifecycle::deprecate_soft("1.7.0", "cdm_flatten()", "cdmFlatten()")
   cdmFlatten(cdm = cdm,
              domain = domain,
              includeConceptName = include_concept_name)
 }
+
 
 

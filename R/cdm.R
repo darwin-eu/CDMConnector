@@ -16,6 +16,8 @@
 
 #' Create a CDM reference object from a database connection
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
 #'   v5.3 instance is located.
 #' @param cdm_schema,cdmSchema The schema where the OMOP CDM tables are located. Defaults
@@ -61,35 +63,35 @@
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 #'
 #' # minimal example
-#' cdm <- cdm_from_con(con,
-#'                     cdm_schema = "main",
-#'                     write_schema = "scratch")
+#' cdm <- cdmFromCon(con,
+#'                   cdmSchema = "main",
+#'                   writeSchema = "scratch")
 #'
 #' # write prefix is optional but recommended if write_schema is shared
-#' cdm <- cdm_from_con(con,
-#'                     cdm_schema = "main",
-#'                     write_schema = "scratch",
-#'                     write_prefix = "tmp_")
+#' cdm <- cdmFromCon(con,
+#'                   cdmSchema = "main",
+#'                   writeSchema = "scratch",
+#'                   writePrefix = "tmp_")
 #'
 #' # Some database systems use catalogs or compound schemas.
 #' # These can be specified as follows:
-#' cdm <- cdm_from_con(con,
-#'                     cdm_schema = "catalog.main",
-#'                     write_schema = "catalog.scratch",
-#'                     write_prefix = "tmp_")
+#' cdm <- cdmFromCon(con,
+#'                   cdmSchema = "catalog.main",
+#'                   writeSchema = "catalog.scratch",
+#'                   writePrefix = "tmp_")
 #'
-#' cdm <- cdm_from_con(con,
-#'                     cdm_schema = c("my_catalog", "main"),
-#'                     write_schema = c("my_catalog", "scratch"),
-#'                     write_prefix = "tmp_")
+#' cdm <- cdmFromCon(con,
+#'                   cdmSchema = c("my_catalog", "main"),
+#'                   writeSchema = c("my_catalog", "scratch"),
+#'                   writePrefix = "tmp_")
 #'
-#' cdm <- cdm_from_con(con,
-#'                     cdm_schema = c(catalog = "my_catalog", schema = "main"),
-#'                     write_schema = c(catalog = "my_catalog", schema = "scratch"),
-#'                     write_prefix = "tmp_")
+#' cdm <- cdmFromCon(con,
+#'                   cdmSchema = c(catalog = "my_catalog", schema = "main"),
+#'                   writeSchema = c(catalog = "my_catalog", schema = "scratch"),
+#'                   writePrefix = "tmp_")
 #'
 #'  DBI::dbDisconnect(con)
 #' }
@@ -107,6 +109,7 @@ cdm_from_con <- function(con,
                          achilles_schema = NULL,
                          .soft_validation = FALSE,
                          write_prefix = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_con()", "cdmFromCon()")
 
   if (!DBI::dbIsValid(con)) {
     cli::cli_abort("The connection is not valid. Is the database connection open?")
@@ -323,6 +326,7 @@ cdmFromCon <- function(con,
 }
 
 detect_cdm_version <- function(con, cdm_schema = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "detect_cdm_version()", "detectCdmVersion()")
   cdm_tables <- c("visit_occurrence", "cdm_source", "procedure_occurrence")
 
   if (!all(cdm_tables %in% listTables(con, schema = cdm_schema))) {
@@ -387,8 +391,8 @@ detect_cdm_version <- function(con, cdm_schema = NULL) {
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 #' version(cdm)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
@@ -417,8 +421,8 @@ version <- function(cdm) {
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 #' cdmName(cdm)
 #' #> [1] "eunomia"
 #'
@@ -428,10 +432,13 @@ cdmName <- function(cdm) {
   omopgenerics::cdmName(cdm)
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname cdmName
 #' @export
-cdm_name <- cdmName
+cdm_name <- function(cdm) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_name()", "cdmName()")
+  omopgenerics::cdmName(cdm)
+}
 
 # con = database connection
 # write_schema = schema with write access
@@ -470,7 +477,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
   DBI::dbRemoveTable(con, .inSchema(write_schema, tablename, dbms = dbms(con)))
 
-  if (tablename %in% list_tables(con, write_schema)) {
+  if (tablename %in% listTables(con, write_schema)) {
     cli::cli_inform("Write access verified but temp table `{name}` was not properly dropped!")
   }
 
@@ -488,7 +495,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
 #' CDM table selection helper
 #'
-#' The OMOP CDM tables are grouped together and the `tbl_group` function allows
+#' The OMOP CDM tables are grouped together and the `tblGroup` function allows
 #' users to easily create a CDM reference including one or more table groups.
 #'
 #' {\figure{cdm54.png}{options: width="100\%" alt="CDM 5.4"}}
@@ -501,6 +508,8 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #' fact_relationship, location, care_site, provider, payer_plan_period,
 #' cost, drug_era, dose_era, condition_era, concept, vocabulary,
 #' concept_relationship, concept_ancestor, concept_synonym, drug_strength
+#'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param group A character vector of CDM table groups: "vocab", "clinical",
 #' "all", "default", "derived".
@@ -516,10 +525,11 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #'                       user = "postgres",
 #'                       password = Sys.getenv("PASSWORD"))
 #'
-#' cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "public") %>%
-#'   cdm_select_tbl(tbl_group("vocab"))
+#' cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = "public") %>%
+#'   cdmSelectTbl(tblGroup("vocab"))
 #' }
 tbl_group <- function(group) {
+  lifecycle::deprecate_soft("1.7.0", "tbl_group()", "tblGroup()")
   # groups are defined in the internal package dataframe called spec_cdm_table
   # created by a script in the extras folder
   checkmate::assert_subset(group, c("vocab", "clinical", "all", "default", "derived"))
@@ -545,8 +555,8 @@ tblGroup <- tbl_group
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' cdm <- cdm_from_con(con)
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+#' cdm <- cdmFromCon(con)
 #' dbms(cdm)
 #' dbms(con)
 #' }
@@ -599,9 +609,9 @@ dbms <- function(con) {
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' vocab <- cdm_from_con(con, "main") %>%
-#'   cdm_select_tbl("concept", "concept_ancestor")
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+#' vocab <- cdmFromCon(con, "main") %>%
+#'   cdmSelectTbl("concept", "concept_ancestor")
 #' stow(vocab, here::here("vocab_tables"))
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
@@ -645,6 +655,8 @@ stow <- function(cdm, path, format = "parquet") {
 #' Create a CDM reference from a folder containing parquet, csv, or feather
 #' files
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
 #' @param format What is the file format to be read in? Must be "auto"
 #'   (default), "parquet", "csv", "feather".
@@ -659,6 +671,7 @@ cdm_from_files <- function(path,
                            cdm_version = "5.3",
                            cdm_name = NULL,
                            as_data_frame = TRUE) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_files()", "cdmFromFiles()")
   checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
   checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
   checkmate::assert_true(file.exists(path))
@@ -772,15 +785,15 @@ cdmFromFiles <- function(path,
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con, "main")
 #' snapshot(cdm)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 snapshot <- function(cdm) {
-  assert_tables(cdm, tables = c("cdm_source", "vocabulary"), empty.ok = TRUE)
-  assert_tables(cdm, tables = c("person", "observation_period"))
+  assertTables(cdm, tables = c("cdm_source", "vocabulary"), empty.ok = TRUE)
+  assertTables(cdm, tables = c("person", "observation_period"))
 
   person_count <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
 
@@ -871,7 +884,7 @@ cdmDisconnect <- function(cdm) {
 
   if (dbms(con) == "spark") {
     schema <- attr(cdm, "write_schema")
-    tbls <- list_tables(con, schema = schema)
+    tbls <- listTables(con, schema = schema)
     tempEmulationTablesToDrop <- stringr::str_subset(tbls, attr(cdm, "temp_emulation_prefix"))
     # try to drop the temp emulation tables
     purrr::walk(tempEmulationTablesToDrop,
@@ -880,9 +893,13 @@ cdmDisconnect <- function(cdm) {
   }
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @rdname cdmDisconnect
 #' @export
-cdm_disconnect <- cdmDisconnect
+cdm_disconnect <- function(cdm) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_disconnect()", "cdmDisconnect()")
+  cdmDisconnect(cdm)
+}
 
 
 
@@ -890,6 +907,8 @@ cdm_disconnect <- cdmDisconnect
 #'
 #' This function uses syntax similar to `dplyr::select` and can be used to
 #' subset a cdm reference object to a specific tables
+#'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param cdm A cdm reference object created by `cdm_from_con`
 #' @param ... One or more table names of the tables of the `cdm` object.
@@ -900,18 +919,19 @@ cdm_disconnect <- cdmDisconnect
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #'
-#' cdm <- cdm_from_con(con, "main")
+#' cdm <- cdmFromCon(con, "main")
 #'
-#' cdm_select_tbl(cdm, person)
-#' cdm_select_tbl(cdm, person, observation_period)
-#' cdm_select_tbl(cdm, tbl_group("vocab"))
-#' cdm_select_tbl(cdm, "person")
+#' cdmSelectTbl(cdm, person)
+#' cdmSelectTbl(cdm, person, observation_period)
+#' cdmSelectTbl(cdm, tblGroup("vocab"))
+#' cdmSelectTbl(cdm, "person")
 #'
 #' DBI::dbDisconnect(con)
 #' }
 cdm_select_tbl <- function(cdm, ...) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_select_tbl()", "cdmSelectTbl()")
   tables <- names(cdm) %>% rlang::set_names(names(cdm))
   selected <- names(tidyselect::eval_select(rlang::quo(c(...)), data = tables))
   if (length(selected) == 0) {
@@ -925,19 +945,23 @@ cdm_select_tbl <- function(cdm, ...) {
   cdm
 }
 
+#' @rdname cdm_select_tbl
+#' @export
+cdmSelectTbl <- cdm_select_tbl
+
 #' Get cdm write schema
 #'
-#' @param cdm A cdm reference object created by `cdm_from_con`
+#' @param cdm A cdm reference object created by `cdmFromCon`
 #'
 #' @return The database write schema
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #'
-#' cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
-#'                     cdm_schema =  "main", write_schema = "main")
+#' cdm <- cdmFromCon(con = con, cdmName = "Eunomia",
+#'                   cdmSchema =  "main", writeSchema = "main")
 #'
 #' cdmWriteSchema(cdm)
 #'
@@ -949,17 +973,17 @@ cdmWriteSchema <- function(cdm) {
 
 #' Get underlying database connection
 #'
-#' @param cdm A cdm reference object created by `cdm_from_con`
+#' @param cdm A cdm reference object created by `cdmFromCon`
 #'
 #' @return A reference to the database containing tables in the cdm reference
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #'
-#' cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
-#'                     cdm_schema =  "main", write_schema = "main")
+#' cdm <- cdmFromCon(con = con, cdmName = "Eunomia",
+#'                   cdmSchema =  "main", writeSchema = "main")
 #'
 #' cdmCon(cdm)
 #'

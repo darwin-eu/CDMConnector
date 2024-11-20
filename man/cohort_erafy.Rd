@@ -19,5 +19,5 @@ collapsed into a single record}
 A lazy query on a generated cohort set
 }
 \description{
-Collapse cohort records within a certain number of days
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

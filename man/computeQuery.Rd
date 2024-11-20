@@ -50,8 +50,8 @@ does not produce correct SQL.
 \dontrun{
 library(CDMConnector)
 
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con, "main")
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+cdm <- cdmFromCon(con, "main")
 
 # create a temporary table in the remote database from a dplyr query
 drugCount <- cdm$concept \%>\%

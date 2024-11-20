@@ -21,9 +21,9 @@ Collect a list of lazy queries and save the results as files
 }
 \examples{
 \dontrun{
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-vocab <- cdm_from_con(con, "main") \%>\%
-  cdm_select_tbl("concept", "concept_ancestor")
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+vocab <- cdmFromCon(con, "main") \%>\%
+  cdmSelectTbl("concept", "concept_ancestor")
 stow(vocab, here::here("vocab_tables"))
 DBI::dbDisconnect(con, shutdown = TRUE)
 }

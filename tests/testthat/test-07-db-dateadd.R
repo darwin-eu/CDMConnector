@@ -8,7 +8,7 @@ test_date_functions <- function(con, write_schema) {
   )
 
   # upload the date table
-  if ("tmpdate" %in% list_tables(con, write_schema)) {
+  if ("tmpdate" %in% listTables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
   }
 
@@ -29,7 +29,7 @@ test_date_functions <- function(con, write_schema) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate0", dbms = dbms(con)))
   } else {
     DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)), date_df)
-    expect_true("tmpdate" %in% list_tables(con, write_schema))
+    expect_true("tmpdate" %in% listTables(con, write_schema))
     date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
   }
   # test datediff
@@ -174,13 +174,13 @@ test_clock_functions <- function(con, write_schema) {
   )
 
   # upload the date table
-  if ("tmpdate" %in% list_tables(con, write_schema)) {
+  if ("tmpdate" %in% listTables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
   }
 
   # Note there is an issue with uploading date types to Oracle
   DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)), date_df)
-  expect_true("tmpdate" %in% list_tables(con, write_schema))
+  expect_true("tmpdate" %in% listTables(con, write_schema))
   date_tbl <- dplyr::tbl(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
 
   # add_years is not working on spark or duckdb
@@ -256,11 +256,11 @@ for (dbtype in dbToTest) {
 
 test_as.Date <- function(con, cdm_schema, write_schema) {
 
- # debugonce(cdm_from_con)
- cdm <- cdm_from_con(con,
-                     cdm_schema = cdm_schema,
-                     write_schema = write_schema,
-                     cdm_name = "test")
+ # debugonce(cdmFromCon)
+ cdm <- cdmFromCon(con,
+                   cdmSchema = cdm_schema,
+                   writeSchema = write_schema,
+                   cdmName = "test")
 
   df <- cdm$person %>%
     head(1) %>%

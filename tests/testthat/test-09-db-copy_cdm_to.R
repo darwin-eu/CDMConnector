@@ -4,11 +4,11 @@ test_copy_cdm_to <- function(con, write_schema) {
   if (dbms(con) == "bigquery") return(testthat::skip("failing test"))
 
   # copy a duckdb cdm to another database
-  con1 <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+  con1 <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
   on.exit(DBI::dbDisconnect(con1, shutdown = TRUE), add = TRUE)
 
-  cdm <- cdm_from_con(con1, cdm_schema = "main", cdm_name = "test", write_schema = "main") %>%
-      cdm_select_tbl("person", "observation_period", "vocabulary")
+  cdm <- cdmFromCon(con1, cdmSchema = "main", cdmName = "test", writeSchema = "main") %>%
+      cdmSelectTbl("person", "observation_period", "vocabulary")
 
   # create another cdm
   cdm2 <- copy_cdm_to(con = con, cdm = cdm, schema = write_schema)
@@ -17,7 +17,7 @@ test_copy_cdm_to <- function(con, write_schema) {
   expect_error(copy_cdm_to(con, cdm = cdm, schema = write_schema)) # cdm already exists
 
   # drop test tables
-  list_tables(con, write_schema) %>%
+  listTables(con, write_schema) %>%
     stringr::str_subset(paste0("^", write_schema["prefix"])) %>%
     purrr::walk(~DBI::dbRemoveTable(con, inSchema(write_schema, ., dbms(con))))
 }
@@ -38,11 +38,11 @@ for (dbtype in dbToTest) {
 
 test_that("duckdb - copy_cdm_to without prefix", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  cdm1 <- cdm_from_con(con1, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
+  con1 <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  cdm1 <- cdmFromCon(con1, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
 
   con2 <- DBI::dbConnect(duckdb::duckdb())
-  cdm2 <- copy_cdm_to(con2, cdm1, schema = "main")
+  cdm2 <- copyCdmTo(con2, cdm1, schema = "main")
 
   expect_setequal(names(cdm1), names(cdm2))
   expect_s3_class(cdm2, "cdm_reference")
@@ -61,8 +61,8 @@ test_that("duckdb - copy_cdm_to without prefix", {
 test_that("copy_to works locally", {
   skip("manual test")
 
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synthea-covid19-200k"))
-  cdm <- cdm_from_con(con, "main")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("synthea-covid19-200k"))
+  cdm <- cdmFromCon(con, "main")
 
   con2 <- DBI::dbConnect(RPostgres::Postgres(),
                          dbname = Sys.getenv("LOCAL_POSTGRESQL_DBNAME"),
@@ -74,18 +74,18 @@ test_that("copy_to works locally", {
   cdm_schema <- c(schema = "scratch", prefix = "test")
 
   purrr::walk(
-    list_tables(con2, cdm_schema),
+    listTables(con2, cdm_schema),
     ~DBI::dbRemoveTable(con2, inSchema(cdm_schema, ., dbms = dbms(con))))
 
   # takes 10 minutes or so
   system.time({
-    cdm2 <- copy_cdm_to(con2, cdm, schema = cdm_schema)
+    cdm2 <- copyCdmTo(con2, cdm, schema = cdm_schema)
   })
 
   expect_s3_class(cdm2, "cdm_reference")
 
   purrr::walk(
-    list_tables(con2, cdm_schema),
+    listTables(con2, cdm_schema),
     ~DBI::dbRemoveTable(con2, inSchema(cdm_schema, ., dbms = dbms(con))))
 
   DBI::dbDisconnect(con, shutdown = TRUE)

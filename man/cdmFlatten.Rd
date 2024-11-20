@@ -23,7 +23,7 @@ cdm_flatten(
 \item{domain}{Domains to include. Must be a subset of "condition", "drug",
 "procedure", "measurement", "visit", "death", "observation".}
 
-\item{include_concept_name, includeConceptName}{Should concept_name and type_concept_name be
+\item{includeConceptName, include_concept_name}{Should concept_name and type_concept_name be
 include in the output table? TRUE (default) or FALSE}
 }
 \value{
@@ -42,9 +42,9 @@ small in size.
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 
-cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm <- cdmFromCon(con, cdmSchema = "main")
 
 all_observations <- cdmSubset(cdm, personId = c(2, 18, 42)) \%>\%
   cdmFlatten() \%>\%

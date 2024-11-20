@@ -12,7 +12,7 @@ cdm_subset(cdm, person_id)
 \arguments{
 \item{cdm}{A cdm_reference object}
 
-\item{person_id, personId}{A numeric vector of person IDs to include in the cdm}
+\item{personId, person_id}{A numeric vector of person IDs to include in the cdm}
 }
 \value{
 A modified cdm_reference object where all clinical tables are lazy
@@ -32,9 +32,9 @@ the IDs provided.
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 
-cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm <- cdmFromCon(con, cdmSchema = "main")
 
 cdm2 <- cdmSubset(cdm, personId = c(2, 18, 42))
 

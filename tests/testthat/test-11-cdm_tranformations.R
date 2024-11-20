@@ -1,15 +1,15 @@
-test_that("cdm_sample works", {
+test_that("cdmSample works", {
   skip_if_not_installed("duckdb")
 
   # note that this form of connecting causes the db to be garbage collected when called
-  # using the "run tests" button in RStudio IDE `con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())`
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+  # using the "run tests" button in RStudio IDE `con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())`
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
   expect_true(DBI::dbIsValid(con))
 
-  cdm <- cdm_from_con(con, "main", "main", cdm_name = "test")
+  cdm <- cdmFromCon(con, "main", "main", cdmName = "test")
 
-  cdm_sampled <- cdm_sample(cdm, n = 10)
+  cdm_sampled <- cdmSample(cdm, n = 10)
 
   df <- cdm_sampled$person %>%
     dplyr::tally() %>%

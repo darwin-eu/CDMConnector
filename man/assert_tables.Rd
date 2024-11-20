@@ -31,6 +31,9 @@ If you write a function that accepts a cdm object as a parameter
 are in the cdm object, have the correct columns/fields,
 and (optionally) are not empty.
 }
+\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+}
 \examples{
 \dontrun{
 # Use assertTables inside a function to check that tables exist
@@ -44,8 +47,8 @@ countDrugsByGender <- function(cdm) {
 }
 
 library(CDMConnector)
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con)
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+cdm <- cdmFromCon(con)
 
 countDrugsByGender(cdm)
 

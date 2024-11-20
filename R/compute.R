@@ -91,7 +91,7 @@
 #' \dontrun{
 #' library(CDMConnector)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #' concept <- dplyr::tbl(con, "concept")
 #'
 #' # create a table
@@ -140,10 +140,13 @@ appendPermanent <- function(x, name, schema = NULL) {
   dplyr::tbl(x$src$con, .inSchema(schema, name, dbms = dbms(x$src$con)))
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname appendPermanent
 #' @export
-append_permanent <- appendPermanent
+append_permanent <- function(x, name, schema = NULL){ 
+  lifecycle::deprecate_soft("1.7.0", "append_permanent()", "appendPermanent()")
+  appendPermanent(x, name, schema)
+}
 
 #' Create a unique table name for temp tables
 #'
@@ -154,10 +157,13 @@ uniqueTableName <- function() {
   options(dbplyr_table_name = i)
   sprintf("dbplyr_%03i", i)
 }
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname uniqueTableName
 #' @export
-unique_table_name <- uniqueTableName
+unique_table_name <- function() {
+  lifecycle::deprecate_soft("1.7.0", "unique_table_name()", "uniqueTableName()")
+  uniqueTableName()
+}
 
 #' Execute dplyr query and save result in remote database
 #'
@@ -181,8 +187,8 @@ unique_table_name <- uniqueTableName
 #' \dontrun{
 #' library(CDMConnector)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+#' cdm <- cdmFromCon(con, "main")
 #'
 #' # create a temporary table in the remote database from a dplyr query
 #' drugCount <- cdm$concept %>%
@@ -254,7 +260,7 @@ computeQuery <- function(x,
 
     # handle overwrite for temp tables
     # TODO test overwrite of temp tables this across all dbms
-    if (name %in% list_tables(con)) {
+    if (name %in% listTables(con)) {
       if (isFALSE(overwrite)) {
         rlang::abort(glue::glue("table {name} already exists and overwrite is FALSE!"))
       }
@@ -323,10 +329,18 @@ computeQuery <- function(x,
   return(out)
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname computeQuery
 #' @export
-compute_query <- computeQuery
+compute_query <- function(x,
+                         name = uniqueTableName(),
+                         temporary = TRUE,
+                         schema = NULL,
+                         overwrite = TRUE,
+                         ...) {
+  lifecycle::deprecate_soft("1.7.0", "compute_query()", "computeQuery()")
+  computeQuery(x, name, temporary, schema, overwrite, ...)
+}
 
 # Get the full table name consisting of the schema and table name.
 #

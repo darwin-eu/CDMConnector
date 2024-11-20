@@ -1,9 +1,9 @@
 
 test_record_cohort_attrition <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "test", cdm_schema = cdm_schema,
-    write_schema = write_schema
+  cdm <- cdmFromCon(
+    con = con, cdmName = "test", cdmSchema = cdm_schema,
+    writeSchema = write_schema
   )
 
   cdm <- generateConceptCohortSet(
@@ -134,11 +134,11 @@ test_that("record_cohort_attrition works", {
   skip_on_cran()
   skip_if_not_installed("CirceR")
   skip_if_not_installed("duckdb")
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
 
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
@@ -152,7 +152,7 @@ test_that("record_cohort_attrition works", {
 
   cdm$gibleed2 <- cdm$gibleed2 %>%
     dplyr::filter(cohort_start_date >= as.Date("2019-01-01")) %>%
-    record_cohort_attrition("After 2019-01-01")
+    recordCohortAttrition("After 2019-01-01")
 
   df <- attrition(cdm$gibleed2) %>%
     dplyr::filter(reason == "After 2019-01-01") %>%

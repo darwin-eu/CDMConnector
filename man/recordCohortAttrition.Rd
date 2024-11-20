@@ -30,15 +30,15 @@ Update the cohort attrition table with new counts and a reason for attrition.
 library(CDMConnector)
 library(dplyr)
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-cdm <- cdm_from_con(con = con, cdm_schema = "main", write_schema = "main")
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+cdm <- cdmFromCon(con = con, cdmSchema = "main", writeSchema = "main")
 cdm <- generateConceptCohortSet(
   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
 )
 
 settings(cdm$new_cohort)
 cohortCount(cdm$new_cohort)
-cohortAttrition(cdm$new_cohort)
+attrition(cdm$new_cohort)
 
 cdm$new_cohort <- cdm$new_cohort \%>\%
   filter(cohort_start_date >= as.Date("2010-01-01"))
@@ -49,6 +49,6 @@ cdm$new_cohort <- updateCohortAttributes(
 
 settings(cdm$new_cohort)
 cohortCount(cdm$new_cohort)
-cohortAttrition(cdm$new_cohort)
+attrition(cdm$new_cohort)
 }
 }

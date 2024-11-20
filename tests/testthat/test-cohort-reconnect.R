@@ -2,9 +2,9 @@ library(CDMConnector)
 library(testthat)
 test_that("cohort codelist attributes are preserved", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
   cdm <- generateConceptCohortSet(cdm, name = "celecoxib",
                                   conceptSet = list(celecoxib = 1118084))
@@ -17,11 +17,11 @@ test_that("cohort codelist attributes are preserved", {
   expect_equal(names(cl), "celecoxib")
   expect_equal(cl[[1]], 1118084L)
 
-  cdm2 <- cdm_from_con(
-    con = con, cdm_name = "eunomia",
-    cdm_schema = "main",
-    write_schema = "main",
-    cohort_tables = "celecoxib"
+  cdm2 <- cdmFromCon(
+    con = con, cdmName = "eunomia",
+    cdmSchema = "main",
+    writeSchema = "main",
+    cohortTables = "celecoxib"
   )
   # double check that the initial code list is still there
   df <- dplyr::collect(attr(cdm$celecoxib, "cohort_codelist"))

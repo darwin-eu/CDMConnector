@@ -1,6 +1,6 @@
 
 test_compute_query <- function(con, cdm_schema, write_schema) {
-  cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = cdm_schema, write_schema = write_schema)
+  cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = cdm_schema, writeSchema = write_schema)
 
   new_table_name <- paste0("temp", floor(10*as.numeric(Sys.time()) %% 1e7))
 
@@ -67,11 +67,11 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
   expect_true(nrow(dplyr::collect(x)) >= 3)
 
   DBI::dbRemoveTable(con, inSchema(write_schema, new_table_name, dbms(con)))
-  expect_false(new_table_name %in% list_tables(con, write_schema))
+  expect_false(new_table_name %in% listTables(con, write_schema))
 }
 
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - compute_query"), {
+  test_that(glue::glue("{dbtype} - computeQuery"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
@@ -90,8 +90,8 @@ test_that("uniqueTableName", {
 
 test_that("message does not duplicate when prefix is used", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb( eunomia_dir()))
-  cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "main", write_schema = c(prefix = "a_", schema = "main"))
+  con <- DBI::dbConnect(duckdb::duckdb( eunomiaDir()))
+  cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = "main", writeSchema = c(prefix = "a_", schema = "main"))
   DBI::dbWriteTable(con, inSchema(attr(attr(cdm, "cdm_source"), "write_schema"), "cars"), cars)
   expect_no_error(dropTable(cdm, "cars"))
   DBI::dbDisconnect(con, shutdown = TRUE)

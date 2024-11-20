@@ -65,5 +65,5 @@ path <- file.path("~", "darwin", "CDMConnector", "scratch", "GiBleed_5.3")
 
 con <- load_cdm(path)
 
-cdm_from_con(con)$concept %>%
+cdmFromCon(con)$concept %>%
   collect

@@ -14,6 +14,8 @@ A character vector with example CDM dataset identifiers
 }
 \description{
 List the available example CDM datasets
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{
@@ -22,6 +24,6 @@ exampleDatasets()[1]
 #> [1] "GiBleed"
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
-cdm <- cdm_from_con(con)
+cdm <- cdmFromCon(con)
 }
 }

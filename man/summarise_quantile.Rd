@@ -49,8 +49,8 @@ mtcars_tbl <- dplyr::copy_to(con, mtcars, name = "tmp", overwrite = TRUE, tempor
 df <- mtcars_tbl \%>\%
  dplyr::group_by(cyl) \%>\%
  dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) \%>\%
- summarise_quantile(mpg, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),
-                    name_suffix = "quant") \%>\%
+ summariseQuantile(mpg, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+                    nameSuffix = "quant") \%>\%
  dplyr::collect()
 
 DBI::dbDisconnect(con, shutdown = TRUE)

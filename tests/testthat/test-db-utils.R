@@ -7,7 +7,7 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
   # upload a table to the database
   if (is.null(con) || is.null(write_schema)) { return(invisible(NULL)) }
 
-  if ("temp_test" %in% list_tables(con, schema = write_schema)) {
+  if ("temp_test" %in% listTables(con, schema = write_schema)) {
     DBI::dbRemoveTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)))
   }
 
@@ -22,7 +22,7 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
     )
   }
 
-  expect_true("temp_test" %in% list_tables(con, write_schema))
+  expect_true("temp_test" %in% listTables(con, write_schema))
 
   # <BigQueryConnection> uses an old dbplyr interface
   # i Please install a newer version of the package or contact the maintainer
@@ -39,11 +39,11 @@ test_in_schema <- function(con, write_schema, cdm_schema) {
 
   expect_equal(df, dplyr::arrange(cars, .data$speed, .data$dist))
 
-  tables <- list_tables(con, cdm_schema) %>% tolower()
+  tables <- listTables(con, cdm_schema) %>% tolower()
   expect_true(all(c("person", "observation_period") %in% tables))
 
   DBI::dbRemoveTable(con, inSchema(write_schema, "temp_test", dbms = dbms(con)))
-  expect_false("temp_test" %in% list_tables(con, write_schema))
+  expect_false("temp_test" %in% listTables(con, write_schema))
 }
 
 
@@ -73,21 +73,21 @@ for (dbtype in dbToTest) {
 }
 
 
-# test_that("oracle - list_tables only", {
+# test_that("oracle - listTables only", {
 # only needed when the previous test was failing
 #   con <- get_connection("oracle")
-#   tables <- list_tables(con, get_cdm_schema("oracle")) %>% tolower
+#   tables <- listTables(con, get_cdm_schema("oracle")) %>% tolower
 #   expect_true(all(c("person", "observation_period") %in% tables))
 #   disconnect(con)
 # })
 
 test_that("getFullTableNameQuoted", {
   skip_if_not_installed("duckdb")
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
 
   result <- getFullTableNameQuoted(x = cdm$person, name = "myTable", schema = NULL)
@@ -109,9 +109,9 @@ test_that("getFullTableNameQuoted", {
 
 test_that(".dbIsValid", {
   skip_if_not_installed("duckdb")
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
   result <- .dbIsValid(con)
   expect_true(result)

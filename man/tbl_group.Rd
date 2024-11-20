@@ -17,7 +17,7 @@ tblGroup(group)
 A character vector of CDM tables names in the groups
 }
 \description{
-The OMOP CDM tables are grouped together and the \code{tbl_group} function allows
+The OMOP CDM tables are grouped together and the \code{tblGroup} function allows
 users to easily create a CDM reference including one or more table groups.
 }
 \details{
@@ -31,6 +31,8 @@ device_exposure, measurement, observation, death, note, note_nlp, specimen,
 fact_relationship, location, care_site, provider, payer_plan_period,
 cost, drug_era, dose_era, condition_era, concept, vocabulary,
 concept_relationship, concept_ancestor, concept_synonym, drug_strength
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{
@@ -40,7 +42,7 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       user = "postgres",
                       password = Sys.getenv("PASSWORD"))
 
-cdm <- cdm_from_con(con, cdm_name = "test", cdm_schema = "public") \%>\%
-  cdm_select_tbl(tbl_group("vocab"))
+cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = "public") \%>\%
+  cdmSelectTbl(tblGroup("vocab"))
 }
 }

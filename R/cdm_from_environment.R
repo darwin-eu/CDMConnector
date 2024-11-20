@@ -19,7 +19,7 @@
 #' This function is intended to be used with the Darwin execution engine. The execution engine
 #' runs OHDSI studies in a pre-defined runtime environment and makes several environment
 #' variables available for connecting to a CDM database. Programmer writing code to run
-#' on the execution engine and simply use `cdm <- cdm_from_environment()` to create a cdm reference
+#' on the execution engine and simply use `cdm <- cdmFromEnvironment()` to create a cdm reference
 #' object to use for their analysis and the database connection and cdm object should be
 #' automatically created. This obviates the need for site specific code for connecting
 #' to the database and creating the cdm reference object.
@@ -40,7 +40,9 @@
 #'    \item{WRITE_SCHEMA: The shema where the user has write access and tables will be created during study execution.}
 #' }
 #'
-#' @param write_prefix (string) An optional prefix to use for all tables written to the CDM.
+#' `r lifecycle::badge("deprecated")`
+#'
+#' @param write_prefix,writePrefix (string) An optional prefix to use for all tables written to the CDM.
 #'
 #' @return A cdm_reference object
 #' @export
@@ -51,14 +53,15 @@
 #' library(CDMConnector)
 #'
 #' # This will only work in an evironment where the proper variables are present.
-#' cdm <- cdm_from_environment()
+#' cdm <- cdmFromEnvironment()
 #'
 #' # Proceed with analysis using the cdm object.
 #'
 #' # Close the database connection when done.
-#' cdm_disconnect(cdm)
+#' cdmDisconnect(cdm)
 #' }
 cdm_from_environment <- function(write_prefix = "") {
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_environment()", "cdmFromEnvironment()")
 
   vars <- c("DBMS_TYPE",
             "DATA_SOURCE_NAME",
@@ -86,7 +89,7 @@ cdm_from_environment <- function(write_prefix = "") {
 
     checkmate::assert_choice(db, CDMConnector::example_datasets())
     con <- DBI::dbConnect(duckdb::duckdb(), CDMConnector::eunomia_dir(db))
-    cdm <- CDMConnector::cdm_from_con(con, "main", "main", cdm_version = "5.3", cdm_name = db)
+    cdm <- CDMConnector::cdmFromCon(con, "main", "main", cdmVersion = "5.3", cdmName = db)
     return(cdm)
   }
 
@@ -181,16 +184,22 @@ cdm_from_environment <- function(write_prefix = "") {
     cdm_schema <- Sys.getenv("CDM_SCHEMA")
   }
 
-  cdm <- CDMConnector::cdm_from_con(
+  cdm <- CDMConnector::cdmFromCon(
     con = con,
-    cdm_schema = cdm_schema,
-    write_schema = write_schema,
-    cdm_version = Sys.getenv("CDM_VERSION"),
-    cdm_name = Sys.getenv("DATA_SOURCE_NAME"))
+    cdmSchema = cdm_schema,
+    writeSchema = write_schema,
+    cdmVersion = Sys.getenv("CDM_VERSION"),
+    cdmName = Sys.getenv("DATA_SOURCE_NAME"))
 
   if (length(names(cdm)) == 0) {
     cli::cli_abort("CDM object creation failed!")
   }
 
   return(cdm)
+}
+
+#' @rdname cdm_from_environment 
+#' @export
+cdmFromEnvironment <- function(writePrefix = ""){
+  cdm_from_environment(writePrefix)
 }

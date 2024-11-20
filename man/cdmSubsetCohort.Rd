@@ -43,9 +43,9 @@ used to subset a cdm table and store it as a new table in the database.
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 
-cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
 # generate a cohort
 path <- system.file("cohorts2", mustWork = TRUE, package = "CDMConnector")

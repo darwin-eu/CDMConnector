@@ -9,7 +9,7 @@ test_insert_table <- function(cdm, cdm_schema, write_schema) {
   table <- datasets::cars |>
     dplyr::arrange(dplyr::across(c("speed", "dist")))
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, cdm_name = "test", write_schema = write_schema)
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema, cdmName = "test", writeSchema = write_schema)
 
   tab <- insertTable(cdm = cdm, name = name, table = table)
 }
@@ -17,7 +17,7 @@ test_insert_table <- function(cdm, cdm_schema, write_schema) {
 
 dbtype = "spark"
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - cdm_from_con"), {
+  test_that(glue::glue("{dbtype} - cdmFromCon"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)

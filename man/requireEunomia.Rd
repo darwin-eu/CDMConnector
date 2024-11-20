@@ -21,4 +21,6 @@ Path to eunomia database.
 \description{
 Require eunomia to be available. The function makes sure that you can later
 create a eunomia database with \code{eunomiaDir()}.
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

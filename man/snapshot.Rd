@@ -20,8 +20,8 @@ Extract the name, version, and selected record counts from a cdm.
 \examples{
 \dontrun{
 library(CDMConnector)
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-cdm <- cdm_from_con(con, "main")
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+cdm <- cdmFromCon(con, "main")
 snapshot(cdm)
 
 DBI::dbDisconnect(con, shutdown = TRUE)

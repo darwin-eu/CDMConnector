@@ -29,7 +29,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
   # dbAppendTable does not work using bigrquery https://github.com/r-dbi/bigrquery/issues/539
 
   # update v1.3 (Jan 2024) - oracle and bigquery not supported. Quote tables/columns on snowflake.
-  existingTables <- list_tables(con, writeSchema)
+  existingTables <- listTables(con, writeSchema)
 
   if (name %in% existingTables) {
     DBI::dbRemoveTable(con, .inSchema(writeSchema, name, dbms(con)))

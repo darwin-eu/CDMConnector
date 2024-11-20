@@ -22,7 +22,7 @@ test_that("write_schema can be in a separate database in snowflake", {
   # optionally add a prefix. If a prefix is used then schema components shoule be named.
   write_schema <- c(catalog = "ATLAS", schema = "RESULTS", prefix = "temp_")
 
-  cdm <- cdm_from_con(con, cdm_schema, write_schema)
+  cdm <- cdmFromCon(con, cdm_schema, write_schema)
 
   new_table <- cdm$person %>%
     head(5) %>%

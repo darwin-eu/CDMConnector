@@ -1,6 +1,6 @@
 library(CDMConnector)
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-cdm <- cdm_from_con(con, "main", "main")
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+cdm <- cdmFromCon(con, "main", "main")
 
 
 
@@ -42,7 +42,7 @@ write_schema <- cdmWriteSchema(cdm)
 DBI::dbWriteTable(con, inSchema(write_schema, "codesets", dbms(con)), codesets)
 
 codesets <- dplyr::tbl(con, inSchema(write_schema, "codesets")) %>%
-  compute_query()
+  computeQuery()
 
 DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
 
@@ -87,7 +87,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   # check ConceptSet ----
   checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet"), names = "named")
   checkmate::assertList(conceptSet, min.len = 1, names = "named")
-  CDMConnector::assert_tables(cdm, "concept")
+  CDMConnector::assertTables(cdm, "concept")
 
   if (methods::is(conceptSet[[1]], "ConceptSet")) {
     purrr::walk(conceptSet, ~checkmate::assertClass(., "ConceptSet"))
@@ -126,7 +126,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
                     overwrite = TRUE)
 
   if (any(df$include_descendants)) {
-    CDMConnector::assert_tables(cdm, "concept_ancestor")
+    CDMConnector::assertTables(cdm, "concept_ancestor")
   }
 
   # realize full list of concepts ----
@@ -164,7 +164,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
   get_domain <- function(domain, cdm, concepts) {
     df <- table_refs(domain_id = domain)
 
-    CDMConnector::assert_tables(cdm, df$table_name, empty.ok = TRUE)
+    CDMConnector::assertTables(cdm, df$table_name, empty.ok = TRUE)
 
     by <- rlang::set_names("concept_id", df[["concept_id"]])
 

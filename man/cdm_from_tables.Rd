@@ -20,7 +20,7 @@ cohort_attrition can be provided as attributes.}
 A \code{cdm_reference} object.
 }
 \description{
-Create a cdm object from local tables
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{
@@ -36,9 +36,9 @@ observation_period <- dplyr::tibble(
   observation_period_end_date = as.Date("2025-12-31"),
   period_type_concept_id = 0
 )
-cdm <- cdm_from_tables(
+cdm <- cdmFromTables(
   tables = list("person" = person, "observation_period" = observation_period),
-  cdm_name = "test"
+  cdmName = "test"
 )
 }
 }

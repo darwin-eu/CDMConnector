@@ -2,12 +2,15 @@
 % Please edit documentation in R/cdm_from_environment.R
 \name{cdm_from_environment}
 \alias{cdm_from_environment}
+\alias{cdmFromEnvironment}
 \title{Create a CDM object from a pre-defined set of environment variables}
 \usage{
 cdm_from_environment(write_prefix = "")
+
+cdmFromEnvironment(writePrefix = "")
 }
 \arguments{
-\item{write_prefix}{(string) An optional prefix to use for all tables written to the CDM.}
+\item{write_prefix, writePrefix}{(string) An optional prefix to use for all tables written to the CDM.}
 }
 \value{
 A cdm_reference object
@@ -16,7 +19,7 @@ A cdm_reference object
 This function is intended to be used with the Darwin execution engine. The execution engine
 runs OHDSI studies in a pre-defined runtime environment and makes several environment
 variables available for connecting to a CDM database. Programmer writing code to run
-on the execution engine and simply use \code{cdm <- cdm_from_environment()} to create a cdm reference
+on the execution engine and simply use \code{cdm <- cdmFromEnvironment()} to create a cdm reference
 object to use for their analysis and the database connection and cdm object should be
 automatically created. This obviates the need for site specific code for connecting
 to the database and creating the cdm reference object.
@@ -37,6 +40,8 @@ The environment variables used by this function and provided by the execution en
 \item{CDM_SCHEMA: The schema name where the OMOP CDM is located in the database.}
 \item{WRITE_SCHEMA: The shema where the user has write access and tables will be created during study execution.}
 }
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{
@@ -44,11 +49,11 @@ The environment variables used by this function and provided by the execution en
 library(CDMConnector)
 
 # This will only work in an evironment where the proper variables are present.
-cdm <- cdm_from_environment()
+cdm <- cdmFromEnvironment()
 
 # Proceed with analysis using the cdm object.
 
 # Close the database connection when done.
-cdm_disconnect(cdm)
+cdmDisconnect(cdm)
 }
 }

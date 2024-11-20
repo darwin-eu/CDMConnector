@@ -23,8 +23,8 @@
 #
 #   # summarise-quantile works without group by
 #   df1 <- mtcars_tbl %>%
-#     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2),
-#                        name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = round(seq(0, 1, 0.05), 2),
+#                        nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -34,7 +34,7 @@
 #
 #   # summarise-quantile works without group by (single value quantile)"
 #   df1 <- mtcars_tbl %>%
-#     summarise_quantile(mpg, probs = 0.05, name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = 0.05, nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -46,8 +46,8 @@
 #   # summarise-quantile works with select
 #   df1 <- mtcars_tbl %>%
 #     dplyr::select(cyl, mpg) %>%
-#     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2),
-#                        name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = round(seq(0, 1, 0.05), 2),
+#                        nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -58,7 +58,7 @@
 #   # summarise-quantile works with mutate
 #   df1 <- mtcars_tbl %>%
 #     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-#     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -73,7 +73,7 @@
 #   df1 <- mtcars_tbl %>%
 #     dplyr::select(cyl, mpg) %>%
 #     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-#     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -93,7 +93,7 @@
 #
 #   df1 <- mtcars_tbl %>%
 #     dplyr::group_by(cyl) %>%
-#     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -114,7 +114,7 @@
 #   df1 <- mtcars_tbl %>%
 #     dplyr::select(cyl, mpg) %>%
 #     dplyr::group_by(cyl) %>%
-#     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -140,7 +140,7 @@
 #                   n = dplyr::n(),
 #                   min = min(mpg, na.rm = TRUE),
 #                   max = max(mpg, na.rm = TRUE)) %>%
-#     summarise_quantile(mpg, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant") %>%
+#     summariseQuantile(mpg, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -167,7 +167,7 @@
 #     df1 <- mtcars_tbl %>%
 #       dplyr::group_by(cyl) %>%
 #       dplyr::summarise(mean = mean(mpg, na.rm = TRUE)) %>%
-#       summarise_quantile(mpg, probs = 0.05, name_suffix = "quant") %>%
+#       summariseQuantile(mpg, probs = 0.05, nameSuffix = "quant") %>%
 #       dplyr::collect()
 #     df1
 #   }
@@ -183,7 +183,7 @@
 #   df1 <- mtcars_tbl %>%
 #     dplyr::group_by(cyl) %>%
 #     dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-#     summarise_quantile(probs = 0.05, name_suffix = "quant") %>%
+#     summariseQuantile(probs = 0.05, nameSuffix = "quant") %>%
 #     dplyr::collect()
 #
 #   df2 <- mtcars %>%
@@ -206,7 +206,7 @@
 #     df1 <- mtcars_tbl %>%
 #       dplyr::group_by(cyl) %>%
 #       dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-#       summarise_quantile(cyl, probs = 0.05, name_suffix = "quant") %>%
+#       summariseQuantile(cyl, probs = 0.05, nameSuffix = "quant") %>%
 #       dplyr::collect()
 #     df1
 #   }
@@ -222,7 +222,7 @@
 #   f <- function(){
 #     df1 <- mtcars_tbl %>%
 #       dplyr::group_by(cyl) %>%
-#       summarise_quantile(probs = 0.05, name_suffix = "quant") %>%
+#       summariseQuantile(probs = 0.05, nameuffix = "quant") %>%
 #       dplyr::collect()
 #     df1
 #   }
@@ -230,22 +230,22 @@
 # })
 #
 #
-# test_that("summarise_quantile works on DuckDB", {
+# test_that("summariseQuantile works on DuckDB", {
 #   skip_if_not_installed("duckdb")
-#   skip_if_not(eunomia_is_available())
+#   skip_if_not(eunomiaIsAvailable())
 #   skip("failing test")
 #
-#   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 #
-#   cdm <- cdm_from_con(con, cdm_schema = "main")
+#   cdm <- cdmFromCon(con, cdmSchema = "main")
 #
 #   df1 <- cdm$drug_exposure %>%
 #     dplyr::select(drug_concept_id, days_supply) %>%
 #     dplyr::filter(!is.na(days_supply)) %>%
 #     dplyr::group_by(drug_concept_id) %>%
 #     dplyr::mutate(n = dplyr::n()) %>%
-#     summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
+#     summariseQuantile(days_supply, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant")  %>%
 #     dplyr::arrange(desc(n)) %>%
 #     head(100) %>%
 #     dplyr::collect()
@@ -268,7 +268,7 @@
 # })
 #
 #
-# test_that("summarise_quantile works on Postgres", {
+# test_that("summariseQuantile works on Postgres", {
 #   skip_if(Sys.getenv("CDM5_POSTGRESQL_USER") == "")
 #   con <- DBI::dbConnect(RPostgres::Postgres(),
 #                         dbname =   Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
@@ -276,13 +276,13 @@
 #                         user =     Sys.getenv("CDM5_POSTGRESQL_USER"),
 #                         password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
 #
-#   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
+#   cdm <- cdmFromCon(con, cdmSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
 #   df1 <- cdm$drug_exposure %>%
 #     dplyr::select(drug_concept_id, days_supply) %>%
 #     dplyr::filter(!is.na(days_supply)) %>%
 #     dplyr::group_by(drug_concept_id) %>%
 #     dplyr::mutate(n = dplyr::n()) %>%
-#     summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
+#     summariseQuantile(days_supply, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant")  %>%
 #     dplyr::arrange(desc(n)) %>%
 #     head(100) %>%
 #     dplyr::collect()
@@ -307,7 +307,7 @@
 # })
 #
 #
-# test_that("summarise_quantile works on SQL Server", {
+# test_that("summariseQuantile works on SQL Server", {
 #   skip_if(Sys.getenv("CDM5_SQL_SERVER_USER") == "")
 #   con <- DBI::dbConnect(odbc::odbc(),
 #                         Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
@@ -318,13 +318,13 @@
 #                         TrustServerCertificate = "yes",
 #                         Port     = 1433)
 #
-#   cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"))
+#   cdm <- cdmFromCon(con, cdmchema = c("CDMV5", "dbo"))
 #   df1 <- cdm$drug_exposure %>%
 #     dplyr::select(drug_concept_id, days_supply) %>%
 #     dplyr::filter(!is.na(days_supply)) %>%
 #     dplyr::group_by(drug_concept_id) %>%
 #     dplyr::mutate(n = dplyr::n()) %>%
-#     summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
+#     summariseQuantile(days_supply, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant")  %>%
 #     dplyr::arrange(desc(n)) %>%
 #     head(100) %>%
 #     dplyr::collect()
@@ -349,7 +349,7 @@
 # })
 #
 #
-# test_that("summarise_quantile works on Redshift", {
+# test_that("summariseQuantile works on Redshift", {
 #   skip_if(Sys.getenv("CDM5_REDSHIFT_USER") == "")
 #   skip("failing test")
 #   con <- DBI::dbConnect(RPostgres::Redshift(),
@@ -359,13 +359,13 @@
 #                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
 #                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 #
-#   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
+#   cdm <- cdmFromCon(con, cdmSchema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
 #   df1 <- cdm$drug_exposure %>%
 #     dplyr::select(drug_concept_id, days_supply) %>%
 #     dplyr::filter(!is.na(days_supply)) %>%
 #     dplyr::group_by(drug_concept_id) %>%
 #     dplyr::mutate(n = dplyr::n()) %>%
-#     summarise_quantile(days_supply, probs = round(seq(0, 1, 0.05), 2), name_suffix = "quant")  %>%
+#     summariseQuantile(days_supply, probs = round(seq(0, 1, 0.05), 2), nameSuffix = "quant")  %>%
 #     dplyr::arrange(desc(n)) %>%
 #     head(100) %>%
 #     dplyr::collect()
@@ -406,7 +406,7 @@
 #
 #
 #
-#   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
+#   cdm <- cdmFromCon(con, cdmSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
 #
 #   # fails
 #   # df <- cdm$drug_exposure %>%
@@ -442,7 +442,7 @@
 #                         TrustServerCertificate = "yes",
 #                         Port     = 1433)
 #
-#   cdm <- cdm_from_con(con, cdm_schema = c("CDMV5", "dbo"))
+#   cdm <- cdmFromCon(con, cdmSchema = c("CDMV5", "dbo"))
 #
 #   df <- cdm$drug_exposure %>%
 #     dplyr::select(drug_concept_id, days_supply) %>%
@@ -476,7 +476,7 @@
 #                         user     = Sys.getenv("CDM5_REDSHIFT_USER"),
 #                         password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 #
-#   cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
+#   cdm <- cdmFromCon(con, cdmSchema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
 #
 #   # df <- cdm$drug_exposure %>%
 #   #   dplyr::select(drug_concept_id, days_supply) %>%
@@ -506,7 +506,7 @@
 #
 #   con <- DBI::dbConnect(odbc::odbc(), "OracleODBC-19")
 #
-#   cdm <- cdm_from_con(con, cdm_schema = "CDMV5")
+#   cdm <- cdmFromCon(con, cdmSchema = "CDMV5")
 #
 #   df <- cdm$drug_exposure %>%
 #     dplyr::select(drug_concept_id, days_supply) %>%
@@ -534,7 +534,7 @@
 #
 #   con <- DBI::dbConnect(odbc::odbc(), dsn = "Databricks", bigint = "numeric")
 #
-#   cdm <- cdm_from_con(con, cdm_schema = "omop531")
+#   cdm <- cdmFromCon(con, cdmSchema = "omop531")
 #
 #   # df <- cdm$drug_exposure %>%
 #   #   dplyr::select(drug_concept_id, days_supply) %>%
@@ -558,12 +558,12 @@
 #
 # test_that("quantile translation works on duckdb", {
 #   skip_if_not(rlang::is_installed("duckdb"))
-#   skip_if_not(eunomia_is_available())
+#   skip_if_not(eunomiaIsAvailable())
 #   skip("manual test")
 #
-#   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #
-#   cdm <- cdm_from_con(con, cdm_schema = "main")
+#   cdm <- cdmFromCon(con, cdmSchema = "main")
 #
 #   # df <- cdm$drug_exposure %>%
 #   #   dplyr::select(drug_concept_id, days_supply) %>%
@@ -587,12 +587,12 @@
 #
 #
 
-test_that("summarise_quantile works", {
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, "main")
+test_that("summariseQuantile works", {
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+  cdm <- cdmFromCon(con, "main")
 
   result1 <- cdm$person %>%
-    summarise_quantile(x = year_of_birth, probs = 0.5) %>%
+    summariseQuantile(x = year_of_birth, probs = 0.5) %>%
     dplyr::pull()
 
   result2 <- cdm$person %>%

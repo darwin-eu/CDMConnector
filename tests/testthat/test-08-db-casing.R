@@ -4,7 +4,7 @@ test_lowercase <- function(con, cdm_schema, write_schema) {
   cars2 <- dplyr::rename_all(cars, toupper)
 
   # overwrite argument does not work on all dbms
-  if ("cars" %in% list_tables(con, write_schema)) {
+  if ("cars" %in% listTables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(write_schema, "cars", dbms = dbms(con)))
   }
 

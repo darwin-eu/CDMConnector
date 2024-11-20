@@ -21,9 +21,12 @@ A character vector of table names
 DBI::dbListTables can be used to get all tables in a database but not always in a
 specific schema. \code{listTables} will list tables in a schema.
 }
+\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+}
 \examples{
 \dontrun{
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 listTables(con, schema = "main")
 }
 }

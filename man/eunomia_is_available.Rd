@@ -18,5 +18,5 @@ eunomiaIsAvailable(datasetName = "GiBleed", cdmVersion = "5.3")
 TRUE if the eunomia example dataset is available and FASLE otherwise
 }
 \description{
-Has the Eunomia dataset been cached?
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

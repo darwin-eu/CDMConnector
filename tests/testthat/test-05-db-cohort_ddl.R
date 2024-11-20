@@ -10,8 +10,8 @@ test_cohort_ddl <- function(con, write_schema) {
                        computeAttrition = FALSE)
   )
 
-  # list_tables subsets based on prefix and strips prefix from names
-  tables <- sort(list_tables(con, schema = write_schema))
+  # listTables subsets based on prefix and strips prefix from names
+  tables <- sort(listTables(con, schema = write_schema))
   expect_true(name %in% tables)
 
   # with attrition - table are overwritten
@@ -22,7 +22,7 @@ test_cohort_ddl <- function(con, write_schema) {
                        computeAttrition = TRUE)
   )
 
-  tables <- list_tables(con, schema = write_schema)
+  tables <- listTables(con, schema = write_schema)
   expect_true(name %in% tables)
   expect_true(paste0(name, "_inclusion") %in% tables)
   expect_true(paste0(name, "_inclusion_result") %in% tables)
@@ -36,7 +36,7 @@ test_cohort_ddl <- function(con, write_schema) {
     DBI::dbRemoveTable(con, inSchema(write_schema, tb, dbms = dbms(con)))
   }
 
-  tables <- list_tables(con, schema = write_schema)
+  tables <- listTables(con, schema = write_schema)
   expect_false(name %in% tables)
   expect_false(paste0(name, "_inclusion") %in% tables)
   expect_false(paste0(name, "_inclusion_result") %in% tables)

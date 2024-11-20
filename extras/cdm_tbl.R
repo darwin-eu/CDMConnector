@@ -16,8 +16,8 @@ NULL
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-#' cdm <- cdm_from_con(con, "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+#' cdm <- cdmFromCon(con, "main")
 #'
 #' local_concept <- dplyr::collect(cdm$concept)
 #' DBI::dbDisconnect(con, shutdown = TRUE)

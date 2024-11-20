@@ -13,18 +13,18 @@ cohort_count(cohort)
 A table with the counts.
 }
 \description{
-Get cohort counts from a generated_cohort_set object.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{
 library(CDMConnector)
 library(dplyr)
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-cdm <- cdm_from_con(con = con, cdm_schema = "main", write_schema = "main")
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+cdm <- cdmFromCon(con = con, cdmSchema = "main", writeSchema = "main")
 cdm <- generateConceptCohortSet(
   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
 )
-cohort_count(cdm$new_cohort)
+cohortCount(cdm$new_cohort)
 }
 }

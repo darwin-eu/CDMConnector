@@ -19,6 +19,7 @@
 # @param x A cohort table (dataframe, tbl_dbi, arrow table...) that may have overlapping periods
 # @return A dplyr query that collapses any overlapping periods. This is very similar to union.
 cohort_collapse <- function(x) {
+  lifecycle::deprecate_soft("1.7.0", "cohort_collapse()", "cohortCollapse()")
   checkmate::assert_true(methods::is(x, "tbl_dbi"))
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
   checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
@@ -109,6 +110,7 @@ cohort_collapse <- function(x) {
 #' in x with the single cohort in y cohort table
 #' @export
 cohort_union <- function(x, y) {
+  lifecycle::deprecate_soft("1.7.0", "cohort_union()", "cohortUnion()")
   checkmate::assert_class(x, "tbl")
   checkmate::assert_class(y, "tbl")
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
@@ -296,6 +298,8 @@ cohort_pad_start <- function(x, days = NULL, from = "start") {
 
 #' Collapse cohort records within a certain number of days
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param x A generated cohort set
 #' @param gap When two cohort records are 'gap' days apart or less the periods will be
 #' collapsed into a single record
@@ -303,6 +307,7 @@ cohort_pad_start <- function(x, days = NULL, from = "start") {
 #' @return A lazy query on a generated cohort set
 #' @export
 cohort_erafy <- function(x, gap) {
+  lifecycle::deprecate_soft("1.7.0", "cohort_erafy()", "cohortErafy()")
   checkmate::assert_class(x, "tbl")
   checkmate::assertIntegerish(gap, len = 1)
   cols <-  c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")

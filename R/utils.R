@@ -102,14 +102,20 @@ inSchema <- function(schema, table, dbms = NULL) {
   return(out)
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @export
 #' @rdname inSchema
-in_schema <- inSchema
+in_schema <- function(schema, table, dbms = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "in_schema()", "inSchema()")
+  inSchema(schema, table, dbms)
+}
 
 #' List tables in a schema
 #'
 #' DBI::dbListTables can be used to get all tables in a database but not always in a
 #' specific schema. `listTables` will list tables in a schema.
+#'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param con A DBI connection to a database
 #' @param schema The name of a schema in a database. If NULL, returns DBI::dbListTables(con).
@@ -120,10 +126,11 @@ in_schema <- inSchema
 #'
 #' @examples
 #' \dontrun{
-#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #' listTables(con, schema = "main")
 #' }
 list_tables <- function(con, schema = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "list_tables()", "listTables()")
 
   if (methods::is(con, "Pool")) {
     if (!rlang::is_installed("pool")) {
@@ -252,7 +259,7 @@ listTables <- list_tables
 dbplyr_edition.BigQueryConnection <- function(con) 2L
 
 # Create the cdm tables in a database
-execute_ddl <- function(con, cdm_schema, cdm_version = "5.3", dbms = "duckdb", tables = tbl_group("all"), prefix = "") {
+execute_ddl <- function(con, cdm_schema, cdm_version = "5.3", dbms = "duckdb", tables = tblGroup("all"), prefix = "") {
 
   specs <- spec_cdm_field[[cdm_version]] %>%
     dplyr::mutate(cdmDatatype = dplyr::if_else(.data$cdmDatatype == "varchar(max)", "varchar(2000)", .data$cdmDatatype)) %>%

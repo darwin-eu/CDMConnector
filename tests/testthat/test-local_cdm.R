@@ -4,9 +4,9 @@ test_that("assertTables works with local cdms", {
   skip_if_not_installed('arrow')
   skip_if_not_installed("duckdb")
   skip_on_cran()
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
 
   expect_equal(cdmVersion(cdm), "5.3")
@@ -22,10 +22,10 @@ test_that("assertTables works with local cdms", {
   dir.create(path)
   stow(cdm, path)
 
-  cdm2 <- cdm_from_files(path, cdm_name = "test", as_data_frame = TRUE)
+  cdm2 <- cdmFromFiles(path, cdmName = "test", asDataFrame = TRUE)
   expect_s3_class(cdm2, "cdm_reference")
 
-  cdm_arrow <- cdm_from_files(path, cdm_name = "test", as_data_frame = FALSE)
+  cdm_arrow <- cdmFromFiles(path, cdmame = "test", as_data_frame = FALSE)
   attr(cdm_arrow, "cdm_version")
 
   expect_error(assertTables(cdm_arrow, "concept"), NA)
@@ -38,17 +38,17 @@ test_that("assertTables works with local cdms", {
 
 test_that("softValidation is passed correctly", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 
   # create overlapping observation periods
   op <- dplyr::tbl(con, "observation_period") |> dplyr::collect()
   DBI::dbAppendTable(con, "observation_period", op)
 
-  expect_error(cdm_from_con(con, "main", "main", .soft_validation = F),
+  expect_error(cdmFromCon(con, "main", "main", .softValidation = F),
                "overlap")
 
   # soft validation ignores this
-  expect_no_error(cdm_from_con(con, "main", "main", .soft_validation = T))
+  expect_no_error(cdmFromCon(con, "main", "main", .softValidation = T))
 
   DBI::dbDisconnect(con, shutdown = T)
 })

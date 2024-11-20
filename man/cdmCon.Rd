@@ -7,7 +7,7 @@
 cdmCon(cdm)
 }
 \arguments{
-\item{cdm}{A cdm reference object created by \code{cdm_from_con}}
+\item{cdm}{A cdm reference object created by \code{cdmFromCon}}
 }
 \value{
 A reference to the database containing tables in the cdm reference
@@ -17,10 +17,10 @@ Get underlying database connection
 }
 \examples{
 \dontrun{
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
-cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
-                    cdm_schema =  "main", write_schema = "main")
+cdm <- cdmFromCon(con = con, cdmName = "Eunomia",
+                    cdmSchema =  "main", writeSchema = "main")
 
 cdmCon(cdm)
 

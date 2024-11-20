@@ -17,12 +17,12 @@
 #' Copy a cdm object from one database to another
 #'
 #' It may be helpful to be able to easily copy a small test cdm from a local
-#' database to a remote for testing. copy_cdm_to takes a cdm object and a connection.
+#' database to a remote for testing. copyCdmTo takes a cdm object and a connection.
 #' It copies the cdm to the remote database connection. CDM tables can be prefixed
 #' in the new database allowing for multiple cdms in a single shared database
 #' schema.
 #'
-#' `r lifecycle::badge("experimental")`
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param con A DBI datbase connection created by `DBI::dbConnect`
 #' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
@@ -32,6 +32,7 @@
 #' @return A cdm reference object pointing to the newly created cdm in the remote database
 #' @export
 copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
+  lifecycle::deprecate_soft("1.7.0", "copy_cdm_to()", "copyCdmTo()")
 
   checkmate::assertTRUE(DBI::dbIsValid(con))
   checkmate::assertClass(cdm, "cdm_reference")

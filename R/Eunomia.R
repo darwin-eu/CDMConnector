@@ -101,7 +101,7 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
 #' #> [1] "GiBleed"
 #'
 #' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
-#' cdm <- cdm_from_con(con)
+#' cdm <- cdmFromCon(con)
 #' }
 exampleDatasets <- function() {
   c("GiBleed",
@@ -129,17 +129,22 @@ exampleDatasets <- function() {
     "empty_cdm")
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @export
 #' @rdname exampleDatasets
-example_datasets <- exampleDatasets
+example_datasets <- function() {
+  lifecycle::deprecate_soft("1.7.0", "example_datasets()", "exampleDatasets()")
+  exampleDatasets()
+}
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname downloadEunomiaData
 #' @export
 download_eunomia_data <- function(dataset_name = "GiBleed",
                                   cdm_version = "5.3",
                                   path_to_data = Sys.getenv("EUNOMIA_DATA_FOLDER"),
                                   overwrite = FALSE) {
+  lifecycle::deprecate_soft("1.7.0", "download_eunomia_data()", "downloadEunomiaData()")
   downloadEunomiaData(datasetName = dataset_name,
                       cdmVersion = cdm_version,
                       pathToData = path_to_data,
@@ -212,18 +217,18 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #'
 #'  # The defaults GiBleed dataset is a small dataset that is useful for testing
 #'  library(CDMConnector)
-#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#'  cdm <- cdm_from_con(con, "main", "main")
+#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#'  cdm <- cdmFromCon(con, "main", "main")
 #'  cdmDisconnect(cdm)
 #'
 #'  # Synpuf datasets include the Achilles tables
-#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.3"))
-#'  cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("synpuf-1k", "5.3"))
+#'  cdm <- cdmFromCon(con, "main", "main", achillesSchema = "main")
 #'  cdmDisconnect(cdm)
 #'
 #'  # Currently the only 5.4 dataset is synpuf-1k
-#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.4"))
-#'  cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+#'  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("synpuf-1k", "5.4"))
+#'  cdm <- cdmFromCon(con, "main", "main", achillesSchema = "main")
 #'  cdmDisconnect(cdm)
 #'
 #' }
@@ -316,18 +321,21 @@ eunomiaDir <- function(datasetName = "GiBleed",
   return(databaseFile)
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @export
 #' @rdname eunomiaDir
 eunomia_dir <- function(dataset_name = "GiBleed",
                         cdm_version = "5.3",
                         database_file = tempfile(fileext = ".duckdb")) {
-
+  lifecycle::deprecate_soft("1.7.0", "eunomia_dir()", "eunomiaDir()")
   eunomiaDir(datasetName = dataset_name,
              cdmVersion = cdm_version,
              databaseFile = database_file)
 }
 
 #' Has the Eunomia dataset been cached?
+#'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param dataset_name,datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
 #' @param cdm_version,cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
@@ -336,7 +344,7 @@ eunomia_dir <- function(dataset_name = "GiBleed",
 #' @export
 eunomia_is_available <- function(dataset_name = "GiBleed",
                                  cdm_version = "5.3") {
-
+  lifecycle::deprecate_soft("1.7.0", "eunomia_is_available()", "eunomiaIsAvailable()")
   if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {
     rlang::abort("Set the environment variable EUNOMIA_DATA_FOLDER to the eunomia cache location")
   }
@@ -398,9 +406,11 @@ requireEunomia <- function(datasetName = "GiBleed",
   return(invisible(TRUE))
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @rdname requireEunomia
 #' @export
 require_eunomia <- function(dataset_name = "GiBleed",
                            cdm_version = "5.3") {
+  lifecycle::deprecate_soft("1.7.0", "require_eunomia()", "requireEunomia()")
   requireEunomia(datasetName = dataset_name, cdmVersion = cdm_version)
 }

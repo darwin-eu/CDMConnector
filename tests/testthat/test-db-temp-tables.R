@@ -9,16 +9,16 @@ test_temp_tables <- function(dbtype) {
     DBI::dbExecute(con, glue::glue("USE SCHEMA {paste(get_write_schema(dbtype), collapse = '.')};"))
 
     DBI::dbExecute(con, 'CREATE TEMPORARY TABLE "mytemptable" (id NUMBER, creation_date DATE);')
-    expect_true("mytemptable" %in% list_tables(con, get_write_schema(dbtype)))
+    expect_true("mytemptable" %in% listTables(con, get_write_schema(dbtype)))
     disconnect(con)
 
     con <- get_connection(dbtype)
-    expect_true("mytemptable" %in% list_tables(con, get_write_schema(dbtype)))
+    expect_true("mytemptable" %in% listTables(con, get_write_schema(dbtype)))
     return(NULL)
   }
 
   DBI::dbWriteTable(con, name = "temp_cars", value = cars[1,], temporary = TRUE)
-  expect_true("temp_cars" %in% list_tables(con))
+  expect_true("temp_cars" %in% listTables(con))
 
   expect_error(
     DBI::dbWriteTable(con, name = "temp_cars", value = cars[1,], temporary = TRUE, overwrite = FALSE)
@@ -37,7 +37,7 @@ test_temp_tables <- function(dbtype) {
 
   # disconnecting removes temp tables
   con <- get_connection(dbtype)
-  expect_false("temp_cars" %in% list_tables(con))
+  expect_false("temp_cars" %in% listTables(con))
   disconnect(con)
 }
 

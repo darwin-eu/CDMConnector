@@ -12,7 +12,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
   )
 
   # TODO make sure that overwrite works
-  if ("temp_test" %in% list_tables(con, write_schema)) {
+  if ("temp_test" %in% listTables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
     # DBI::dbRemoveTable(con, DBI::Id(write_schema, "temp_test"))
   }
@@ -33,7 +33,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
     # DBI::dbWriteTable(con, DBI::Id(write_schema, "temp_test"), df, overwrite = T)
   })
 
-  expect_true("temp_test" %in% list_tables(con, schema = write_schema))
+  expect_true("temp_test" %in% listTables(con, schema = write_schema))
   # nm <- paste(c(write_schema, "temp_test"), collapse = ".")
 
   # duckdb and snowflake do not support the I() syntax
@@ -75,7 +75,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
   DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
   # TODO add this test
   # DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "temp_test"))
-  # expect_false("temp_test" %in% list_tables(con, schema = write_schema))
+  # expect_false("temp_test" %in% listTables(con, schema = write_schema))
   #
   # expect_no_error(
   #   DBI::dbCreateTable(con,

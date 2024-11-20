@@ -1,8 +1,8 @@
 test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = cdm_schema,
-    write_schema = write_schema
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = cdm_schema,
+    writeSchema = write_schema
   )
 
   x <- cdm$condition_occurrence %>%
@@ -101,9 +101,9 @@ for (dbtype in dbToTest) {
 
 test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
 
   cohort_ref <- cdm$condition_occurrence %>%
@@ -126,9 +126,9 @@ test_that("no error if cohort is empty", {
   skip_if_not_installed("CirceR")
   skip_if_not_installed("duckdb")
   # if an empty cohort is passed return an empty GeneratedCohortSet object
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
 
   inst_dir <- system.file(package = "CDMConnector", mustWork = TRUE)
@@ -169,7 +169,7 @@ test_that("no error if cohort is empty", {
 
   expect_true("cohort_table" %in% class(cdm$cohort_3b))
   expect_false(nrow(settings(cdm$cohort_3b)) == 0)
-  expect_false(nrow(cohort_count(cdm$cohort_3b)) == 0)
+  expect_false(nrow(cohortCount(cdm$cohort_3b)) == 0)
 
   cdm_disconnect(cdm)
 })
@@ -180,9 +180,9 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
   skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
 
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main"
+  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
 
   cohortSet <- readCohortSet(system.file("cohorts2",

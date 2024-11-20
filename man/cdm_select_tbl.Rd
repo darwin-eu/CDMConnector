@@ -2,9 +2,12 @@
 % Please edit documentation in R/cdm.R
 \name{cdm_select_tbl}
 \alias{cdm_select_tbl}
+\alias{cdmSelectTbl}
 \title{Select a subset of tables in a cdm reference object}
 \usage{
 cdm_select_tbl(cdm, ...)
+
+cdmSelectTbl(cdm, ...)
 }
 \arguments{
 \item{cdm}{A cdm reference object created by \code{cdm_from_con}}
@@ -19,16 +22,19 @@ A cdm reference object containing the selected tables
 This function uses syntax similar to \code{dplyr::select} and can be used to
 subset a cdm reference object to a specific tables
 }
+\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+}
 \examples{
 \dontrun{
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
-cdm <- cdm_from_con(con, "main")
+cdm <- cdmFromCon(con, "main")
 
-cdm_select_tbl(cdm, person)
-cdm_select_tbl(cdm, person, observation_period)
-cdm_select_tbl(cdm, tbl_group("vocab"))
-cdm_select_tbl(cdm, "person")
+cdmSelectTbl(cdm, person)
+cdmSelectTbl(cdm, person, observation_period)
+cdmSelectTbl(cdm, tblGroup("vocab"))
+cdmSelectTbl(cdm, "person")
 
 DBI::dbDisconnect(con)
 }

@@ -23,12 +23,14 @@ A dplyr reference to the newly created table
 }
 \description{
 Run a dplyr query and add the result set to an existing
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{
 library(CDMConnector)
 
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 concept <- dplyr::tbl(con, "concept")
 
 # create a table

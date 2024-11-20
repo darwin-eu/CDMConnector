@@ -65,7 +65,7 @@ can be used to create namespace in your database write_schema for your tables.}
 A list of dplyr database table references pointing to CDM tables
 }
 \description{
-Create a CDM reference object from a database connection
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \details{
 cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI database connection.
@@ -86,35 +86,35 @@ dropping all tables that start with the prefix.
 \examples{
 \dontrun{
 library(CDMConnector)
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 
 # minimal example
-cdm <- cdm_from_con(con,
-                    cdm_schema = "main",
-                    write_schema = "scratch")
+cdm <- cdmFromCon(con,
+                    cdmSchema = "main",
+                    writeSchema = "scratch")
 
 # write prefix is optional but recommended if write_schema is shared
-cdm <- cdm_from_con(con,
-                    cdm_schema = "main",
-                    write_schema = "scratch",
-                    write_prefix = "tmp_")
+cdm <- cdmFromCon(con,
+                    cdmSchema = "main",
+                    writeSchema = "scratch",
+                    writePrefix = "tmp_")
 
 # Some database systems use catalogs or compound schemas.
 # These can be specified as follows:
-cdm <- cdm_from_con(con,
-                    cdm_schema = "catalog.main",
-                    write_schema = "catalog.scratch",
-                    write_prefix = "tmp_")
+cdm <- cdmFromCon(con,
+                    cdmSchema = "catalog.main",
+                    writeSchema = "catalog.scratch",
+                    writePrefix = "tmp_")
 
-cdm <- cdm_from_con(con,
-                    cdm_schema = c("my_catalog", "main"),
-                    write_schema = c("my_catalog", "scratch"),
-                    write_prefix = "tmp_")
+cdm <- cdmFromCon(con,
+                    cdmSchema = c("my_catalog", "main"),
+                    writeSchema = c("my_catalog", "scratch"),
+                    writePrefix = "tmp_")
 
-cdm <- cdm_from_con(con,
-                    cdm_schema = c(catalog = "my_catalog", schema = "main"),
-                    write_schema = c(catalog = "my_catalog", schema = "scratch"),
-                    write_prefix = "tmp_")
+cdm <- cdmFromCon(con,
+                    cdmSchema = c(catalog = "my_catalog", schema = "main"),
+                    writeSchema = c(catalog = "my_catalog", schema = "scratch"),
+                    writePrefix = "tmp_")
 
  DBI::dbDisconnect(con)
 }

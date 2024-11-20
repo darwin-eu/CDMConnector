@@ -7,7 +7,7 @@
 cdmWriteSchema(cdm)
 }
 \arguments{
-\item{cdm}{A cdm reference object created by \code{cdm_from_con}}
+\item{cdm}{A cdm reference object created by \code{cdmFromCon}}
 }
 \value{
 The database write schema
@@ -17,10 +17,10 @@ Get cdm write schema
 }
 \examples{
 \dontrun{
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
-cdm <- cdm_from_con(con = con, cdm_name = "Eunomia",
-                    cdm_schema =  "main", write_schema = "main")
+cdm <- cdmFromCon(con = con, cdmName = "Eunomia",
+                    cdmSchema =  "main", writeSchema = "main")
 
 cdmWriteSchema(cdm)
 

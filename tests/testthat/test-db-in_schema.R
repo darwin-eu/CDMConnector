@@ -36,7 +36,7 @@ for (dbtype in dbToTest) {
 
 # https://github.com/darwin-eu/CDMConnector/issues/28
 test_that("catalog works on spark", {
-  # skip("manual test") # spark tests are manual because the test server needs to be started
+  skip("manual test") # spark tests are manual because the test server needs to be started
 
   con <- DBI::dbConnect(
     odbc::databricks(),

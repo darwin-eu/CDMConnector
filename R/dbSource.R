@@ -164,7 +164,7 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
 
   if (intermediate) {
     DBI::dbRemoveTable(con, name = .inSchema(schema = schema, table = intername, dbms = dbms(con)))
-    if (intername %in% list_tables(con, schema)) {
+    if (intername %in% listTables(con, schema)) {
       cli::cli_warn("Intermediate table `{intername}` was not dropped as expected.")
     }
   }

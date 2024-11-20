@@ -3,26 +3,26 @@
 
 library(CDMConnector)
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 
-cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm <- cdmFromCon(con, cdmSchema = "main")
 
 ############## selection of cdm tables #######################
-# The cdm_tables argument has been removed from cdm_from_con
+# The cdm_tables argument has been removed from cdmFromCon
 # Now you will get all existing cdm tables. If a table is missing no error is given.
 
 # To select specific cdm tables
 cdm %>%
-  cdm_select_tbl(person, observation_period)
+  cdmSelectTbl(person, observation_period)
 
 cdm %>%
-  cdm_select_tbl("person", "observation_period")
+  cdmSelectTbl("person", "observation_period")
 
 cdm %>%
-  cdm_select_tbl(tbl_group("vocab"))
+  cdmSelectTbl(tblGroup("vocab"))
 
 cdm %>%
-  cdm_select_tbl(starts_with("concept"))
+  cdmSelectTbl(starts_with("concept"))
 
 # ... etc. Similar to dplyr::select but for the cdm
 
@@ -63,7 +63,7 @@ cdm$visit_occurrence %>%
 
 cdm$visit_occurrence %>%
   select(person_id, visit_concept_id) %>%
-  compute_query() %>%
+  computeQuery() %>%
   add_birthyear() %>%
   count(visit_concept_id, year_of_birth)
 
@@ -92,22 +92,22 @@ cohort <- tibble::tribble(
 DBI::dbWriteTable(con, "cohort", cohort, overwrite = TRUE)
 
 
-cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main", cohort_tables = "cohort")
+cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cohortTables = "cohort")
 
 cdm$cohort %>%
-  intersect_cohorts(cohort_definition_id = 99)
+  intersectCohorts(cohortDefinitionId = 99)
 
 cdm$cohort %>%
-  union_cohorts(cohort_definition_id = 99)
+  unionCohorts(cohortDefinitionId = 99)
 
 # Please test this and let me know if you find edge cases that give incorrect results :)
 
 # Also you can now rely on two cohort attributes for a cohort table.
-cohort_count(cdm$cohort)
-cohort_set(cdm$cohort)
+cohortCount(cdm$cohort)
+omopgenerics::settings(cdm$cohort)
 
 # However cohort_attrition might be null
-cohort_attrition(cdm$cohort)
+omopgenerics::attrition(cdm$cohort)
 
 # Both camel case and snake case styles are supported for the new functions.
 cdm$cohort %>%

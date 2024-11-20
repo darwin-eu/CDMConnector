@@ -49,13 +49,14 @@
 #' df <- mtcars_tbl %>%
 #'  dplyr::group_by(cyl) %>%
 #'  dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
-#'  summarise_quantile(mpg, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),
-#'                     name_suffix = "quant") %>%
+#'  summariseQuantile(mpg, probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+#'                    nameSuffix = "quant") %>%
 #'  dplyr::collect()
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
+  lifecycle::deprecate_soft("1.7.0", "summarise_quantile()", "summariseQuantile()")
   checkmate::assertClass(.data, "tbl_sql")
   checkmate::assert_double(probs, min.len = 1, lower = 0, upper = 1)
   checkmate::assert_character(name_suffix, null.ok = TRUE)
@@ -121,10 +122,13 @@ summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
   eval(query)
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname summarise_quantile
 #' @export
-summarize_quantile <- summarise_quantile
+summarize_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
+  lifecycle::deprecate_soft("1.7.0", "summarize_quantile()", "summariseQuantile()")
+  summarise_quantile(.data, x = x, probs = probs, name_suffix = name_suffix)
+}
 
 
 #' @rdname summarise_quantile

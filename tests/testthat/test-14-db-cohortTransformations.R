@@ -1,8 +1,8 @@
 test_cohort_collapse <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "test", cdm_schema = cdm_schema,
-    write_schema = write_schema
+  cdm <- cdmFromCon(
+    con = con, cdmName = "test", cdmSchema = cdm_schema,
+    writeSchema = write_schema
   )
 
   # Nuria's examples
@@ -65,10 +65,10 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
     input_db <- dplyr::tbl(con, inSchema(write_schema, "tmp_cohort_collapse_input0", dbms = dbms(con))) %>%
       dplyr::mutate(cohort_start_date = TO_DATE(cohort_start_date, "YYYY-MM-DD"),
                     cohort_end_date = TO_DATE(cohort_end_date, "YYYY-MM-DD")) %>%
-      compute_query(name = "tmp_cohort_collapse_input",
-                    temporary = FALSE,
-                    schema = write_schema,
-                    overwrite = TRUE)
+      computeQuery(name = "tmp_cohort_collapse_input",
+                   temporary = FALSE,
+                   schema = write_schema,
+                   overwrite = TRUE)
 
     DBI::dbRemoveTable(con, inSchema(write_schema, "tmp_cohort_collapse_input0", dbms = dbms(con)))
   } else {
@@ -231,13 +231,13 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
     df <- intervals %>%
       dplyr::mutate(dplyr::across(dplyr::matches("date"), as.character))
 
-    nm <- unique_table_name()
+    nm <- uniqueTableName()
     DBI::dbWriteTable(con, nm, df, temporary = TRUE)
 
     db <- tbl(con, nm) %>%
       dplyr::mutate(cohort_start_date = TO_DATE(cohort_start_date, "YYYY-MM-DD")) %>%
       dplyr::mutate(cohort_end_date   = TO_DATE(cohort_end_date, "YYYY-MM-DD")) %>%
-      compute_query()
+      computeQuery()
   } else {
     DBI::dbWriteTable(con, inSchema(write_schema, "tmp_intervals", dbms = dbms(con)), intervals, overwrite = TRUE)
     db <- dplyr::tbl(con, inSchema(write_schema, "tmp_intervals", dbms = dbms(con)))

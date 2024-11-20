@@ -1,9 +1,9 @@
 
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
-  cdm <- cdm_from_con(
-    con = con, cdm_name = "eunomia",
-    cdm_schema = cdm_schema,
-    write_schema = write_schema
+  cdm <- cdmFromCon(
+    con = con, cdmName = "eunomia",
+    cdmSchema = cdm_schema,
+    writeSchema = write_schema
   )
 
   # insert table

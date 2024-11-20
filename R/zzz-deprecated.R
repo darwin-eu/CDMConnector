@@ -17,9 +17,9 @@
 #' Union all cohorts in a single cohort table
 #'
 #' @param x A tbl reference to a cohort table
-#' @param cohort_definition_id A number to use for the new cohort_definition_id
+#' @param cohort_definition_id,cohortDefinitionId A number to use for the new cohort_definition_id
 #'
-#' `r lifecycle::badge("superseded")`
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @return A lazy query that when executed will resolve to a new cohort table with
 #' one cohort_definition_id resulting from the union of all cohorts in the original
@@ -57,9 +57,9 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
 #' Intersect all cohorts in a single cohort table
 #'
 #' @param x A tbl reference to a cohort table
-#' @param cohort_definition_id A number to use for the new cohort_definition_id
+#' @param cohort_definition_id,cohortDefinitionId A number to use for the new cohort_definition_id
 #'
-#' `r lifecycle::badge("superseded")`
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @return A lazy query that when executed will resolve to a new cohort table with
 #' one cohort_definition_id resulting from the intersection of all cohorts in the original
@@ -114,8 +114,12 @@ intersect_cohorts <- function(x, cohort_definition_id = 1L) {
 
 #' @rdname intersect_cohorts
 #' @export
-intersectCohorts <- intersect_cohorts
+intersectCohorts <- function(x, cohortDefinitionId = 1L) {
+  intersect_cohorts(x, cohortDefinitionId)
+}
 
 #' @rdname union_cohorts
 #' @export
-unionCohorts <- union_cohorts
+unionCohorts <- function(x, cohortDefinitionId = 1L) {
+  union_cohorts(x, cohortDefinitionId)
+}

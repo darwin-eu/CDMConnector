@@ -23,6 +23,8 @@
 #' If the CohortsToCreate.csv file is missing then all of the json files in the
 #' folder will be used, cohort_definition_id will be automatically assigned
 #' in alphabetical order, and cohort_name will match the file names.
+
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param path The path to a folder containing Circe cohort definition
 #' json files and optionally a csv file named CohortsToCreate.csv with columns
@@ -31,6 +33,7 @@
 #' @importFrom dplyr tibble
 #' @export
 read_cohort_set <- function(path) {
+  lifecycle::deprecate_soft("1.7.0", "read_cohort_set()", "readCohortSet()")
   checkmate::checkCharacter(path, len = 1, min.chars = 1)
 
   if (!fs::is_dir(path)) {
@@ -140,10 +143,10 @@ readCohortSet <- read_cohort_set
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con,
-#'                     cdm_schema = "main",
-#'                     write_schema = "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con,
+#'                   cdmSchema = "main",
+#'                   writeSchema = "main")
 #'
 #' cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
 #' cdm <- generateCohortSet(cdm, cohortSet, name = "cohort")
@@ -494,7 +497,7 @@ generateCohortSet <- function(cdm,
   return(cdm)
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname generateCohortSet
 #' @export
 generate_cohort_set <- function(cdm,
@@ -502,6 +505,7 @@ generate_cohort_set <- function(cdm,
                                 name = "cohort",
                                 compute_attrition = TRUE,
                                 overwrite = TRUE) {
+  lifecycle::deprecate_soft("1.7.0", "generate_cohort_set()", "generateCohortSet()")
   generateCohortSet(cdm = cdm,
                     cohortSet = cohort_set,
                     name = name,
@@ -512,7 +516,7 @@ generate_cohort_set <- function(cdm,
 
 #' Constructor for cohort_table objects
 #'
-#' `r lifecycle::badge("superseded")`
+#' `r lifecycle::badge("deprecated")`
 #'
 #' Please use `omopgenerics::newCohortTable()` instead.
 #'
@@ -617,11 +621,11 @@ generate_cohort_set <- function(cdm,
 #'    cdm[[name]] <- cohort_ref
 #'
 #'    # create the generated cohort set object using the constructor
-#'    cdm[[name]] <- new_generated_cohort_set(
+#'    cdm[[name]] <- newGeneratedCohortSet(
 #'       cdm[[name]],
-#'       cohort_set_ref = cohort_set_ref,
-#'       cohort_attrition_ref = cohort_attrition_ref,
-#'       cohort_count_ref = cohort_count_ref)
+#'       cohortSetRef = cohort_set_ref,
+#'       cohortAttritionRef = cohort_attrition_ref,
+#'       cohortCountRef = cohort_count_ref)
 #'
 #'    return(cdm)
 #'  }
@@ -636,6 +640,7 @@ new_generated_cohort_set <- function(cohort_ref,
     what = "new_generated_cohort_set()",
     with = "newCohortTable()"
   )
+
 
   omopgenerics::newCohortTable(
     table = cohort_ref,
@@ -671,7 +676,7 @@ cohortAttrition <- function(x) {
   omopgenerics::attrition(x)
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname cohortAttrition
 #' @export
 cohort_attrition <- function(x) {
@@ -689,7 +694,7 @@ cohortSet <- function(x) {
   omopgenerics::settings(x)
 }
 
-
+#' `r lifecycle::badge("deprecated")`
 #' @rdname cohortSet
 #' @export
 cohort_set <- function(x) {
@@ -698,6 +703,8 @@ cohort_set <- function(x) {
 }
 
 #' Get cohort counts from a generated_cohort_set object.
+#'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param cohort A generated_cohort_set object.
 #'
@@ -710,14 +717,17 @@ cohort_set <- function(x) {
 #' library(CDMConnector)
 #' library(dplyr)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con = con, cdm_schema = "main", write_schema = "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con = con, cdmSchema = "main", writeSchema = "main")
 #' cdm <- generateConceptCohortSet(
 #'   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
 #' )
-#' cohort_count(cdm$new_cohort)
+#' cohortCount(cdm$new_cohort)
 #' }
-cohort_count <- omopgenerics::cohortCount
+cohort_count <- function(cohort){
+  lifecycle::deprecate_soft("1.7.0", "cohort_count()", "cohortCount()")
+  omopgenerics::cohortCount(cohort)
+}
 
 # Compute the attrition for a set of cohorts (internal function)
 #
@@ -947,15 +957,15 @@ caprConceptToDataframe <- function(x) {
 #' library(CDMConnector)
 #' library(dplyr)
 #'
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con = con, cdm_schema = "main", write_schema = "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con = con, cdmSchema = "main", writeSchema = "main")
 #' cdm <- generateConceptCohortSet(
 #'   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
 #' )
 #'
 #' settings(cdm$new_cohort)
 #' cohortCount(cdm$new_cohort)
-#' cohortAttrition(cdm$new_cohort)
+#' attrition(cdm$new_cohort)
 #'
 #' cdm$new_cohort <- cdm$new_cohort %>%
 #'   filter(cohort_start_date >= as.Date("2010-01-01"))
@@ -966,7 +976,7 @@ caprConceptToDataframe <- function(x) {
 #'
 #' settings(cdm$new_cohort)
 #' cohortCount(cdm$new_cohort)
-#' cohortAttrition(cdm$new_cohort)
+#' attrition(cdm$new_cohort)
 #' }
 recordCohortAttrition <- function(cohort,
                                   reason,
@@ -977,7 +987,11 @@ recordCohortAttrition <- function(cohort,
 
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @export
 #' @rdname recordCohortAttrition
-record_cohort_attrition <- recordCohortAttrition
+record_cohort_attrition <- function(cohort, reason, cohortId = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "record_cohort_attrition()", "recordCohortAttrition()")
+  recordCohortAttrition(cohort = cohort, reason = reason, cohortId = cohortId)
+}
 

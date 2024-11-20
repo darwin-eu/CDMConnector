@@ -24,8 +24,8 @@
 #' @examples
 #' \dontrun{
 #' library(CDMConnector)
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-#' cdm <- cdm_from_con(con, cdm_schema = "main", write_schema = "main")
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 #' benchmarkCDMConnector(cdm)
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)

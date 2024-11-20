@@ -84,18 +84,18 @@ open an issue at \url{https://github.com/OHDSI/Eunomia/issues/}
 
  # The defaults GiBleed dataset is a small dataset that is useful for testing
  library(CDMConnector)
- con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
- cdm <- cdm_from_con(con, "main", "main")
+ con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+ cdm <- cdmFromCon(con, "main", "main")
  cdmDisconnect(cdm)
 
  # Synpuf datasets include the Achilles tables
- con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.3"))
- cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+ con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("synpuf-1k", "5.3"))
+ cdm <- cdmFromCon(con, "main", "main", achillesSchema = "main")
  cdmDisconnect(cdm)
 
  # Currently the only 5.4 dataset is synpuf-1k
- con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("synpuf-1k", "5.4"))
- cdm <- cdm_from_con(con, "main", "main", achilles_schema = "main")
+ con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("synpuf-1k", "5.4"))
+ cdm <- cdmFromCon(con, "main", "main", achillesSchema = "main")
  cdmDisconnect(cdm)
 
 }

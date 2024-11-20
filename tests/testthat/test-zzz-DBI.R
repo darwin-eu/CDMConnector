@@ -4,13 +4,13 @@ test_dbi <- function(con, cdm_schema, write_schema) {
   df <- data.frame(logical = TRUE, char = "a", int = 1L, float = 1.5, stringsAsFactors = FALSE)
   # df1 <- dplyr::tibble(logical = TRUE, chr = "a", int = 1L) # this gives a warning
 
-  if ("temp_test" %in% list_tables(con, write_schema)) {
+  if ("temp_test" %in% listTables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
   }
 
   # DBI::dbWriteTable(con, DBI::Id(schema = write_schema, table = "temp_test"), df)
   DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df)
-  expect_true("temp_test" %in% list_tables(con, schema = write_schema))
+  expect_true("temp_test" %in% listTables(con, schema = write_schema))
 
   db <- dplyr::tbl(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con))) %>%
     dplyr::collect() %>%
@@ -38,7 +38,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 
   DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
   # DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "temp_test"))
-  expect_false("temp_test" %in% list_tables(con, schema = write_schema))
+  expect_false("temp_test" %in% listTables(con, schema = write_schema))
 }
 
 for (dbtype in dbToTest) {

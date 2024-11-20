@@ -55,12 +55,12 @@ for (i in seq_along(tables_to_copy)) {
   print(glue::glue("{table_name} done."))
 }
 
-cdm <- cdm_from_con(targetdb, "main")
+cdm <- cdmFromCon(targetdb, "main")
 
 cdm$condition_occurrence %>%
   filter(person_id == 32, condition_concept_id == 192671)
 
-tables <- list_tables(targetdb, "main")
+tables <- listTables(targetdb, "main")
 
 for (tbl in tables) {
   # export to parquet
@@ -74,7 +74,7 @@ for (tbl in tables) {
 # library(CDMConnector)
 # library(dplyr)
 # con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("GiBleed"))
-# cdm <- cdm_from_con(con, "main", "main")
+# cdm <- cdmFromCon(con, "main", "main")
 #
 # df <- cdm$condition_occurrence  %>%
 #   filter(person_id == 32, condition_concept_id == 192671) %>%

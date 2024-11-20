@@ -7,14 +7,14 @@
 \usage{
 union_cohorts(x, cohort_definition_id = 1L)
 
-unionCohorts(x, cohort_definition_id = 1L)
+unionCohorts(x, cohortDefinitionId = 1L)
 }
 \arguments{
 \item{x}{A tbl reference to a cohort table}
 
-\item{cohort_definition_id}{A number to use for the new cohort_definition_id
+\item{cohort_definition_id, cohortDefinitionId}{A number to use for the new cohort_definition_id
 
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}}
 }
 \value{
 A lazy query that when executed will resolve to a new cohort table with

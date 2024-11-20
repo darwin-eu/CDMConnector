@@ -3,13 +3,13 @@
 test_summarise_quantile <- function(con,
                                     write_schema) {
 
-  eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+  eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
-  eunomia_cdm <- cdm_from_con(
-    con = eunomia_con, cdm_name = "eunomia", cdm_schema = "main",
-    write_schema = "main"
+  eunomia_cdm <- cdmFromCon(
+    con = eunomia_con, cdmName = "eunomia", cdmSchema = "main",
+    writeSchema = "main"
   ) %>%
-    cdm_select_tbl("person")
+    cdmSelectTbl("person")
 
   person <- dplyr::collect(eunomia_cdm$person)
   DBI::dbDisconnect(eunomia_con, shutdown = TRUE)
@@ -22,9 +22,9 @@ test_summarise_quantile <- function(con,
 
   # summariseQuantile without group by
   actual <- person_ref %>%
-    summarise_quantile(year_of_birth,
-                       probs = round(seq(0, 1, 0.05), 2),
-                       name_suffix = "quant") %>%
+    summariseQuantile(year_of_birth,
+                      probs = round(seq(0, 1, 0.05), 2),
+                      nameSuffix = "quant") %>%
     dplyr::collect() %>%
     tidyr::gather() %>%
     dplyr::pull(value) %>%
@@ -39,7 +39,7 @@ test_summarise_quantile <- function(con,
 # summariseQuantile with group by
   actual <- person_ref %>%
     dplyr::group_by(gender_concept_id) %>%
-    summarise_quantile(x = year_of_birth,
+    summariseQuantile(x = year_of_birth,
                     probs = 0.5) %>%
     dplyr::collect() %>%
     dplyr::arrange(gender_concept_id) %>%

@@ -121,7 +121,7 @@ generateConceptCohortSet <- function(cdm,
   # check ConceptSet ----
   checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet", "data.frame"), names = "named")
   checkmate::assertList(conceptSet, min.len = 1, names = "named")
-  CDMConnector::assert_tables(cdm, "concept")
+  CDMConnector::assertTables(cdm, "concept")
 
   if (methods::is(conceptSet, "conceptSetExpression")) {
     # omopgenerics conceptSetExpression
@@ -217,7 +217,7 @@ generateConceptCohortSet <- function(cdm,
                     overwrite = TRUE)
 
   if (any(df$include_descendants)) {
-    CDMConnector::assert_tables(cdm, "concept_ancestor")
+    CDMConnector::assertTables(cdm, "concept_ancestor")
   }
 
   # realize full list of concepts ----
@@ -427,6 +427,7 @@ generateConceptCohortSet <- function(cdm,
   return(cdm)
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @rdname generateConceptCohortSet
 #' @export
 generate_concept_cohort_set <- function(cdm,
@@ -438,7 +439,7 @@ generate_concept_cohort_set <- function(cdm,
                                         subset_cohort = NULL,
                                         subset_cohort_id = NULL,
                                         overwrite = TRUE) {
-
+  lifecycle::deprecate_soft("1.7.0", "generate_concept_cohort_set()", "generateConceptCohortSet()")
   generateConceptCohortSet(cdm = cdm,
                            conceptSet = concept_set,
                            name = name,

@@ -3,20 +3,20 @@ library(dplyr, warn.conflicts = FALSE)
 
 ### CDM object DBI drivers ------
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
-  expect_error(cdm_from_con(con, cdm_schema = cdm_schema, cdm_name = "test"), "write_schema")
+  expect_error(cdmFromCon(con, cdmSchema = cdm_schema, cdmName = "test"), "write_schema")
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, cdm_name = "test", write_schema = write_schema)
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema, cdmName = "test", writeSchema = write_schema)
   expect_s3_class(cdm, "cdm_reference")
-  expect_error(assert_tables(cdm, "person"), NA)
+  expect_error(assertTables(cdm, "person"), NA)
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema, writeSchema = write_schema)
   expect_s3_class(cdm, "cdm_reference")
-  expect_error(assert_write_schema(cdm), NA)
+  expect_error(assertWriteSchema(cdm), NA)
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
   expect_equal(dbms(cdm), dbms(attr(cdm, "dbcon")))
@@ -41,7 +41,7 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 }
 dbtype = "spark"
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - cdm_from_con"), {
+  test_that(glue::glue("{dbtype} - cdmFromCon"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
@@ -55,11 +55,11 @@ for (dbtype in dbToTest) {
 
 test_that("Uppercase tables are stored as lowercase in cdm", {
   skip_if_not_installed("duckdb")
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
   # create a test cdm with upppercase table names
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
-  for (name in list_tables(con, "main")) {
+  for (name in listTables(con, "main")) {
     DBI::dbExecute(con,
                    glue::glue("ALTER TABLE {name} RENAME TO {name}2;"))
     DBI::dbExecute(con,
@@ -67,10 +67,10 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
 
   }
 
-  expect_true(all(list_tables(con, "main") == toupper(list_tables(con, "main"))))
+  expect_true(all(listTables(con, "main") == toupper(listTables(con, "main"))))
 
   # check that names in cdm are lowercase
-  cdm <- cdm_from_con(con = con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
+  cdm <- cdmFromCon(con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
   expect_true(all(names(cdm) == tolower(names(cdm))))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
@@ -78,15 +78,15 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
 
 
 test_that("adding achilles", {
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
   skip_if_not_installed("duckdb")
 
-  con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
+  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
-  expect_error(cdm_from_con(con = con,
-                            cdm_schema =  "main",
-                            write_schema = "main",
-                            achilles_schema = "main"))
+  expect_error(cdmFromCon(con = con,
+                          cdmSchema =  "main",
+                          writeSchema = "main",
+                          achillesSchema = "main"))
 
   DBI::dbWriteTable(
     conn = con,
@@ -121,18 +121,18 @@ test_that("adding achilles", {
     overwrite = TRUE
   )
 
-  cdm <- cdm_from_con(con = con,
-                      cdm_schema =  "main",
-                      write_schema = "main",
-                      achilles_schema = "main")
+  cdm <- cdmFromCon(con = con,
+                    cdmSchema =  "main",
+                    writeSchema = "main",
+                    achillesSchema = "main")
 
  expect_true(cdm$achilles_analysis %>% dplyr::pull("analysis_name") == 1)
  expect_true(cdm$achilles_results %>% dplyr::pull("stratum_1") == "a")
  expect_true(cdm$achilles_results_dist %>% dplyr::pull("count_value") == 5)
 
  # we should also be able to add achilles tables manually if in db
- cdm <- cdm_from_con(
-   con = con, cdm_name = "eunomia", cdm_schema =  "main", write_schema = "main"
+ cdm <- cdmFromCon(
+   con = con, cdmName = "eunomia", cdmSchema =  "main", writeSchema = "main"
  )
  cdm$achilles_analysis <- dplyr::tbl(con, "achilles_analysis")
  # but should not work if tables are not in db (as cdm is db side)
@@ -179,10 +179,10 @@ test_that("adding achilles", {
 })
 
 test_that("adding achilles", {
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
   skip_if_not_installed("duckdb")
 
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
   cohorts <- data.frame(
     cohortId = c(1, 2, 3),

@@ -52,6 +52,8 @@ omopgenerics::cohortCodelist
 
 #' Create a cdm object from local tables
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param tables List of tables to be part of the cdm object.
 #' @param cdm_name Name of the cdm object.
 #' @param cohort_tables List of tables that contains cohort, cohort_set and
@@ -76,15 +78,16 @@ omopgenerics::cohortCodelist
 #'   observation_period_end_date = as.Date("2025-12-31"),
 #'   period_type_concept_id = 0
 #' )
-#' cdm <- cdm_from_tables(
+#' cdm <- cdmFromTables(
 #'   tables = list("person" = person, "observation_period" = observation_period),
-#'   cdm_name = "test"
+#'   cdmName = "test"
 #' )
 #'}
 cdm_from_tables <- function(tables,
                             cdm_name,
                             cohort_tables = list(),
                             cdm_version = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_tables()", "cdmFromTables()")
 
   omopgenerics::cdmFromTables(
     tables = tables,

@@ -19,7 +19,7 @@ test_that("From csv camelCase", {
 
 test_that("From csv snake_case", {
   pathCsv <- system.file(package = "CDMConnector", "cohorts1")
-  data <- read_cohort_set(pathCsv)
+  data <- readCohortSet(pathCsv)
 
   expect_in(
     data$cohort_definition_id,
@@ -61,7 +61,7 @@ test_that("From json camelCase", {
 
 test_that("From json snake_case", {
   pathJson <- system.file(package = "CDMConnector", "cohorts2")
-  data <- read_cohort_set(pathJson)
+  data <- readCohortSet(pathJson)
 
   expect_in(
     data$cohort_definition_id,
@@ -79,7 +79,7 @@ test_that("From json snake_case", {
 
 
 test_that("cohort json file names with numbers", {
-  df <- read_cohort_set(system.file("cohorts4", package = "CDMConnector"))
+  df <- readCohortSet(system.file("cohorts4", package = "CDMConnector"))
   expect_equal(df$cohort_definition_id, 100)
   expect_equal(df$cohort_name, "cohort_100")
 })

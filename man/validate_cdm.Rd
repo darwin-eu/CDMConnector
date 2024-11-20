@@ -20,11 +20,14 @@ Print a short validation report for a cdm object. The validation includes
 checking that column names are correct and that no tables are empty. A short
 report is printed to the console. This function is meant for interactive use.
 }
+\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+}
 \examples{
 \dontrun{
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-cdm <- cdm_from_con(con, cdm_schema = "main")
-validate_cdm(cdm)
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+cdm <- cdmFromCon(con, cdmSchema = "main")
+validateCdm(cdm)
 DBI::dbDisconnect(con)
 }
 }

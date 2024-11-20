@@ -22,4 +22,5 @@ one or more json files.
 If the CohortsToCreate.csv file is missing then all of the json files in the
 folder will be used, cohort_definition_id will be automatically assigned
 in alphabetical order, and cohort_name will match the file names.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

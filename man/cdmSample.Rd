@@ -35,9 +35,9 @@ table and observation_period table will be considered.
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 
-con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 
-cdm <- cdm_from_con(con, cdm_schema = "main")
+cdm <- cdmFromCon(con, cdmSchema = "main")
 
 cdmSampled <- cdmSample(cdm, n = 2)
 

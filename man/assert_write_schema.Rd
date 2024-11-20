@@ -24,3 +24,6 @@ write access. assert_write_schema checks that the cdm contains the
 "write_schema" attribute and tests that local dataframes can be written
 to tables in this schema.
 }
+\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+}

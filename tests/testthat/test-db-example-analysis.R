@@ -2,9 +2,9 @@
 prepare_cdm <- function(con, write_schema) {
 
   # eunomia cdm
-  eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomia_dir()))
-  eunomia_cdm <- cdm_from_con(eunomia_con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main") %>%
-    cdm_select_tbl("person", "observation_period")
+  eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  eunomia_cdm <- cdmFromCon(eunomia_con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main") %>%
+    cdmSelectTbl("person", "observation_period")
 
   cdm <- copyCdmTo(con = con,
                    cdm = eunomia_cdm,
@@ -97,9 +97,9 @@ check_summarise_quantiles <- function(cdm){
                     "p60_quant","p80_quant","p100_quant") %in%
                     colnames(
   cdm$person %>%
-   summarise_quantile(year_of_birth,
+   summariseQuantile(year_of_birth,
                       probs = c(0, 0.2, 0.4, 0.5, 0.6, 0.8, 1),
-                      name_suffix = "quant") %>%
+                      nameSuffix = "quant") %>%
    dplyr::collect())))
 
   expect_true(all(c("gender_concept_id", "month_of_birth",
@@ -108,9 +108,9 @@ check_summarise_quantiles <- function(cdm){
                     colnames(
   cdm$person %>%
     dplyr::group_by(gender_concept_id, month_of_birth) %>%
-    summarise_quantile(year_of_birth,
-                       probs = c(0, 0.2, 0.4, 0.5, 0.6, 0.8, 1),
-                       name_suffix = "quant")  %>%
+    summariseQuantile(year_of_birth,
+                      probs = c(0, 0.2, 0.4, 0.5, 0.6, 0.8, 1),
+                      nameSuffix = "quant")  %>%
     dplyr::collect())))
 
 }
@@ -237,10 +237,10 @@ for (dbtype in dbToTest) {
     rm(cdm)
 
     # clean up
-    cdm <- cdm_from_con(con,
-                        cdm_name = "test",
-                        cdm_schema = cdm_schema,
-                        write_schema = write_schema)
+    cdm <- cdmFromCon(con,
+                       cdmName = "test",
+                       cdmSchema = cdm_schema,
+                       writeSchema = write_schema)
 
     expect_s3_class(cdm, "cdm_reference")
     dropTable(cdm, dplyr::contains(write_prefix))

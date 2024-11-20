@@ -4,18 +4,18 @@ library(dplyr, warn.conflicts = FALSE)
 ### CDM object DBI drivers ------
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema)
 
   expect_s3_class(cdm, "cdm_reference")
-  expect_error(assert_tables(cdm, "person"), NA)
+  expect_error(assertTables(cdm, "person"), NA)
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema, write_schema = write_schema)
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema, writeSchema = write_schema)
   expect_s3_class(cdm, "cdm_reference")
-  expect_error(assert_write_schema(cdm), NA)
+  expect_error(assertWriteSchema(cdm), NA)
   expect_true("concept" %in% names(cdm))
   expect_s3_class(collect(head(cdm$concept)), "data.frame")
 
@@ -31,7 +31,7 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_s3_class(df, "data.frame")
 }
 
-# test_that("local postgres cdm_from_con", {
+# test_that("local postgres cdmFromCon", {
 #   skip("manual test")
 #   skip_if(get_cdm_schema("local") == "")
 #   con <- get_connection("local")
@@ -43,7 +43,7 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 
 
 
-test_that("postgres cdm_from_con", {
+test_that("postgres cdmFromCon", {
   dbms <- "postgres"
   skip_if(get_cdm_schema(dbms) == "")
   con <- get_connection(dbms)
@@ -53,7 +53,7 @@ test_that("postgres cdm_from_con", {
   disconnect(con)
 })
 
-test_that("sqlserver cdm_from_con", {
+test_that("sqlserver cdmFromCon", {
   dbms <- "sqlserver"
   skip_if(get_cdm_schema(dbms) == "")
   con <- get_connection(dbms)
@@ -63,7 +63,7 @@ test_that("sqlserver cdm_from_con", {
   disconnect(con)
 })
 
-test_that("redshift cdm_from_con", {
+test_that("redshift cdmFromCon", {
   dbms <- "redshift"
   # skip("failing test")
   skip_if(get_cdm_schema(dbms) == "")
@@ -74,7 +74,7 @@ test_that("redshift cdm_from_con", {
   disconnect(con)
 })
 
-test_that("oracle cdm_from_con", {
+test_that("oracle cdmFromCon", {
   dbms <- "oracle"
   skip("failing test")
   skip_if(get_cdm_schema(dbms) == "")
@@ -85,7 +85,7 @@ test_that("oracle cdm_from_con", {
   disconnect(con)
 })
 
-test_that("bigquery cdm_from_con", {
+test_that("bigquery cdmFromCon", {
   dbms <- "bigquery"
   skip("failing test")
   skip_if(get_cdm_schema(dbms) == "")
@@ -96,7 +96,7 @@ test_that("bigquery cdm_from_con", {
   disconnect(con)
 })
 
-test_that("snowflake cdm_from_con", {
+test_that("snowflake cdmFromCon", {
   dbms <- "snowflake"
   skip_if(get_cdm_schema(dbms) == "")
   con <- get_connection(dbms)
@@ -115,9 +115,9 @@ test_that("spark cdm_reference", {
 
   expect_true(is.character(listTables(con, schema = "omop531")))
 
-  cdm <- cdm_from_con(con, cdm_schema = "omop531")
+  cdm <- cdmFromCon(con, cdmSchema = "omop531")
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   cdm$cdm_source
 
@@ -165,9 +165,9 @@ test_that("oracle cdm_reference", {
   expect_true(is.character(listTables(con, schema = cdmSchema)))
 
   # Oracle test cdm v5.3 is missing visit_detail
-  cdm <- cdm_from_con(con, cdm_schema = cdmSchema)
+  cdm <- cdmFromCon(con, cdmSchema = cdmSchema)
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   # expect_s3_class(snapshot(cdm), "data.frame") # test database person table is missing birth_datetime
 
@@ -206,9 +206,9 @@ test_that("cdm reference works on bigquery", {
   expect_true(is.character(listTables(con, schema = cdm_schema)))
   expect_true(is.character(listTables(con, schema = write_schema)))
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema)
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema)
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
 
@@ -226,9 +226,9 @@ test_that("cdm reference works on bigquery", {
 
 test_that("duckdb inclusion of cohort tables", {
   skip_if_not(rlang::is_installed("duckdb"))
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
   cohort <- dplyr::tibble(cohort_definition_id = 1L,
                           subject_id = 1L:2L,
@@ -246,11 +246,11 @@ test_that("duckdb inclusion of cohort tables", {
     # c("cohort", "cohort_attrition", "cohort_codelist", "cohort_set"))
     "cohort")
 
-  cdm <- cdm_from_con(con,
-                      cdm_schema = "main",
-                      write_schema = "write_schema",
-                      cohort_tables = "cohort") %>%
-    cdm_select_tbl("person", "observation_period", "cohort")
+  cdm <- cdmFromCon(con,
+                    cdmSchema = "main",
+                    writeSchema = "write_schema",
+                    cohortTables = "cohort") %>%
+    cdmSelectTbl("person", "observation_period", "cohort")
 
   expect_output(print(cdm), "CDM")
   expect_equal(collect(cdm$cohort), cohort)
@@ -260,10 +260,10 @@ test_that("duckdb inclusion of cohort tables", {
 
 test_that("duckdb collect a cdm", {
   skip_if_not(rlang::is_installed("duckdb"))
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main")
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+  cdm <- cdmFromCon(con, cdmSchema = "main")
 
   local_cdm <- collect(cdm)
 
@@ -282,23 +282,23 @@ test_that("duckdb collect a cdm", {
 })
 
 
-test_that("duckdb stow and cdm_from_files works", {
+test_that("duckdb stow and cdmFromFiles works", {
   skip_if_not(rlang::is_installed("duckdb"))
-  skip_if_not(eunomia_is_available())
+  skip_if_not(eunomiaIsAvailable())
 
   save_path <- file.path(tempdir(), paste0("tmp_", paste(sample(letters, 10, replace = TRUE), collapse = "")))
   dir.create(save_path)
   cdm_tables <- c("person", "observation_period", "cdm_source", "vocabulary")
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
-  # Test tidyselect in cdm_from_con. Should not produce message about ambiguous names.
-  expect_message(cdm_from_con(con, "main") %>% cdm_select_tbl(tbl_group("vocab")), NA)
-  expect_message(cdm_from_con(con, "main") %>% cdm_select_tbl(matches("person|observation_period")), NA)
-  expect_message(cdm_from_con(con, "main") %>% cdm_select_tbl(c(person, observation_period)), NA)
-  expect_message(cdm_from_con(con, "main") %>% cdm_select_tbl(c("person", "observation_period")), NA)
-  expect_message(cdm_from_con(con, "main") %>% cdm_select_tbl(all_of(cdm_tables)), NA)
+  # Test tidyselect in cdmFromCon. Should not produce message about ambiguous names.
+  expect_message(cdmFromCon(con, "main") %>% cdmSelectTbl(tblGroup("vocab")), NA)
+  expect_message(cdmFromCon(con, "main") %>% cdmSelectTbl(matches("person|observation_period")), NA)
+  expect_message(cdmFromCon(con, "main") %>% cdmSelectTbl(c(person, observation_period)), NA)
+  expect_message(cdmFromCon(con, "main") %>% cdmSelectTbl(c("person", "observation_period")), NA)
+  expect_message(cdmFromCon(con, "main") %>% cdmSelectTbl(all_of(cdm_tables)), NA)
 
-  cdm <- cdm_from_con(con, "main") %>% cdm_select_tbl(all_of(cdm_tables))
+  cdm <- cdmFromCon(con, "main") %>% cdmSelectTbl(all_of(cdm_tables))
 
   stow(cdm, path = save_path, format = "parquet")
   stow(cdm, path = save_path, format = "csv")
@@ -310,19 +310,19 @@ test_that("duckdb stow and cdm_from_files works", {
   unlink(list.files(save_path, pattern = "*csv", full.names = T))
   unlink(list.files(save_path, pattern = "*feather", full.names = T))
 
-  expect_message(cdm_from_files(save_path), NA)
+  expect_message(cdmFromFiles(save_path), NA)
 
-  local_cdm <- cdm_from_files(save_path)
+  local_cdm <- cdmFromFiles(save_path)
   expect_s3_class(local_cdm, "cdm_reference")
   local_person <- local_cdm$person
   attr(local_person, "cdm_reference") <- NULL
   expect_equal(local_person, collect(cdm$person))
   expect_s3_class(snapshot(cdm), "data.frame")
 
-  local_arrow_cdm <- cdm_from_files(save_path, as_data_frame = FALSE)
+  local_arrow_cdm <- cdmFromFiles(save_path, asDataFrame = FALSE)
   expect_s3_class(local_arrow_cdm, "cdm_reference")
   expect_equal(collect(local_arrow_cdm$person), collect(cdm$person))
-  expect_error(validate_cdm(local_arrow_cdm))
+  expect_error(validateCdm(local_arrow_cdm))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
@@ -344,9 +344,9 @@ test_that("DatabaseConnector cdm reference works on local postgres", {
 
   expect_true(is.character(listTables(con, schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"))))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"))
+  cdm <- cdmFromCon(con, cdmSchema = Sys.getenv("LOCAL_POSTGRESQL_CDM_SCHEMA"))
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
 
@@ -372,9 +372,9 @@ test_that("DatabaseConnector cdm reference works on postgres", {
 
   expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
+  cdm <- cdmFromCon(con, cdmSchema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
 
@@ -401,9 +401,9 @@ test_that("DatabaseConnector cdm reference works on redshift", {
 
   expect_true(is.character(listTables(con, schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"))))
 
-  cdm <- cdm_from_con(con, cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
+  cdm <- cdmFromCon(con, cdmSchema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"))
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")
 
@@ -433,10 +433,10 @@ test_that("DatabaseConnector cdm reference works on sql server", {
   cdm_schema <- strsplit(Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), "\\.")[[1]]
   expect_true(is.character(listTables(con, schema = cdm_schema)))
 
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema) %>%
-    cdm_select_tbl("cdm_source", "person", "observation_period", "vocabulary")
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema) %>%
+    cdmSelectTbl("cdm_source", "person", "observation_period", "vocabulary")
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   # expect_s3_class(snapshot(cdm), "data.frame")
   # df <- DBI::dbGetQuery(con, "select * from cdmv5.dbo.person")
@@ -469,10 +469,10 @@ test_that("DatabaseConnector cdm reference works on snowflake", {
   expect_true(is.character(listTables(con, schema = cdm_schema)))
 
   # error here
-  cdm <- cdm_from_con(con, cdm_schema = cdm_schema) %>%
-    cdm_select_tbl("cdm_source", "person", "observation_period", "vocabulary")
+  cdm <- cdmFromCon(con, cdmSchema = cdm_schema) %>%
+    cdmSelectTbl("cdm_source", "person", "observation_period", "vocabulary")
 
-  expect_error(assert_tables(cdm, "cost"))
+  expect_error(assertTables(cdm, "cost"))
   expect_true(version(cdm) %in% c("5.3", "5.4"))
   # expect_s3_class(snapshot(cdm), "data.frame")
   # df <- DBI::dbGetQuery(con, "select * from cdmv5.dbo.person")
@@ -490,12 +490,12 @@ test_that("DatabaseConnector cdm reference works on snowflake", {
 # CDM utility functions -----
 test_that("cdmName works", {
   skip_if_not_installed("duckdb")
-  skip_if_not(eunomia_is_available())
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con, "main")
+  skip_if_not(eunomiaIsAvailable())
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con, "main")
   expect_equal(cdmName(cdm), "Synthea synthetic health database")
 
-  cdm <- cdm_from_con(con, "main", cdm_name = "Example CDM")
+  cdm <- cdmFromCon(con, "main", cdm_name = "Example CDM")
   expect_equal(cdmName(cdm), "Example CDM")
 
   DBI::dbDisconnect(con, shutdown = TRUE)
@@ -503,17 +503,17 @@ test_that("cdmName works", {
 
 test_that("autodetect cdm version works", {
   skip_if_not(rlang::is_installed("duckdb", version = "0.6"))
-  skip_if_not(eunomia_is_available())
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, cdm_schema = "main", cdm_version = "auto")
+  skip_if_not(eunomiaIsAvailable())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+  cdm <- cdmFromCon(con, cdmSchema = "main", cdmVersion = "auto")
   expect_true(version(cdm) == c("5.3"))
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 test_that("snapshot works when cdm_source or vocabulary tables are empty", {
-  skip_if_not(eunomia_is_available())
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, "main")
+  skip_if_not(eunomiaIsAvailable())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+  cdm <- cdmFromCon(con, "main")
   expect_s3_class(snapshot(cdm), "data.frame")
 
   DBI::dbExecute(con, "delete from main.cdm_source")
@@ -527,9 +527,9 @@ test_that("snapshot works when cdm_source or vocabulary tables are empty", {
 
 
 test_that("stow works", {
-  skip_if_not(eunomia_is_available())
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-  cdm <- cdm_from_con(con, "main")
+  skip_if_not(eunomiaIsAvailable())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+  cdm <- cdmFromCon(con, "main")
   names1 <- names(cdm)
   dOut <- tempfile()
   dir.create(dOut)
@@ -538,7 +538,7 @@ test_that("stow works", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = file.path(dOut, "cdm.duckdb"))
-  cdm <- cdm_from_con(con, cdm_schema = "main")
+  cdm <- cdmFromCon(con, cdmSchema = "main")
   names2 <- names(cdm)
   expect_equal(names1, names2)
   DBI::dbDisconnect(con, shutdown = TRUE)
@@ -546,22 +546,22 @@ test_that("stow works", {
 
 
 test_that("cdm_select_tbl works", {
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
-  cdm <- cdm_from_con(con, "main")
+  cdm <- cdmFromCon(con, "main")
 
-  expect_equal(names(cdm_select_tbl(cdm, person)), "person")
-  expect_equal(names(cdm_select_tbl(cdm, person, observation_period)), c("person", "observation_period"))
-  expect_equal(names(cdm_select_tbl(cdm, tbl_group("vocab"))), tbl_group("vocab"))
-  expect_equal(names(cdm_select_tbl(cdm, "person")), "person")
-  expect_error(names(cdm_select_tbl(cdm, "blah")))
+  expect_equal(names(cdmSelectTbl(cdm, person)), "person")
+  expect_equal(names(cdmSelectTbl(cdm, person, observation_period)), c("person", "observation_period"))
+  expect_equal(names(cdmSelectTbl(cdm, tblGroup("vocab"))), tblGroup("vocab"))
+  expect_equal(names(cdmSelectTbl(cdm, "person")), "person")
+  expect_error(names(cdmSelectTbl(cdm, "blah")))
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 test_that("subsetting cdm tables", {
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
-  cdm <- cdm_from_con(con)
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con)
 
   # $ always returns a `tbl`
   expect_s3_class(attr(cdm$person, "cdm_reference"), "cdm_reference")

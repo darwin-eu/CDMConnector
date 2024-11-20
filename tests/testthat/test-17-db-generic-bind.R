@@ -2,14 +2,14 @@
 
 test_bind_cohorts <- function(con, cdm_schema, write_schema) {
 
-  cdm <- cdm_from_con(con, cdm_schema, write_schema, cdm_name = "test")
+  cdm <- cdmFromCon(con, cdm_schema, write_schema, cdmName = "test")
 
-  cohort_set1 <- read_cohort_set(system.file("cohorts1", package = "CDMConnector"))
-  cohort_set2 <- read_cohort_set(system.file("cohorts2", package = "CDMConnector")) %>%
+  cohort_set1 <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+  cohort_set2 <- readCohortSet(system.file("cohorts2", package = "CDMConnector")) %>%
     dplyr::mutate(cohort_name = paste0("another_", cohort_name)) # names must be unique
 
-  cdm <- generate_cohort_set(cdm, cohort_set1, name = "cohort1")
-  cdm <- generate_cohort_set(cdm, cohort_set2, name = "cohort2")
+  cdm <- generateCohortSet(cdm, cohort_set1, name = "cohort1")
+  cdm <- generateCohortSet(cdm, cohort_set2, name = "cohort2")
 
   cdm <- omopgenerics::bind(cdm$cohort1, cdm$cohort2, name = "cohort3")
 
