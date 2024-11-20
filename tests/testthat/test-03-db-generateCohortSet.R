@@ -268,3 +268,8 @@ test_that("invalid cohort table names give an error", {
   expect_error(cdm <- generateCohortSet(cdm, cohortSet, name = "te$t", overwrite = TRUE))
   cdmDisconnect(cdm)
 })
+
+
+test_that("non-utf8 characters in json files should be handled by readCohortSet without errors", {
+  expect_no_error(readCohortSet(system.file("cohortsNonUTF8", package = "CDMConnector", mustWork = TRUE)))
+})
