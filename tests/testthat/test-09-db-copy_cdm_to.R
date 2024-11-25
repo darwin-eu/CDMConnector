@@ -11,10 +11,10 @@ test_copy_cdm_to <- function(con, write_schema) {
       cdmSelectTbl("person", "observation_period", "vocabulary")
 
   # create another cdm
-  cdm2 <- copy_cdm_to(con = con, cdm = cdm, schema = write_schema)
+  cdm2 <- copyCdmTo(con = con, cdm = cdm, schema = write_schema)
   expect_setequal(names(cdm), names(cdm2))
   expect_s3_class(cdm2, "cdm_reference")
-  expect_error(copy_cdm_to(con, cdm = cdm, schema = write_schema)) # cdm already exists
+  expect_error(copyCdmTo(con, cdm = cdm, schema = write_schema)) # cdm already exists
 
   # drop test tables
   listTables(con, write_schema) %>%
@@ -48,7 +48,7 @@ test_that("duckdb - copy_cdm_to without prefix", {
   expect_s3_class(cdm2, "cdm_reference")
 
   con3 <- DBI::dbConnect(duckdb::duckdb())
-  cdm3 <- copy_cdm_to(con3, dplyr::collect(cdm1), schema = "main")
+  cdm3 <- copyCdmTo(con3, dplyr::collect(cdm1), schema = "main")
 
   expect_setequal(names(cdm1), names(cdm3))
   expect_s3_class(cdm3, "cdm_reference")

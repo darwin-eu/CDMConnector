@@ -100,16 +100,15 @@
 #' @importFrom dplyr all_of matches starts_with ends_with contains
 #' @importFrom stats rpois
 #' @export
-cdm_from_con <- function(con,
-                         cdm_schema,
-                         write_schema,
-                         cohort_tables = NULL,
-                         cdm_version = "5.3",
-                         cdm_name = NULL,
-                         achilles_schema = NULL,
-                         .soft_validation = FALSE,
-                         write_prefix = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "cdm_from_con()", "cdmFromCon()")
+cdmFromCon <- function(con,
+                       cdmSchema,
+                       writeSchema,
+                       cohortTables = NULL,
+                       cdmVersion = "5.3",
+                       cdmName = NULL,
+                       achillesSchema = NULL,
+                       .softValidation = FALSE,
+                       writePrefix = NULL) {
 
   if (!DBI::dbIsValid(con)) {
     cli::cli_abort("The connection is not valid. Is the database connection open?")
@@ -119,61 +118,61 @@ cdm_from_con <- function(con,
     cli::cli_abort("SQLite is not supported by CDMConnector. Please use duckdb instead.")
   }
 
-  if (missing(write_schema)) {
+  if (missing(writeSchema)) {
     cli::cli_abort("{.arg write_schema} is now required to create a cdm object with a database backend.
                    Please make sure you have a schema in your database where you can create new tables and provide it in the `write_schema` argument.
                    If your schema has multiple parts please provide a length 2 character vector: `write_schema = c('my_db', 'my_schema')`")
   }
 
-  checkmate::assert_character(cdm_name, any.missing = FALSE, len = 1, null.ok = TRUE)
-  checkmate::assert_character(cdm_schema, min.len = 1, max.len = 3, any.missing = F)
-  checkmate::assert_character(write_schema, min.len = 1, max.len = 3, any.missing = F)
-  checkmate::assert_character(cohort_tables, null.ok = TRUE, min.len = 1)
-  checkmate::assert_character(achilles_schema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
-  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
-  checkmate::assert_character(write_prefix, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
+  checkmate::assert_character(cdmName, any.missing = FALSE, len = 1, null.ok = TRUE)
+  checkmate::assert_character(cdmSchema, min.len = 1, max.len = 3, any.missing = F)
+  checkmate::assert_character(writeSchema, min.len = 1, max.len = 3, any.missing = F)
+  checkmate::assert_character(cohortTables, null.ok = TRUE, min.len = 1)
+  checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
+  checkmate::assert_choice(cdmVersion, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
+  checkmate::assert_character(writePrefix, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
 
-  # users can give write_schema = "catalog.schema"
-  if (length(write_schema) == 1 && stringr::str_detect(write_schema, "\\.")) {
-    if (stringr::str_count(write_schema, "\\.") != 1) cli::cli_abort("`write_schema` can only have one .")
-    write_schema <- stringr::str_split(write_schema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
+  # users can give writeSchema = "catalog.schema"
+  if (length(writeSchema) == 1 && stringr::str_detect(writeSchema, "\\.")) {
+    if (stringr::str_count(writeSchema, "\\.") != 1) cli::cli_abort("`writeSchema` can only have one .")
+    writeSchema <- stringr::str_split(writeSchema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
   }
 
-  if (length(cdm_schema) == 1 && stringr::str_detect(cdm_schema, "\\.")) {
-    if (stringr::str_count(cdm_schema, "\\.") != 1) cli::cli_abort("`cdm_schema` can only have one .")
-    cdm_schema <- stringr::str_split(cdm_schema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
+  if (length(cdmSchema) == 1 && stringr::str_detect(cdmSchema, "\\.")) {
+    if (stringr::str_count(cdmSchema, "\\.") != 1) cli::cli_abort("`cdmSchema` can only have one .")
+    cdmSchema <- stringr::str_split(cdmSchema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
   }
 
-  # make sure write_schema is named
-  if (!rlang::is_named(write_schema)) {
-    if (length(write_schema) == 1) {
-      write_schema <- c("schema" = write_schema)
-    } else if (length(write_schema) == 2) {
-      write_schema <- c("catalog" = write_schema[1], "schema" = write_schema[2])
+  # make sure writeSchema is named
+  if (!rlang::is_named(writeSchema)) {
+    if (length(writeSchema) == 1) {
+      writeSchema <- c("schema" = writeSchema)
+    } else if (length(writeSchema) == 2) {
+      writeSchema <- c("catalog" = writeSchema[1], "schema" = writeSchema[2])
     } else {
-      rlang::abort("If `write_schema` is unnamed then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
+      rlang::abort("If `writeSchema` is unnamed then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
     }
   } else {
-    checkmate::assertTRUE(all(names(write_schema) %in% c("catalog", "schema", "prefix")))
-    if ("prefix" %in% names(write_schema)) {
-      rlang::inform("Support for 'prefix' in write_schema is deprecated and will be removed in a future release. Please use the `writePrefix` argument in `cdmFromCon()` instead.",
+    checkmate::assertTRUE(all(names(writeSchema) %in% c("catalog", "schema", "prefix")))
+    if ("prefix" %in% names(writeSchema)) {
+      rlang::inform("Support for 'prefix' in writeSchema is deprecated and will be removed in a future release. Please use the `writePrefix` argument in `cdmFromCon()` instead.",
                     .frequency = "once", .frequency_id = "write_prefix_deprecation")
     }
   }
 
-  # if write_prefix argument is pass it will be override the prefix in write_schema
-  if (!is.null(write_prefix)) {
-    checkmate::assert_character(write_prefix, min.chars = 1, len = 1, pattern = "^[a-z0-9_]+$")
-    write_schema["prefix"] <- write_prefix
+  # if writePrefix argument is pass it will be override the prefix in writeSchema
+  if (!is.null(writePrefix)) {
+    checkmate::assert_character(writePrefix, min.chars = 1, len = 1, pattern = "^[a-z0-9_]+$")
+    writeSchema["prefix"] <- writePrefix
   }
 
 
   # create source object and validate connection
-  src <- dbSource(con = con, writeSchema = write_schema)
+  src <- dbSource(con = con, writeSchema = writeSchema)
   con <- attr(src, "dbcon")
 
   # read omop tables
-  dbTables <- listTables(con, schema = cdm_schema)
+  dbTables <- listTables(con, schema = cdmSchema)
   omop_tables <- omopgenerics::omopTables()
   omop_tables <- omop_tables[which(omop_tables %in% tolower(dbTables))]
   if (length(omop_tables) == 0) {
@@ -187,31 +186,31 @@ cdm_from_con <- function(con,
   }
 
   cdmTables <- purrr::map(
-    omop_tables, ~ dplyr::tbl(src = src, schema = cdm_schema, name = .)
+    omop_tables, ~ dplyr::tbl(src = src, schema = cdmSchema, name = .)
   ) %>%
     rlang::set_names(tolower(omop_tables))
 
-  if (is.null(cdm_name) && ("cdm_source" %in% names(cdmTables))) {
+  if (is.null(cdmName) && ("cdm_source" %in% names(cdmTables))) {
     cdm_name <- cdmTables$cdm_source %>%
     utils::head(1) %>%
     dplyr::pull("cdm_source_name")
   }
 
-  if (is.null(cdm_name) || length(cdm_name) != 1 || is.na(cdm_name)) {
+  if (is.null(cdmName) || length(cdmName) != 1 || is.na(cdmName)) {
     cli::cli_alert_warning("cdm name not specified and could not be inferred from the cdm source table")
-    cdm_name <- "An OMOP CDM database"
+    cdmName <- "An OMOP CDM database"
   }
 
-  if (!is.null(achilles_schema)) {
+  if (!is.null(achillesSchema)) {
     achillesReqTables <- omopgenerics::achillesTables()
-    acTables <- listTables(con, schema = achilles_schema)
+    acTables <- listTables(con, schema = achillesSchema)
     achilles_tables <- acTables[which(tolower(acTables) %in% achillesReqTables)]
 
     if (length(achilles_tables) != 3) {
       cli::cli_abort("Achilles tables not found in {achilles_schema}!")
     }
 
-    achillesTables <- purrr::map(achilles_tables, ~dplyr::tbl(src = src, schema = achilles_schema, .)) %>%
+    achillesTables <- purrr::map(achilles_tables, ~dplyr::tbl(src = src, schema = achillesSchema, .)) %>%
       rlang::set_names(tolower(achilles_tables))
 
   } else {
@@ -220,24 +219,24 @@ cdm_from_con <- function(con,
 
   cdm <- omopgenerics::newCdmReference(
     tables = c(cdmTables, achillesTables),
-    cdmName = cdm_name,
-    cdmVersion = cdm_version,
-    .softValidation = .soft_validation
+    cdmName = cdmName,
+    cdmVersion = cdmVersion,
+    .softValidation = .softValidation
   )
 
   # on spark we use permanent tables prefixed with this whenever the user asks for temp tables
   attr(cdm, "temp_emulation_prefix") <- paste0(
     "temp", Sys.getpid() + stats::rpois(1, as.integer(Sys.time())) %% 1e6, "_")
 
-  write_schema_tables <- listTables(con, schema = write_schema)
+  write_schema_tables <- listTables(con, schema = writeSchema)
 
-  for (cohort_table in cohort_tables) {
+  for (cohort_table in cohortTables) {
     nms <- paste0(cohort_table, c("", "_set", "_attrition", "_codelist"))
     x <- purrr::map(nms, function(nm) {
       if (nm %in% write_schema_tables) {
-        dplyr::tbl(src = src, schema = write_schema, name = nm)
+        dplyr::tbl(src = src, schema = writeSchema, name = nm)
       } else if (nm %in% toupper(write_schema_tables)) {
-        dplyr::tbl(src = src, schema = write_schema, name = toupper(nm))
+        dplyr::tbl(src = src, schema = writeSchema, name = toupper(nm))
       } else {
         NULL
       }
@@ -252,14 +251,14 @@ cdm_from_con <- function(con,
         cohortSetRef = x[[2]],
         cohortAttritionRef = x[[3]],
         cohortCodelistRef = x[[4]],
-        .softValidation = .soft_validation
+        .softValidation = .softValidation
       )
 
   }
 
   if (dbms(con) == "snowflake") {
 
-    s <- write_schema %||% cdm_schema
+    s <- writeSchema %||% cdmSchema
 
     # Assign temp table schema
     if ("prefix" %in% names(s)) {
@@ -281,9 +280,9 @@ cdm_from_con <- function(con,
   }
 
   # TO BE REMOVED WHEN CIRCER WORKS WITH CDM OBJECT
-  attr(cdm, "cdm_schema") <- cdm_schema
+  attr(cdm, "cdm_schema") <- cdmSchema
   # TO BE REMOVED WHEN DOWNSTREAM PACKAGES NO LONGER USE THESE ATTRIBUTES
-  attr(cdm, "write_schema") <- write_schema
+  attr(cdm, "write_schema") <- writeSchema
   attr(cdm, "dbcon") <- attr(attr(cdm, "cdm_source"), "dbcon")
 
   return(cdm)
@@ -301,27 +300,29 @@ tbl.db_cdm <- function(src, schema, name, ...) {
 }
 
 
-#' @rdname cdm_from_con
+#' @rdname cdmFromCon
 #' @export
-cdmFromCon <- function(con,
-                       cdmSchema,
-                       writeSchema,
-                       cohortTables = NULL,
-                       cdmVersion = "5.3",
-                       cdmName = NULL,
-                       achillesSchema = NULL,
-                       .softValidation = FALSE,
-                       writePrefix = NULL) {
-  cdm_from_con(
+cdm_from_con <- function(con,
+                         cdm_schema,
+                         write_schema,
+                         cohort_tables = NULL,
+                         cdm_version = "5.3",
+                         cdm_name = NULL,
+                         achilles_schema = NULL,
+                         .soft_validation = FALSE,
+                         write_prefix = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_con()", "cdmFromCon()")
+
+  cdmFromCon(
     con = con,
-    cdm_schema = cdmSchema,
-    write_schema = writeSchema,
-    cohort_tables = cohortTables,
-    cdm_version = cdmVersion,
-    cdm_name = cdmName,
-    achilles_schema = achillesSchema,
-    .soft_validation = .softValidation,
-    write_prefix = writePrefix
+    cdmSchema = cdm_schema,
+    writeSchema = write_schema,
+    cohortTables = cohort_tables,
+    cdmVersion = cdm_version,
+    cdmName = cdm_name,
+    achillesSchema = achilles_schema,
+    .softValidation = .soft_validation,
+    writePrefix = write_prefix
   )
 }
 
@@ -509,7 +510,6 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #' cost, drug_era, dose_era, condition_era, concept, vocabulary,
 #' concept_relationship, concept_ancestor, concept_synonym, drug_strength
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param group A character vector of CDM table groups: "vocab", "clinical",
 #' "all", "default", "derived".
@@ -528,8 +528,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #' cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = "public") %>%
 #'   cdmSelectTbl(tblGroup("vocab"))
 #' }
-tbl_group <- function(group) {
-  lifecycle::deprecate_soft("1.7.0", "tbl_group()", "tblGroup()")
+tblGroup <- function(group) {
   # groups are defined in the internal package dataframe called spec_cdm_table
   # created by a script in the extras folder
   checkmate::assert_subset(group, c("vocab", "clinical", "all", "default", "derived"))
@@ -540,9 +539,13 @@ tbl_group <- function(group) {
     unique()
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @export
-#' @rdname tbl_group
-tblGroup <- tbl_group
+#' @rdname tblGroup
+tbl_group <- function(group) {
+  lifecycle::deprecate_soft("1.7.0", "tbl_group()", "tblGroup()")
+  tblGroup(group)
+}
 
 #' Get the database management system (dbms) from a cdm_reference or DBI
 #' connection
@@ -655,8 +658,6 @@ stow <- function(cdm, path, format = "parquet") {
 #' Create a CDM reference from a folder containing parquet, csv, or feather
 #' files
 #'
-#' `r lifecycle::badge("deprecated")`
-#'
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
 #' @param format What is the file format to be read in? Must be "auto"
 #'   (default), "parquet", "csv", "feather".
@@ -666,18 +667,17 @@ stow <- function(cdm, path, format = "parquet") {
 #'   FALSE will read files into R as Arrow Datasets.
 #' @return A list of dplyr database table references pointing to CDM tables
 #' @export
-cdm_from_files <- function(path,
-                           format = "auto",
-                           cdm_version = "5.3",
-                           cdm_name = NULL,
-                           as_data_frame = TRUE) {
-  lifecycle::deprecate_soft("1.7.0", "cdm_from_files()", "cdmFromFiles()")
+cdmFromFiles <- function(path,
+                         format = "auto",
+                         cdmVersion = "5.3",
+                         cdmName = NULL,
+                         asDataFrame = TRUE) {
   checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
-  checkmate::assert_logical(as_data_frame, len = 1, null.ok = FALSE)
+  checkmate::assert_logical(asDataFrame, len = 1, null.ok = FALSE)
   checkmate::assert_true(file.exists(path))
 
-  checkmate::assert_choice(cdm_version, choices = c("5.3", "5.4"))
-  checkmate::assert_character(cdm_name, null.ok = TRUE)
+  checkmate::assert_choice(cdmVersion, choices = c("5.3", "5.4"))
+  checkmate::assert_character(cdmName, null.ok = TRUE)
   rlang::check_installed("arrow")
 
   path <- path.expand(path)
@@ -699,36 +699,36 @@ cdm_from_files <- function(path,
   cdm <- switch(
     format,
     parquet = purrr::map(cdm_table_files, function(.) {
-      arrow::read_parquet(., as_data_frame = as_data_frame)
+      arrow::read_parquet(., as_data_frame = asDataFrame)
     }),
     csv = purrr::map(cdm_table_files, function(.) {
-      arrow::read_csv_arrow(., as_data_frame = as_data_frame)
+      arrow::read_csv_arrow(., as_data_frame = asDataFrame)
     }),
     feather = purrr::map(cdm_table_files, function(.) {
-      arrow::read_feather(., as_data_frame = as_data_frame)
+      arrow::read_feather(., as_data_frame = asDataFrame)
     })
   )
 
   # Try to get the cdm name if not supplied
-  if (is.null(cdm_name) && ("cdm_source" %in% names(cdm))) {
+  if (is.null(cdmName) && ("cdm_source" %in% names(cdm))) {
 
     cdm_source <- cdm$cdm_source %>%
       head() %>%
       dplyr::collect() %>%
       dplyr::rename_all(tolower)
 
-    cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[1],
+    cdmName <- dplyr::coalesce(cdm_source$cdm_source_name[1],
                                 cdm_source$cdm_source_abbreviation[1])
   }
 
-  if (is.null(cdm_name)) {
-    rlang::abort("cdm_name must be supplied!")
+  if (is.null(cdmName)) {
+    rlang::abort("cdmName must be supplied!")
   }
 
   names(cdm) <- tolower(cdm_tables)
 
   # Try to get the cdm name if not supplied
-  if (is.null(cdm_name) &&
+  if (is.null(cdmName) &&
       !is.null(names(cdm)) &&
       ("cdm_source" %in% names(cdm))) {
 
@@ -737,12 +737,12 @@ cdm_from_files <- function(path,
       dplyr::collect() %>%
       dplyr::rename_all(tolower)
 
-    cdm_name <- dplyr::coalesce(cdm_source$cdm_source_name[1],
+    cdmName <- dplyr::coalesce(cdm_source$cdm_source_name[1],
                                 cdm_source$cdm_source_abbreviation[1])
   }
 
-  if (is.null(cdm_name)) {
-    rlang::abort("cdm_name must be supplied!")
+  if (is.null(cdmName)) {
+    rlang::abort("cdmName must be supplied!")
   }
 
 
@@ -751,24 +751,26 @@ cdm_from_files <- function(path,
   attr(cdm, "cdm_schema") <- NULL
   attr(cdm, "write_schema") <- NULL
   attr(cdm, "dbcon") <- NULL
-  attr(cdm, "cdm_version") <- cdm_version
-  attr(cdm, "cdm_name") <- cdm_name
+  attr(cdm, "cdm_version") <- cdmVersion
+  attr(cdm, "cdm_name") <- cdmName
   return(cdm)
 }
 
-
-#' @rdname cdm_from_files
+#' `r lifecycle::badge("deprecated")`
+#' @rdname cdmFromFiles
 #' @export
-cdmFromFiles <- function(path,
+cdm_from_files <- function(path,
                          format = "auto",
-                         cdmVersion = "5.3",
-                         cdmName = NULL,
-                         asDataFrame = TRUE) {
-  cdm_from_files(path = path,
-                 format = format,
-                 cdm_version = cdmVersion,
-                 cdm_name = cdmName,
-                 as_data_frame = asDataFrame)
+                         cdm_version = "5.3",
+                         cdm_name = NULL,
+                         as_data_frame = TRUE) {
+
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_files()", "cdmFromFiles()")
+  cdmFromFiles(path = path,
+               format = format,
+               cdmVersion = cdm_version,
+               cdmName = cdm_name,
+               asDataFrame = as_data_frame)
 }
 
 #' Extract CDM metadata
@@ -908,7 +910,6 @@ cdm_disconnect <- function(cdm) {
 #' This function uses syntax similar to `dplyr::select` and can be used to
 #' subset a cdm reference object to a specific tables
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param cdm A cdm reference object created by `cdm_from_con`
 #' @param ... One or more table names of the tables of the `cdm` object.
@@ -930,8 +931,7 @@ cdm_disconnect <- function(cdm) {
 #'
 #' DBI::dbDisconnect(con)
 #' }
-cdm_select_tbl <- function(cdm, ...) {
-  lifecycle::deprecate_soft("1.7.0", "cdm_select_tbl()", "cdmSelectTbl()")
+cdmSelectTbl <- function(cdm, ...) {
   tables <- names(cdm) %>% rlang::set_names(names(cdm))
   selected <- names(tidyselect::eval_select(rlang::quo(c(...)), data = tables))
   if (length(selected) == 0) {
@@ -945,9 +945,13 @@ cdm_select_tbl <- function(cdm, ...) {
   cdm
 }
 
-#' @rdname cdm_select_tbl
+#' `r lifecycle::badge("deprecated")
+#' @rdname cdmSelectTbl
 #' @export
-cdmSelectTbl <- cdm_select_tbl
+cdm_select_tbl <- function(cdm, ...){
+  lifecycle::deprecate_soft("1.7.0", "cdm_select_tbl()", "cdmSelectTbl()")
+  cdmSelectTbl(cdm, ...)
+}
 
 #' Get cdm write schema
 #'

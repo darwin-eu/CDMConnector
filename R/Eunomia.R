@@ -335,35 +335,33 @@ eunomia_dir <- function(dataset_name = "GiBleed",
 
 #' Has the Eunomia dataset been cached?
 #'
-#' `r lifecycle::badge("deprecated")`
-#'
 #' @param dataset_name,datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
 #' @param cdm_version,cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
 #'
 #' @return TRUE if the eunomia example dataset is available and FASLE otherwise
 #' @export
-eunomia_is_available <- function(dataset_name = "GiBleed",
-                                 cdm_version = "5.3") {
-  lifecycle::deprecate_soft("1.7.0", "eunomia_is_available()", "eunomiaIsAvailable()")
+eunomiaIsAvailable <- function(datasetName = "GiBleed",
+                                 cdmVersion = "5.3") {
   if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {
     rlang::abort("Set the environment variable EUNOMIA_DATA_FOLDER to the eunomia cache location")
   }
 
-  stopifnot(is.character(cdm_version), length(cdm_version) == 1, cdm_version %in% c("5.3", "5.4"))
+  stopifnot(is.character(cdmVersion), length(cdmVersion) == 1, cdmVersion %in% c("5.3", "5.4"))
 
   # check for zip archive of csv source files
-  archiveName <- paste0(dataset_name, "_", cdm_version, ".zip")
+  archiveName <- paste0(datasetName, "_", cdmVersion, ".zip")
   archiveLocation <- file.path(Sys.getenv("EUNOMIA_DATA_FOLDER"), archiveName)
   return(file.exists(archiveLocation))
 }
 
-
-#' @rdname eunomia_is_available
+#' `r lifecycle::badge("deprecated")`
+#' @rdname eunomiaIsAvailable
 #' @export
-eunomiaIsAvailable <- function(datasetName = "GiBleed",
-                               cdmVersion = "5.3") {
-  eunomia_is_available(dataset_name = datasetName,
-                       cdm_version = cdmVersion)
+eunomia_is_available <- function(dataset_name = "GiBleed",
+                               cdm_version = "5.3") {
+  lifecycle::deprecate_soft("1.7.0", "eunomia_is_available()", "eunomiaIsAvailable()")
+  eunomiaIsAvailable(datasetName = dataset_name,
+                       cdmVersion = cdm_version)
 }
 
 

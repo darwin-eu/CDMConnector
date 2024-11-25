@@ -115,7 +115,6 @@ in_schema <- function(schema, table, dbms = NULL) {
 #' DBI::dbListTables can be used to get all tables in a database but not always in a
 #' specific schema. `listTables` will list tables in a schema.
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param con A DBI connection to a database
 #' @param schema The name of a schema in a database. If NULL, returns DBI::dbListTables(con).
@@ -129,8 +128,7 @@ in_schema <- function(schema, table, dbms = NULL) {
 #' con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #' listTables(con, schema = "main")
 #' }
-list_tables <- function(con, schema = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "list_tables()", "listTables()")
+listTables <- function(con, schema = NULL) {
 
   if (methods::is(con, "Pool")) {
     if (!rlang::is_installed("pool")) {
@@ -247,9 +245,13 @@ list_tables <- function(con, schema = NULL) {
   rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
 }
 
-#' @rdname list_tables
+#' `r lifecycle::badge("deprecated")`
+#' @rdname listTables
 #' @export
-listTables <- list_tables
+list_tables <- function(con, schema = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "list_tables()", "listTables()")
+  listTables(con, schema = NULL)
+}
 
 # To silence warning <BigQueryConnection> uses an old dbplyr interface
 # https://github.com/r-dbi/bigrquery/issues/508

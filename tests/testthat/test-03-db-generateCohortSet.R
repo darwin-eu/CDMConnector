@@ -181,7 +181,7 @@ test_that("newGeneratedCohortSet works with prefix", {
   con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
   write_schema <- c(schema = "main", prefix = "test_")
-  cdm <- cdmFromCon(con, "main", write_schema, cdmName = "eunomia")
+  cdm <- cdmFromCon(con, "main", writeSchema = write_schema, cdmName = "eunomia")
 
   cdm$cohort <- cdm$condition_era %>%
     head(1) %>%

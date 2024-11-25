@@ -23,8 +23,6 @@
 #' If the CohortsToCreate.csv file is missing then all of the json files in the
 #' folder will be used, cohort_definition_id will be automatically assigned
 #' in alphabetical order, and cohort_name will match the file names.
-
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param path The path to a folder containing Circe cohort definition
 #' json files and optionally a csv file named CohortsToCreate.csv with columns
@@ -32,8 +30,7 @@
 #' @importFrom jsonlite read_json
 #' @importFrom dplyr tibble
 #' @export
-read_cohort_set <- function(path) {
-  lifecycle::deprecate_soft("1.7.0", "read_cohort_set()", "readCohortSet()")
+readCohortSet <- function(path) {
   checkmate::checkCharacter(path, len = 1, min.chars = 1)
 
   if (!fs::is_dir(path)) {
@@ -96,9 +93,13 @@ read_cohort_set <- function(path) {
   return(cohortsToCreate)
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @export
-#' @rdname read_cohort_set
-readCohortSet <- read_cohort_set
+#' @rdname readCohortSet
+read_cohort_set <- function(path) {
+  lifecycle::deprecate_soft("1.7.0", "read_cohort_set()", "readCohortSet()")
+  readCohortSet(path)
+}
 
 #' Generate a cohort set on a cdm object
 #'
@@ -124,7 +125,7 @@ readCohortSet <- read_cohort_set
 #' object is experimental and user feedback is welcome.
 #'
 #' `r lifecycle::badge("experimental")`
-#'
+
 #' One key design principle is that cohort_table objects are created once
 #' and can persist across analysis execution but should not be modified after
 #' creation. While it is possible to modify a cohort_table object doing

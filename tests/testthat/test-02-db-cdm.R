@@ -228,7 +228,7 @@ test_that("write_schema argument specification and cdm_disconnect works", {
 
   expect_equal(attr(cdm, "write_schema"), c(schema = "main", prefix = "tmp_"))
 
-  cdm_disconnect(cdm)
+  cdmDisconnect(cdm)
 })
 
 test_that("schema specification with . works", {

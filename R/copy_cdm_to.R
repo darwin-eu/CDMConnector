@@ -22,7 +22,6 @@
 #' in the new database allowing for multiple cdms in a single shared database
 #' schema.
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param con A DBI datbase connection created by `DBI::dbConnect`
 #' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
@@ -31,9 +30,7 @@
 #'
 #' @return A cdm reference object pointing to the newly created cdm in the remote database
 #' @export
-copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
-  lifecycle::deprecate_soft("1.7.0", "copy_cdm_to()", "copyCdmTo()")
-
+copyCdmTo <- function(con, cdm, schema, overwrite = FALSE) {
   checkmate::assertTRUE(DBI::dbIsValid(con))
   checkmate::assertClass(cdm, "cdm_reference")
   if (dbms(con) == "bigquery") rlang::abort("copy_cdm_to on BigQuery is not yet supported!")
@@ -99,6 +96,10 @@ copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
   return(newCdm)
 }
 
-#' @rdname copy_cdm_to
+#' `r lifecycle::badge("deprecated")`
+#' @rdname copyCdmTo
 #' @export
-copyCdmTo <- copy_cdm_to
+copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
+  lifecycle::deprecate_soft("1.7.0", "copy_cdm_to()", "copyCdmTo()")
+  copyCdmTo(con, cdm, schema, overwrite = FALSE)
+}

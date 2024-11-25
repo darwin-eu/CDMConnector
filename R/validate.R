@@ -20,7 +20,6 @@
 #' checking that column names are correct and that no tables are empty. A short
 #' report is printed to the console. This function is meant for interactive use.
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param cdm A cdm reference object.
 #'
@@ -34,8 +33,7 @@
 #' validateCdm(cdm)
 #' DBI::dbDisconnect(con)
 #' }
-validate_cdm <- function(cdm) {
-  lifecycle::deprecate_soft("1.7.0", "validate_cdm()", "validateCdm()")
+validateCdm <- function(cdm) {
   checkmate::assert_class(cdm, "cdm_reference")
   if (is.null(cdmCon(cdm))) {
     rlang::abort("validate_cdm is not implement for local cdms")
@@ -48,9 +46,14 @@ validate_cdm <- function(cdm) {
   validate_cdm_rowcounts(cdm)
 }
 
+#' `r lifecycle::badge("deprecated")`
 #' @export
-#' @rdname validate_cdm
-validateCdm <- validate_cdm
+#' @rdname validateCdm
+validate_cdm <- function(cdm){
+  lifecycle::deprecate_soft("1.7.0", "validate_cdm()", "validateCdm()")
+  validateCdm(cdm = cdm)
+
+}
 
 validate_cdm_colnames <- function(cdm) {
   # local option needed for pull with arrow
@@ -115,7 +118,6 @@ validate_cdm_rowcounts <- function(cdm) {
 #' are in the cdm object, have the correct columns/fields,
 #' and (optionally) are not empty.
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param cdm A cdm object
 #' @param tables A character vector of table names to check.
@@ -149,8 +151,7 @@ validate_cdm_rowcounts <- function(cdm) {
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #'
 #' }
-assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "assert_tables()", "assertTables()")
+assertTables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
   checkmate::assertClass(add, "AssertCollection", null.ok = TRUE)
   checkmate::assertLogical(empty.ok, len = 1, null.ok = FALSE)
   checkmate::assertCharacter(tables,
@@ -212,10 +213,13 @@ assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 }
 
 
+#' `r lifecycle::badge("deprecated")`
+#' @rdname assertTables
 #' @export
-#' @rdname assert_tables
-assertTables <- assert_tables
-
+assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "assert_tables()", "assertTables()")
+  assertTables(cdm, tables, empty.ok = FALSE, add = NULL)
+}
 
 #' Assert that cdm has a writable schema
 #'

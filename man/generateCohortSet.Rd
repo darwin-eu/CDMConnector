@@ -58,7 +58,6 @@ Each of the three attributes are tidy tables. The implementation of this
 object is experimental and user feedback is welcome.
 
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-
 One key design principle is that cohort_table objects are created once
 and can persist across analysis execution but should not be modified after
 creation. While it is possible to modify a cohort_table object doing
@@ -69,8 +68,8 @@ so will invalidate it and it's attributes may no longer be accurate.
 library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 cdm <- cdmFromCon(con,
-                    cdmSchema = "main",
-                    writeSchema = "main")
+                  cdmSchema = "main",
+                  writeSchema = "main")
 
 cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
 cdm <- generateCohortSet(cdm, cohortSet, name = "cohort")

@@ -19,18 +19,16 @@
 #' @param x A tbl reference to a cohort table
 #' @param cohort_definition_id,cohortDefinitionId A number to use for the new cohort_definition_id
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @return A lazy query that when executed will resolve to a new cohort table with
 #' one cohort_definition_id resulting from the union of all cohorts in the original
 #' cohort table
 #' @export
-union_cohorts <- function(x, cohort_definition_id = 1L) {
-  lifecycle::deprecate_warn("1.1.0", "union_cohorts()", "cohort_union()")
+unionCohorts <- function(x, cohortDefinitionId = 1L) {
   checkmate::assert_class(x, "tbl")
-  checkmate::assert_integerish(cohort_definition_id, len = 1, lower = 0)
+  checkmate::assert_integerish(cohortDefinitionId, len = 1, lower = 0)
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
-  cohort_definition_id <- as.integer(cohort_definition_id)
+  cohort_definition_id <- as.integer(cohortDefinitionId)
 
   event_date <- event_type <- NA # to remove r check error initialize these variables to NA
 
@@ -59,18 +57,16 @@ union_cohorts <- function(x, cohort_definition_id = 1L) {
 #' @param x A tbl reference to a cohort table
 #' @param cohort_definition_id,cohortDefinitionId A number to use for the new cohort_definition_id
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @return A lazy query that when executed will resolve to a new cohort table with
 #' one cohort_definition_id resulting from the intersection of all cohorts in the original
 #' cohort table
 #' @export
-intersect_cohorts <- function(x, cohort_definition_id = 1L) {
-  lifecycle::deprecate_warn("1.1.0", "intersect_cohorts()", "cohort_intersect()")
+intersectCohorts <- function(x, cohortDefinitionId = 1L) {
   checkmate::assert_class(x, "tbl")
-  checkmate::assert_integerish(cohort_definition_id, len = 1, lower = 0)
+  checkmate::assert_integerish(cohortDefinitionId, len = 1, lower = 0)
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
-  cohort_definition_id <- as.integer(cohort_definition_id)
+  cohort_definition_id <- as.integer(cohortDefinitionId)
 
   # get the total number of cohorts we are intersecting together
   n_cohorts_to_intersect <- x %>%
@@ -112,14 +108,18 @@ intersect_cohorts <- function(x, cohort_definition_id = 1L) {
     union_cohorts(cohort_definition_id = cohort_definition_id)
 }
 
-#' @rdname intersect_cohorts
+#' `r lifecycle::badge("deprecated")`
+#' @rdname intersectCohorts
 #' @export
-intersectCohorts <- function(x, cohortDefinitionId = 1L) {
-  intersect_cohorts(x, cohortDefinitionId)
+intersect_cohorts <- function(x, cohort_definition_id = 1L) {
+  lifecycle::deprecate_soft("1.7.0", "intersect_cohorts()", "intersectCohorts()")
+  intersectCohorts(x, cohort_definition_id)
 }
 
-#' @rdname union_cohorts
+#' `r lifecycle::badge("deprecated")`
+#' @rdname unionCohorts
 #' @export
-unionCohorts <- function(x, cohortDefinitionId = 1L) {
-  union_cohorts(x, cohortDefinitionId)
+union_cohorts <- function(x, cohort_definition_id = 1L) {
+  lifecycle::deprecate_soft("1.7.0", "union_cohorts()", "unionCohorts()")
+  unionCohorts(x, cohort_definition_id)
 }

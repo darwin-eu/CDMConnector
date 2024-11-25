@@ -55,11 +55,10 @@
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
-  lifecycle::deprecate_soft("1.7.0", "summarise_quantile()", "summariseQuantile()")
+summariseQuantile <- function(.data, x = NULL, probs, nameSuffix = "value") {
   checkmate::assertClass(.data, "tbl_sql")
   checkmate::assert_double(probs, min.len = 1, lower = 0, upper = 1)
-  checkmate::assert_character(name_suffix, null.ok = TRUE)
+  checkmate::assert_character(nameSuffix, null.ok = TRUE)
 
   selection_context <- .data$lazy_query$select_operation
 
@@ -107,7 +106,7 @@ summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
 
   probs = sort(unique(probs))
   quant_expr <- purrr::map(probs, ~ rlang::expr(min(ifelse(accumulated >= !!.x * total, !!x, NA), na.rm = TRUE)))
-  names(quant_expr) <- paste0('p', as.character(probs * 100), '_', name_suffix)
+  names(quant_expr) <- paste0('p', as.character(probs * 100), '_', nameSuffix)
 
   query <- rlang::expr(
     .data %>%
@@ -123,28 +122,30 @@ summarise_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
 }
 
 #' `r lifecycle::badge("deprecated")`
-#' @rdname summarise_quantile
+#' @rdname summariseQuantile
 #' @export
 summarize_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
   lifecycle::deprecate_soft("1.7.0", "summarize_quantile()", "summariseQuantile()")
-  summarise_quantile(.data, x = x, probs = probs, name_suffix = name_suffix)
+  summariseQuantile(.data, x = x, probs = probs, nameSuffix = name_suffix)
 }
 
 
-#' @rdname summarise_quantile
+#' @rdname summariseQuantile
 #' @export
-summariseQuantile <- function(.data,
+summarise_quantile <- function(.data,
                               x = NULL,
                               probs,
-                              nameSuffix = "value") {
+                              name_suffix = "value") {
+  lifecycle::deprecate_soft("1.7.0", "summarise_quantile()", "summariseQuantile()")
+
   x <- rlang::enexpr(x)
-  summarise_quantile(.data = .data,
+  summariseQuantile(.data = .data,
                      x = !!x,
                      probs = probs,
-                     name_suffix = nameSuffix)
+                     nameSuffix = name_suffix)
 }
 
 
-#' @rdname summarise_quantile
+#' @rdname summariseQuantile
 #' @export
 summarizeQuantile <- summariseQuantile

@@ -41,7 +41,7 @@ test_that("empty cdm works", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomiaIsAvailable("empty_cdm"))
 
-  expect_true("empty_cdm" %in% example_datasets())
+  expect_true("empty_cdm" %in% exampleDatasets())
 
   expect_no_error({
     con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir("empty_cdm")))

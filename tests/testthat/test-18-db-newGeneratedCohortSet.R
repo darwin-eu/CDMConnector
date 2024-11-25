@@ -171,7 +171,7 @@ test_that("no error if cohort is empty", {
   expect_false(nrow(settings(cdm$cohort_3b)) == 0)
   expect_false(nrow(cohortCount(cdm$cohort_3b)) == 0)
 
-  cdm_disconnect(cdm)
+  cdmDisconnect(cdm)
 })
 
 

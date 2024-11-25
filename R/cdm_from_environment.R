@@ -40,7 +40,6 @@
 #'    \item{WRITE_SCHEMA: The shema where the user has write access and tables will be created during study execution.}
 #' }
 #'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @param write_prefix,writePrefix (string) An optional prefix to use for all tables written to the CDM.
 #'
@@ -60,8 +59,7 @@
 #' # Close the database connection when done.
 #' cdmDisconnect(cdm)
 #' }
-cdm_from_environment <- function(write_prefix = "") {
-  lifecycle::deprecate_soft("1.7.0", "cdm_from_environment()", "cdmFromEnvironment()")
+cdmFromEnvironment <- function(writePrefix = "") {
 
   vars <- c("DBMS_TYPE",
             "DATA_SOURCE_NAME",
@@ -168,9 +166,9 @@ cdm_from_environment <- function(write_prefix = "") {
     write_schema <- c(schema = Sys.getenv("WRITE_SCHEMA"))
   }
 
-  if (write_prefix != "") {
+  if (writePrefix != "") {
     if (Sys.getenv("DBMS_TYPE") != "snowflake") {
-      write_schema <- c(write_schema, prefix = write_prefix)
+      write_schema <- c(write_schema, prefix = writePrefix)
     }
   }
 
@@ -198,8 +196,11 @@ cdm_from_environment <- function(write_prefix = "") {
   return(cdm)
 }
 
-#' @rdname cdm_from_environment 
+#' `r lifecycle::badge("deprecated")
+#' @rdname cdmFromEnvironment
 #' @export
-cdmFromEnvironment <- function(writePrefix = ""){
-  cdm_from_environment(writePrefix)
+cdm_from_environment <- function(write_prefix = ""){
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_environment()", "cdmFromEnvironment()")
+
+  cdmFromEnvironment(writePrefix = write_prefix)
 }

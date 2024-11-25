@@ -20,7 +20,7 @@ Get cdm write schema
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
 cdm <- cdmFromCon(con = con, cdmName = "Eunomia",
-                    cdmSchema =  "main", writeSchema = "main")
+                  cdmSchema =  "main", writeSchema = "main")
 
 cdmWriteSchema(cdm)
 
