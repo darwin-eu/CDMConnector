@@ -46,7 +46,7 @@
     }
   }
 
-  if (dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake", "bigquery")) {
+  if (dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake", "bigquery", "spark")) {
 
     if (length(schema) == 2) {
       sql <- dbplyr::build_sql("CREATE TABLE ",

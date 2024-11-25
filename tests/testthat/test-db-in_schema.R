@@ -47,16 +47,15 @@ test_that("catalog works on spark", {
   # DBI::dbGetQuery(con, "show catalogs;")
   # DBI::dbExecute(con, "USE CATALOG spark_catalog;")
 
-  debugonce(CDMConnector::cdmFromCon)
   cdm <- cdmFromCon(con = con,
-                    cdmSchema = "spark_catalog.gibleed",
-                    writeSchema = "spark_catalog.scratch")
+                    cdmSchema = "hive_metastore.gibleed",
+                    writeSchema = "hive_metastore.scratch")
 
   expect_s3_class(cdm, "cdm_reference")
 
   cdm <- cdmFromCon(con = con,
-                    cdmSchema = c(catalog="spark_catalog", schema="gibleed"),
-                    writeSchema = c(catalog="spark_catalog", schema="scratch"))
+                    cdmSchema = c(catalog="hive_metastore", schema="gibleed"),
+                    writeSchema = c(catalog="hive_metastore", schema="scratch"))
 
   expect_s3_class(cdm, "cdm_reference")
   cdmDisconnect(cdm)
