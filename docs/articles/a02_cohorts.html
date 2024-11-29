@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -214,27 +214,29 @@ tables will go into the CDM’s <code>write_schema</code>.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 2 cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/2) - gibleed_default</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - gibleed_default <span style="color: #B2B2B2;">[108ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - gibleed_default <span style="color: #B2B2B2;">[294ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/2) - gibleed_male</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - gibleed_male <span style="color: #B2B2B2;">[100ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - gibleed_male <span style="color: #B2B2B2;">[236ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BBBB00;">!</span> 1 column in <span style="font-weight: bold;">study_cohorts</span> do not match expected column type:</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> `subject_id` is <span style="color: #0000BB;">numeric</span> but expected <span style="color: #0000BB;">integer</span></span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.study_cohorts&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpfzTPaQ/file107447790203d.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp7j7yCy/file152e77a3943bf.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
-<span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">2</span>243 2005-10-16        2019-02-08     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">2</span>777 1999-12-04        2019-05-24     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">4</span>117 1996-08-08        2018-08-10     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">4</span>641 2004-12-29        2018-07-19     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">1</span>762 1979-12-16        2019-05-09     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">2</span>470 1992-12-29        2019-05-07     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">4</span>886 2002-05-01        2018-12-25     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">4</span>091 2009-06-12        2018-12-02     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">4</span>113 1992-06-03        2019-06-10     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">1</span>641 1997-11-10        2019-03-27     </span></span>
+<span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">3</span>028 2000-08-07        2018-07-20     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">3</span>376 1994-07-02        2019-06-28     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">3</span>930 1958-01-03        1980-01-05     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">4</span>899 1964-06-13        1998-11-17     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">1</span>844 2002-12-16        2018-11-21     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">3</span>950 2015-01-14        2018-10-25     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">1</span>099 1990-10-05        2018-10-25     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">1</span>691 1985-10-20        2018-08-23     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">2</span>184 2003-02-26        2019-05-30     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">4</span>092 2015-04-29        2019-05-02     </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span></code></pre></div>
 <p>The generated cohort has associated metadata tables. We can access
 these with utility functions.</p>
@@ -267,7 +269,7 @@ name</li>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 gibleed_default</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2 gibleed_male</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 7</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects reason_id reason          </span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
@@ -301,36 +303,38 @@ cohort based on filtering the Atlas cohort.</p>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generate_cohort_set</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohort_set</span>, name <span class="op">=</span> <span class="st">"cohort"</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 5 cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/5) - gibleed_all_end_10</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/5) - gibleed_all_end_10 <span style="color: #B2B2B2;">[55ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/5) - gibleed_all_end_10 <span style="color: #B2B2B2;">[116ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/5) - gibleed_all</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/5) - gibleed_all <span style="color: #B2B2B2;">[44ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/5) - gibleed_all <span style="color: #B2B2B2;">[116ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (3/5) - gibleed_default_with_descendants</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (3/5) - gibleed_default_with_descendants <span style="color: #B2B2B2;">[45ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (3/5) - gibleed_default_with_descendants <span style="color: #B2B2B2;">[80ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (4/5) - gibleed_default</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (4/5) - gibleed_default <span style="color: #B2B2B2;">[49ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (4/5) - gibleed_default <span style="color: #B2B2B2;">[91ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (5/5) - gibleed_end_10</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (5/5) - gibleed_end_10 <span style="color: #B2B2B2;">[49ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (5/5) - gibleed_end_10 <span style="color: #B2B2B2;">[81ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BBBB00;">!</span> 1 column in <span style="font-weight: bold;">cohort</span> do not match expected column type:</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> `subject_id` is <span style="color: #0000BB;">numeric</span> but expected <span style="color: #0000BB;">integer</span></span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.cohort&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpfzTPaQ/file107442ba90fd3.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp7j7yCy/file152e755aaa5a1.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
-<span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">1</span>846 1987-12-07        1987-12-17     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">2</span>356 2017-02-27        2017-03-09     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">2</span>556 2004-08-16        2004-08-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">3</span>820 2005-08-10        2005-08-20     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">1</span>789 2017-04-02        2017-04-12     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">3</span>196 2008-07-06        2008-07-16     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">4</span>883 1986-04-18        1986-04-28     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">4</span>380 2001-10-25        2001-11-04     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">5</span>252 1995-12-19        1995-12-29     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1        299 2000-10-07        2000-10-17     </span></span>
+<span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1        757 1950-01-22        1950-02-01     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">1</span>545 2006-07-22        2006-08-01     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">2</span>674 2013-09-06        2013-09-16     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">2</span>898 2016-09-03        2016-09-13     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">3</span>241 1998-09-14        1998-09-24     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">4</span>222 1987-02-17        1987-02-27     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">5</span>195 1995-07-26        1995-08-05     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1        558 2002-03-22        2002-04-01     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">3</span>403 2008-09-05        2008-09-15     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">4</span>521 1958-11-18        1958-11-28     </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
 <span></span>
 <span></span>
@@ -361,8 +365,9 @@ this query and save the result in a new table in the cdm.</p>
 <span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
-<span><span class="co">#&gt; Warning: <span style="color: #BBBB00;">!</span> 1 column in <span style="font-weight: bold;">cohort_subset</span> do not match expected column type:</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BBBB00;">!</span> 2 column in <span style="font-weight: bold;">cohort_subset</span> do not match expected column type:</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> `cohort_definition_id` is <span style="color: #0000BB;">numeric</span> but expected <span style="color: #0000BB;">integer</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> `subject_id` is <span style="color: #0000BB;">numeric</span> but expected <span style="color: #0000BB;">integer</span></span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/cohort_count.html">cohort_count</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
@@ -386,12 +391,12 @@ less than 28 days.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 3</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id days_in_cohort     n</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1             10   467</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    1              2     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    5              9     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    1              9     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    5             10   467</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    5              2     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1              9     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    5             10   467</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    5              2     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    1             10   467</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    1              2     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    5              9     1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                    1              1    10</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                    5              1    10</span></span></code></pre></div>
 <p>We have confirmed that everyone in cohorts 1 and 5 were in the cohort
@@ -419,8 +424,9 @@ example.</p>
 <span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">compute</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"cohort_subset"</span>, temporary <span class="op">=</span> <span class="cn">FALSE</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="../reference/new_generated_cohort_set.html">new_generated_cohort_set</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># this function creates the cohort object and metadata</span></span>
-<span><span class="co">#&gt; Warning: <span style="color: #BBBB00;">!</span> 1 column in <span style="font-weight: bold;">cohort_subset</span> do not match expected column type:</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BBBB00;">!</span> 2 column in <span style="font-weight: bold;">cohort_subset</span> do not match expected column type:</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> `cohort_definition_id` is <span style="color: #0000BB;">numeric</span> but expected <span style="color: #0000BB;">integer</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> `subject_id` is <span style="color: #0000BB;">numeric</span> but expected <span style="color: #0000BB;">integer</span></span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>days_in_cohort <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="fu"><a href="../reference/datediff.html">datediff</a></span><span class="op">(</span><span class="st">"cohort_start_date"</span>, <span class="st">"cohort_end_date"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
@@ -431,13 +437,13 @@ example.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 9 × 2</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id mean_days_in_cohort</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                   12               <span style="text-decoration: underline;">7</span>586.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                   13               <span style="text-decoration: underline;">7</span>586.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                   14               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                   13               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                  102               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                 <span style="text-decoration: underline;">1</span>002               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                  103               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                 <span style="text-decoration: underline;">1</span>004               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                   12               <span style="text-decoration: underline;">7</span>586.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                 <span style="text-decoration: underline;">1</span>004               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                  102               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                 <span style="text-decoration: underline;">1</span>002               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                  103               <span style="text-decoration: underline;">7</span>602.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                  104               <span style="text-decoration: underline;">7</span>602.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span>                 <span style="text-decoration: underline;">1</span>003               <span style="text-decoration: underline;">7</span>602.</span></span></code></pre></div>
 <p>This is an example of creating new cohorts from existing cohorts
@@ -477,7 +483,7 @@ criteria in the initial definition, additional criteria can be applied
 <span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="../reference/recordCohortAttrition.html">record_cohort_attrition</a></span><span class="op">(</span>reason <span class="op">=</span> <span class="st">"Male"</span><span class="op">)</span></span>
 <span>  </span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed2</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed2</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects reason_id reason          </span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
@@ -520,18 +526,18 @@ reference to it and add it to the CDM object.</p>
 <span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     filter</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, name <span class="op">=</span> <span class="st">"cohort"</span>, table <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, name <span class="op">=</span> <span class="st">"cohort"</span>, table <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.cohort&gt; [1 x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpfzTPaQ/file107442ba90fd3.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp7j7yCy/file152e755aaa5a1.duckdb]</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1          1 1999-01-01        2001-01-01</span></span></code></pre></div>
 <p>To make this a true generated cohort object use the
 <code>cohort_table</code></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span></code></pre></div>
 <p>We can see that this cohort is now has the class “cohort_table” as
 well as the various metadata tables.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -545,7 +551,7 @@ well as the various metadata tables.</p>
 <span><span class="co">#&gt;   cohort_definition_id cohort_name</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 cohort_1</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects reason_id reason          </span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
@@ -554,9 +560,9 @@ well as the various metadata tables.</p>
 <p>If you would like to override the attribute tables then pass
 additional dataframes to cohortTable</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, name <span class="op">=</span> <span class="st">"cohort2"</span>, table <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, name <span class="op">=</span> <span class="st">"cohort2"</span>, table <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id cohort_name</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
@@ -564,9 +570,9 @@ additional dataframes to cohortTable</p>
 <span></span>
 <span><span class="va">cohort_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>cohort_definition_id <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>                         cohort_name <span class="op">=</span> <span class="st">"made_up_cohort"</span><span class="op">)</span></span>
-<span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span>, cohortSetRef <span class="op">=</span> <span class="va">cohort_set</span><span class="op">)</span></span>
+<span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span>, cohortSetRef <span class="op">=</span> <span class="va">cohort_set</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/omopgenerics/man/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id cohort_name   </span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         </span></span>

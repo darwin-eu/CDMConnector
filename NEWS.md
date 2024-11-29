@@ -1,3 +1,7 @@
+# CDMConnector 1.6.1
+
+- use BIGINT for subject_id column of cohort tables
+
 # CDMConnector 1.6.0
 
 - fix bug in copyCdmTo where attribute tables were not being copied #231 @catalamarti

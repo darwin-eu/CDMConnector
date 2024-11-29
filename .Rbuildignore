@@ -19,3 +19,4 @@ LICENSE
 ^a/*
 ^work/*
 ^revdep/*
+errorReportSql.txt
