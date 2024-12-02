@@ -20,6 +20,7 @@
 #' checking that column names are correct and that no tables are empty. A short
 #' report is printed to the console. This function is meant for interactive use.
 #'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @param cdm A cdm reference object.
 #'
@@ -34,6 +35,7 @@
 #' DBI::dbDisconnect(con)
 #' }
 validateCdm <- function(cdm) {
+  lifecycle::deprecate_soft("1.7.0", "validateCdm()")
   checkmate::assert_class(cdm, "cdm_reference")
   if (is.null(cdmCon(cdm))) {
     rlang::abort("validate_cdm is not implement for local cdms")
@@ -50,7 +52,7 @@ validateCdm <- function(cdm) {
 #' @export
 #' @rdname validateCdm
 validate_cdm <- function(cdm){
-  lifecycle::deprecate_soft("1.7.0", "validate_cdm()", "validateCdm()")
+  lifecycle::deprecate_soft("1.7.0", "validate_cdm()")
   validateCdm(cdm = cdm)
 
 }
@@ -118,6 +120,8 @@ validate_cdm_rowcounts <- function(cdm) {
 #' are in the cdm object, have the correct columns/fields,
 #' and (optionally) are not empty.
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #'
 #' @param cdm A cdm object
 #' @param tables A character vector of table names to check.
@@ -152,6 +156,7 @@ validate_cdm_rowcounts <- function(cdm) {
 #'
 #' }
 assertTables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
+  lifecycle::deprecate_soft("1.7.0", "assertTables()")
   checkmate::assertClass(add, "AssertCollection", null.ok = TRUE)
   checkmate::assertLogical(empty.ok, len = 1, null.ok = FALSE)
   checkmate::assertCharacter(tables,
@@ -217,7 +222,7 @@ assertTables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 #' @rdname assertTables
 #' @export
 assert_tables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "assert_tables()", "assertTables()")
+  lifecycle::deprecate_soft("1.7.0", "assert_tables()")
   assertTables(cdm, tables, empty.ok = FALSE, add = NULL)
 }
 
