@@ -61,8 +61,7 @@ Suggests:
     testthat (>= 3.0.0),
     pool,
     snakecase,
-    palmerpenguins,
-    tictoc
+    palmerpenguins
 Enhances:
     arrow
 Config/testthat/edition: 3

@@ -41,7 +41,6 @@ jobs:
           install.packages("devtools", repos = "https://cloud.r-project.org/")
           install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
-          install.packages("tictoc", repos = "https://cloud.r-project.org/")
         shell: Rscript {0}
 
       - name: Run tests on SQL Server with odbc driver

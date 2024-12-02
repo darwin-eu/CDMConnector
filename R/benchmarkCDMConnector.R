@@ -42,74 +42,73 @@ benchmarkCDMConnector <- function(cdm) {
 
   task <- "distinct count of concept relationship table"
   cli::cli_inform("Getting {task}")
-  tictoc::tic()
+  startTime <- Sys.time()
   cdm[["concept_relationship"]] |>
     dplyr::distinct() |>
     dplyr::tally() |>
     dplyr::pull("n")
-  t <- tictoc::toc()
+  endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
     task = .env$task,
-    time_taken_secs = as.numeric(t$toc - t$tic)
+    time_taken_secs = as.numeric(difftime(endTime, startTime, units = "secs"))
   )
 
   task <- "count of different relationship IDs in concept relationship table"
   cli::cli_inform("Getting {task}")
-  tictoc::tic()
+  startTime <- Sys.time()
   cdm[["concept_relationship"]] |>
     dplyr::group_by(.data$relationship_id) |>
     dplyr::tally() |>
     dplyr::collect()
-  t <- tictoc::toc()
+  endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
     task = .env$task,
-    time_taken_secs = as.numeric(t$toc - t$tic)
+    time_taken_secs = as.numeric(difftime(endTime, startTime, units = "secs"))
   )
 
   task <- "join of concept and concept class computed to a temp table"
   cli::cli_inform("Getting {task}")
-  tictoc::tic()
+  startTime <- Sys.time()
   cdm[["concept"]] |>
     dplyr::left_join(cdm[["concept_class"]],
                      by = c("concept_id" = "concept_class_concept_id")) |>
     dplyr::compute()
-  t <- tictoc::toc()
+  endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
     task = .env$task,
-    time_taken_secs = as.numeric(t$toc - t$tic)
+    time_taken_secs = as.numeric(difftime(endTime, startTime, units = "secs"))
   )
 
   task <- "concept table collected into memory"
   cli::cli_inform("Getting {task}")
-  tictoc::tic()
+  startTime <- Sys.time()
   cdm[["concept"]] |>
     dplyr::collect()
-  t <- tictoc::toc()
+  endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
     task = .env$task,
-    time_taken_secs = as.numeric(t$toc - t$tic)
+    time_taken_secs = as.numeric(difftime(endTime, startTime, units = "secs"))
   )
-
 
   # second set of queries are with clinical tables
   # these will differ substantially by database
 
   task <- "join of person and observation period collected into memory"
   cli::cli_inform("Getting {task}")
-  tictoc::tic()
+  startTime <- Sys.time()
   cdm[["person"]] |>
     dplyr::inner_join(cdm[["observation"]],
                       by = "person_id") |>
     dplyr::collect()
-  t <- tictoc::toc()
+  endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
     task = .env$task,
-    time_taken_secs = as.numeric(t$toc - t$tic)
+    time_taken_secs = as.numeric(difftime(endTime, startTime, units = "secs"))
   )
 
   task <- "summary of observation period start and end dates by gender concept id"
   cli::cli_inform("Getting {task}")
-  tictoc::tic()
+  startTime <- Sys.time()
   cdm[["person"]] |>
     dplyr::inner_join(cdm[["observation_period"]],
                       by = "person_id") |>
@@ -119,10 +118,10 @@ benchmarkCDMConnector <- function(cdm) {
       min = min(.data$observation_period_start_date, na.rm = TRUE)
     ) %>%
     dplyr::collect()
-  t <- tictoc::toc()
+  endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
     task = .env$task,
-    time_taken_secs = as.numeric(t$toc - t$tic)
+    time_taken_secs = as.numeric(difftime(endTime, startTime, units = "secs"))
   )
 
   # combine results
