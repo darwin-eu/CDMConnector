@@ -101,6 +101,8 @@ cohort_collapse <- function(x) {
 
 #' Union all cohorts in a cohort set with cohorts in a second cohort set
 #'
+#` r lifecycle::badge("deprecated")`
+#'
 #' @param x A tbl reference to a cohort table with one or more generated cohorts
 #' @param y A tbl reference to a cohort table with one generated cohort
 #'
@@ -109,6 +111,7 @@ cohort_collapse <- function(x) {
 #' in x with the single cohort in y cohort table
 #' @export
 cohortUnion <- function(x, y) {
+  lifecycle::deprecate_soft("1.7.0", "cohortUnion()")
   checkmate::assert_class(x, "tbl")
   checkmate::assert_class(y, "tbl")
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
@@ -134,7 +137,7 @@ cohortUnion <- function(x, y) {
 #' @rdname cohortUnion
 #' @export
 cohort_union <-  function(x, y) {
-  lifecycle::deprecate_soft("1.7.0", "cohort_union()", "cohortUnion()")
+  lifecycle::deprecate_soft("1.7.0", "cohort_union()")
   cohortUnion(x = x, y = y)
 }
 
