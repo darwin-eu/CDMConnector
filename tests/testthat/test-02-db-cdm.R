@@ -221,7 +221,7 @@ test_that("adding cohort tables to the cdm", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-test_that("write_schema argument specification and cdm_disconnect works", {
+test_that("writeSchema argument specification and cdmDisconnect works", {
   skip_if_not_installed("duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
   cdm <- cdmFromCon(con, "main", "main", writePrefix = "tmp_")

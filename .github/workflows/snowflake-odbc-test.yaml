@@ -43,6 +43,6 @@ jobs:
         shell: Rscript {0}
 
       - name: Run tests on Snowflake with odbc driver
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "snowflake", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
 
 
