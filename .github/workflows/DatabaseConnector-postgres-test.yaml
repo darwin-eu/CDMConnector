@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, master, develop]
 
-name: rpostgres-postgres-test
+name: databaseconnector-postgres-test
 
 jobs:
   Postgres-test:
@@ -24,7 +24,7 @@ jobs:
         CDM5_POSTGRESQL_SCRATCH_SCHEMA: ${{ secrets.CDM5_POSTGRESQL_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
-    name: Postgres test (RPostgres driver)
+    name: Postgres test (DatabaseConnector driver)
 
     strategy:
       fail-fast: true
@@ -47,11 +47,12 @@ jobs:
           install.packages("devtools", repos = "https://cloud.r-project.org/")
           install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages("tictoc", repos = "https://cloud.r-project.org/")
           CDMConnector::download_eunomia_data()
           print(paste("eunomia_is_available():", CDMConnector::eunomia_is_available()))
         shell: Rscript {0}
 
-      - name: Run tests on postgres with RPostgres driver
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+      - name: Run tests on postgres with DatabaseConnector JDBC driver
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres", "TEST_USING_DATABASE_CONNECTOR" = "TRUE"), testthat::test_local())'
 
 

@@ -15,17 +15,30 @@ tryCatch({
 get_connection <- function(dbms, DatabaseConnector = FALSE) {
 
   if (DatabaseConnector) {
-    stopifnot(dbms %in% c("postgres"), rlang::is_installed("DatabaseConnector"))
+    stopifnot(rlang::is_installed("DatabaseConnector"))
 
 
     if (dbms == "postgres") {
+      cli::cli_inform("Testing with DatabseConector on postgresql")
+      return(
+        con = DatabaseConnector::connect(
+          dbms = "postgresql",
+          server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
+          user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+          password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+      )
+    }
 
-      return(DatabaseConnector::connect(
-        dbms = "postgresql",
-        server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
-        user = Sys.getenv("CDM5_POSTGRESQL_USER"),
-        password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")))
-
+    if (dbms == "redshift") {
+      cli::cli_inform("Testing with DatabseConector on redshift")
+      return(
+        DatabaseConnector::connect(
+          dbms = "redshift",
+          server = Sys.getenv("CDM5_REDSHIFT_SERVER"),
+          user = Sys.getenv("CDM5_REDSHIFT_USER"),
+          password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"),
+          port = Sys.getenv("CDM5_REDSHIFT_PORT"))
+      )
     }
 
     stop(paste("Testing", dbms, "with DatabaseConnector has not been implemented yet."))
@@ -176,11 +189,11 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 if (Sys.getenv("CI_TEST_DB") == "") {
 
   dbToTest <- c(
-     "duckdb"
+     # "duckdb"
     # ,
     # "postgres"
     # ,
-    # "redshift"
+    "redshift"
     # ,
     # "sqlserver"
     # ,
@@ -195,7 +208,11 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   print(paste("running CI tests on ", dbToTest))
 }
 
-testUsingDatabaseConnector <- FALSE
+if (Sys.getenv('TEST_USING_DATABASE_CONNECTOR') %in% c("TRUE", "FALSE")) {
+  testUsingDatabaseConnector <- as.logical(Sys.getenv('TEST_USING_DATABASE_CONNECTOR'))
+} else {
+  testUsingDatabaseConnector <- T
+}
 
 # make sure we're only trying to test on dbs we have connection details for
 if ("postgres" %in% dbToTest & Sys.getenv("CDM5_POSTGRESQL_DBNAME") == "") {
