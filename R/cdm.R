@@ -16,30 +16,28 @@
 
 #' Create a CDM reference object from a database connection
 #'
-#' `r lifecycle::badge("deprecated")`
-#'
 #' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
 #'   v5.3 instance is located.
-#' @param cdm_schema,cdmSchema The schema where the OMOP CDM tables are located. Defaults
+#' @param cdmSchema The schema where the OMOP CDM tables are located. Defaults
 #'   to NULL.
-#' @param write_schema,writeSchema An optional schema in the CDM database that the user has
+#' @param writeSchema An optional schema in the CDM database that the user has
 #'   write access to.
-#' @param cohort_tables,cohortTables A character vector listing the cohort table names to be
+#' @param cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
-#' @param cdm_version,cdmVersion The version of the OMOP CDM: "5.3" (default), "5.4",
+#' @param cdmVersion The version of the OMOP CDM: "5.3" (default), "5.4",
 #'   "auto". "auto" attempts to automatically determine the cdm version using
 #'   heuristics. Cohort tables must be in the write_schema.
-#' @param cdm_name,cdmName The name of the CDM. If NULL (default) the cdm_source_name
+#' @param cdmName The name of the CDM. If NULL (default) the cdm_source_name
 #'.  field in the CDM_SOURCE table will be used.
-#' @param achilles_schema,achillesSchema An optional schema in the CDM database
+#' @param achillesSchema An optional schema in the CDM database
 #' that contains achilles tables.
-#' @param .soft_validation,.softValidation Normally the observation period table should not
+#' @param .softValidation Normally the observation period table should not
 #' have overlapping observation periods for a single person. If `.softValidation` is `TRUE` the
 #' validation check that looks for overlapping observation periods will be skipped.
 #' Other analytic packages may break or produce incorrect results if `softValidation` is `TRUE` and
 #' the observation period table contains overlapping observation periods.
 #'
-#' @param write_prefix,writePrefix A prefix that will be added to all tables created in the write_schema. This
+#' @param writePrefix A prefix that will be added to all tables created in the write_schema. This
 #' can be used to create namespace in your database write_schema for your tables.
 #'
 #' @return A list of dplyr database table references pointing to CDM tables
@@ -54,8 +52,8 @@
 #' Some database systems have the idea of a catalog or a compound schema with two components.
 #' See examples below for how to pass in catalogs and schemas.
 #'
-#' You can also specify a `write_prefix`. This is a short character string that will be added
-#' to any tables created in the `write_schema` effectively a namespace in the schema just for your
+#' You can also specify a `writePrefix`. This is a short character string that will be added
+#' to any tables created in the `writeSchema` effectively a namespace in the schema just for your
 #' analysis. If the write_schema is a shared between multiple users setting a unique write_prefix
 #' ensures you do not overwrite existing tables and allows you to easily clean up tables by
 #' dropping all tables that start with the prefix.
