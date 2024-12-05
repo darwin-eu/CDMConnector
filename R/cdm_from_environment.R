@@ -61,6 +61,8 @@
 #' }
 cdmFromEnvironment <- function(writePrefix = "") {
 
+  lifecycle::deprecate_soft("1.7.0", "cdmFromEnvironment()")
+
   vars <- c("DBMS_TYPE",
             "DATA_SOURCE_NAME",
             "CDM_VERSION",
@@ -200,7 +202,7 @@ cdmFromEnvironment <- function(writePrefix = "") {
 #' @rdname cdmFromEnvironment
 #' @export
 cdm_from_environment <- function(write_prefix = ""){
-  lifecycle::deprecate_soft("1.7.0", "cdm_from_environment()", "cdmFromEnvironment()")
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_environment()")
 
   cdmFromEnvironment(writePrefix = write_prefix)
 }
