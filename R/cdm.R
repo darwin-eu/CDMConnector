@@ -24,9 +24,9 @@
 #'   write access to.
 #' @param cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
-#' @param cdmVersion The version of the OMOP CDM: "5.3" (default), "5.4",
-#'   "auto". "auto" attempts to automatically determine the cdm version using
-#'   heuristics. Cohort tables must be in the write_schema.
+#' @param cdmVersion The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
+#' If NULL we will attempt to automatically determine the cdm version using
+#' the cdm_source table and heuristics.
 #' @param cdmName The name of the CDM. If NULL (default) the cdm_source_name
 #'.  field in the CDM_SOURCE table will be used.
 #' @param achillesSchema An optional schema in the CDM database
@@ -102,7 +102,7 @@ cdmFromCon <- function(con,
                        cdmSchema,
                        writeSchema,
                        cohortTables = NULL,
-                       cdmVersion = "5.3",
+                       cdmVersion = NULL,
                        cdmName = NULL,
                        achillesSchema = NULL,
                        .softValidation = FALSE,
@@ -128,6 +128,12 @@ cdmFromCon <- function(con,
   checkmate::assert_character(cohortTables, null.ok = TRUE, min.len = 1)
   checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_choice(cdmVersion, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
+
+  if (!is.null(cdmVersion) && cdmVersion == "auto") {
+    cli::cli_warn("cdmVersion = 'auto' is deprecated as of version 1.7.0. Please use cdmVersion = NULL instead.")
+    cdmVersion <- NULL
+  }
+
   checkmate::assert_character(writePrefix, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
 
   # users can give writeSchema = "catalog.schema"
@@ -304,7 +310,7 @@ cdm_from_con <- function(con,
                          cdm_schema,
                          write_schema,
                          cohort_tables = NULL,
-                         cdm_version = "5.3",
+                         cdm_version = NULL,
                          cdm_name = NULL,
                          achilles_schema = NULL,
                          .soft_validation = FALSE,
@@ -322,60 +328,6 @@ cdm_from_con <- function(con,
     .softValidation = .soft_validation,
     writePrefix = write_prefix
   )
-}
-
-detect_cdm_version <- function(con, cdm_schema = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "detect_cdm_version()", "detectCdmVersion()")
-  cdm_tables <- c("visit_occurrence", "cdm_source", "procedure_occurrence")
-
-  if (!all(cdm_tables %in% listTables(con, schema = cdm_schema))) {
-    rlang::abort(paste0(
-      "The ",
-      paste(cdm_tables, collapse = ", "),
-      " tables are required for auto-detection of cdm version."
-    ))
-  }
-
-  cdm <- purrr::map(
-    cdm_tables, ~dplyr::tbl(con, .inSchema(cdm_schema, ., dbms(con))) %>%
-                      dplyr::rename_all(tolower)) %>%
-    rlang::set_names(tolower(cdm_tables))
-
-  # Try a few different things to figure out what the cdm version is
-  visit_occurrence_names <- cdm$visit_occurrence %>%
-    head() %>%
-    dplyr::collect() %>%
-    colnames() %>%
-    tolower()
-
-  if ("admitting_source_concept_id" %in% visit_occurrence_names) {
-    return("5.3")
-  }
-
-  if ("admitted_from_concept_id" %in% visit_occurrence_names) {
-    return("5.4")
-  }
-
-  procedure_occurrence_names <- cdm$procedure_occurrence %>%
-    head() %>%
-    dplyr::collect() %>%
-    colnames() %>%
-    tolower()
-
-  if ("procedure_end_date" %in% procedure_occurrence_names) {
-    return("5.4")
-  }
-
-  cdm_version <- cdm$cdm_source %>% dplyr::pull(.data$cdm_version)
-  if (isTRUE(grepl("5\\.4", cdm_version))) return("5.4")
-
-  if (isTRUE(grepl("5\\.3", cdm_version))) return("5.3")
-
-  if ("episode" %in% listTables(con, schema = cdm_schema)) {
-    return("5.4")
-  } else {
-    return("5.3")
-  }
 }
 
 #' Get the CDM version
