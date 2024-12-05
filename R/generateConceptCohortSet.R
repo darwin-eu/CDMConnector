@@ -91,7 +91,7 @@ generateConceptCohortSet <- function(cdm,
   checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
-  assertTables(cdm, "observation_period", empty.ok = FALSE)
+  .assertTables(cdm, "observation_period", empty.ok = FALSE)
 
   # check name ----
   checkmate::assertLogical(overwrite, len = 1, any.missing = FALSE)
@@ -121,7 +121,7 @@ generateConceptCohortSet <- function(cdm,
   # check ConceptSet ----
   checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet", "data.frame"), names = "named")
   checkmate::assertList(conceptSet, min.len = 1, names = "named")
-  CDMConnector::assertTables(cdm, "concept")
+  .assertTables(cdm, "concept")
 
   if (methods::is(conceptSet, "conceptSetExpression")) {
     # omopgenerics conceptSetExpression
@@ -200,7 +200,7 @@ generateConceptCohortSet <- function(cdm,
 
   # check target cohort -----
   if (!is.null(subsetCohort)) {
-    assertTables(cdm, subsetCohort)
+    .assertTables(cdm, subsetCohort)
   }
 
   if (!is.null(subsetCohort) && !is.null(subsetCohortId)){
@@ -217,7 +217,7 @@ generateConceptCohortSet <- function(cdm,
                     overwrite = TRUE)
 
   if (any(df$include_descendants)) {
-    CDMConnector::assertTables(cdm, "concept_ancestor")
+    .assertTables(cdm, "concept_ancestor")
   }
 
   # realize full list of concepts ----

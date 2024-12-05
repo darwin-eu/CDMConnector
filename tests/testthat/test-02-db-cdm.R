@@ -7,7 +7,6 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
 
   cdm <- cdmFromCon(con, cdmSchema = cdm_schema, cdmName = "test", writeSchema = write_schema)
   expect_s3_class(cdm, "cdm_reference")
-  expect_error(assertTables(cdm, "person"), NA)
   expect_warning(version(cdm))
   expect_true(cdmVersion(cdm) %in% c("5.3", "5.4"))
   expect_s3_class(snapshot(cdm), "data.frame")

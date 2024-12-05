@@ -401,7 +401,7 @@ cdmFlatten <- function(cdm,
   queryList <- list()
 
   if ("condition" %in% domain) {
-    assertTables(cdm, "condition_occurrence")
+    .assertTables(cdm, "condition_occurrence")
     queryList[["condition"]] <- cdm$condition_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -414,7 +414,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("drug" %in% domain) {
-    assertTables(cdm, "drug_exposure")
+    .assertTables(cdm, "drug_exposure")
     queryList[["drug"]] <- cdm$drug_exposure %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -427,7 +427,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("procedure" %in% domain) {
-    assertTables(cdm, "procedure_occurrence")
+    .assertTables(cdm, "procedure_occurrence")
     queryList[["procedure"]] <- cdm$procedure_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -440,7 +440,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("measurement" %in% domain) {
-    assertTables(cdm, "measurement")
+    .assertTables(cdm, "measurement")
     queryList[["measurement"]] <- cdm$measurement %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -453,7 +453,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("visit" %in% domain) {
-    assertTables(cdm, "visit")
+    .assertTables(cdm, "visit")
     queryList[["visit"]] <- cdm$visit_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -479,7 +479,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("observation" %in% domain) {
-    assertTables(cdm, "observation")
+    .assertTables(cdm, "observation")
     queryList[["death"]] <- cdm$observation %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -492,7 +492,7 @@ cdmFlatten <- function(cdm,
   }
 
   if (includeConceptName) {
-    assertTables(cdm, "concept")
+    .assertTables(cdm, "concept")
     out <- queryList %>%
       purrr::reduce(dplyr::union) %>%
       dplyr::left_join(dplyr::transmute(cdm$concept,

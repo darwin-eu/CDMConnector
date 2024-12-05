@@ -15,7 +15,7 @@ test_that("assertTables works with local cdms", {
   # local r
   cdm_r <- dplyr::collect(cdm)
   expect_equal(cdmVersion(cdm_r), "5.3")
-  assertTables(cdm_r, "concept")
+  expect_warning(assertTables(cdm_r, "concept")) # deprecated
 
   # arrow
   path <- tempfile()
