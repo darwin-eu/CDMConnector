@@ -32,15 +32,16 @@
 #' @export
 readCohortSet <- function(path) {
   checkmate::checkCharacter(path, len = 1, min.chars = 1)
-
-  if (!fs::is_dir(path)) {
-    rlang::abort(glue::glue("{path} is not a directory!"))
-  }
+  ensureInstalled("readr")
+  ensureInstalled("jsonlite")
 
   if (!dir.exists(path)) {
     rlang::abort(glue::glue("The directory {path} does not exist!"))
   }
 
+  if (!file.info(path)$isdir) {
+    rlang::abort(glue::glue("{path} is not a directory!"))
+  }
 
   if (file.exists(file.path(path, "CohortsToCreate.csv"))) {
     readr::local_edition(1)

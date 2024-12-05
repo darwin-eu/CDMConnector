@@ -617,6 +617,8 @@ dbms <- function(con) {
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 stow <- function(cdm, path, format = "parquet") {
+  ensureInstalled("readr")
+  ensureInstalled("arrow")
   checkmate::assert_class(cdm, "cdm_reference")
   checkmate::assert_choice(format, c("parquet", "csv", "feather", "duckdb"))
   path <- path.expand(path)
@@ -792,8 +794,8 @@ cdm_from_files <- function(path,
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 snapshot <- function(cdm) {
-  assertTables(cdm, tables = c("cdm_source", "vocabulary"), empty.ok = TRUE)
-  assertTables(cdm, tables = c("person", "observation_period"))
+  .assertTables(cdm, tables = c("cdm_source", "vocabulary"), empty.ok = TRUE)
+  .assertTables(cdm, tables = c("person", "observation_period"))
 
   person_count <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
 

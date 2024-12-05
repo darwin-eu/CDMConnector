@@ -70,16 +70,19 @@ validate_cdm_colnames <- function(cdm) {
         dplyr::pull(.data$cdmFieldName)
       actual_columns <- cdm[[nm]] %>% head(1) %>% dplyr::collect() %>% colnames()
 
-      dif <- waldo::compare(expected_columns,
-                            actual_columns,
-                            x_arg = glue::glue("{nm} table expected columns"),
-                            y_arg = glue::glue("{nm} table actual_colums"),
-                            ignore_attr = TRUE)
 
-      if (length(dif) > 0) {
-        print(dif, n = 100)
+      expectedButNotFound <- dplyr::setdiff(expected_columns, actual_columns)
+      foundButNotExpected <- dplyr::setdiff(actual_columns, expected_columns)
+
+      if (length(expectedButNotFound) > 0) {
+        cli::cli_inform("Columns expected but not found in table {nm}: {paste(expectedButNotFound, collapse = ', ')}")
         any_dif <- TRUE
       }
+      if (length(foundButNotExpected) > 0) {
+        cli::cli_inform("Columns found but not expected in table {nm}: {paste(foundButNotExpected, collapse = ', ')}")
+        any_dif <- TRUE
+      }
+
   }
   if (!any_dif) {
     cli::cat_bullet("cdm field names are correct",
@@ -157,6 +160,11 @@ validate_cdm_rowcounts <- function(cdm) {
 #' }
 assertTables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
   lifecycle::deprecate_soft("1.7.0", "assertTables()")
+  .assertTables(cdm = cdm, tables = tables, empty.ok = empty.ok, add = add)
+}
+
+# internal assertTables function
+.assertTables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
   checkmate::assertClass(add, "AssertCollection", null.ok = TRUE)
   checkmate::assertLogical(empty.ok, len = 1, null.ok = FALSE)
   checkmate::assertCharacter(tables,
@@ -201,7 +209,7 @@ assertTables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
     rowcounts <- purrr::map_dbl(existingTables, function(.) {
       dplyr::tally(cdm[[.]], name = "n") %>%
         dplyr::pull(.data$n)
-      }) %>%
+    }) %>%
       rlang::set_names(existingTables)
 
     empty_tables <- rowcounts[rowcounts == 0]
@@ -216,7 +224,6 @@ assertTables <- function(cdm, tables, empty.ok = FALSE, add = NULL) {
 
   invisible(cdm)
 }
-
 
 #' `r lifecycle::badge("deprecated")`
 #' @rdname assertTables
