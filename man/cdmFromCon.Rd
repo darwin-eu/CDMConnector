@@ -33,39 +33,39 @@ cdm_from_con(
 \item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or
 v5.3 instance is located.}
 
-\item{cdm_schema, cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
+\item{cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
 to NULL.}
 
-\item{write_schema, writeSchema}{An optional schema in the CDM database that the user has
+\item{writeSchema}{An optional schema in the CDM database that the user has
 write access to.}
 
-\item{cohort_tables, cohortTables}{A character vector listing the cohort table names to be
+\item{cohortTables}{A character vector listing the cohort table names to be
 included in the CDM object.}
 
-\item{cdm_version, cdmVersion}{The version of the OMOP CDM: "5.3" (default), "5.4",
+\item{cdmVersion}{The version of the OMOP CDM: "5.3" (default), "5.4",
 "auto". "auto" attempts to automatically determine the cdm version using
 heuristics. Cohort tables must be in the write_schema.}
 
-\item{cdm_name, cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
+\item{cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.}
 
-\item{achilles_schema, achillesSchema}{An optional schema in the CDM database
+\item{achillesSchema}{An optional schema in the CDM database
 that contains achilles tables.}
 
-\item{.soft_validation, .softValidation}{Normally the observation period table should not
+\item{.softValidation}{Normally the observation period table should not
 have overlapping observation periods for a single person. If \code{.softValidation} is \code{TRUE} the
 validation check that looks for overlapping observation periods will be skipped.
 Other analytic packages may break or produce incorrect results if \code{softValidation} is \code{TRUE} and
 the observation period table contains overlapping observation periods.}
 
-\item{write_prefix, writePrefix}{A prefix that will be added to all tables created in the write_schema. This
+\item{writePrefix}{A prefix that will be added to all tables created in the write_schema. This
 can be used to create namespace in your database write_schema for your tables.}
 }
 \value{
 A list of dplyr database table references pointing to CDM tables
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Create a CDM reference object from a database connection
 }
 \details{
 cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI database connection.
@@ -77,8 +77,8 @@ write_schema is required.
 Some database systems have the idea of a catalog or a compound schema with two components.
 See examples below for how to pass in catalogs and schemas.
 
-You can also specify a \code{write_prefix}. This is a short character string that will be added
-to any tables created in the \code{write_schema} effectively a namespace in the schema just for your
+You can also specify a \code{writePrefix}. This is a short character string that will be added
+to any tables created in the \code{writeSchema} effectively a namespace in the schema just for your
 analysis. If the write_schema is a shared between multiple users setting a unique write_prefix
 ensures you do not overwrite existing tables and allows you to easily clean up tables by
 dropping all tables that start with the prefix.
