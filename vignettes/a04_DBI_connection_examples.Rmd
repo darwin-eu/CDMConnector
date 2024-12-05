@@ -26,9 +26,9 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       user = Sys.getenv("CDM5_POSTGRESQL_USER"),
                       password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
 
-cdm <- cdm_from_con(con, 
-                    cdm_schema = Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA"), 
-                    write_schema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"))
+cdm <- cdmFromCon(con, 
+                    cdmSchema = Sys.getenv("CDM5_POSTGRESQL_cdmSchema"), 
+                    writeSchema = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"))
 DBI::dbDisconnect(con)
 ```
 
@@ -44,9 +44,9 @@ con <- DBI::dbConnect(RPostgres::Redshift(),
                       user     = Sys.getenv("CDM5_REDSHIFT_USER"),
                       password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"))
 
-cdm <- cdm_from_con(con, 
-                    cdm_schema = Sys.getenv("CDM5_REDSHIFT_CDM_SCHEMA"), 
-                    write_schema = Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA"))
+cdm <- cdmFromCon(con, 
+                    cdmSchema = Sys.getenv("CDM5_REDSHIFT_cdmSchema"), 
+                    writeSchema = Sys.getenv("CDM5_REDSHIFT_SCRATCH_SCHEMA"))
 DBI::dbDisconnect(con)
 ```
 
@@ -66,9 +66,9 @@ con <- DBI::dbConnect(odbc::odbc(),
                       TrustServerCertificate="yes",
                       Port     = 1433)
 
-cdm <- cdm_from_con(con, 
-                    cdm_schema = c("tempdb", "dbo"), 
-                    write_schema =  c("ATLAS", "RESULTS"))
+cdm <- cdmFromCon(con, 
+                    cdmSchema = c("tempdb", "dbo"), 
+                    writeSchema =  c("ATLAS", "RESULTS"))
 DBI::dbDisconnect(con)
 ```
 
@@ -76,14 +76,16 @@ The connection to SQL Server can be simplified by configuring a DSN. See [here](
 
 ```{r, eval=FALSE}
 con <- DBI::dbConnect(odbc::odbc(), "SQL")
-cdm <- cdm_from_con(con, 
-                    cdm_schema = c("tempdb", "dbo"), 
-                    write_schema =  c("ATLAS", "RESULTS"))
+cdm <- cdmFromCon(con, 
+                    cdmSchema = c("tempdb", "dbo"), 
+                    writeSchema =  c("ATLAS", "RESULTS"))
 DBI::dbDisconnect(con)
 ```
 
 ### Snowflake
+
 We can use the odbc package to connect to snowflake. 
+
 ```{r, eval=FALSE}
 con <- DBI::dbConnect(odbc::odbc(),
                           SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
@@ -92,22 +94,43 @@ con <- DBI::dbConnect(odbc::odbc(),
                           DATABASE = Sys.getenv("SNOWFLAKE_DATABASE"),
                           WAREHOUSE = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
                           DRIVER = Sys.getenv("SNOWFLAKE_DRIVER"))
-cdm <- cdm_from_con(con, 
-                    cdm_schema =  c("OMOP_SYNTHETIC_DATASET", "CDM53"), 
-                    write_schema =  c("ATLAS", "RESULTS"))
+cdm <- cdmFromCon(con, 
+                    cdmSchema =  c("OMOP_SYNTHETIC_DATASET", "CDM53"), 
+                    writeSchema =  c("ATLAS", "RESULTS"))
 DBI::dbDisconnect(con)
 ```
 
 Note, as with SQL server we could set up a DSN to simplify this connection as described [here](https://docs.snowflake.com/developer-guide/odbc/odbc-windows) for windows and [here](https://docs.snowflake.com/developer-guide/odbc/odbc-mac) for macOS.
 
+
+### Databricks/Spark
+
+Please follow the instructions here: https://solutions.posit.co/connections/db/databases/databricks/ 
+
+```{r}
+con <- DBI::dbConnect(
+  odbc::databricks(),
+  httpPath = Sys.getenv("DATABRICKS_HTTPPATH"),
+  useNativeQuery = FALSE
+)
+
+cdm <- cdmFromCon(con, 
+                  cdmSchema =  "gibleed", 
+                  writeSchema = "scratch")
+
+DBI::dbDisconnect(con)
+```
+
+
 ### Duckdb
+
 Duckdb is an in-process database. We use the duckdb package to connect.
 
 ```{r, eval=FALSE}
 con <- DBI::dbConnect(duckdb::duckdb(), 
                       dbdir=Sys.getenv("CDM5_DUCKDB_FILE"))
-cdm <- cdm_from_con(con, 
-                    cdm_schema = "main", 
-                    write_schema = "main")
+cdm <- cdmFromCon(con, 
+                    cdmSchema = "main", 
+                    writeSchema = "main")
 DBI::dbDisconnect(con)
 ```

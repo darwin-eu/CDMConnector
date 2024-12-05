@@ -10,7 +10,7 @@ cdmFromCon(
   cdmSchema,
   writeSchema,
   cohortTables = NULL,
-  cdmVersion = "5.3",
+  cdmVersion = NULL,
   cdmName = NULL,
   achillesSchema = NULL,
   .softValidation = FALSE,
@@ -22,7 +22,7 @@ cdm_from_con(
   cdm_schema,
   write_schema,
   cohort_tables = NULL,
-  cdm_version = "5.3",
+  cdm_version = NULL,
   cdm_name = NULL,
   achilles_schema = NULL,
   .soft_validation = FALSE,
@@ -42,9 +42,9 @@ write access to.}
 \item{cohortTables}{A character vector listing the cohort table names to be
 included in the CDM object.}
 
-\item{cdmVersion}{The version of the OMOP CDM: "5.3" (default), "5.4",
-"auto". "auto" attempts to automatically determine the cdm version using
-heuristics. Cohort tables must be in the write_schema.}
+\item{cdmVersion}{The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
+If NULL we will attempt to automatically determine the cdm version using
+the cdm_source table and heuristics.}
 
 \item{cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.}

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.6.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,7 @@
 
       <dl><dt>
 
-          <code><a href="assert_tables.html">assert_tables()</a></code> <code><a href="assert_tables.html">assertTables()</a></code>
+          <code><a href="assertTables.html">assertTables()</a></code> <code><a href="assertTables.html">assert_tables()</a></code>
 
         </dt>
         <dd>Assert that tables exist in a cdm object</dd>
@@ -83,6 +83,24 @@
         <dd>Flatten a cdm into a single observation table</dd>
       </dl><dl><dt>
 
+          <code><a href="cdmFromCon.html">cdmFromCon()</a></code> <code><a href="cdmFromCon.html">cdm_from_con()</a></code>
+
+        </dt>
+        <dd>Create a CDM reference object from a database connection</dd>
+      </dl><dl><dt>
+
+          <code><a href="cdmFromEnvironment.html">cdmFromEnvironment()</a></code> <code><a href="cdmFromEnvironment.html">cdm_from_environment()</a></code>
+
+        </dt>
+        <dd>Create a CDM object from a pre-defined set of environment variables</dd>
+      </dl><dl><dt>
+
+          <code><a href="cdmFromFiles.html">cdmFromFiles()</a></code> <code><a href="cdmFromFiles.html">cdm_from_files()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
+        </dt>
+        <dd>Create a CDM reference from a folder containing parquet, csv, or feather files</dd>
+      </dl><dl><dt>
+
           <code><a href="cdmName.html">cdmName()</a></code> <code><a href="cdmName.html">cdm_name()</a></code>
 
         </dt>
@@ -93,6 +111,12 @@
 
         </dt>
         <dd>Subset a cdm object to a random sample of individuals</dd>
+      </dl><dl><dt>
+
+          <code><a href="cdmSelectTbl.html">cdmSelectTbl()</a></code> <code><a href="cdmSelectTbl.html">cdm_select_tbl()</a></code>
+
+        </dt>
+        <dd>Select a subset of tables in a cdm reference object</dd>
       </dl><dl><dt>
 
           <code><a href="cdmSubset.html">cdmSubset()</a></code> <code><a href="cdmSubset.html">cdm_subset()</a></code>
@@ -113,37 +137,13 @@
         <dd>Get cdm write schema</dd>
       </dl><dl><dt>
 
-          <code><a href="cdm_from_con.html">cdm_from_con()</a></code> <code><a href="cdm_from_con.html">cdmFromCon()</a></code>
-
-        </dt>
-        <dd>Create a CDM reference object from a database connection</dd>
-      </dl><dl><dt>
-
-          <code><a href="cdm_from_environment.html">cdm_from_environment()</a></code>
-
-        </dt>
-        <dd>Create a CDM object from a pre-defined set of environment variables</dd>
-      </dl><dl><dt>
-
-          <code><a href="cdm_from_files.html">cdm_from_files()</a></code> <code><a href="cdm_from_files.html">cdmFromFiles()</a></code>
-
-        </dt>
-        <dd>Create a CDM reference from a folder containing parquet, csv, or feather files</dd>
-      </dl><dl><dt>
-
           <code><a href="cdm_from_tables.html">cdm_from_tables()</a></code>
-
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Create a cdm object from local tables</dd>
       </dl><dl><dt>
 
-          <code><a href="cdm_select_tbl.html">cdm_select_tbl()</a></code>
-
-        </dt>
-        <dd>Select a subset of tables in a cdm reference object</dd>
-      </dl><dl><dt>
-
-          <code><a href="copy_cdm_to.html">copy_cdm_to()</a></code> <code><a href="copy_cdm_to.html">copyCdmTo()</a></code>
+          <code><a href="copyCdmTo.html">copyCdmTo()</a></code> <code><a href="copyCdmTo.html">copy_cdm_to()</a></code>
 
         </dt>
         <dd>Copy a cdm object from one database to another</dd>
@@ -167,13 +167,13 @@
         <dd>Collect a list of lazy queries and save the results as files</dd>
       </dl><dl><dt>
 
-          <code><a href="tbl_group.html">tbl_group()</a></code> <code><a href="tbl_group.html">tblGroup()</a></code>
+          <code><a href="tblGroup.html">tblGroup()</a></code> <code><a href="tblGroup.html">tbl_group()</a></code>
 
         </dt>
         <dd>CDM table selection helper</dd>
       </dl><dl><dt>
 
-          <code><a href="validate_cdm.html">validate_cdm()</a></code> <code><a href="validate_cdm.html">validateCdm()</a></code>
+          <code><a href="validateCdm.html">validateCdm()</a></code> <code><a href="validateCdm.html">validate_cdm()</a></code>
 
         </dt>
         <dd>Validation report for a CDM</dd>
@@ -197,33 +197,33 @@
       <dl><dt>
 
           <code><a href="cohortAttrition.html">cohortAttrition()</a></code> <code><a href="cohortAttrition.html">cohort_attrition()</a></code>
-
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Get attrition table from a cohort_table object</dd>
       </dl><dl><dt>
 
-          <code><a href="cohortSet.html">cohortSet()</a></code> <code><a href="cohortSet.html">cohort_set()</a></code>
-
-        </dt>
-        <dd>Get cohort settings from a cohort_table object</dd>
-      </dl><dl><dt>
-
-          <code><a href="cohort_count.html">cohort_count()</a></code>
-
-        </dt>
-        <dd>Get cohort counts from a generated_cohort_set object.</dd>
-      </dl><dl><dt>
-
-          <code><a href="cohort_erafy.html">cohort_erafy()</a></code> <code><a href="cohort_erafy.html">cohortErafy()</a></code>
-
+          <code><a href="cohortErafy.html">cohortErafy()</a></code> <code><a href="cohortErafy.html">cohort_erafy()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Collapse cohort records within a certain number of days</dd>
       </dl><dl><dt>
 
-          <code><a href="cohort_union.html">cohort_union()</a></code> <code><a href="cohort_union.html">cohortUnion()</a></code>
+          <code><a href="cohortSet.html">cohortSet()</a></code> <code><a href="cohortSet.html">cohort_set()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
+        </dt>
+        <dd>Get cohort settings from a cohort_table object</dd>
+      </dl><dl><dt>
 
+          <code><a href="cohortUnion.html">cohortUnion()</a></code> <code><a href="cohortUnion.html">cohort_union()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Union all cohorts in a cohort set with cohorts in a second cohort set</dd>
+      </dl><dl><dt>
+
+          <code><a href="cohort_count.html">cohort_count()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
+        </dt>
+        <dd>Get cohort counts from a generated_cohort_set object.</dd>
       </dl><dl><dt>
 
           <code><a href="generateCohortSet.html">generateCohortSet()</a></code> <code><a href="generateCohortSet.html">generate_cohort_set()</a></code>
@@ -238,19 +238,19 @@
         <dd>Create a new generated cohort set from a list of concept sets</dd>
       </dl><dl><dt>
 
-          <code><a href="intersect_cohorts.html">intersect_cohorts()</a></code> <code><a href="intersect_cohorts.html">intersectCohorts()</a></code>
-
+          <code><a href="intersectCohorts.html">intersectCohorts()</a></code> <code><a href="intersectCohorts.html">intersect_cohorts()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Intersect all cohorts in a single cohort table</dd>
       </dl><dl><dt>
 
           <code><a href="new_generated_cohort_set.html">new_generated_cohort_set()</a></code> <code><a href="new_generated_cohort_set.html">newGeneratedCohortSet()</a></code>
-          <span class="badge lifecycle lifecycle-superseded">superseded</span>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Constructor for cohort_table objects</dd>
       </dl><dl><dt>
 
-          <code><a href="read_cohort_set.html">read_cohort_set()</a></code> <code><a href="read_cohort_set.html">readCohortSet()</a></code>
+          <code><a href="readCohortSet.html">readCohortSet()</a></code> <code><a href="readCohortSet.html">read_cohort_set()</a></code>
 
         </dt>
         <dd>Read a set of cohort definitions into R</dd>
@@ -262,8 +262,8 @@
         <dd>Add attrition reason to a cohort_table object</dd>
       </dl><dl><dt>
 
-          <code><a href="union_cohorts.html">union_cohorts()</a></code> <code><a href="union_cohorts.html">unionCohorts()</a></code>
-
+          <code><a href="unionCohorts.html">unionCohorts()</a></code> <code><a href="unionCohorts.html">union_cohorts()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Union all cohorts in a single cohort table</dd>
       </dl></div><div class="section level2">
@@ -280,7 +280,7 @@
       <dl><dt>
 
           <code><a href="appendPermanent.html">appendPermanent()</a></code> <code><a href="appendPermanent.html">append_permanent()</a></code>
-
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Run a dplyr query and add the result set to an existing</dd>
       </dl><dl><dt>
@@ -321,14 +321,14 @@
         <dd>Helper for working with compound schemas</dd>
       </dl><dl><dt>
 
-          <code><a href="summarise_quantile.html">summarise_quantile()</a></code> <code><a href="summarise_quantile.html">summarize_quantile()</a></code> <code><a href="summarise_quantile.html">summariseQuantile()</a></code> <code><a href="summarise_quantile.html">summarizeQuantile()</a></code>
+          <code><a href="summariseQuantile.html">summariseQuantile()</a></code> <code><a href="summariseQuantile.html">summarize_quantile()</a></code> <code><a href="summariseQuantile.html">summarise_quantile()</a></code> <code><a href="summariseQuantile.html">summarizeQuantile()</a></code>
 
         </dt>
         <dd>Quantile calculation using dbplyr</dd>
       </dl><dl><dt>
 
           <code><a href="uniqueTableName.html">uniqueTableName()</a></code> <code><a href="uniqueTableName.html">unique_table_name()</a></code>
-
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Create a unique table name for temp tables</dd>
       </dl></div><div class="section level2">
@@ -350,7 +350,7 @@
         <dd>Get the database management system (dbms) from a cdm_reference or DBI connection</dd>
       </dl><dl><dt>
 
-          <code><a href="list_tables.html">list_tables()</a></code> <code><a href="list_tables.html">listTables()</a></code>
+          <code><a href="listTables.html">listTables()</a></code> <code><a href="listTables.html">list_tables()</a></code>
 
         </dt>
         <dd>List tables in a schema</dd>
@@ -379,20 +379,20 @@
         <dd>Create a copy of an example OMOP CDM dataset</dd>
       </dl><dl><dt>
 
-          <code><a href="eunomia_is_available.html">eunomia_is_available()</a></code> <code><a href="eunomia_is_available.html">eunomiaIsAvailable()</a></code>
-
+          <code><a href="eunomiaIsAvailable.html">eunomiaIsAvailable()</a></code> <code><a href="eunomiaIsAvailable.html">eunomia_is_available()</a></code>
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Has the Eunomia dataset been cached?</dd>
       </dl><dl><dt>
 
           <code><a href="exampleDatasets.html">exampleDatasets()</a></code> <code><a href="exampleDatasets.html">example_datasets()</a></code>
-
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>List the available example CDM datasets</dd>
       </dl><dl><dt>
 
           <code><a href="requireEunomia.html">requireEunomia()</a></code> <code><a href="requireEunomia.html">require_eunomia()</a></code>
-
+          <span class="badge lifecycle lifecycle-deprecated">deprecated</span>
         </dt>
         <dd>Require eunomia to be available. The function makes sure that you can later create a eunomia database with <code><a href="../reference/eunomiaDir.html">eunomiaDir()</a></code>.</dd>
       </dl></div><div class="section level2">

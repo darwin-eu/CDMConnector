@@ -189,11 +189,11 @@ ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
 if (Sys.getenv("CI_TEST_DB") == "") {
 
   dbToTest <- c(
-     # "duckdb"
+     "duckdb"
     # ,
     # "postgres"
     # ,
-    "redshift"
+    # "redshift"
     # ,
     # "sqlserver"
     # ,
@@ -211,7 +211,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
 if (Sys.getenv('TEST_USING_DATABASE_CONNECTOR') %in% c("TRUE", "FALSE")) {
   testUsingDatabaseConnector <- as.logical(Sys.getenv('TEST_USING_DATABASE_CONNECTOR'))
 } else {
-  testUsingDatabaseConnector <- T
+  testUsingDatabaseConnector <- F
 }
 
 # make sure we're only trying to test on dbs we have connection details for
