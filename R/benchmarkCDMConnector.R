@@ -97,7 +97,7 @@ benchmarkCDMConnector <- function(cdm) {
   cli::cli_inform("Getting {task}")
   startTime <- Sys.time()
   cdm[["person"]] |>
-    dplyr::inner_join(cdm[["observation"]],
+    dplyr::inner_join(cdm[["observation_period"]],
                       by = "person_id") |>
     dplyr::collect()
   endTime <- Sys.time()
