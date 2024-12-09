@@ -833,17 +833,19 @@ cdmDisconnect <- function(cdm) {
     cli::cli_abort("cdm should be a cdm_reference")
   }
 
-  con <- cdmCon(cdm)
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  if ("db_cdm" %in% class(omopgenerics::cdmSource(cdm))) {
+    con <- cdmCon(cdm)
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
-  if (dbms(con) == "spark") {
-    schema <- attr(cdm, "write_schema")
-    tbls <- listTables(con, schema = schema)
-    tempEmulationTablesToDrop <- stringr::str_subset(tbls, attr(cdm, "temp_emulation_prefix"))
-    # try to drop the temp emulation tables
-    purrr::walk(tempEmulationTablesToDrop,
-                ~tryCatch(DBI::dbRemoveTable(con, .inSchema(schema, ., dbms = dbms(con))),
-                          error = function(e) invisible(NULL)))
+    if (dbms(con) == "spark") {
+      schema <- attr(cdm, "write_schema")
+      tbls <- listTables(con, schema = schema)
+      tempEmulationTablesToDrop <- stringr::str_subset(tbls, attr(cdm, "temp_emulation_prefix"))
+      # try to drop the temp emulation tables
+      purrr::walk(tempEmulationTablesToDrop,
+                  ~tryCatch(DBI::dbRemoveTable(con, .inSchema(schema, ., dbms = dbms(con))),
+                            error = function(e) invisible(NULL)))
+    }
   }
 }
 
