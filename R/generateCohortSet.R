@@ -950,50 +950,11 @@ caprConceptToDataframe <- function(x) {
 #'
 #' @return The cohort object with the attributes created or updated.
 #'
-#' `r lifecycle::badge("experimental")`
-#'
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(CDMConnector)
-#' library(dplyr)
-#'
-#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-#' cdm <- cdmFromCon(con = con, cdmSchema = "main", writeSchema = "main")
-#' cdm <- generateConceptCohortSet(
-#'   cdm = cdm, conceptSet = list(pharyngitis = 4112343), name = "new_cohort"
-#' )
-#'
-#' settings(cdm$new_cohort)
-#' cohortCount(cdm$new_cohort)
-#' attrition(cdm$new_cohort)
-#'
-#' cdm$new_cohort <- cdm$new_cohort %>%
-#'   filter(cohort_start_date >= as.Date("2010-01-01"))
-#'
-#' cdm$new_cohort <- updateCohortAttributes(
-#'   cohort = cdm$new_cohort, reason = "Only events after 2010"
-#' )
-#'
-#' settings(cdm$new_cohort)
-#' cohortCount(cdm$new_cohort)
-#' attrition(cdm$new_cohort)
-#' }
-recordCohortAttrition <- function(cohort,
-                                  reason,
-                                  cohortId = NULL) {
-  omopgenerics::recordCohortAttrition(cohort = cohort,
-                                      reason = reason,
-                                      cohortId = cohortId)
-
-}
-
 #' `r lifecycle::badge("deprecated")`
+#'
 #' @export
-#' @rdname recordCohortAttrition
 record_cohort_attrition <- function(cohort, reason, cohortId = NULL) {
   lifecycle::deprecate_soft("1.7.0", "record_cohort_attrition()", "recordCohortAttrition()")
-  recordCohortAttrition(cohort = cohort, reason = reason, cohortId = cohortId)
+  omopgenerics::recordCohortAttrition(cohort = cohort, reason = reason, cohortId = cohortId)
 }
 

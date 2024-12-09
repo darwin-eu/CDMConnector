@@ -364,10 +364,12 @@ version <- function(cdm) {
 #'
 #' Extract the CDM name attribute from a cdm_reference object
 #'
-#' @param cdm A cdm object
+#' @param cdm A cdm_reference object
 #'
 #' @return The name of the CDM as a character string
 #' @export
+#'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' @examples
 #' \dontrun{
@@ -379,13 +381,6 @@ version <- function(cdm) {
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-cdmName <- function(cdm) {
-  omopgenerics::cdmName(cdm)
-}
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname cdmName
-#' @export
 cdm_name <- function(cdm) {
   lifecycle::deprecate_soft("1.7.0", "cdm_name()", "cdmName()")
   omopgenerics::cdmName(cdm)

@@ -143,22 +143,16 @@ appendPermanent <- function(x, name, schema = NULL) {
 #' `r lifecycle::badge("deprecated")`
 #' @rdname appendPermanent
 #' @export
-append_permanent <- function(x, name, schema = NULL){ 
+append_permanent <- function(x, name, schema = NULL){
   lifecycle::deprecate_soft("1.7.0", "append_permanent()", "appendPermanent()")
   appendPermanent(x, name, schema)
 }
 
 #' Create a unique table name for temp tables
 #'
-#' @return A string that can be used as a dbplyr temp table name
-#' @export
-uniqueTableName <- function() {
-  i <- getOption("dbplyr_table_name", 0) + 1
-  options(dbplyr_table_name = i)
-  sprintf("dbplyr_%03i", i)
-}
 #' `r lifecycle::badge("deprecated")`
-#' @rdname uniqueTableName
+#'
+#' @return A string that can be used as a dbplyr temp table name
 #' @export
 unique_table_name <- function() {
   lifecycle::deprecate_soft("1.7.0", "unique_table_name()", "uniqueTableName()")
@@ -338,7 +332,7 @@ compute_query <- function(x,
                          schema = NULL,
                          overwrite = TRUE,
                          ...) {
-  lifecycle::deprecate_soft("1.7.0", "compute_query()", "computeQuery()")
+  lifecycle::deprecate_soft("1.7.0", "compute_query()")
   computeQuery(x, name, temporary, schema, overwrite, ...)
 }
 
