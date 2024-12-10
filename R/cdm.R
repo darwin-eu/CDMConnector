@@ -116,6 +116,14 @@ cdmFromCon <- function(con,
     cli::cli_abort("SQLite is not supported by CDMConnector. Please use duckdb instead.")
   }
 
+  if (methods::is(con, "DatatbaseConnectorConnection") && dbms(con) != "postgresql") {
+    cli::cli_warn("DatabaseConnector connections on {dbms(con)} are not tested!")
+  }
+
+  if (dbms(con) %in% c("oracle")) {
+    cli::cli_warn("Oracle database connections are not tested!")
+  }
+
   if (missing(writeSchema)) {
     cli::cli_abort("{.arg write_schema} is now required to create a cdm object with a database backend.
                    Please make sure you have a schema in your database where you can create new tables and provide it in the `write_schema` argument.
