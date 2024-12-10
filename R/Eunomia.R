@@ -183,8 +183,11 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' To contribute synthetic observational health data to the Eunomia project please
 #' open an issue at \url{https://github.com/OHDSI/Eunomia/issues/}
 #'
+#' Setup: To use the `eunomiaDir` function please set the `EUNOMIA_DATA_FOLDER` in your .Renviron file
+#' to a folder on your computer where the datasets will be downloaded to. This file can
+#' be opened by calling `usethis::edit_r_environ()`.
 #'
-#' @param datasetName,dataset_name One of "GiBleed" (default),
+#' @param datasetName One of "GiBleed" (default),
 #' "synthea-allergies-10k",
 #' "synthea-anemia-10k",
 #' "synthea-breast_cancer-10k",

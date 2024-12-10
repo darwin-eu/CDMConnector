@@ -18,7 +18,7 @@ eunomia_dir(
 )
 }
 \arguments{
-\item{datasetName, dataset_name}{One of "GiBleed" (default),
+\item{datasetName}{One of "GiBleed" (default),
 "synthea-allergies-10k",
 "synthea-anemia-10k",
 "synthea-breast_cancer-10k",
@@ -78,6 +78,10 @@ creating small test CDM datasets see \url{https://ohdsi.github.io/omock/} and
 
 To contribute synthetic observational health data to the Eunomia project please
 open an issue at \url{https://github.com/OHDSI/Eunomia/issues/}
+
+Setup: To use the \code{eunomiaDir} function please set the \code{EUNOMIA_DATA_FOLDER} in your .Renviron file
+to a folder on your computer where the datasets will be downloaded to. This file can
+be opened by calling \code{usethis::edit_r_environ()}.
 }
 \examples{
 \dontrun{
