@@ -372,12 +372,12 @@ version <- function(cdm) {
 #'
 #' Extract the CDM name attribute from a cdm_reference object
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param cdm A cdm_reference object
 #'
 #' @return The name of the CDM as a character string
 #' @export
-#'
-#' `r lifecycle::badge("deprecated")`
 #'
 #' @examples
 #' \dontrun{
