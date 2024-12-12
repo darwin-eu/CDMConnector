@@ -613,6 +613,8 @@ stow <- function(cdm, path, format = "parquet") {
 #' Create a CDM reference from a folder containing parquet, csv, or feather
 #' files
 #'
+#' `r lifecycle::badge("deprecated")`
+#'
 #' @param path A folder where an OMOP CDM v5.4 instance is located.
 #' @param format What is the file format to be read in? Must be "auto"
 #'   (default), "parquet", "csv", "feather".
@@ -627,6 +629,7 @@ cdmFromFiles <- function(path,
                          cdmVersion = "5.3",
                          cdmName = NULL,
                          asDataFrame = TRUE) {
+  lifecycle::deprecate_soft("1.7.0", "cdmFromFiles()")
   checkmate::assert_choice(format, c("auto", "parquet", "csv", "feather"))
   checkmate::assert_logical(asDataFrame, len = 1, null.ok = FALSE)
   checkmate::assert_true(file.exists(path))
@@ -720,7 +723,7 @@ cdm_from_files <- function(path,
                          cdm_name = NULL,
                          as_data_frame = TRUE) {
 
-  lifecycle::deprecate_soft("1.7.0", "cdm_from_files()", "cdmFromFiles()")
+  lifecycle::deprecate_soft("1.7.0", "cdm_from_files()")
   cdmFromFiles(path = path,
                format = format,
                cdmVersion = cdm_version,
@@ -889,6 +892,7 @@ cdm_disconnect <- function(cdm) {
 #' DBI::dbDisconnect(con)
 #' }
 cdmSelectTbl <- function(cdm, ...) {
+  lifecycle::deprecate_soft("1.7.0", "cdm_select_tbl()", "cdmSelect()")
   tables <- names(cdm) %>% rlang::set_names(names(cdm))
   selected <- names(tidyselect::eval_select(rlang::quo(c(...)), data = tables))
   if (length(selected) == 0) {
@@ -906,7 +910,7 @@ cdmSelectTbl <- function(cdm, ...) {
 #' @rdname cdmSelectTbl
 #' @export
 cdm_select_tbl <- function(cdm, ...){
-  lifecycle::deprecate_soft("1.7.0", "cdm_select_tbl()", "cdmSelectTbl()")
+  lifecycle::deprecate_soft("1.7.0", "cdm_select_tbl()", "cdmSelect()")
   cdmSelectTbl(cdm, ...)
 }
 

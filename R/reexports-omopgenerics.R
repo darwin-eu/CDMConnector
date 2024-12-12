@@ -62,6 +62,10 @@ omopgenerics::recordCohortAttrition
 #' @export
 omopgenerics::uniqueTableName
 
+#' @importFrom omopgenerics cdmSelect
+#' @export
+omopgenerics::cdmSelect
+
 #' Create a cdm object from local tables
 #'
 #' `r lifecycle::badge("deprecated")`
