@@ -20,6 +20,7 @@
 \alias{cdmName}
 \alias{recordCohortAttrition}
 \alias{uniqueTableName}
+\alias{cdmSelect}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -29,6 +30,6 @@ below to see their documentation.
 \describe{
   \item{dplyr}{\code{\link[dplyr]{compute}}}
 
-  \item{omopgenerics}{\code{\link[omopgenerics]{attrition}}, \code{\link[omopgenerics]{bind}}, \code{\link[omopgenerics]{cdmFromTables}}, \code{\link[omopgenerics]{cdmName}}, \code{\link[omopgenerics]{cdmVersion}}, \code{\link[omopgenerics]{cohortCodelist}}, \code{\link[omopgenerics]{cohortCount}}, \code{\link[omopgenerics]{dropSourceTable}}, \code{\link[omopgenerics]{dropTable}}, \code{\link[omopgenerics]{insertTable}}, \code{\link[omopgenerics]{listSourceTables}}, \code{\link[omopgenerics]{newCohortTable}}, \code{\link[omopgenerics]{readSourceTable}}, \code{\link[omopgenerics]{recordCohortAttrition}}, \code{\link[omopgenerics]{settings}}, \code{\link[omopgenerics]{uniqueTableName}}}
+  \item{omopgenerics}{\code{\link[omopgenerics]{attrition}}, \code{\link[omopgenerics]{bind}}, \code{\link[omopgenerics]{cdmFromTables}}, \code{\link[omopgenerics]{cdmName}}, \code{\link[omopgenerics]{cdmSelect}}, \code{\link[omopgenerics]{cdmVersion}}, \code{\link[omopgenerics]{cohortCodelist}}, \code{\link[omopgenerics]{cohortCount}}, \code{\link[omopgenerics]{dropSourceTable}}, \code{\link[omopgenerics]{dropTable}}, \code{\link[omopgenerics]{insertTable}}, \code{\link[omopgenerics]{listSourceTables}}, \code{\link[omopgenerics]{newCohortTable}}, \code{\link[omopgenerics]{readSourceTable}}, \code{\link[omopgenerics]{recordCohortAttrition}}, \code{\link[omopgenerics]{settings}}, \code{\link[omopgenerics]{uniqueTableName}}}
 }}
 

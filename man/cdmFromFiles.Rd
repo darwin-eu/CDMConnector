@@ -39,8 +39,5 @@ FALSE will read files into R as Arrow Datasets.}
 A list of dplyr database table references pointing to CDM tables
 }
 \description{
-Create a CDM reference from a folder containing parquet, csv, or feather
-files
-
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
