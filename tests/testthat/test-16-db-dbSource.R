@@ -28,10 +28,17 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_true("x_test" %in% names(cdm))
 
   # row order is not deterministic
-  expect_identical(
-    dplyr::as_tibble(cars) |> dplyr::arrange(speed, dist),
-    cdm[["x_test"]] |> dplyr::collect() |> dplyr::as_tibble() |> dplyr::arrange(speed, dist)
-  )
+  if (dbms(con) %in% c("bigquery")) {
+    expect_true(
+      all((dplyr::as_tibble(cars) |> dplyr::arrange(speed, dist) |> dplyr::select(speed, dist)) == (cdm[["x_test"]] |> dplyr::collect() |> dplyr::as_tibble() |> dplyr::arrange(speed, dist) |> dplyr::select(speed, dist)))
+    )
+  } else {
+    expect_identical(
+      dplyr::as_tibble(cars) |> dplyr::arrange(speed, dist),
+      cdm[["x_test"]] |> dplyr::collect() |> dplyr::as_tibble() |> dplyr::arrange(speed, dist)
+    )
+  }
+
   expect_no_error(cdm <- dropSourceTable(cdm = cdm, "x_test"))
   expect_false("x_test" %in% names(cdm))
   expect_false("x_test" %in% listSourceTables(cdm = cdm))

@@ -17,7 +17,6 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
   if (DatabaseConnector) {
     stopifnot(rlang::is_installed("DatabaseConnector"))
 
-
     if (dbms == "postgres") {
       cli::cli_inform("Testing with DatabseConector on postgresql")
       return(
@@ -39,6 +38,20 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
           password = Sys.getenv("CDM5_REDSHIFT_PASSWORD"),
           port = Sys.getenv("CDM5_REDSHIFT_PORT"))
       )
+    }
+
+    if (dbms == "bigquery") {
+
+      options(sqlRenderTempEmulationSchema = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"))
+
+      connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="bigquery",
+                                                                      connectionString=Sys.getenv("BIGQUERY_CONNECTION_STRING"),
+                                                                      user="",
+                                                                      password='')
+
+      con <- DatabaseConnector::connect(connectionDetails)
+
+      return(con)
     }
 
     stop(paste("Testing", dbms, "with DatabaseConnector has not been implemented yet."))
@@ -94,14 +107,16 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
   }
 
   if (dbms == "bigquery" && Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH") != "") {
-
+    # options(sqlRenderTempEmulationSchema = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"))
     bigrquery::bq_auth(path = Sys.getenv("BIGQUERY_SERVICE_ACCOUNT_JSON_PATH"))
 
-    return(DBI::dbConnect(
+    con <- DBI::dbConnect(
       bigrquery::bigquery(),
       project = Sys.getenv("BIGQUERY_PROJECT_ID"),
       dataset = Sys.getenv("BIGQUERY_CDM_SCHEMA")
-    ))
+    )
+
+    return(con)
   }
 
   if (dbms == "snowflake" && Sys.getenv("SNOWFLAKE_USER") != "") {
@@ -184,12 +199,13 @@ disconnect <- function(con) {
 }
 
 # databases supported on github actions
-ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake")
+ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake", "bigquery")
 
 if (Sys.getenv("CI_TEST_DB") == "") {
 
   dbToTest <- c(
-     "duckdb"
+    "bigquery"
+     # "duckdb"
     # ,
     # "postgres"
     # ,

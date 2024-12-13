@@ -35,7 +35,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
     DBI::dbRemoveTable(con, .inSchema(writeSchema, name, dbms(con)))
   }
 
-  DBI::dbCreateTable(con,
+  .dbCreateTable(con,
                      name = .inSchema(writeSchema, name, dbms(con)),
                      fields = c(
                        cohort_definition_id = "INT",
@@ -53,7 +53,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
-    DBI::dbCreateTable(con,
+    .dbCreateTable(con,
                        name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
@@ -68,7 +68,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
-    DBI::dbCreateTable(con,
+    .dbCreateTable(con,
                        name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
@@ -83,7 +83,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
-    DBI::dbCreateTable(con,
+    .dbCreateTable(con,
                        name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
@@ -101,7 +101,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
-    DBI::dbCreateTable(con,
+    .dbCreateTable(con,
                        name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",
@@ -116,7 +116,7 @@ createCohortTables <- function(con, writeSchema, name, computeAttrition) {
       DBI::dbRemoveTable(con, .inSchema(writeSchema, nm, dbms(con)))
     }
 
-    DBI::dbCreateTable(con,
+    .dbCreateTable(con,
                        name = .inSchema(writeSchema, nm, dbms(con)),
                        fields = c(
                          cohort_definition_id = "INT",

@@ -68,9 +68,16 @@ insertTable.db_cdm <- function(cdm,
   if (!inherits(table, "data.frame")) {
     table <- table |> dplyr::collect()
   }
-  DBI::dbWriteTable(conn = con, name = fullName, value = table, temporary = temporary)
+
+  if (dbms(con) %in% c("bigquery") && nrow(table) == 0) {
+    .dbCreateTable(con, fullName, table)
+  } else {
+    DBI::dbWriteTable(conn = con, name = fullName, value = table, temporary = temporary)
+  }
+
   x <- dplyr::tbl(src = con, fullName) |>
-    omopgenerics::newCdmTable(src = src, name = name)
+    omopgenerics::newCdmTable(src = src, name = name) |>
+    dplyr::select(colnames(table))
   return(x)
 }
 

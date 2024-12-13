@@ -91,7 +91,8 @@ inSchema <- function(schema, table, dbms = NULL) {
 
   schema <- unname(schema)
 
-  if (isTRUE(dbms %in% c("bigquery"))) { #TODO bigrquery needs to fix this
+  # if (isTRUE(dbms %in% c("bigquery"))) { #TODO bigrquery needs to fix this
+  if(FALSE) {
     checkmate::assertCharacter(schema, len = 1)
     out <- paste(c(schema, table), collapse = ".")
   } else {
@@ -288,6 +289,7 @@ unique_prefix <- function() {
   as.integer((as.numeric(Sys.time())*10) %% 1e6)
 }
 
+
 # Borrowed from devtools: https://github.com/hadley/devtools/blob/ba7a5a4abd8258c52cb156e7b26bb4bf47a79f0b/R/utils.r#L44
 isInstalled <- function(pkg, version = "0") {
   installedVersion <- tryCatch(utils::packageVersion(pkg),
@@ -310,5 +312,46 @@ ensureInstalled <- function(pkg) {
     } else {
       stop(msg, call. = FALSE)
     }
+  }
+}
+
+mapTypes <- function(type) {
+
+  if (type %in% c("integer", "integer64")) {
+    return("INT")
+  } else if (type == "character") {
+    return("STRING")
+  }
+  return(type)  # Default to returning the type as is
+}
+
+# create table function adjusted to work with DatabaseConnector
+dcCreateTable <- function(conn, name, fields) {
+
+  if (tibble::is_tibble(fields)) {
+   fieldsSql <- paste(names(fields),
+     sapply(fields, function(x) mapTypes(class(x)[1])),
+     collapse = ", "
+   )
+ } else {
+   fields <- sapply(names(fields), function(field) {
+     paste(field, fields[[field]], sep = " ")
+   })
+   fieldsSql <- paste(fields, collapse = ", ")
+ }
+
+  createTableSQL <- SqlRender::render("CREATE TABLE @a ( @b );", a = paste(name@name[1], name@name[2], sep = "."), b = fieldsSql)
+
+  createTableSQLTranslated <- SqlRender::translate(createTableSQL, dbms(conn))
+
+  DBI::dbExecute(conn, createTableSQLTranslated)
+}
+
+# branching logic: which createTable function to use based on the connection type
+.dbCreateTable <- function(conn, name, fields) {
+  if (isClass(conn, "DatabaseConnectorJdbcConnection") || dbms(conn)  %in% c("bigquery")) {
+  dcCreateTable(conn, name, fields)
+  } else {
+  DBI:::dbCreateTable(conn, name, fields)
   }
 }

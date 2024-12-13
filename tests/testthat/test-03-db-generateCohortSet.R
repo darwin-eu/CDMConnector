@@ -60,11 +60,11 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 }
 
 for (dbtype in dbToTest) {
-  # dbtype = "spark"
+  # dbtype = "bigquery"
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
-    con <- get_connection(dbtype)
+    con <- get_connection(dbtype, DatabaseConnector = testUsingDatabaseConnector)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))

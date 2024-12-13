@@ -4,11 +4,18 @@
 test_in_schema <- function(con, cdm_schema) {
 
   tbls <- listTables(con, cdm_schema)
-  nm <- stringr::str_subset(tbls, "person|PERSON")
+  nm <- stringr::str_subset(tbls, "^person$|^PERSON$")
   stopifnot(tolower(nm) == "person")
 
   if (length(cdm_schema) == 1) {
-    db <- dplyr::tbl(con, dbplyr::in_schema(cdm_schema, nm))
+    if (dbms(con) == "bigquery"){
+      tablePath <- dbplyr::in_schema(cdm_schema, nm)
+      # class of tablePath (dbplyr_schema) not a valid input to as_bq_table.BigQueryConnection
+      db <- dplyr::tbl(con, DBI::Id(table = tablePath$table, schema = tablePath$schema))
+    }
+    else {
+      db <- dplyr::tbl(con, dbplyr::in_schema(cdm_schema, nm))
+    }
   } else if (length(cdm_schema) == 2) {
     db <- dplyr::tbl(con, dbplyr::in_catalog(cdm_schema[1], cdm_schema[2], nm))
   }

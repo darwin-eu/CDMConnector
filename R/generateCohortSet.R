@@ -386,7 +386,7 @@ generateCohortSet <- function(cdm,
     # --([^\n])*?\n => match strings starting with -- followed by anything except a newline
     sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
 
-    if (dbms(con) != "spark") {
+    if (dbms(con) != "spark" && dbms(con) != "bigquery") {
       sql <- SqlRender::translate(sql,
                                   targetDialect = CDMConnector::dbms(con),
                                   tempEmulationSchema = "SQL ERROR")
@@ -439,13 +439,24 @@ generateCohortSet <- function(cdm,
     ) %>%
       purrr::map_chr(~SqlRender::translate(., dbms(con)))
 
+    drop_statements <- stringr::str_replace_all(drop_statements, "--([^\n])*?\n", "\n")
+
     for (k in seq_along(drop_statements)) {
+      if (grepl("^--", drop_statements[k])){
+        next
+      }
       suppressMessages(DBI::dbExecute(con, drop_statements[k], immediate = TRUE))
     }
+
+    sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
 
     for (k in seq_along(sql)) {
       # cli::cat_rule(glue::glue("sql {k} with {nchar(sql[k])} characters."))
       # cli::cat_line(sql[k])
+      if (grepl("^--", sql[k])){
+        next
+      }
+
       DBI::dbExecute(con, sql[k], immediate = TRUE)
 
       if (interactive()) {
