@@ -191,9 +191,9 @@ test_clock_functions <- function(con, write_schema) {
   library(clock)
   # on postgres we need the as.Date conversion around add_years and add_days
   df <- date_tbl %>%
-    dplyr::mutate(y2 = get_year(date1),
-                  m2 = get_month(date1),
-                  d2 = get_day(date1))
+    dplyr::mutate(y2 = clock::get_year(date1),
+                  m2 = clock::get_month(date1),
+                  d2 = clock::get_day(date1))
 
   if (dbms(con) != "duckdb") {
     df <- dplyr::mutate(df,

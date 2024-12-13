@@ -31,6 +31,8 @@ jobs:
           install.packages("devtools", repos = "https://cloud.r-project.org/")
           install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages("duckdb", repos = "https://cloud.r-project.org/")
+
         shell: Rscript {0}
 
       - name: Run tests on duckdb

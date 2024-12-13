@@ -85,7 +85,7 @@ for (dbtype in dbToTest) {
 
 test_that("uniqueTableName", {
   result <- uniqueTableName()
-  expect_true(startsWith(result, "dbplyr_"))
+  expect_true(startsWith(result, "og_"))
 })
 
 test_that("message does not duplicate when prefix is used", {
