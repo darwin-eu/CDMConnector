@@ -340,18 +340,24 @@ dcCreateTable <- function(conn, name, fields) {
    fieldsSql <- paste(fields, collapse = ", ")
  }
 
-  createTableSQL <- SqlRender::render("CREATE TABLE @a ( @b );", a = paste(name@name[1], name@name[2], sep = "."), b = fieldsSql)
+  tableName <- paste(name@name, collapse = ".")
 
-  createTableSQLTranslated <- SqlRender::translate(createTableSQL, dbms(conn))
+  if (!(dbms(conn) %in% c("bigquery"))){
+    createTableSQL <- SqlRender::render("CREATE TABLE @a ( @b );", a = tableName, b = fieldsSql)
+
+    createTableSQLTranslated <- SqlRender::translate(createTableSQL, dbms(conn))
+  } else {
+    createTableSQLTranslated <- glue::glue("CREATE TABLE `{tableName}` ({fieldsSql});")
+  }
 
   DBI::dbExecute(conn, createTableSQLTranslated)
 }
 
 # branching logic: which createTable function to use based on the connection type
 .dbCreateTable <- function(conn, name, fields) {
-  if (isClass(conn, "DatabaseConnectorJdbcConnection") || dbms(conn)  %in% c("bigquery")) {
+  if (methods::is(conn, "DatabaseConnectorJdbcConnection") || dbms(conn)  %in% c("bigquery")) {
   dcCreateTable(conn, name, fields)
   } else {
-  DBI:::dbCreateTable(conn, name, fields)
+  DBI::dbCreateTable(conn, name, fields)
   }
 }
