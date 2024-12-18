@@ -36,10 +36,10 @@ Imports:
     stringi,
     generics,
     tidyr,
+    jsonlite,
     omopgenerics (>= 0.1.2)
 Suggests: 
     readr,
-    jsonlite,
     SqlRender,
     CirceR,
     rJava,
