@@ -8,7 +8,7 @@ test_copy_cdm_to <- function(con, write_schema) {
   on.exit(DBI::dbDisconnect(con1, shutdown = TRUE), add = TRUE)
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", cdmName = "test", writeSchema = "main") %>%
-      cdmSelectTbl("person", "observation_period", "vocabulary")
+      cdmSelect("person", "observation_period", "vocabulary")
 
   # create another cdm
   cdm2 <- copyCdmTo(con = con, cdm = cdm, schema = write_schema)

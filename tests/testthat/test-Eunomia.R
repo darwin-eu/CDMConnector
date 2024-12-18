@@ -48,8 +48,10 @@ test_that("empty cdm works", {
     cdm <- cdmFromCon(con, "main", "main", cdmName = "empty_cdm")
   })
 
-  rowcounts <- purrr::map_int(cdmSelectTbl(cdm, -tblGroup("vocab")),
+
+  rowcounts <- purrr::map_int(cdmSelect(cdm, -tblGroup("vocab")),
                               ~dplyr::pull(dplyr::count(.), 'n'))
+
 
   expect_true(all(rowcounts == 0))
   DBI::dbDisconnect(con, shutdown = T)

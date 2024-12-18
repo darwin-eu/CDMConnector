@@ -385,7 +385,7 @@ test_that("missing domains produce warning", {
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   ) %>%
-    cdmSelectTbl(-drug_exposure)
+    cdmSelect(-drug_exposure)
 
   expect_warning({
     cdm <- generateConceptCohortSet(cdm, name = "celecoxib",

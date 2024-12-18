@@ -9,7 +9,7 @@ test_summarise_quantile <- function(con,
     con = eunomia_con, cdmName = "eunomia", cdmSchema = "main",
     writeSchema = "main"
   ) %>%
-    cdmSelectTbl("person")
+    cdmSelect("person")
 
   person <- dplyr::collect(eunomia_cdm$person)
   DBI::dbDisconnect(eunomia_con, shutdown = TRUE)
