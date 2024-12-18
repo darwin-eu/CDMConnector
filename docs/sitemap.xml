@@ -26,13 +26,13 @@
 <url><loc>/reference/cdmFromCon.html</loc></url>
 <url><loc>/reference/cdmFromEnvironment.html</loc></url>
 <url><loc>/reference/cdmFromFiles.html</loc></url>
-<url><loc>/reference/cdmName.html</loc></url>
 <url><loc>/reference/cdmSample.html</loc></url>
 <url><loc>/reference/cdmSelectTbl.html</loc></url>
 <url><loc>/reference/cdmSubset.html</loc></url>
 <url><loc>/reference/cdmSubsetCohort.html</loc></url>
 <url><loc>/reference/cdmWriteSchema.html</loc></url>
 <url><loc>/reference/cdm_from_tables.html</loc></url>
+<url><loc>/reference/cdm_name.html</loc></url>
 <url><loc>/reference/cohortAttrition.html</loc></url>
 <url><loc>/reference/cohortErafy.html</loc></url>
 <url><loc>/reference/cohortSet.html</loc></url>
@@ -60,7 +60,7 @@
 <url><loc>/reference/pipe.html</loc></url>
 <url><loc>/reference/print.cdm_reference.html</loc></url>
 <url><loc>/reference/readCohortSet.html</loc></url>
-<url><loc>/reference/recordCohortAttrition.html</loc></url>
+<url><loc>/reference/record_cohort_attrition.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
 <url><loc>/reference/requireEunomia.html</loc></url>
 <url><loc>/reference/snapshot.html</loc></url>
@@ -70,7 +70,7 @@
 <url><loc>/reference/summariseQuantile.html</loc></url>
 <url><loc>/reference/tblGroup.html</loc></url>
 <url><loc>/reference/unionCohorts.html</loc></url>
-<url><loc>/reference/uniqueTableName.html</loc></url>
+<url><loc>/reference/unique_table_name.html</loc></url>
 <url><loc>/reference/validateCdm.html</loc></url>
 <url><loc>/reference/version.html</loc></url>
 <url><loc>/reference/visr.omop_attrition.html</loc></url>
