@@ -1,3 +1,12 @@
+# CDMConnector 1.7.0
+
+- Add support for Big Query using bigrquery DBI package (pending PRs on omopgenerics and bigrquery) @IoannaNika
+- Add support for the DatabaseConnector postgresql JDBC driver @ablack3
+- By default automatically detect CDM version  @catalamarti
+- Deprecate snake case functions @IoannaNika
+- Deprecate cohort manipulation functions @ablack3
+- Deprecate validation functions @ablack3
+
 # CDMConnector 1.6.1
 
 - use BIGINT for subject_id column of cohort tables
