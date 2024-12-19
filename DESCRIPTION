@@ -37,9 +37,9 @@ Imports:
     generics,
     tidyr,
     jsonlite,
+    readr,
     omopgenerics (>= 0.1.2)
 Suggests: 
-    readr,
     SqlRender,
     CirceR,
     rJava,
