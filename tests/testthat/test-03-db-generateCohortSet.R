@@ -246,10 +246,19 @@ test_that("no error is given if attrition table already exists and overwrite = T
 
 test_that("readCohortSet works from working directory", {
   skip("manual test") # seems to work as a standalone test but fails when running testtat
-  skip_if_not_installed("fs")
-  fs::dir_copy(system.file("cohorts1", package = "CDMConnector", mustWork = TRUE),
-               file.path(tempdir(), "cohorts1"),
-               overwrite = TRUE)
+
+  source_folder <- system.file("cohorts1", package = "CDMConnector", mustWork = TRUE)
+  destination_folder <- file.path(tempdir(), "cohorts1")
+
+  if (!dir.exists(destination_folder)) {
+    dir.create(destination_folder, recursive = TRUE)
+  }
+
+  files <- list.files(source_folder, full.names = TRUE, recursive = TRUE)
+
+  file.copy(from = files,
+            to = file.path(destination_folder, basename(files)),
+            overwrite = TRUE)
 
   withr::with_dir(tempdir(), {
     cohortSet <- readCohortSet("cohorts1")
