@@ -33,32 +33,32 @@ cdm_from_con(
 \item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or
 v5.3 instance is located.}
 
-\item{cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
+\item{cdmSchema, cdm_schema}{The schema where the OMOP CDM tables are located. Defaults
 to NULL.}
 
-\item{writeSchema}{An optional schema in the CDM database that the user has
+\item{writeSchema, write_schema}{An optional schema in the CDM database that the user has
 write access to.}
 
-\item{cohortTables}{A character vector listing the cohort table names to be
+\item{cohortTables, cohort_tables}{A character vector listing the cohort table names to be
 included in the CDM object.}
 
-\item{cdmVersion}{The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
+\item{cdmVersion, cdm_version}{The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
 If NULL we will attempt to automatically determine the cdm version using
 the cdm_source table and heuristics.}
 
-\item{cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
+\item{cdmName, cdm_name}{The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.}
 
-\item{achillesSchema}{An optional schema in the CDM database
+\item{achillesSchema, achilles_schema}{An optional schema in the CDM database
 that contains achilles tables.}
 
-\item{.softValidation}{Normally the observation period table should not
+\item{.softValidation, .soft_validation}{Normally the observation period table should not
 have overlapping observation periods for a single person. If \code{.softValidation} is \code{TRUE} the
 validation check that looks for overlapping observation periods will be skipped.
 Other analytic packages may break or produce incorrect results if \code{softValidation} is \code{TRUE} and
 the observation period table contains overlapping observation periods.}
 
-\item{writePrefix}{A prefix that will be added to all tables created in the write_schema. This
+\item{writePrefix, write_prefix}{A prefix that will be added to all tables created in the write_schema. This
 can be used to create namespace in your database write_schema for your tables.}
 }
 \value{

@@ -18,7 +18,7 @@ eunomia_dir(
 )
 }
 \arguments{
-\item{datasetName}{One of "GiBleed" (default),
+\item{datasetName, dataset_name}{One of "GiBleed" (default),
 "synthea-allergies-10k",
 "synthea-anemia-10k",
 "synthea-breast_cancer-10k",

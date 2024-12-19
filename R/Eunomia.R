@@ -187,7 +187,7 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' to a folder on your computer where the datasets will be downloaded to. This file can
 #' be opened by calling `usethis::edit_r_environ()`.
 #'
-#' @param datasetName One of "GiBleed" (default),
+#' @param datasetName,dataset_name One of "GiBleed" (default),
 #' "synthea-allergies-10k",
 #' "synthea-anemia-10k",
 #' "synthea-breast_cancer-10k",

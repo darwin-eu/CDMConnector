@@ -304,8 +304,8 @@ ensureInstalled <- function(pkg) {
     msg <- paste0(sQuote(pkg), " must be installed for this functionality.")
     if (interactive()) {
       rlang::inform(paste(msg, "Would you like to install it?", sep = "\n"))
-      if (menu(c("Yes", "No")) == 1) {
-        install.packages(pkg)
+      if (utils::menu(c("Yes", "No")) == 1) {
+        utils::install.packages(pkg)
       } else {
         stop(msg, call. = FALSE)
       }
