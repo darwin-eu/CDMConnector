@@ -54,6 +54,21 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
       return(con)
     }
 
+    if (dbms == "snowflake") {
+      cli::cli_inform("Testing with DatabseConector on snowflake")
+
+      connectionDetails <- DatabaseConnector::createConnectionDetails(
+        dbms = "snowflake",
+        connectionString = Sys.getenv("SNOWFLAKE_CONNECTION_STRING"),
+        user = Sys.getenv("SNOWFLAKE_USER"),
+        password = Sys.getenv("SNOWFLAKE_PASSWORD")
+      )
+
+      con <- DatabaseConnector::connect(connectionDetails)
+
+      return(con)
+    }
+
     stop(paste("Testing", dbms, "with DatabaseConnector has not been implemented yet."))
 
   }
