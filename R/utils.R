@@ -315,22 +315,27 @@ ensureInstalled <- function(pkg) {
   }
 }
 
-mapTypes <- function(type) {
+mapTypes <- function(conn, type) {
+  # mapping types only used for some cases with bigquery (DBI) - e.g. generateCohortSet tests
+  if(!(dbms(conn) %in% c("bigquery"))){
+    return(type)
+  }
 
   if (type %in% c("integer", "integer64")) {
     return("INT")
   } else if (type == "character") {
     return("STRING")
   }
-  return(type)  # Default to returning the type as is
+
+  return(type)
 }
 
-# create table function adjusted to work with DatabaseConnector
+# create table function adjusted to work with DatabaseConnector and bigquery
 dcCreateTable <- function(conn, name, fields) {
 
   if (tibble::is_tibble(fields)) {
    fieldsSql <- paste(names(fields),
-     sapply(fields, function(x) mapTypes(class(x)[1])),
+     sapply(fields, function(x) mapTypes(conn, class(x)[1])),
      collapse = ", "
    )
  } else {
@@ -350,13 +355,16 @@ dcCreateTable <- function(conn, name, fields) {
     createTableSQLTranslated <- glue::glue("CREATE TABLE `{tableName}` ({fieldsSql});")
   }
 
-  DBI::dbExecute(conn, createTableSQLTranslated)
+  return(createTableSQLTranslated)
 }
 
 # branching logic: which createTable function to use based on the connection type
 .dbCreateTable <- function(conn, name, fields) {
   if (methods::is(conn, "DatabaseConnectorJdbcConnection") || dbms(conn)  %in% c("bigquery")) {
-  dcCreateTable(conn, name, fields)
+
+    createTableSQLTranslated <- dcCreateTable(conn, name, fields)
+    DBI::dbExecute(conn, createTableSQLTranslated)
+
   } else {
   DBI::dbCreateTable(conn, name, fields)
   }
