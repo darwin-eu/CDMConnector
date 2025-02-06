@@ -150,7 +150,9 @@ listTables <- function(con, schema = NULL) {
     schema <- schema[names(schema) != "prefix"]
 
     process_prefix <- function(x) {
-      stringr::str_subset(x, paste0("^", prefix)) %>% stringr::str_remove(paste0("^", prefix))
+      np <- nchar(prefix)
+      x <- x[stringr::str_starts(string = x, pattern = prefix) & nchar(x) > np]
+      substr(x, start = np+1, stop = nchar(x))
     }
   } else {
     process_prefix <- function(x) {x}
