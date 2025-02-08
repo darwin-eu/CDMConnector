@@ -107,11 +107,11 @@ database documentation.</a></p>
 <p>In our example’s we will use some synthetic data from the <a href="https://synthetichealth.github.io/synthea/" class="external-link">Synthea project</a>
 that has been mapped to the OMOP CDM format. We’ll use the <a href="https://duckdb.org/" class="external-link">duckdb</a> database which is a file based
 database similar to SQLite but with better date type support. To see all
-the example datasets available run <code><a href="../reference/exampleDatasets.html">example_datasets()</a></code>.</p>
+the example datasets available run <code><a href="../reference/exampleDatasets.html">exampleDatasets()</a></code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/exampleDatasets.html">example_datasets</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `example_datasets()` was deprecated in CDMConnector 1.7.0.</span></span>
+<span><span class="fu"><a href="../reference/exampleDatasets.html">exampleDatasets</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: `exampleDatasets()` was deprecated in CDMConnector 1.7.0.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `exampleDatasets()` instead.</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
@@ -129,8 +129,8 @@ the example datasets available run <code><a href="../reference/exampleDatasets.h
 <span><span class="co">#&gt; [21] "synthea-weight_loss-10k"             "synpuf-1k"                          </span></span>
 <span><span class="co">#&gt; [23] "empty_cdm"</span></span>
 <span></span>
-<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomia_dir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `eunomia_dir()` was deprecated in CDMConnector 1.7.0.</span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: `eunomiaDir()` was deprecated in CDMConnector 1.7.0.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `eunomiaDir()` instead.</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>

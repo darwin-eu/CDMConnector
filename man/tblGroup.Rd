@@ -2,12 +2,9 @@
 % Please edit documentation in R/cdm.R
 \name{tblGroup}
 \alias{tblGroup}
-\alias{tbl_group}
 \title{CDM table selection helper}
 \usage{
 tblGroup(group)
-
-tbl_group(group)
 }
 \arguments{
 \item{group}{A character vector of CDM table groups: "vocab", "clinical",

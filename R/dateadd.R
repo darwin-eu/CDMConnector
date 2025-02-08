@@ -206,14 +206,6 @@ asDate <- function(x) {
   }
 }
 
-#' `r lifecycle::badge("deprecated")`
-#' @rdname asDate
-#' @export
-as_date <- function(x) {
-  lifecycle::deprecate_soft("1.7.0", "as_date()", "asDate()")
-  asDate(x)
-}
-
 #' Extract the day, month or year of a date in a dplyr pipeline
 #'
 #' @param date Character string that represents to a date column.

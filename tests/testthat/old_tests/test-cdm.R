@@ -525,27 +525,7 @@ test_that("snapshot works when cdm_source or vocabulary tables are empty", {
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
-
-test_that("stow works", {
-  skip_if_not(eunomiaIsAvailable())
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
-  cdm <- cdmFromCon(con, "main")
-  names1 <- names(cdm)
-  dOut <- tempfile()
-  dir.create(dOut)
-  file.exists(dOut)
-  CDMConnector::stow(cdm, dOut, format = "duckdb")
-  DBI::dbDisconnect(con, shutdown = TRUE)
-
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = file.path(dOut, "cdm.duckdb"))
-  cdm <- cdmFromCon(con, cdmSchema = "main")
-  names2 <- names(cdm)
-  expect_equal(names1, names2)
-  DBI::dbDisconnect(con, shutdown = TRUE)
-})
-
-
-test_that("cdm_select_tbl works", {
+test_that("cdmSelectTbl works", {
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 
   cdm <- cdmFromCon(con, "main")

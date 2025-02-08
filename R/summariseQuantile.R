@@ -34,7 +34,7 @@
 #' @param .data lazy data frame backed by a database query.
 #' @param x column name whose sample quantiles are wanted.
 #' @param probs numeric vector of probabilities with values in \[0,1\].
-#' @param name_suffix,nameSuffix character; is appended to numerical quantile value as a column name part.
+#' @param nameSuffix character; is appended to numerical quantile value as a column name part.
 #' @return
 #' An object of the same type as '.data'
 #'
@@ -120,32 +120,3 @@ summariseQuantile <- function(.data, x = NULL, probs, nameSuffix = "value") {
   )
   eval(query)
 }
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname summariseQuantile
-#' @export
-summarize_quantile <- function(.data, x = NULL, probs, name_suffix = "value") {
-  lifecycle::deprecate_soft("1.7.0", "summarize_quantile()", "summariseQuantile()")
-  summariseQuantile(.data, x = x, probs = probs, nameSuffix = name_suffix)
-}
-
-
-#' @rdname summariseQuantile
-#' @export
-summarise_quantile <- function(.data,
-                              x = NULL,
-                              probs,
-                              name_suffix = "value") {
-  lifecycle::deprecate_soft("1.7.0", "summarise_quantile()", "summariseQuantile()")
-
-  x <- rlang::enexpr(x)
-  summariseQuantile(.data = .data,
-                     x = !!x,
-                     probs = probs,
-                     nameSuffix = name_suffix)
-}
-
-
-#' @rdname summariseQuantile
-#' @export
-summarizeQuantile <- summariseQuantile

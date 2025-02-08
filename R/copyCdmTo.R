@@ -95,11 +95,3 @@ copyCdmTo <- function(con, cdm, schema, overwrite = FALSE) {
 
   return(newCdm)
 }
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname copyCdmTo
-#' @export
-copy_cdm_to <- function(con, cdm, schema, overwrite = FALSE) {
-  lifecycle::deprecate_soft("1.7.0", "copy_cdm_to()", "copyCdmTo()")
-  copyCdmTo(con, cdm, schema, overwrite = FALSE)
-}

@@ -31,7 +31,7 @@ reference:
 - subtitle: Eunomia example CDM
   desc: Easily create and use example CDMs in a [duckdb](https://duckdb.org/) database
 - contents:
-  - matches("eunomia|downloadEunomiaData|exampleDatasets|example_datasets")
+  - matches("eunomia|downloadEunomiaData|exampleDatasets|exampleDatasets")
 - subtitle: Benchmarking
   desc: Run benchmarking of simple queries against your CDM reference
 - contents:

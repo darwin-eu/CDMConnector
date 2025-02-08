@@ -73,7 +73,7 @@ for (tbl in tables) {
 
 # library(CDMConnector)
 # library(dplyr)
-# con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir("GiBleed"))
+# con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
 # cdm <- cdmFromCon(con, "main", "main")
 #
 # df <- cdm$condition_occurrence  %>%

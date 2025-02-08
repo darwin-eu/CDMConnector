@@ -2,12 +2,9 @@
 % Please edit documentation in R/cdmSubset.R
 \name{cdmSample}
 \alias{cdmSample}
-\alias{cdm_sample}
 \title{Subset a cdm object to a random sample of individuals}
 \usage{
 cdmSample(cdm, n, seed = sample.int(1e+06, 1), name = "person_sample")
-
-cdm_sample(cdm, n, seed = sample.int(1e+06, 1), name = "person_sample")
 }
 \arguments{
 \item{cdm}{A cdm_reference object.}
@@ -26,9 +23,6 @@ queries pointing to subset
 \code{cdmSample} takes a cdm object and returns a new cdm that includes only a
 random sample of persons in the cdm. Only \code{person_id}s in both the person
 table and observation_period table will be considered.
-}
-\details{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \examples{
 \dontrun{

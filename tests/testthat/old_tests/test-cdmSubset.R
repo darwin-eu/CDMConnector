@@ -3,9 +3,9 @@
 # test_that("duckdb subsetting", {
 #   skip("failing test")
 #   skip_if_not_installed("duckdb")
-#   skip_if_not(eunomia_is_available())
+#   skip_if_not(eunomiaIsAvailable())
 #
-#   con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+#   con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 #
 #   cdm <- cdm_from_con(con, "main", write_schema = "main")
 #

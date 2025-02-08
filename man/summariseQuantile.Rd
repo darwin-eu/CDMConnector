@@ -2,18 +2,9 @@
 % Please edit documentation in R/summariseQuantile.R
 \name{summariseQuantile}
 \alias{summariseQuantile}
-\alias{summarize_quantile}
-\alias{summarise_quantile}
-\alias{summarizeQuantile}
 \title{Quantile calculation using dbplyr}
 \usage{
 summariseQuantile(.data, x = NULL, probs, nameSuffix = "value")
-
-summarize_quantile(.data, x = NULL, probs, name_suffix = "value")
-
-summarise_quantile(.data, x = NULL, probs, name_suffix = "value")
-
-summarizeQuantile(.data, x = NULL, probs, nameSuffix = "value")
 }
 \arguments{
 \item{.data}{lazy data frame backed by a database query.}
@@ -22,7 +13,7 @@ summarizeQuantile(.data, x = NULL, probs, nameSuffix = "value")
 
 \item{probs}{numeric vector of probabilities with values in [0,1].}
 
-\item{name_suffix, nameSuffix}{character; is appended to numerical quantile value as a column name part.}
+\item{nameSuffix}{character; is appended to numerical quantile value as a column name part.}
 }
 \value{
 An object of the same type as '.data'

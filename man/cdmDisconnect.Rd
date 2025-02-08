@@ -2,12 +2,9 @@
 % Please edit documentation in R/cdm.R
 \name{cdmDisconnect}
 \alias{cdmDisconnect}
-\alias{cdm_disconnect}
 \title{Disconnect the connection of the cdm object}
 \usage{
 cdmDisconnect(cdm)
-
-cdm_disconnect(cdm)
 }
 \arguments{
 \item{cdm}{cdm reference}

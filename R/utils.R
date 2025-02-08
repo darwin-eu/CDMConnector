@@ -92,23 +92,16 @@ inSchema <- function(schema, table, dbms = NULL) {
   schema <- unname(schema)
 
   # if (isTRUE(dbms %in% c("bigquery"))) { #TODO bigrquery needs to fix this
-  if(FALSE) {
+  if (!is.null(dbms) && dbms == "duckdb" && schema == "main") {
     checkmate::assertCharacter(schema, len = 1)
-    out <- paste(c(schema, table), collapse = ".")
+    # out <- paste(c(schema, table), collapse = ".")
+    out <- table
   } else {
     out <- switch(length(schema),
       DBI::Id(schema = schema, table = table),
       DBI::Id(catalog = schema[1], schema = schema[2], table = table))
   }
   return(out)
-}
-
-#' `r lifecycle::badge("deprecated")`
-#' @export
-#' @rdname inSchema
-in_schema <- function(schema, table, dbms = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "in_schema()", "inSchema()")
-  inSchema(schema, table, dbms)
 }
 
 #' List tables in a schema
@@ -246,14 +239,6 @@ listTables <- function(con, schema = NULL) {
   }
 
   rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
-}
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname listTables
-#' @export
-list_tables <- function(con, schema = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "list_tables()", "listTables()")
-  listTables(con, schema = NULL)
 }
 
 # To silence warning <BigQueryConnection> uses an old dbplyr interface

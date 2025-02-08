@@ -2,12 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{listTables}
 \alias{listTables}
-\alias{list_tables}
 \title{List tables in a schema}
 \usage{
 listTables(con, schema = NULL)
-
-list_tables(con, schema = NULL)
 }
 \arguments{
 \item{con}{A DBI connection to a database}

@@ -2,7 +2,6 @@
 % Please edit documentation in R/generateConceptCohortSet.R
 \name{generateConceptCohortSet}
 \alias{generateConceptCohortSet}
-\alias{generate_concept_cohort_set}
 \title{Create a new generated cohort set from a list of concept sets}
 \usage{
 generateConceptCohortSet(
@@ -16,23 +15,11 @@ generateConceptCohortSet(
   subsetCohortId = NULL,
   overwrite = TRUE
 )
-
-generate_concept_cohort_set(
-  cdm,
-  concept_set = NULL,
-  name = "cohort",
-  limit = "first",
-  required_observation = c(0, 0),
-  end = "observation_period_end_date",
-  subset_cohort = NULL,
-  subset_cohort_id = NULL,
-  overwrite = TRUE
-)
 }
 \arguments{
 \item{cdm}{A cdm reference object created by \code{CDMConnector::cdmFromCon} or \code{CDMConnector::cdm_from_con}}
 
-\item{conceptSet, concept_set}{A named list of numeric vectors or a Concept Set Expression created
+\item{conceptSet}{A named list of numeric vectors or a Concept Set Expression created
 \code{omopgenerics::newConceptSetExpression}}
 
 \item{name}{The name of the new generated cohort table as a character string}
@@ -43,7 +30,7 @@ generate_concept_cohort_set(
 \item{"all" will include all occurrences of the events defined by the concept set in the cohort.}
 }}
 
-\item{requiredObservation, required_observation}{A numeric vector of length 2 that specifies the number of days of
+\item{requiredObservation}{A numeric vector of length 2 that specifies the number of days of
 required observation time prior to index and post index for an event to be included in the cohort.}
 
 \item{end}{How should the \code{cohort_end_date} be defined?
@@ -53,11 +40,11 @@ required observation time prior to index and post index for an event to be inclu
 \item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
 }}
 
-\item{subsetCohort, subset_cohort}{A cohort table containing the individuals for which to
+\item{subsetCohort}{A cohort table containing the individuals for which to
 generate cohorts for. Only individuals in the cohort table will appear in
 the created generated cohort set.}
 
-\item{subsetCohortId, subset_cohort_id}{A set of cohort IDs from the cohort table for which
+\item{subsetCohortId}{A set of cohort IDs from the cohort table for which
 to include. If none are provided, all cohorts in the cohort table will
 be included.}
 

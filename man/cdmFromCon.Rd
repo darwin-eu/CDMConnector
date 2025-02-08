@@ -2,7 +2,6 @@
 % Please edit documentation in R/cdm.R
 \name{cdmFromCon}
 \alias{cdmFromCon}
-\alias{cdm_from_con}
 \title{Create a CDM reference object from a database connection}
 \usage{
 cdmFromCon(
@@ -16,49 +15,37 @@ cdmFromCon(
   .softValidation = FALSE,
   writePrefix = NULL
 )
-
-cdm_from_con(
-  con,
-  cdm_schema,
-  write_schema,
-  cohort_tables = NULL,
-  cdm_version = NULL,
-  cdm_name = NULL,
-  achilles_schema = NULL,
-  .soft_validation = FALSE,
-  write_prefix = NULL
-)
 }
 \arguments{
 \item{con}{A DBI database connection to a database where an OMOP CDM v5.4 or
 v5.3 instance is located.}
 
-\item{cdmSchema, cdm_schema}{The schema where the OMOP CDM tables are located. Defaults
+\item{cdmSchema}{The schema where the OMOP CDM tables are located. Defaults
 to NULL.}
 
-\item{writeSchema, write_schema}{An optional schema in the CDM database that the user has
+\item{writeSchema}{An optional schema in the CDM database that the user has
 write access to.}
 
-\item{cohortTables, cohort_tables}{A character vector listing the cohort table names to be
+\item{cohortTables}{A character vector listing the cohort table names to be
 included in the CDM object.}
 
-\item{cdmVersion, cdm_version}{The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
+\item{cdmVersion}{The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
 If NULL we will attempt to automatically determine the cdm version using
 the cdm_source table and heuristics.}
 
-\item{cdmName, cdm_name}{The name of the CDM. If NULL (default) the cdm_source_name
+\item{cdmName}{The name of the CDM. If NULL (default) the cdm_source_name
 .  field in the CDM_SOURCE table will be used.}
 
-\item{achillesSchema, achilles_schema}{An optional schema in the CDM database
+\item{achillesSchema}{An optional schema in the CDM database
 that contains achilles tables.}
 
-\item{.softValidation, .soft_validation}{Normally the observation period table should not
+\item{.softValidation}{Normally the observation period table should not
 have overlapping observation periods for a single person. If \code{.softValidation} is \code{TRUE} the
 validation check that looks for overlapping observation periods will be skipped.
 Other analytic packages may break or produce incorrect results if \code{softValidation} is \code{TRUE} and
 the observation period table contains overlapping observation periods.}
 
-\item{writePrefix, write_prefix}{A prefix that will be added to all tables created in the write_schema. This
+\item{writePrefix}{A prefix that will be added to all tables created in the write_schema. This
 can be used to create namespace in your database write_schema for your tables.}
 }
 \value{
@@ -68,7 +55,7 @@ A list of dplyr database table references pointing to CDM tables
 Create a CDM reference object from a database connection
 }
 \details{
-cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI database connection.
+cdmFromCon creates a new cdm reference object from a DBI database connection.
 In addition to the connection the user needs to pass in the schema in the database where the cdm data can
 be found as well as another schema where the user has write access to create tables. Nearly all
 downstream analytic packages need the ability to create temporary data in the database so the

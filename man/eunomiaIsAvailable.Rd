@@ -2,23 +2,18 @@
 % Please edit documentation in R/Eunomia.R
 \name{eunomiaIsAvailable}
 \alias{eunomiaIsAvailable}
-\alias{eunomia_is_available}
 \title{Has the Eunomia dataset been cached?}
 \usage{
 eunomiaIsAvailable(datasetName = "GiBleed", cdmVersion = "5.3")
-
-eunomia_is_available(dataset_name = "GiBleed", cdm_version = "5.3")
 }
 \arguments{
-\item{dataset_name, datasetName}{Name of the Eunomia dataset to check. Defaults to "GiBleed".}
+\item{datasetName}{Name of the Eunomia dataset to check. Defaults to "GiBleed".}
 
-\item{cdm_version, cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3" or "5.4".}
+\item{cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3" or "5.4".}
 }
 \value{
 TRUE if the eunomia example dataset is available and FASLE otherwise
 }
 \description{
 Has the Eunomia dataset been cached?
-
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

@@ -2,40 +2,30 @@
 % Please edit documentation in R/cdmSubset.R
 \name{cdmFlatten}
 \alias{cdmFlatten}
-\alias{cdm_flatten}
 \title{Flatten a cdm into a single observation table}
 \usage{
 cdmFlatten(
   cdm,
-  domain = c("condition", "drug", "procedure"),
+  domain = c("condition_occurrence", "drug_exposure", "procedure_occurrence"),
   includeConceptName = TRUE
-)
-
-cdm_flatten(
-  cdm,
-  domain = c("condition", "drug", "procedure"),
-  include_concept_name = TRUE
 )
 }
 \arguments{
 \item{cdm}{A cdm_reference object}
 
-\item{domain}{Domains to include. Must be a subset of "condition", "drug",
-"procedure", "measurement", "visit", "death", "observation".}
+\item{domain}{Domains to include. Must be a subset of "condition_occurrence", "drug_exposure",
+"procedure_occurrence", "measurement", "visit_occurrence", "death", "observation"}
 
-\item{includeConceptName, include_concept_name}{Should concept_name and type_concept_name be
+\item{includeConceptName}{Should concept_name and type_concept_name be
 include in the output table? TRUE (default) or FALSE}
 }
 \value{
-A lazy query that when evaluated will result in a single cdm table
+A lazy query that when evaluated will result in a single table
 }
 \description{
 This experimental function transforms the OMOP CDM into a single observation
 table. This is only recommended for use with a filtered CDM or a cdm that is
 small in size.
-}
-\details{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \examples{
 \dontrun{

@@ -203,7 +203,7 @@ DBI::dbRemoveTable(con, inSchema(write_schema, "codesets", dbms(con)))
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     # TODO order_by = .data$cohort_start_date
     {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     computeQuery(temporary = FALSE,
                  schema = cdmWriteSchema(cdm),
                  name = name,

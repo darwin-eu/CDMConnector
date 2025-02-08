@@ -20,7 +20,7 @@
 # There should be no duplicated rows in this table.
 # The person_subset table should be a temporary table in the database.
 # These requirements are not checked but assumed to be true.
-cdm_sample_person <- function(cdm, person_subset) {
+cdmSamplePerson <- function(cdm, person_subset) {
   checkmate::assert_class(cdm, "cdm_reference")
   checkmate::assert_class(person_subset, "tbl_sql")
 
@@ -42,11 +42,9 @@ cdm_sample_person <- function(cdm, person_subset) {
 #' done when the tables are used. `computeQuery` can be used to run the SQL
 #' used to subset a cdm table and store it as a new table in the database.
 #'
-#' `r lifecycle::badge("experimental")`
-#'
 #' @param cdm A cdm_reference object
-#' @param cohortTable,cohort_table The name of a cohort table in the cdm reference
-#' @param cohortId,cohort_id IDs of the cohorts that we want to subset from the cohort
+#' @param cohortTable The name of a cohort table in the cdm reference
+#' @param cohortId IDs of the cohorts that we want to subset from the cohort
 #' table. If NULL (default) all cohorts in cohort table are considered.
 #' @param verbose Should subset messages be printed? TRUE or FALSE (default)
 #'
@@ -155,30 +153,14 @@ cdmSubsetCohort <- function(cdm,
     dplyr::distinct() %>%
     dplyr::compute(name = glue::glue("person_sample{prefix}_"), temporary = FALSE)
 
-  cdm_sample_person(cdm, person_subset)
+  cdmSamplePerson(cdm, person_subset)
 }
-
-#' @rdname cdmSubsetCohort
-#' @export
-cdm_subset_cohort <- function(cdm,
-                              cohort_table = "cohort",
-                              cohort_id = NULL,
-                              verbose = FALSE) {
-  lifecycle::deprecate_soft("1.7.0", "cdm_subset_cohort()", "cdmSubsetCohort()")
-  cdmSubsetCohort(cdm = cdm,
-                  cohortTable = cohort_table,
-                  cohortId = cohort_id,
-                  verbose = verbose)
-}
-
 
 #' Subset a cdm object to a random sample of individuals
 #'
 #' `cdmSample` takes a cdm object and returns a new cdm that includes only a
 #' random sample of persons in the cdm. Only `person_id`s in both the person
 #' table and observation_period table will be considered.
-#'
-#' `r lifecycle::badge("experimental")`
 #'
 #' @param cdm A cdm_reference object.
 #' @param n Number of persons to include in the cdm.
@@ -235,23 +217,8 @@ cdmSample <- function(cdm,
 
   cdm <- omopgenerics::insertTable(cdm = cdm, name = name, table = subset)
 
-  cdm_sample_person(cdm, cdm[[name]])
+  cdmSamplePerson(cdm, cdm[[name]])
 }
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname cdmSample
-#' @export
-cdm_sample <- function(cdm,
-                        n,
-                        seed = sample.int(1e6, 1),
-                        name = "person_sample") {
-  lifecycle::deprecate_soft("1.7.0", "cdm_sample()", "cdmSample()")
-  cdmSample(cdm = cdm,
-            n = n,
-            seed = seed,
-            name = name)
-}
-
 
 #' Subset a cdm object to a set of persons
 #'
@@ -260,10 +227,8 @@ cdm_sample <- function(cdm,
 #' person IDs. Generated cohorts in the cdm will also be subset to
 #' the IDs provided.
 #'
-#' `r lifecycle::badge("experimental")`
-#'
 #' @param cdm A cdm_reference object
-#' @param personId,person_id A numeric vector of person IDs to include in the cdm
+#' @param personId A numeric vector of person IDs to include in the cdm
 #'
 #' @return A modified cdm_reference object where all clinical tables are lazy
 #' queries pointing to subset
@@ -319,18 +284,8 @@ cdmSubset <- function(cdm, personId) {
 
   DBI::dbRemoveTable(con, .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)))
 
-  cdm_sample_person(cdm, person_subset)
+  cdmSamplePerson(cdm, person_subset)
 }
-
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname cdmSubset
-#' @export
-cdm_subset <- function(cdm, person_id){
-  lifecycle::deprecate_soft("1.7.0", "cdm_subset()", "cdmSubset()")
-  cdmSubset(cdm = cdm, personId = person_id)
-}
-
 
 #' Flatten a cdm into a single observation table
 #'
@@ -338,15 +293,13 @@ cdm_subset <- function(cdm, person_id){
 #' table. This is only recommended for use with a filtered CDM or a cdm that is
 #' small in size.
 #'
-#' `r lifecycle::badge("experimental")`
-#'
 #' @param cdm A cdm_reference object
-#' @param domain Domains to include. Must be a subset of "condition", "drug",
-#' "procedure", "measurement", "visit", "death", "observation".
-#' @param includeConceptName,include_concept_name Should concept_name and type_concept_name be
+#' @param domain Domains to include. Must be a subset of "condition_occurrence", "drug_exposure",
+#' "procedure_occurrence", "measurement", "visit_occurrence", "death", "observation"
+#' @param includeConceptName Should concept_name and type_concept_name be
 #' include in the output table? TRUE (default) or FALSE
 #'
-#' @return A lazy query that when evaluated will result in a single cdm table
+#' @return A lazy query that when evaluated will result in a single table
 #' @export
 #'
 #' @examples
@@ -382,17 +335,17 @@ cdm_subset <- function(cdm, person_id){
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 cdmFlatten <- function(cdm,
-                       domain = c("condition", "drug", "procedure"),
+                       domain = c("condition_occurrence", "drug_exposure", "procedure_occurrence"),
                        includeConceptName = TRUE) {
 
 
   checkmate::assertClass(cdm, "cdm_reference")
   checkmate::assertCharacter(domain, min.len = 1)
-  checkmate::assertSubset(domain, choices =  c("condition",
-                                               "drug",
-                                               "procedure",
+  checkmate::assertSubset(domain, choices =  c("condition_occurrence",
+                                               "drug_exposure",
+                                               "procedure_occurrence",
                                                "measurement",
-                                               "visit",
+                                               "visit_occurrence",
                                                "death",
                                                "observation"))
 
@@ -400,9 +353,9 @@ cdmFlatten <- function(cdm,
 
   queryList <- list()
 
-  if ("condition" %in% domain) {
-    .assertTables(cdm, "condition_occurrence")
-    queryList[["condition"]] <- cdm$condition_occurrence %>%
+  if ("condition_occurrence" %in% domain) {
+    checkmate::assertTRUE("condition_occurrence" %in% names(cdm))
+    queryList[["condition_occurrence"]] <- cdm$condition_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
         observation_concept_id = .data$condition_concept_id,
@@ -410,12 +363,12 @@ cdmFlatten <- function(cdm,
         end_date = .data$condition_end_date,
         type_concept_id = .data$condition_type_concept_id) %>%
       dplyr::distinct() %>%
-      dplyr::mutate(domain = "condition")
+      dplyr::mutate(domain = "condition_occurrence")
   }
 
-  if ("drug" %in% domain) {
-    .assertTables(cdm, "drug_exposure")
-    queryList[["drug"]] <- cdm$drug_exposure %>%
+  if ("drug_exposure" %in% domain) {
+    checkmate::assertTRUE("drug_exposure" %in% names(cdm))
+    queryList[["drug_exposure"]] <- cdm$drug_exposure %>%
       dplyr::transmute(
         person_id = .data$person_id,
         observation_concept_id = .data$drug_concept_id,
@@ -423,12 +376,12 @@ cdmFlatten <- function(cdm,
         end_date = .data$drug_exposure_end_date,
         type_concept_id = .data$drug_type_concept_id) %>%
       dplyr::distinct() %>%
-      dplyr::mutate(domain = "drug")
+      dplyr::mutate(domain = "drug_exposure")
   }
 
-  if ("procedure" %in% domain) {
-    .assertTables(cdm, "procedure_occurrence")
-    queryList[["procedure"]] <- cdm$procedure_occurrence %>%
+  if ("procedure_occurrence" %in% domain) {
+    checkmate::assertTRUE("procedure_occurrence" %in% names(cdm))
+    queryList[["procedure_occurrence"]] <- cdm$procedure_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
         observation_concept_id = .data$procedure_concept_id,
@@ -436,11 +389,11 @@ cdmFlatten <- function(cdm,
         end_date = .data$procedure_date,
         type_concept_id = .data$procedure_type_concept_id) %>%
       dplyr::distinct() %>%
-      dplyr::mutate(domain = "procedure")
+      dplyr::mutate(domain = "procedure_occurrence")
   }
 
   if ("measurement" %in% domain) {
-    .assertTables(cdm, "measurement")
+    checkmate::assertTRUE("measurement" %in% names(cdm))
     queryList[["measurement"]] <- cdm$measurement %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -452,9 +405,9 @@ cdmFlatten <- function(cdm,
       dplyr:: mutate(domain = "measurement")
   }
 
-  if ("visit" %in% domain) {
-    .assertTables(cdm, "visit")
-    queryList[["visit"]] <- cdm$visit_occurrence %>%
+  if ("visit_occurrence" %in% domain) {
+    checkmate::assertTRUE("visit_occurrence" %in% names(cdm))
+    queryList[["visit_occurrence"]] <- cdm$visit_occurrence %>%
       dplyr::transmute(
         person_id = .data$person_id,
         observation_concept_id = .data$visit_concept_id,
@@ -462,11 +415,11 @@ cdmFlatten <- function(cdm,
         end_date = .data$visit_end_date,
         type_concept_id = .data$visit_type_concept_id) %>%
       dplyr::distinct() %>%
-      dplyr::mutate(domain = "visit")
+      dplyr::mutate(domain = "visit_occurrence")
   }
 
   if ("death" %in% domain) {
-    assertTables(cdm, "death")
+    checkmate::assertTRUE("death" %in% names(cdm))
     queryList[["death"]] <- cdm$death %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -479,7 +432,7 @@ cdmFlatten <- function(cdm,
   }
 
   if ("observation" %in% domain) {
-    .assertTables(cdm, "observation")
+    checkmate::assertTRUE("observation" %in% names(cdm))
     queryList[["death"]] <- cdm$observation %>%
       dplyr::transmute(
         person_id = .data$person_id,
@@ -492,7 +445,7 @@ cdmFlatten <- function(cdm,
   }
 
   if (includeConceptName) {
-    .assertTables(cdm, "concept")
+    checkmate::assertTRUE("concept" %in% names(cdm))
     out <- queryList %>%
       purrr::reduce(dplyr::union) %>%
       dplyr::left_join(dplyr::transmute(cdm$concept,
@@ -512,21 +465,7 @@ cdmFlatten <- function(cdm,
       dplyr::distinct()
   }
 
-  # collect?
+  # compute?
   return(out)
 }
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname cdmFlatten
-#' @export
-cdm_flatten <- function(cdm,
-                        domain = c("condition", "drug", "procedure"),
-                        include_concept_name = TRUE){
-  lifecycle::deprecate_soft("1.7.0", "cdm_flatten()", "cdmFlatten()")
-  cdmFlatten(cdm = cdm,
-             domain = domain,
-             includeConceptName = include_concept_name)
-}
-
-
 
