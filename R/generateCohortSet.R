@@ -129,7 +129,7 @@ readCohortSet <- function(path) {
 #' @param name Name of the cohort table to be created. This will also be used
 #' as a prefix for the cohort attribute tables. This must be a lowercase character string
 #' that starts with a letter and only contains letters, numbers, and underscores.
-#' @param cohortSet Can be a cohortSet object created with `readCohortSet()`
+#' @param cohortSet A cohortSet dataframe created with `readCohortSet()`
 #' @param computeAttrition Should attrition be computed? TRUE (default) or FALSE
 #' @param overwrite Should the cohort table be overwritten if it already
 #' exists? TRUE (default) or FALSE
@@ -163,26 +163,6 @@ generateCohortSet <- function(cdm,
   if (!is.data.frame(cohortSet)) {
     rlang::abort("`cohortSet` must be a dataframe from the output of `readCohortSet()`.")
   }
-
-  # if (!is.data.frame(cohortSet)) {
-  #   if (!is.list(cohortSet)) {
-  #     rlang::abort("cohortSet must be a dataframe or a named list of Capr cohort definitions")
-  #   }
-  #
-  #   checkmate::assertList(cohortSet,
-  #                         types = "Cohort",
-  #                         min.len = 1,
-  #                         names = "strict",
-  #                         any.missing = FALSE)
-  #
-  #   cohortSet <- dplyr::tibble(
-  #     cohort_definition_id = seq_along(cohortSet),
-  #     cohort_name = names(cohortSet),
-  #     cohort = purrr::map(cohortSet, ~jsonlite::fromJSON(generics::compile(.), simplifyVector = FALSE)),
-  #     json = purrr::map_chr(cohortSet, generics::compile)
-  #   )
-  #   class(cohortSet) <- c("CohortSet", class(cohortSet))
-  # }
 
   checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
   stopifnot(all(c("cohort_definition_id", "cohort_name", "cohort", "json") %in% names(cohortSet)))
@@ -658,6 +638,33 @@ computeAttritionTable <- function(cdm,
       excluded_records = as.integer(.data$excluded_records),
       excluded_subjects = as.integer(.data$excluded_subjects)
     )
+
+  # Make sure last row of attrition matches actual record counts in the cohort table
+  # Difference can be due to collapsing of cohort records in the cohort eras Circe step.
+  finalCounts <- dplyr::tbl(con, .inSchema(schema, cohortStem, dbms(con))) %>%
+    dplyr::group_by(.data$cohort_definition_id) %>%
+    dplyr::summarise(n_records = dplyr::n(), n_subjects = dplyr::n_distinct(.data$subject_id, na.rm = TRUE)) %>%
+    dplyr::collect()
+
+  lastAttritionRow <- dplyr::slice_max(attrition, n = 1, order_by = .data$reason_id, by = "cohort_definition_id")
+
+  newAttritionRow <- dplyr::inner_join(finalCounts, lastAttritionRow, by = "cohort_definition_id") %>%
+    dplyr::mutate(
+      excluded_records = .data$number_records - .data$n_records,
+      excluded_subjects = .data$number_subjects - .data$n_subjects,
+    ) %>%
+    dplyr::transmute(
+      cohort_definition_id = .data$cohort_definition_id,
+      number_records = .data$n_records,
+      number_subjects = .data$n_subjects,
+      reason_id = 1L + .data$reason_id,
+      reason = "Cohort records collapsed",
+      excluded_records = .data$excluded_records,
+      excluded_subjects = .data$excluded_subjects
+    )
+
+  attrition <- dplyr::bind_rows(attrition, newAttritionRow) %>%
+    dplyr::arrange(.data$cohort_definition_id, .data$reason_id)
 
   # upload attrition table to database
   DBI::dbWriteTable(con,

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,6 @@
     <li><a class="dropdown-item" href="../articles/a02_cohorts.html">Working with cohorts</a></li>
     <li><a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a></li>
     <li><a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a></li>
-    <li><a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a></li>
     <li><a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a></li>
   </ul>
 </li>
@@ -96,7 +95,7 @@ resources.</p>
 <p>Typically OMOP CDM datasets are stored in a database and can range in
 size from hundreds of patients with thousands of records to hundreds of
 millions of patients with billions of records. The Observational Health
-Data Science and Infromatics (OHDSI) community supports a selection of
+Data Science and Informatics (OHDSI) community supports a selection of
 popular database platforms including Postgres, Microsoft SQL Server,
 Oracle, as well as cloud data platforms suchs as Amazon Redshift, Google
 Big Query, Databricks, and Snowflake. The first step in using
@@ -111,11 +110,6 @@ the example datasets available run <code><a href="../reference/exampleDatasets.h
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/exampleDatasets.html">exampleDatasets</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `exampleDatasets()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `exampleDatasets()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span><span class="co">#&gt;  [1] "GiBleed"                             "synthea-allergies-10k"              </span></span>
 <span><span class="co">#&gt;  [3] "synthea-anemia-10k"                  "synthea-breast_cancer-10k"          </span></span>
 <span><span class="co">#&gt;  [5] "synthea-contraceptives-10k"          "synthea-covid19-10k"                </span></span>
@@ -130,11 +124,6 @@ the example datasets available run <code><a href="../reference/exampleDatasets.h
 <span><span class="co">#&gt; [23] "empty_cdm"</span></span>
 <span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `eunomiaDir()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `eunomiaDir()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListTables.html" class="external-link">dbListTables</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "care_site"             "cdm_source"            "concept"              </span></span>
 <span><span class="co">#&gt;  [4] "concept_ancestor"      "concept_class"         "concept_relationship" </span></span>
@@ -156,21 +145,18 @@ To do this simply create a new text file in your home directory called
 If you run <code><a href="https://usethis.r-lib.org/reference/edit.html" class="external-link">usethis::edit_r_environ()</a></code> this file will be
 created and opened for you and opened in RStudio.</p>
 <p>After connecting to a database containing data mapped to the OMOP
-CDM, use <code>cdm_from_con</code> to create a CDM reference. This CDM
+CDM, use <code>cdmFromCon</code> to create a CDM reference. This CDM
 reference is a single object that contains dplyr table references to
 each CDM table along with metadata about the CDM instance.</p>
-<p>The cdm_schema is the schema in the database that contains the OMOP
-CDM tables and is required. All other arguments are optional.</p>
+<p>The <code>cdmSchema</code> is the schema in the database that
+contains the OMOP CDM tables and is required. The
+<code>writeSchema</code> is a schema in the database where the user has
+the ability to create tables. Both <code>cdmSchema</code> and
+<code>writeSchema</code> are required to create a cdm object.</p>
+<p>Every cdm object needs a <code>cdmName</code> that is used to
+identify the CDM in output files.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_name <span class="op">=</span> <span class="st">"eunomia"</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span>, write_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `cdm_from_con()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `cdmFromCon()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
-<span><span class="co">#&gt; Note: method with signature 'DBIConnection#Id' chosen for function 'dbExistsTable',</span></span>
-<span><span class="co">#&gt;  target signature 'duckdb_connection#Id'.</span></span>
-<span><span class="co">#&gt;  "duckdb_connection#ANY" would also be valid</span></span>
+<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdmFromCon</a></span><span class="op">(</span><span class="va">con</span>, cdmName <span class="op">=</span> <span class="st">"eunomia"</span>, cdmSchema <span class="op">=</span> <span class="st">"main"</span>, writeSchema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
 <span><span class="va">cdm</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
@@ -185,8 +171,8 @@ CDM tables and is required. All other arguments are optional.</p>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">achilles tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.observation_period&gt; [?? x 5]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp1xt6ak/file15b84318c5f5d.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;observation_period&gt; [?? x 5]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmpc63jpc/file11bd869a3e7ac.duckdb]</span></span></span>
 <span><span class="co">#&gt;    observation_period_id person_id observation_period_s…¹ observation_period_e…²</span></span>
 <span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31             2007-02-06            </span></span>
@@ -209,7 +195,7 @@ CDM tables and is required. All other arguments are optional.</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 18</span></span>
-<span><span class="co">#&gt; Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp1xt6ak/file15b84318c5f5d.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmpc63jpc/file11bd869a3e7ac.duckdb]</span></span>
 <span><span class="co">#&gt; $ person_id                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…</span></span>
 <span><span class="co">#&gt; $ gender_concept_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …</span></span>
 <span><span class="co">#&gt; $ year_of_birth               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …</span></span>
@@ -218,9 +204,9 @@ CDM tables and is required. All other arguments are optional.</p>
 <span><span class="co">#&gt; $ birth_datetime              <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span> 1963-12-31, 1950-04-12, 1974-10-07, 1971-…</span></span>
 <span><span class="co">#&gt; $ race_concept_id             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 8516, 8527, 8527, 8527, 8516, 8527, 8527, …</span></span>
 <span><span class="co">#&gt; $ ethnicity_concept_id        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
-<span><span class="co">#&gt; $ location_id                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
-<span><span class="co">#&gt; $ provider_id                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
-<span><span class="co">#&gt; $ care_site_id                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…</span></span>
+<span><span class="co">#&gt; $ location_id                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>…</span></span>
+<span><span class="co">#&gt; $ provider_id                 <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>…</span></span>
+<span><span class="co">#&gt; $ care_site_id                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>…</span></span>
 <span><span class="co">#&gt; $ person_source_value         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "001f4a87-70d0-435c-a4b9-1425f6928d33", "0…</span></span>
 <span><span class="co">#&gt; $ gender_source_value         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "F", "M", "M", "F", "F", "F", "F", "M", "F…</span></span>
 <span><span class="co">#&gt; $ gender_source_concept_id    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
@@ -262,7 +248,7 @@ R.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Year of birth"</span>, </span>
 <span>       y <span class="op">=</span> <span class="st">"Person count"</span>, </span>
 <span>       title <span class="op">=</span> <span class="st">"Age Distribution"</span>,</span>
-<span>       subtitle <span class="op">=</span> <span class="fu"><a href="../reference/cdm_name.html">cdm_name</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>,</span>
+<span>       subtitle <span class="op">=</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmName.html" class="external-link">cdmName</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span>,</span>
 <span>       fill <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="a01_getting-started_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
@@ -312,16 +298,16 @@ viral pharyngitis”.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 113 × 2</span></span></span>
 <span><span class="co">#&gt;    concept_name                                                                n</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Penicillin V Potassium 250 MG Oral Tablet                                <span style="text-decoration: underline;">1</span>666</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Methylphenidate Hydrochloride 20 MG Oral Tablet                            63</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Haemophilus influenzae type b vaccine, PRP-OMP conjugate                 <span style="text-decoration: underline;">1</span>295</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Ibuprofen 100 MG Oral Tablet                                              360</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Amoxicillin 500 MG Oral Tablet                                            246</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Naproxen 500 MG Oral Tablet                                                18</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Warfarin Sodium 5 MG Oral Tablet                                          135</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> remifentanil                                                               16</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> hepatitis B vaccine, adult dosage                                        <span style="text-decoration: underline;">1</span>826</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Penicillin V Potassium 500 MG Oral Tablet                                <span style="text-decoration: underline;">1</span>060</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> tetanus and diphtheria toxoids, adsorbed, preservative free, for adult…  <span style="text-decoration: underline;">7</span>203</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Alendronic acid 10 MG Oral Tablet                                         129</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> alteplase 100 MG Injection                                                210</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Amoxicillin 250 MG Oral Capsule                                           188</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Nitrofurantoin 5 MG/ML Oral Suspension                                    779</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Nitroglycerin 0.4 MG/ACTUAT Mucosal Spray                                 207</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Amlodipine 5 MG Oral Tablet                                               179</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> rocuronium bromide 10 MG/ML Injectable Solution                            35</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 103 more rows</span></span></span></code></pre></div>
 <p>To inspect the generated SQL use <code>show_query</code> from
 dplyr.</p>
@@ -374,15 +360,15 @@ dplyr.</p>
 <span><span class="co">#&gt;       dose_unit_source_value</span></span>
 <span><span class="co">#&gt;     <span style="color: #0000BB;">FROM</span> (</span></span>
 <span><span class="co">#&gt;       <span style="color: #0000BB;">SELECT DISTINCT</span> person_id</span></span>
-<span><span class="co">#&gt;       <span style="color: #0000BB;">FROM</span> main.condition_occurrence</span></span>
+<span><span class="co">#&gt;       <span style="color: #0000BB;">FROM</span> condition_occurrence</span></span>
 <span><span class="co">#&gt;       <span style="color: #0000BB;">WHERE</span> (condition_concept_id = 4112343.0)</span></span>
 <span><span class="co">#&gt;     ) LHS</span></span>
-<span><span class="co">#&gt;     <span style="color: #0000BB;">INNER JOIN</span> main.drug_exposure</span></span>
+<span><span class="co">#&gt;     <span style="color: #0000BB;">INNER JOIN</span> drug_exposure</span></span>
 <span><span class="co">#&gt;       <span style="color: #0000BB;">ON</span> (LHS.person_id = drug_exposure.person_id)</span></span>
 <span><span class="co">#&gt;   ) q01</span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">GROUP BY</span> drug_concept_id</span></span>
 <span><span class="co">#&gt; ) LHS</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">LEFT JOIN</span> main.concept</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">LEFT JOIN</span> concept</span></span>
 <span><span class="co">#&gt;   <span style="color: #0000BB;">ON</span> (LHS.drug_concept_id = concept.concept_id)</span></span></code></pre></div>
 <p>These are a few simple queries. More complex queries can be built by
 combining simple queries like the ones above and other analytic packages
@@ -405,10 +391,12 @@ argument when creating our cdm reference object, the “write_schema”.
 This is a schema in the database where you have write permissions.
 Typically this should be a separate schema from the “cdm_schema”.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"create schema scratch;"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">dbExecute</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"create schema scratch;"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_name <span class="op">=</span> <span class="st">"eunomia"</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span>, write_schema <span class="op">=</span> <span class="st">"scratch"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdmFromCon</a></span><span class="op">(</span><span class="va">con</span>, cdmName <span class="op">=</span> <span class="st">"eunomia"</span>, cdmSchema <span class="op">=</span> <span class="st">"main"</span>, writeSchema <span class="op">=</span> <span class="st">"scratch"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Note: method with signature 'DBIConnection#Id' chosen for function 'dbExistsTable',</span></span>
+<span><span class="co">#&gt;  target signature 'duckdb_connection#Id'.</span></span>
+<span><span class="co">#&gt;  "duckdb_connection#ANY" would also be valid</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">drugs</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
@@ -426,19 +414,19 @@ Typically this should be a separate schema from the “cdm_schema”.</p>
 <span></span>
 <span><span class="va">drugs</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;scratch.test&gt; [?? x 11]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp1xt6ak/file15b84318c5f5d.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmpc63jpc/file11bd869a3e7ac.duckdb]</span></span></span>
 <span><span class="co">#&gt;    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id</span></span>
 <span><span class="co">#&gt;              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">162</span>522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        19<span style="text-decoration: underline;">128</span>065   997 {7 (Inert Ing… Drug      RxNorm        Branded Pack    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>        19<span style="text-decoration: underline;">133</span>873  <span style="text-decoration: underline;">1</span>666 Penicillin V … Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        40<span style="text-decoration: underline;">236</span>446    63 Methylphenida… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        40<span style="text-decoration: underline;">213</span>314  <span style="text-decoration: underline;">1</span>295 Haemophilus i… Drug      CVX           CVX             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        19<span style="text-decoration: underline;">019</span>979   360 Ibuprofen 100… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        19<span style="text-decoration: underline;">073</span>188   246 Amoxicillin 5… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>        19<span style="text-decoration: underline;">019</span>273    18 Naproxen 500 … Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        40<span style="text-decoration: underline;">163</span>554   135 Warfarin Sodi… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        19<span style="text-decoration: underline;">016</span>749    16 remifentanil   Drug      RxNorm        Ingredient      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">213</span>160  <span style="text-decoration: underline;">7</span>654 poliovirus va… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        19<span style="text-decoration: underline;">075</span>601   356 clopidogrel 7… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>        19<span style="text-decoration: underline;">112</span>599    70 Chlorpheniram… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        19<span style="text-decoration: underline;">074</span>841    57 12 HR Cefaclo… Drug      RxNorm        Quant Clinical …</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        19<span style="text-decoration: underline;">077</span>572    83 Galantamine 4… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        40<span style="text-decoration: underline;">174</span>880    31 Levothyroxine… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        40<span style="text-decoration: underline;">223</span>774    23 Donepezil hyd… Drug      RxNorm        Branded Drug Co…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>        43<span style="text-decoration: underline;">012</span>754    29 Levonorgestre… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        40<span style="text-decoration: underline;">223</span>768    14 Donepezil hyd… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        19<span style="text-decoration: underline;">133</span>679     4 {28 (Norethin… Drug      RxNorm        Branded Pack    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: standard_concept &lt;chr&gt;, concept_code &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   valid_start_date &lt;date&gt;, valid_end_date &lt;date&gt;, invalid_reason &lt;chr&gt;</span></span></span></code></pre></div>
@@ -451,30 +439,25 @@ table.</p>
 </h3>
 <p>If you do not need references to all tables you can easily select
 only a subset of tables to include in the CDM reference. The
-<code>cdm_select_tbl</code> function supports the <a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect
+<code>cdmSelect</code> function supports the <a href="https://tidyselect.r-lib.org/reference/language.html" class="external-link">tidyselect
 selection language</a> and provides a new selection helper:
 <code>tbl_group</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdmSelectTbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span> <span class="co"># quoted names</span></span>
-<span><span class="co">#&gt; Warning: `cdm_select_tbl()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `cdmSelect()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmSelect.html" class="external-link">cdmSelect</a></span><span class="op">(</span><span class="st">"person"</span>, <span class="st">"observation_period"</span><span class="op">)</span> <span class="co"># quoted names</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">omop tables:</span> person, observation_period</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">cohort tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">achilles tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
-<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdmSelectTbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="va">person</span>, <span class="va">observation_period</span><span class="op">)</span> <span class="co"># unquoted names </span></span>
+<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmSelect.html" class="external-link">cdmSelect</a></span><span class="op">(</span><span class="va">person</span>, <span class="va">observation_period</span><span class="op">)</span> <span class="co"># unquoted names </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">omop tables:</span> person, observation_period</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">cohort tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">achilles tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
-<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdmSelectTbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"concept"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that start with 'concept'</span></span>
+<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmSelect.html" class="external-link">cdmSelect</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"concept"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that start with 'concept'</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">omop tables:</span> concept, concept_class, concept_relationship, concept_synonym,</span></span>
@@ -482,14 +465,14 @@ selection language</a> and provides a new selection helper:
 <span><span class="co">#&gt; • <span style="font-weight: bold;">cohort tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">achilles tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
-<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdmSelectTbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"era"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that contain the substring 'era'</span></span>
+<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmSelect.html" class="external-link">cdmSelect</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"era"</span><span class="op">)</span><span class="op">)</span> <span class="co"># tables that contain the substring 'era'</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">omop tables:</span> drug_era, dose_era, condition_era</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">cohort tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">achilles tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
-<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdmSelectTbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">"person|period"</span><span class="op">)</span><span class="op">)</span> <span class="co"># regular expression</span></span>
+<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmSelect.html" class="external-link">cdmSelect</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">"person|period"</span><span class="op">)</span><span class="op">)</span> <span class="co"># regular expression</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">omop tables:</span> person, observation_period, payer_plan_period</span></span>
@@ -501,12 +484,7 @@ selection language</a> and provides a new selection helper:
 “clinical”, “vocab”, “derived”, and “default”.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># pre-defined groups</span></span>
-<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdmSelectTbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="../reference/tblGroup.html">tbl_group</a></span><span class="op">(</span><span class="st">"clinical"</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; Warning: `tbl_group()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `tblGroup()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmSelect.html" class="external-link">cdmSelect</a></span><span class="op">(</span><span class="fu"><a href="../reference/tblGroup.html">tblGroup</a></span><span class="op">(</span><span class="st">"clinical"</span><span class="op">)</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">omop tables:</span> person, observation_period, visit_occurrence, visit_detail,</span></span>
@@ -515,7 +493,7 @@ selection language</a> and provides a new selection helper:
 <span><span class="co">#&gt; • <span style="font-weight: bold;">cohort tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">achilles tables:</span> -</span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
-<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="../reference/cdmSelectTbl.html">cdm_select_tbl</a></span><span class="op">(</span><span class="fu"><a href="../reference/tblGroup.html">tbl_group</a></span><span class="op">(</span><span class="st">"vocab"</span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmSelect.html" class="external-link">cdmSelect</a></span><span class="op">(</span><span class="fu"><a href="../reference/tblGroup.html">tblGroup</a></span><span class="op">(</span><span class="st">"vocab"</span><span class="op">)</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;"># OMOP CDM reference (duckdb) of eunomia</span> <span style="color: #00BBBB;">────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">omop tables:</span> concept, vocabulary, domain, concept_class,</span></span>
@@ -526,7 +504,7 @@ selection language</a> and provides a new selection helper:
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span></code></pre></div>
 <p>The default set of CDM tables included in a CDM object is:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/tblGroup.html">tbl_group</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/tblGroup.html">tblGroup</a></span><span class="op">(</span><span class="st">"default"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "person"               "observation_period"   "visit_occurrence"    </span></span>
 <span><span class="co">#&gt;  [4] "condition_occurrence" "drug_exposure"        "procedure_occurrence"</span></span>
 <span><span class="co">#&gt;  [7] "measurement"          "observation"          "death"               </span></span>
@@ -545,21 +523,16 @@ our cdm to just persons with a Pneumonia (concept_id 255848). This works
 best then the number of persons in the subset is quite small and the
 database has indexes on the “person_id” columns of each table.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_ids</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<code class="sourceCode R"><span><span class="va">personIds</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">condition_occurrence</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">condition_concept_id</span> <span class="op">==</span> <span class="fl">255848</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">person_id</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">person_ids</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">personIds</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 52</span></span>
 <span></span>
 <span><span class="va">cdm_pneumonia</span> <span class="op">&lt;-</span> <span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="../reference/cdmSubset.html">cdm_subset</a></span><span class="op">(</span>person_id <span class="op">=</span> <span class="va">person_ids</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `cdm_subset()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `cdmSubset()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span>  <span class="fu"><a href="../reference/cdmSubset.html">cdmSubset</a></span><span class="op">(</span>personId <span class="op">=</span> <span class="va">personIds</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="va">cdm_pneumonia</span><span class="op">$</span><span class="va">person</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
@@ -574,12 +547,7 @@ database has indexes on the “person_id” columns of each table.</p>
 can use <code>cdm_sample</code>.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">cdm_100person</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmSample.html">cdm_sample</a></span><span class="op">(</span><span class="va">cdm</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `cdm_sample()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `cdmSample()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span><span class="va">cdm_100person</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmSample.html">cdmSample</a></span><span class="op">(</span><span class="va">cdm</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="va">cdm_100person</span><span class="op">$</span><span class="va">person</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="st">"n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 100</span></span></code></pre></div>
@@ -592,70 +560,31 @@ flatten this relational structure into a “tidy” dataframe with one row
 per observation. This transformation should only be done with a small
 number of persons and events.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmFlatten.html">cdm_flatten</a></span><span class="op">(</span><span class="va">cdm_pneumonia</span>,</span>
-<span>            domain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condition"</span>, <span class="st">"drug"</span>, <span class="st">"measurement"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmFlatten.html">cdmFlatten</a></span><span class="op">(</span><span class="va">cdm_pneumonia</span>,</span>
+<span>           domain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condition_occurrence"</span>, <span class="st">"drug_exposure"</span>, <span class="st">"measurement"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `cdm_flatten()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `cdmFlatten()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3,892 × 8</span></span></span>
 <span><span class="co">#&gt;    person_id observation_concept_id start_date end_date   type_concept_id domain</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">1</span>954               46<span style="text-decoration: underline;">235</span>214 1967-06-21 1967-06-21            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>       986                3<span style="text-decoration: underline;">006</span>322 1923-07-28 1923-07-28            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">2</span>333                3<span style="text-decoration: underline;">016</span>723 1978-05-19 1978-05-19            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">5</span>078                4<span style="text-decoration: underline;">024</span>958 1962-04-14 1962-04-14            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">2</span>821               46<span style="text-decoration: underline;">235</span>214 1921-08-30 1921-08-30            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>       419               40<span style="text-decoration: underline;">758</span>406 1913-07-24 1913-07-24            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">2</span>801                3<span style="text-decoration: underline;">006</span>322 1986-12-04 1986-12-04            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">3</span>639                3<span style="text-decoration: underline;">006</span>322 1979-01-14 1979-01-14            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       757                4<span style="text-decoration: underline;">052</span>083 1940-10-09 1940-10-09            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">3</span>553                4<span style="text-decoration: underline;">024</span>958 1984-08-13 1984-08-13            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">3</span>614                4<span style="text-decoration: underline;">024</span>958 1958-06-11 1958-06-11            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">3</span>553                3<span style="text-decoration: underline;">006</span>322 1945-03-24 1945-03-24            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>         2                3<span style="text-decoration: underline;">051</span>031 1935-06-23 1935-06-23            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>       334                3<span style="text-decoration: underline;">006</span>322 1974-09-05 1974-09-05            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">3</span>618                3<span style="text-decoration: underline;">006</span>322 1952-12-08 1952-12-08            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      <span style="text-decoration: underline;">4</span>976                3<span style="text-decoration: underline;">023</span>430 1993-07-06 1993-07-06            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">3</span>639                4<span style="text-decoration: underline;">052</span>083 1999-12-27 1999-12-27            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">3</span>811                4<span style="text-decoration: underline;">052</span>083 1998-08-03 1998-08-03            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">4</span>521                3<span style="text-decoration: underline;">006</span>322 1991-01-17 1991-01-17            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">1</span>954               46<span style="text-decoration: underline;">235</span>214 1967-11-18 1967-11-18            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3,882 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: observation_concept_name &lt;chr&gt;, type_concept_name &lt;chr&gt;</span></span></span></code></pre></div>
-<div class="section level3">
-<h3 id="saving-a-local-copy-of-a-cdm">Saving a local copy of a CDM<a class="anchor" aria-label="anchor" href="#saving-a-local-copy-of-a-cdm"></a>
-</h3>
-<p>We can use <code>collect</code> to bring the whole cdm object into R
-as dataframes. If you would like to save a subset of the CDM and then
-restore it in R as a local CDM object, CDMConnector provides the
-<code>stow</code> and <code>cdm_from_files</code> functions to do
-this.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">local_cdm</span> <span class="op">&lt;-</span> <span class="va">cdm_100person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># The cdm tables are now dataframes</span></span>
-<span><span class="va">local_cdm</span><span class="op">$</span><span class="va">person</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> </span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
-<span><span class="co">#&gt;   person_id gender_concept_id year_of_birth month_of_birth</span></span>
-<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         6              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>963             12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       149              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>941              8</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       180              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>977              4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         9              <span style="text-decoration: underline;">8</span>532          <span style="text-decoration: underline;">1</span>978              7</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">save_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"tmp"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">save_path</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="../reference/stow.html">stow</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">save_path</span>, format <span class="op">=</span> <span class="st">"parquet"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">save_path</span><span class="op">)</span></span></code></pre></div>
-<p>Restore a saved cdm object from files with
-<code>cdm_from_files</code>.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromFiles.html">cdm_from_files</a></span><span class="op">(</span><span class="va">save_path</span>, cdm_name <span class="op">=</span> <span class="st">"GI Bleed example data"</span><span class="op">)</span></span></code></pre></div>
-</div>
 <div class="section level3">
 <h3 id="closing-connections">Closing connections<a class="anchor" aria-label="anchor" href="#closing-connections"></a>
 </h3>
 <p>Close the database connection with <code>dbDisconnect</code>. After a
 connection is closed any cdm objects created with that connection can no
 longer be used.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">

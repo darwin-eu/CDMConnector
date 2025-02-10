@@ -16,7 +16,7 @@ generateCohortSet(
 \item{cdm}{A cdm reference created by CDMConnector. write_schema must be
 specified.}
 
-\item{cohortSet}{Can be a cohortSet object created with \code{readCohortSet()}}
+\item{cohortSet}{A cohortSet dataframe created with \code{readCohortSet()}}
 
 \item{name}{Name of the cohort table to be created. This will also be used
 as a prefix for the cohort attribute tables. This must be a lowercase character string

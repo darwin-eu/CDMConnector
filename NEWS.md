@@ -1,3 +1,13 @@
+# CDMConnector 2.0
+
+- Remove snake case functions in favor of only camel case style
+- Remove cohort table manipulation functions 
+- Add row to cohort attrition table that accounts for record collapsing cohort eras step in Atlas/Circe cohort generation
+- Increase test coverage
+- Fix bugs with `cdmFlatten` 
+- Add support for snowflake with DatabaseConnector driver
+
+
 # CDMConnector 1.7.0
 
 - Add support for Big Query using bigrquery DBI package (pending PRs on omopgenerics and bigrquery) @IoannaNika

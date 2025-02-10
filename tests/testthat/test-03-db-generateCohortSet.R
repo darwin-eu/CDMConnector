@@ -279,3 +279,33 @@ test_that("invalid cohort table names give an error", {
 test_that("non-utf8 characters in json files should be handled by readCohortSet without errors", {
   expect_no_error(readCohortSet(system.file("cohortsNonUTF8", package = "CDMConnector", mustWork = TRUE)))
 })
+
+
+test_that("cohort era collapse is recorded in attrition", {
+  skip_if_not_installed("CirceR")
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con, "main", "main")
+
+  # this cohort has a lot of records per person with a large era gap parameter
+  cohortSet <- readCohortSet(system.file("cohorts5", package = "CDMConnector"))
+
+  cdm <- generateCohortSet(cdm, cohortSet, name = "cohort")
+
+  actualCohortCount <- cohortCount(cdm$cohort)
+
+  expectedCohortCount <- cdm$cohort %>%
+    dplyr::group_by(cohort_definition_id) %>%
+    dplyr::summarize(number_records = n(), number_subjects = dplyr::n_distinct(subject_id)) %>%
+    dplyr::collect()
+
+  attr(expectedCohortCount, "cohort_set") <- NULL
+  attr(expectedCohortCount, "cohort_attrition") <- NULL
+
+  expect_equal(actualCohortCount, expectedCohortCount)
+
+  expect_true("Cohort records collapsed" %in% attrition(cdm$cohort)$reason)
+
+  cdmDisconnect(cdm)
+})
+

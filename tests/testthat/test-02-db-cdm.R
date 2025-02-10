@@ -3,7 +3,6 @@ library(dplyr, warn.conflicts = FALSE)
 
 ### CDM object DBI drivers ------
 test_cdmFromCon <- function(con, cdmSchema, writeSchema) {
-  print(paste("testing cdmFromCon on", dbms(con)))
   expect_error(cdmFromCon(con, cdmSchema = cdmSchema, cdmName = "test"), "write_schema")
   cdm <- cdmFromCon(con, cdmSchema = cdmSchema, cdmName = "test", writeSchema = writeSchema)
   expect_s3_class(cdm, "cdm_reference")
