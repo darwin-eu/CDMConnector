@@ -1,7 +1,8 @@
 
 test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   cdm <- cdmFromCon(
-    con = con, cdmName = "eunomia",
+    con = con,
+    cdmName = "eunomia",
     cdmSchema = cdm_schema,
     writeSchema = write_schema
   )
@@ -43,6 +44,25 @@ test_cdm_from_con <- function(con, cdm_schema, write_schema) {
   expect_false("x_test" %in% names(cdm))
   expect_false("x_test" %in% listSourceTables(cdm = cdm))
   expect_true(setdiff(ls, listSourceTables(cdm = cdm)) == "x_test")
+
+  # table named as prefix
+  write_schema["prefix"] <- paste0(write_schema["prefix"], "xx")
+  cdm2 <- cdmFromCon(
+    con = con,
+    cdmName = "eunomia",
+    cdmSchema = cdm_schema,
+    writeSchema = write_schema
+  )
+  expect_identical(listSourceTables(cdm = cdm2), "x")
+  write_schema["prefix"] <- paste0(write_schema["prefix"], "x")
+  cdm3 <- cdmFromCon(
+    con = con,
+    cdmName = "eunomia",
+    cdmSchema = cdm_schema,
+    writeSchema = write_schema
+  )
+  expect_identical(listSourceTables(cdm = cdm3), character())
+
   expect_no_error(dropSourceTable(cdm = cdm, dplyr::everything()))
   expect_identical(listSourceTables(cdm = cdm), character())
 }

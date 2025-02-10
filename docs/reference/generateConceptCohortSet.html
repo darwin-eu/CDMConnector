@@ -33,7 +33,7 @@ observation domains, the the start date will be used as the end date."></head><b
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,6 @@ observation domains, the the start date will be used as the end date."></head><b
     <li><a class="dropdown-item" href="../articles/a02_cohorts.html">Working with cohorts</a></li>
     <li><a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a></li>
     <li><a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a></li>
-    <li><a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a></li>
     <li><a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -94,18 +93,6 @@ observation domains, the the start date will be used as the end date.</p>
 <span>  subsetCohort <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subsetCohortId <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">generate_concept_cohort_set</span><span class="op">(</span></span>
-<span>  <span class="va">cdm</span>,</span>
-<span>  concept_set <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  name <span class="op">=</span> <span class="st">"cohort"</span>,</span>
-<span>  limit <span class="op">=</span> <span class="st">"first"</span>,</span>
-<span>  required_observation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  end <span class="op">=</span> <span class="st">"observation_period_end_date"</span>,</span>
-<span>  subset_cohort <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  subset_cohort_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -114,10 +101,10 @@ observation domains, the the start date will be used as the end date.</p>
 
 
 <dl><dt id="arg-cdm">cdm<a class="anchor" aria-label="anchor" href="#arg-cdm"></a></dt>
-<dd><p>A cdm reference object created by <code><a href="cdmFromCon.html">CDMConnector::cdmFromCon</a></code> or <code><a href="cdmFromCon.html">CDMConnector::cdm_from_con</a></code></p></dd>
+<dd><p>A cdm reference object created by <code><a href="cdmFromCon.html">CDMConnector::cdmFromCon</a></code> or <code>CDMConnector::cdm_from_con</code></p></dd>
 
 
-<dt id="arg-conceptset-concept-set">conceptSet, concept_set<a class="anchor" aria-label="anchor" href="#arg-conceptset-concept-set"></a></dt>
+<dt id="arg-conceptset">conceptSet<a class="anchor" aria-label="anchor" href="#arg-conceptset"></a></dt>
 <dd><p>A named list of numeric vectors or a Concept Set Expression created
 <code><a href="https://darwin-eu.github.io/omopgenerics/reference/newConceptSetExpression.html" class="external-link">omopgenerics::newConceptSetExpression</a></code></p></dd>
 
@@ -132,7 +119,7 @@ observation domains, the the start date will be used as the end date.</p>
 </ul></dd>
 
 
-<dt id="arg-requiredobservation-required-observation">requiredObservation, required_observation<a class="anchor" aria-label="anchor" href="#arg-requiredobservation-required-observation"></a></dt>
+<dt id="arg-requiredobservation">requiredObservation<a class="anchor" aria-label="anchor" href="#arg-requiredobservation"></a></dt>
 <dd><p>A numeric vector of length 2 that specifies the number of days of
 required observation time prior to index and post index for an event to be included in the cohort.</p></dd>
 
@@ -144,13 +131,13 @@ required observation time prior to index and post index for an event to be inclu
 </ul></dd>
 
 
-<dt id="arg-subsetcohort-subset-cohort">subsetCohort, subset_cohort<a class="anchor" aria-label="anchor" href="#arg-subsetcohort-subset-cohort"></a></dt>
+<dt id="arg-subsetcohort">subsetCohort<a class="anchor" aria-label="anchor" href="#arg-subsetcohort"></a></dt>
 <dd><p>A cohort table containing the individuals for which to
 generate cohorts for. Only individuals in the cohort table will appear in
 the created generated cohort set.</p></dd>
 
 
-<dt id="arg-subsetcohortid-subset-cohort-id">subsetCohortId, subset_cohort_id<a class="anchor" aria-label="anchor" href="#arg-subsetcohortid-subset-cohort-id"></a></dt>
+<dt id="arg-subsetcohortid">subsetCohortId<a class="anchor" aria-label="anchor" href="#arg-subsetcohortid"></a></dt>
 <dd><p>A set of cohort IDs from the cohort table for which
 to include. If none are provided, all cohorts in the cohort table will
 be included.</p></dd>

@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 1.7.0
+Version: 2.0.0
 Authors@R: c(
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
@@ -18,7 +18,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends: 
-    R (>= 4.0)
+    R (>= 4.1.0)
 Imports: 
     dplyr,
     dbplyr (>= 2.5.0),
@@ -65,23 +65,3 @@ Enhances:
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 VignetteBuilder: knitr
-Collate: 
-    'CDMConnector-package.R'
-    'Eunomia.R'
-    'benchmarkCDMConnector.R'
-    'cdm.R'
-    'cdmSubset.R'
-    'cdm_from_environment.R'
-    'cohortTransformations.R'
-    'cohort_ddl.R'
-    'compute.R'
-    'copy_cdm_to.R'
-    'dateadd.R'
-    'dbSource.R'
-    'reexports-omopgenerics.R'
-    'generateCohortSet.R'
-    'generateConceptCohortSet.R'
-    'summariseQuantile.R'
-    'utils.R'
-    'validate.R'
-    'zzz-deprecated.R'

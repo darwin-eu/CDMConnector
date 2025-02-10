@@ -92,23 +92,16 @@ inSchema <- function(schema, table, dbms = NULL) {
   schema <- unname(schema)
 
   # if (isTRUE(dbms %in% c("bigquery"))) { #TODO bigrquery needs to fix this
-  if(FALSE) {
+  if (!is.null(dbms) && dbms == "duckdb" && schema == "main") {
     checkmate::assertCharacter(schema, len = 1)
-    out <- paste(c(schema, table), collapse = ".")
+    # out <- paste(c(schema, table), collapse = ".")
+    out <- table
   } else {
     out <- switch(length(schema),
       DBI::Id(schema = schema, table = table),
       DBI::Id(catalog = schema[1], schema = schema[2], table = table))
   }
   return(out)
-}
-
-#' `r lifecycle::badge("deprecated")`
-#' @export
-#' @rdname inSchema
-in_schema <- function(schema, table, dbms = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "in_schema()", "inSchema()")
-  inSchema(schema, table, dbms)
 }
 
 #' List tables in a schema
@@ -150,7 +143,9 @@ listTables <- function(con, schema = NULL) {
     schema <- schema[names(schema) != "prefix"]
 
     process_prefix <- function(x) {
-      stringr::str_subset(x, paste0("^", prefix)) %>% stringr::str_remove(paste0("^", prefix))
+      np <- nchar(prefix)
+      x <- x[stringr::str_starts(string = x, pattern = prefix) & nchar(x) > np]
+      substr(x, start = np+1, stop = nchar(x))
     }
   } else {
     process_prefix <- function(x) {x}
@@ -246,14 +241,6 @@ listTables <- function(con, schema = NULL) {
   rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
 }
 
-#' `r lifecycle::badge("deprecated")`
-#' @rdname listTables
-#' @export
-list_tables <- function(con, schema = NULL) {
-  lifecycle::deprecate_soft("1.7.0", "list_tables()", "listTables()")
-  listTables(con, schema = NULL)
-}
-
 # To silence warning <BigQueryConnection> uses an old dbplyr interface
 # https://github.com/r-dbi/bigrquery/issues/508
 
@@ -315,22 +302,27 @@ ensureInstalled <- function(pkg) {
   }
 }
 
-mapTypes <- function(type) {
+mapTypes <- function(conn, type) {
+  # mapping types only used for some cases with bigquery (DBI) - e.g. generateCohortSet tests
+  if(!(dbms(conn) %in% c("bigquery"))){
+    return(type)
+  }
 
   if (type %in% c("integer", "integer64")) {
     return("INT")
   } else if (type == "character") {
     return("STRING")
   }
-  return(type)  # Default to returning the type as is
+
+  return(type)
 }
 
-# create table function adjusted to work with DatabaseConnector
+# create table function adjusted to work with DatabaseConnector and bigquery
 dcCreateTable <- function(conn, name, fields) {
 
   if (tibble::is_tibble(fields)) {
    fieldsSql <- paste(names(fields),
-     sapply(fields, function(x) mapTypes(class(x)[1])),
+     sapply(fields, function(x) mapTypes(conn, class(x)[1])),
      collapse = ", "
    )
  } else {
@@ -350,13 +342,16 @@ dcCreateTable <- function(conn, name, fields) {
     createTableSQLTranslated <- glue::glue("CREATE TABLE `{tableName}` ({fieldsSql});")
   }
 
-  DBI::dbExecute(conn, createTableSQLTranslated)
+  return(createTableSQLTranslated)
 }
 
 # branching logic: which createTable function to use based on the connection type
 .dbCreateTable <- function(conn, name, fields) {
   if (methods::is(conn, "DatabaseConnectorJdbcConnection") || dbms(conn)  %in% c("bigquery")) {
-  dcCreateTable(conn, name, fields)
+
+    createTableSQLTranslated <- dcCreateTable(conn, name, fields)
+    DBI::dbExecute(conn, createTableSQLTranslated)
+
   } else {
   DBI::dbCreateTable(conn, name, fields)
   }

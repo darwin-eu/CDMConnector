@@ -2,18 +2,15 @@
 % Please edit documentation in R/Eunomia.R
 \name{requireEunomia}
 \alias{requireEunomia}
-\alias{require_eunomia}
 \title{Require eunomia to be available. The function makes sure that you can later
 create a eunomia database with \code{eunomiaDir()}.}
 \usage{
 requireEunomia(datasetName = "GiBleed", cdmVersion = "5.3")
-
-require_eunomia(dataset_name = "GiBleed", cdm_version = "5.3")
 }
 \arguments{
-\item{dataset_name, datasetName}{Name of the Eunomia dataset to check. Defaults to "GiBleed".}
+\item{datasetName}{Name of the Eunomia dataset to check. Defaults to "GiBleed".}
 
-\item{cdm_version, cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3" or "5.4".}
+\item{cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3" or "5.4".}
 }
 \value{
 Path to eunomia database.
@@ -21,6 +18,4 @@ Path to eunomia database.
 \description{
 Require eunomia to be available. The function makes sure that you can later
 create a eunomia database with \code{eunomiaDir()}.
-
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }

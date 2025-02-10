@@ -2,24 +2,16 @@
 % Please edit documentation in R/cdmSubset.R
 \name{cdmSubsetCohort}
 \alias{cdmSubsetCohort}
-\alias{cdm_subset_cohort}
 \title{Subset a cdm to the individuals in one or more cohorts}
 \usage{
 cdmSubsetCohort(cdm, cohortTable = "cohort", cohortId = NULL, verbose = FALSE)
-
-cdm_subset_cohort(
-  cdm,
-  cohort_table = "cohort",
-  cohort_id = NULL,
-  verbose = FALSE
-)
 }
 \arguments{
 \item{cdm}{A cdm_reference object}
 
-\item{cohortTable, cohort_table}{The name of a cohort table in the cdm reference}
+\item{cohortTable}{The name of a cohort table in the cdm reference}
 
-\item{cohortId, cohort_id}{IDs of the cohorts that we want to subset from the cohort
+\item{cohortId}{IDs of the cohorts that we want to subset from the cohort
 table. If NULL (default) all cohorts in cohort table are considered.}
 
 \item{verbose}{Should subset messages be printed? TRUE or FALSE (default)}
@@ -34,9 +26,6 @@ to each of the cdm tables but subset to individuals in a generated cohort.
 Since the cdm tables are lazy queries, the subset operation will only be
 done when the tables are used. \code{computeQuery} can be used to run the SQL
 used to subset a cdm table and store it as a new table in the database.
-}
-\details{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \examples{
 \dontrun{

@@ -1,4 +1,4 @@
-test_cohort_collapse <- function(con, cdm_schema, write_schema) {
+test_cohortCollapse <- function(con, cdm_schema, write_schema) {
 
   cdm <- cdmFromCon(
     con = con, cdmName = "test", cdmSchema = cdm_schema,
@@ -58,22 +58,22 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
       dplyr::mutate(dplyr::across(dplyr::matches("date"), as.character))
 
     DBI::dbWriteTable(con,
-                      inSchema(write_schema, "tmp_cohort_collapse_input0"),
+                      inSchema(write_schema, "tmp_cohortCollapse_input0"),
                       cohort_input_oracle,
                       overwrite = TRUE)
 
-    input_db <- dplyr::tbl(con, inSchema(write_schema, "tmp_cohort_collapse_input0", dbms = dbms(con))) %>%
+    input_db <- dplyr::tbl(con, inSchema(write_schema, "tmp_cohortCollapse_input0", dbms = dbms(con))) %>%
       dplyr::mutate(cohort_start_date = TO_DATE(cohort_start_date, "YYYY-MM-DD"),
                     cohort_end_date = TO_DATE(cohort_end_date, "YYYY-MM-DD")) %>%
-      computeQuery(name = "tmp_cohort_collapse_input",
+      computeQuery(name = "tmp_cohortCollapse_input",
                    temporary = FALSE,
                    schema = write_schema,
                    overwrite = TRUE)
 
-    DBI::dbRemoveTable(con, inSchema(write_schema, "tmp_cohort_collapse_input0", dbms = dbms(con)))
+    DBI::dbRemoveTable(con, inSchema(write_schema, "tmp_cohortCollapse_input0", dbms = dbms(con)))
   } else {
-    DBI::dbWriteTable(con, inSchema(write_schema, "tmp_cohort_collapse_input", dbms = dbms(con)), cohort_input, overwrite = TRUE)
-    input_db <- dplyr::tbl(con, inSchema(write_schema, "tmp_cohort_collapse_input", dbms = dbms(con)))
+    DBI::dbWriteTable(con, inSchema(write_schema, "tmp_cohortCollapse_input", dbms = dbms(con)), cohort_input, overwrite = TRUE)
+    input_db <- dplyr::tbl(con, inSchema(write_schema, "tmp_cohortCollapse_input", dbms = dbms(con)))
   }
 
   if (dbms(con) == "snowflake") {
@@ -82,7 +82,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   }
 
   actual_output <- input_db %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::tibble() %>%
     dplyr::arrange(.data$cohort_definition_id, .data$subject_id, .data$cohort_start_date) %>%
@@ -91,7 +91,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
 
   expect_identical(actual_output, expected_output)
 
-  DBI::dbRemoveTable(con, inSchema(write_schema, "tmp_cohort_collapse_input", dbms = dbms(con)))
+  DBI::dbRemoveTable(con, inSchema(write_schema, "tmp_cohortCollapse_input", dbms = dbms(con)))
 
  # another example
   ct_test_cohort <- dplyr::tibble(cohort_definition_id = 1L,
@@ -113,7 +113,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
                                     "1950-05-02",
                                     "1956-08-28")))
   cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
-  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+  expect_equal(CDMConnector:::cohortCollapse(cdm$ct_test_cohort) %>%
                  dplyr::collect() %>%
                  dplyr::arrange(cohort_start_date),
                ct_test_cohort_expected)
@@ -137,7 +137,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
                                              "1950-05-02",
                                              "1956-08-28")))
   cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
-  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+  expect_equal(CDMConnector:::cohortCollapse(cdm$ct_test_cohort) %>%
                  dplyr::collect() %>%
                  dplyr::arrange(cohort_start_date),
                ct_test_cohort_expected)
@@ -161,7 +161,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
                                              "1950-05-02",
                                              "1956-08-28")))
   cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
-  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+  expect_equal(CDMConnector:::cohortCollapse(cdm$ct_test_cohort) %>%
                  dplyr::collect() %>%
                  dplyr::arrange(cohort_start_date),
                ct_test_cohort_expected)
@@ -196,7 +196,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
                                              "2005-01-01",
                                              "2000-01-10")))
   cdm <- insertTable(cdm, name = "ct_test_cohort", table = ct_test_cohort)
-  expect_equal(CDMConnector:::cohort_collapse(cdm$ct_test_cohort) %>%
+  expect_equal(CDMConnector:::cohortCollapse(cdm$ct_test_cohort) %>%
                  dplyr::collect() %>%
                  dplyr::arrange(cohort_start_date),
                ct_test_cohort_expected %>%
@@ -247,7 +247,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   x <- db %>%
     dplyr::filter(relationship %in% c("reference", "precedes")) %>%
     dplyr::select(-"relationship") %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
 
@@ -266,7 +266,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   x <- db %>%
     dplyr::filter(.data$relationship %in% c("reference", "meets")) %>%
     dplyr::select(-"relationship") %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
@@ -284,7 +284,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   x <- db %>%
     dplyr::filter(relationship %in% c("reference", "overlaps")) %>%
     dplyr::select(-"relationship") %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
@@ -302,7 +302,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   x <- db %>%
     filter(relationship %in% c("reference", "finished_by")) %>%
     dplyr::select(-"relationship") %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
@@ -319,7 +319,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   x <- db %>%
     filter(relationship %in% c("reference", "contains")) %>%
     dplyr::select(-"relationship") %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
@@ -336,7 +336,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   x <- db %>%
     filter(relationship %in% c("reference", "starts")) %>%
     dplyr::select(-"relationship") %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
     dplyr::arrange(.data$subject_id, .data$cohort_start_date, .data$cohort_end_date)
@@ -353,7 +353,7 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
   x <- db %>%
     filter(relationship %in% c("reference", "equals")) %>%
     dplyr::select(-"relationship") %>%
-    cohort_collapse() %>%
+    cohortCollapse() %>%
     dplyr::collect() %>%
     dplyr::arrange(subject_id)
 
@@ -370,14 +370,14 @@ test_cohort_collapse <- function(con, cdm_schema, write_schema) {
 
 # dbtype = "duckdb"
 for (dbtype in dbToTest) {
-  test_that(glue::glue("{dbtype} - cohort_collapse"), {
+  test_that(glue::glue("{dbtype} - cohortCollapse"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
     con <- get_connection(dbtype)
     skip_if(any(write_schema == "") || is.null(con))
-    test_cohort_collapse(con, cdm_schema, write_schema)
+    test_cohortCollapse(con, cdm_schema, write_schema)
     disconnect(con)
   })
 }

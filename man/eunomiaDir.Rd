@@ -2,7 +2,6 @@
 % Please edit documentation in R/Eunomia.R
 \name{eunomiaDir}
 \alias{eunomiaDir}
-\alias{eunomia_dir}
 \title{Create a copy of an example OMOP CDM dataset}
 \usage{
 eunomiaDir(
@@ -10,15 +9,9 @@ eunomiaDir(
   cdmVersion = "5.3",
   databaseFile = tempfile(fileext = ".duckdb")
 )
-
-eunomia_dir(
-  dataset_name = "GiBleed",
-  cdm_version = "5.3",
-  database_file = tempfile(fileext = ".duckdb")
-)
 }
 \arguments{
-\item{datasetName, dataset_name}{One of "GiBleed" (default),
+\item{datasetName}{One of "GiBleed" (default),
 "synthea-allergies-10k",
 "synthea-anemia-10k",
 "synthea-breast_cancer-10k",
@@ -42,9 +35,9 @@ eunomia_dir(
 "empty_cdm",
 "synpuf-1k"}
 
-\item{cdmVersion, cdm_version}{The OMOP CDM version. Must be "5.3" or "5.4".}
+\item{cdmVersion}{The OMOP CDM version. Must be "5.3" or "5.4".}
 
-\item{databaseFile, database_file}{The full path to the new copy of the example CDM dataset.}
+\item{databaseFile}{The full path to the new copy of the example CDM dataset.}
 }
 \value{
 The file path to the new Eunomia dataset copy

@@ -133,3 +133,121 @@ test_that("inSchema", {
   expect_equal(tableSchemaNames[2], "dbo")
   expect_equal(tableSchemaNames[3], "myTable")
 })
+
+for (dbtype in dbToTest) {
+  test_that(glue::glue("{dbtype} - inSchema"), {
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+    con <- get_connection(dbtype)
+    cdm_schema <- get_cdm_schema(dbtype)
+
+    write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
+    skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
+    test_in_schema(con, cdm_schema = cdm_schema, write_schema = write_schema)
+    disconnect(con)
+  })
+}
+
+for (dbtype in dbToTest) {
+  exampleTypes <- c("integer", "integer64", "character", "string", "int", "timestamp")
+
+  test_that("mapTypes", {
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+    con <- get_connection(dbtype)
+
+    # for all databases except bigquery return the type passed initially,
+    # for bigquery types are adjusted if necessary
+    if (dbtype == "bigquery") {
+      expectedTypes <- c("INT", "INT", "STRING", "string", "int", "timestamp")
+    } else {
+      expectedTypes <- exampleTypes
+    }
+
+    result <- c()
+    for (i in 1:length(exampleTypes)) {
+      result <- c(result, mapTypes(conn = con, type = exampleTypes[i]))
+    }
+
+    expect_equal(result, expectedTypes)
+
+    disconnect(con)
+  })
+}
+
+
+for (dbtype in dbToTest) {
+  test_that("dcCreateTable", {
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+    con <- get_connection(dbtype)
+
+    inputName <- DBI::Id("test_schema", "test_table")
+    inputFields <- c(
+      test_id = "int",
+      test_str = "string"
+    )
+
+    if (dbtype == "bigquery") {
+      expectedSQL <- "CREATE TABLE `test_schema.test_table` (test_id int, test_str string);"
+    } else {
+      expectedSQL <- SqlRender::translate("CREATE TABLE test_schema.test_table ( test_id int, test_str string );", dbms(con))
+    }
+
+    actualSQL <- dcCreateTable(con, inputName, inputFields)
+
+    expect_equal(actualSQL, expectedSQL)
+    if (dbtype == "bigquery") {
+      inputFields <- tibble::tibble(
+        test_id = integer(0),
+        test_str = character(0)
+      )
+      expectedSQL <- "CREATE TABLE `test_schema.test_table` (test_id INT, test_str STRING);"
+      actualSQL <- dcCreateTable(con, inputName, inputFields)
+    }
+
+    expect_equal(actualSQL, expectedSQL)
+    disconnect(con)
+  })
+}
+
+for (dbtype in dbToTest) {
+  test_that(".dbCreateTable", {
+    if (!(dbtype %in% ciTestDbs)) skip_on_ci()
+    if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+
+    con <- get_connection(dbtype)
+
+    write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
+    tableName <- "temp_test_dot_db_create_table"
+
+    if (tableName %in% listTables(con, schema = write_schema)) {
+      DBI::dbRemoveTable(con, inSchema(write_schema, tableName, dbms = dbms(con)))
+    }
+
+    expect_false(tableName %in% listTables(con, write_schema))
+
+    name <- .inSchema(write_schema, tableName, dbms(con))
+
+    fields <- c(
+      test_field = "INT",
+      second_test_field = "INT"
+    )
+
+    # create table
+    .dbCreateTable(con, name, fields)
+
+    expect_true(tableName %in% listTables(con, write_schema))
+
+    # cleanup
+    if (tableName %in% listTables(con, schema = write_schema)) {
+      DBI::dbRemoveTable(con, inSchema(write_schema, tableName, dbms = dbms(con)))
+    }
+
+    expect_false(tableName %in% listTables(con, write_schema))
+
+    disconnect(con)
+  })
+}
+
+

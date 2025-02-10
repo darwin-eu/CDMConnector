@@ -20,10 +20,6 @@ test_custom_derived_cohort <- function(con, cdm_schema, write_schema) {
     ) %>%
     compute(name = "cohort2", temporary = FALSE, overwrite = TRUE)
 
-  expect_warning({
-    chr <- new_generated_cohort_set(cdm$cohort2) # this function creates the cohort object and metadata
-  }, "deprecated")
-
   expect_s3_class(cdm$cohort2, "GeneratedCohortSet")
 }
 

@@ -14,6 +14,92 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# Internal function to remove overlapping periods in cohorts
+# This is used as a helper inside other cohort manipulation functions
+# @param x A cohort table (dataframe, tbl_dbi, arrow table...) that may have overlapping periods
+# @return A dplyr query that collapses any overlapping periods. This is very similar to union.
+cohortCollapse <- function(x) {
+  checkmate::assert_true(methods::is(x, "tbl_dbi"))
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
+  checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
+
+
+  # note this assumes all columns are fully populated and cohort_end_date >= cohort_start_date
+  # TODO do we need to confirm this assumption?
+
+  con <- x$src$con
+  min_start_sql <- dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
+  max_start_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
+  max_end_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_end_date")})'))
+
+  x <- x %>%
+    dplyr::distinct() %>%
+    dplyr::mutate(dur = !!datediff("cohort_start_date",
+                                   "cohort_end_date")) %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
+    dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date,
+                         .data$dur) %>%
+    dplyr::mutate(
+      prev_start = dplyr::coalesce(
+        !!dbplyr::win_over(
+          max_start_sql,
+          partition = c("cohort_definition_id", "subject_id"),
+          frame = c(-Inf, -1),
+          order = c("cohort_start_date", "dur"),
+          con = con),
+        as.Date(NA)),
+      prev_end = dplyr::coalesce(
+        !!dbplyr::win_over(
+          max_end_sql,
+          partition = c("cohort_definition_id", "subject_id"),
+          frame = c(-Inf, -1),
+          order = c("cohort_start_date", "dur"),
+          con = con),
+        as.Date(NA)),
+      next_start = dplyr::coalesce(
+        !!dbplyr::win_over(
+          min_start_sql,
+          partition = c("cohort_definition_id", "subject_id"),
+          frame = c(1, Inf),
+          order = c("cohort_start_date", "dur"),
+          con = con),
+        as.Date(NA))
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::compute()
+
+  x <- x %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
+    dbplyr::window_order(.data$cohort_definition_id, .data$subject_id,
+                         .data$cohort_start_date, .data$dur) %>%
+    dplyr::mutate(groups = cumsum(
+      dplyr::case_when(is.na(.data$prev_start)  ~ NA,
+                       !is.na(.data$prev_start)  &&
+                         .data$prev_start <= .data$cohort_start_date &&
+                         .data$cohort_start_date <= .data$prev_end ~ 0L,
+                       TRUE ~ 1L)
+    ))
+
+  x <- x  %>%
+    dplyr::mutate(groups = dplyr::if_else(
+      is.na(.data$groups)  &&
+        .data$cohort_end_date >= .data$next_start,
+      0L, .data$groups
+    ))
+
+  x <- x %>%
+    dplyr::group_by(.data$cohort_definition_id,
+                    .data$subject_id, .data$groups, .add = FALSE) %>%
+    dplyr::summarize(cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
+                     cohort_end_date = max(.data$cohort_end_date, na.rm = TRUE),
+                     .groups = "drop") %>%
+    dplyr::select("cohort_definition_id", "subject_id",
+                  "cohort_start_date", "cohort_end_date")
+
+  x
+}
+
 table_refs <- function(domain_id) {
   dplyr::tribble(
     ~domain_id,    ~table_name,            ~concept_id,              ~start_date,                  ~end_date,
@@ -49,7 +135,7 @@ table_refs <- function(domain_id) {
 #' observation domains, the the start date will be used as the end date.
 #'
 #' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
-#' @param conceptSet,concept_set A named list of numeric vectors or a Concept Set Expression created
+#' @param conceptSet A named list of numeric vectors or a Concept Set Expression created
 #' `omopgenerics::newConceptSetExpression`
 #' @param name The name of the new generated cohort table as a character string
 #' @param limit Include "first" (default) or "all" occurrences of events in the cohort
@@ -57,7 +143,7 @@ table_refs <- function(domain_id) {
 #'  \item{"first" will include only the first occurrence of any event in the concept set in the cohort.}
 #'  \item{"all" will include all occurrences of the events defined by the concept set in the cohort.}
 #' }
-#' @param requiredObservation,required_observation A numeric vector of length 2 that specifies the number of days of
+#' @param requiredObservation A numeric vector of length 2 that specifies the number of days of
 #' required observation time prior to index and post index for an event to be included in the cohort.
 #' @param end How should the `cohort_end_date` be defined?
 #' \itemize{
@@ -65,10 +151,10 @@ table_refs <- function(domain_id) {
 #'  \item{numeric scalar: A fixed number of days from the event start date}
 #'  \item{"event_end_date"}: The event end date. If the event end date is not populated then the event start date will be used
 #' }
-#' @param subsetCohort,subset_cohort  A cohort table containing the individuals for which to
+#' @param subsetCohort  A cohort table containing the individuals for which to
 #' generate cohorts for. Only individuals in the cohort table will appear in
 #' the created generated cohort set.
-#' @param subsetCohortId,subset_cohort_id A set of cohort IDs from the cohort table for which
+#' @param subsetCohortId A set of cohort IDs from the cohort table for which
 #' to include. If none are provided, all cohorts in the cohort table will
 #' be included.
 #' @param overwrite Should the cohort table be overwritten if it already exists? TRUE (default) or FALSE.
@@ -91,7 +177,7 @@ generateConceptCohortSet <- function(cdm,
   checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
-  .assertTables(cdm, "observation_period", empty.ok = FALSE)
+  checkmate::assertTRUE("observation_period" %in% names(cdm))
 
   # check name ----
   checkmate::assertLogical(overwrite, len = 1, any.missing = FALSE)
@@ -121,7 +207,7 @@ generateConceptCohortSet <- function(cdm,
   # check ConceptSet ----
   checkmate::assertList(conceptSet, min.len = 1, any.missing = FALSE, types = c("numeric", "ConceptSet", "data.frame"), names = "named")
   checkmate::assertList(conceptSet, min.len = 1, names = "named")
-  .assertTables(cdm, "concept")
+  checkmate::assertTRUE("concept" %in% names(cdm))
 
   if (methods::is(conceptSet, "conceptSetExpression")) {
     # omopgenerics conceptSetExpression
@@ -200,7 +286,7 @@ generateConceptCohortSet <- function(cdm,
 
   # check target cohort -----
   if (!is.null(subsetCohort)) {
-    .assertTables(cdm, subsetCohort)
+    checkmate::assertTRUE(subsetCohort %in% names(cdm))
   }
 
   if (!is.null(subsetCohort) && !is.null(subsetCohortId)){
@@ -217,7 +303,7 @@ generateConceptCohortSet <- function(cdm,
                     overwrite = TRUE)
 
   if (any(df$include_descendants)) {
-    .assertTables(cdm, "concept_ancestor")
+    checkmate::assertTRUE("concept_ancestor" %in% names(cdm))
   }
 
   # realize full list of concepts ----
@@ -376,7 +462,7 @@ generateConceptCohortSet <- function(cdm,
       dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
       # TODO order_by = .data$cohort_start_date
       {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
-      cohort_collapse() %>%
+      cohortCollapse() %>%
       dplyr::mutate(cohort_start_date = as.Date(.data$cohort_start_date),
                     cohort_end_date = as.Date(.data$cohort_end_date)) %>%
       dplyr::compute(name = name, temporary = FALSE, overwrite = overwrite)
@@ -426,28 +512,3 @@ generateConceptCohortSet <- function(cdm,
 
   return(cdm)
 }
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname generateConceptCohortSet
-#' @export
-generate_concept_cohort_set <- function(cdm,
-                                        concept_set = NULL,
-                                        name = "cohort",
-                                        limit = "first",
-                                        required_observation = c(0,0),
-                                        end = "observation_period_end_date",
-                                        subset_cohort = NULL,
-                                        subset_cohort_id = NULL,
-                                        overwrite = TRUE) {
-  lifecycle::deprecate_soft("1.7.0", "generate_concept_cohort_set()", "generateConceptCohortSet()")
-  generateConceptCohortSet(cdm = cdm,
-                           conceptSet = concept_set,
-                           name = name,
-                           limit = limit,
-                           requiredObservation = required_observation,
-                           end = end,
-                           subsetCohort = subset_cohort,
-                           subsetCohortId = subset_cohort_id,
-                           overwrite = overwrite)
-}
-

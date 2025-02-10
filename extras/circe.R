@@ -8,7 +8,7 @@
 #
 # # upload a temp table with codeset_id, concept_id, include_descendants, exclude
 # library(CDMConnector)
-# con <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
+# con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 # cdm <- cdm_from_con(con, "main", "main")
 #
 # codesets <- dplyr::tibble(

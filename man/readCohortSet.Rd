@@ -2,12 +2,9 @@
 % Please edit documentation in R/generateCohortSet.R
 \name{readCohortSet}
 \alias{readCohortSet}
-\alias{read_cohort_set}
 \title{Read a set of cohort definitions into R}
 \usage{
 readCohortSet(path)
-
-read_cohort_set(path)
 }
 \arguments{
 \item{path}{The path to a folder containing Circe cohort definition

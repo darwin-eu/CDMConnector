@@ -1,7 +1,7 @@
 #
 # test_that("drop table works in opposition to insert table", {
 #
-#   con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
+#   con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
 #
 #   write_prefix <- 'study01_'
 #   write_schema <- c(schema = "main", prefix = write_prefix)
@@ -46,7 +46,7 @@
 #
 # test_that("dropping all tables with write_prefix works as exepected", {
 #
-#   con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
+#   con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
 #
 #   write_prefix <- 'study01_'
 #   write_schema <- c(schema = "main", prefix = write_prefix)

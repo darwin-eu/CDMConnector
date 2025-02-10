@@ -11,13 +11,13 @@ vignette: >
 library(CDMConnector)
 if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") Sys.setenv("EUNOMIA_DATA_FOLDER" = file.path(tempdir(), "eunomia"))
 if (!dir.exists(Sys.getenv("EUNOMIA_DATA_FOLDER"))) dir.create(Sys.getenv("EUNOMIA_DATA_FOLDER"))
-if (!eunomia_is_available()) downloadEunomiaData()
+if (!eunomiaIsAvailable()) downloadEunomiaData()
 
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>", 
   eval = FALSE,
-  build = eunomia_is_available()
+  build = eunomiaIsAvailable()
 )
 ```
 
@@ -43,8 +43,8 @@ library(ggplot2)
 ```
 
 ```{r, message=FALSE, warning=FALSE}
-con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
-cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
+con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+cdm <- cdmFromCon(con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
 
 # first filter to only those with condition_concept_id "4035415"
 cdm$condition_occurrence %>% tally()

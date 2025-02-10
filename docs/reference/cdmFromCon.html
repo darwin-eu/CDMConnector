@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,7 +22,6 @@
     <li><a class="dropdown-item" href="../articles/a02_cohorts.html">Working with cohorts</a></li>
     <li><a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a></li>
     <li><a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a></li>
-    <li><a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a></li>
     <li><a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -58,18 +57,6 @@
 <span>  achillesSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  .softValidation <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  writePrefix <span class="op">=</span> <span class="cn">NULL</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">cdm_from_con</span><span class="op">(</span></span>
-<span>  <span class="va">con</span>,</span>
-<span>  <span class="va">cdm_schema</span>,</span>
-<span>  <span class="va">write_schema</span>,</span>
-<span>  cohort_tables <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cdm_version <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  cdm_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  achilles_schema <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  .soft_validation <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  write_prefix <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -132,7 +119,7 @@ can be used to create namespace in your database write_schema for your tables.</
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI database connection.
+    <p>cdmFromCon creates a new cdm reference object from a DBI database connection.
 In addition to the connection the user needs to pass in the schema in the database where the cdm data can
 be found as well as another schema where the user has write access to create tables. Nearly all
 downstream analytic packages need the ability to create temporary data in the database so the

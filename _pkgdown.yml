@@ -15,15 +15,15 @@ reference:
 - subtitle: CDM Object
   desc: Create or transform a CDM reference object. These accept and return cdm objects.
 - contents:
-  - matches("^cdm|stow|print.cdm_reference|snapshot|tbl_group|validate_cdm|validateCdm|collect.cdm_reference|assert_write_schema|assert_tables|version|dropTable|dropStemTables|cdm_reference|copy_cdm_to|insertTable|insert_table|dbSource")
+  - matches("^cdm|stow|print.cdm_reference|snapshot|validateCdm|collect.cdm_reference|version|dropTable|dropStemTables|cdm_reference|insertTable|dbSource|tblGroup|copyCdmTo")
 - subtitle: Cohort Creation and Transformation
   desc: A cohort is a set of person-days representing the time during which people in a CDM exhibited some observable characteristics. Cohorts are often the foundation of downstream analyses.
 - contents:
-  - matches("generateCohortSet|^cohort|readCohortSet|newGeneratedCohortSet|intersect|union|generate|recordCohortAttrition|record_cohort_attrition")
+  - matches("generateCohortSet|^cohort|readCohortSet|newGeneratedCohortSet|intersect|union|generate|recordCohortAttrition|summariseQuantile")
 - subtitle: dbplyr workarounds
   desc: Functions that can be used in cross database dplyr pipelines
 - contents:
-  - matches("computeQuery|appendPermanent|datediff|dateadd|_quantile$|asDate|datepart|inSchema|uniqueTableName|unique_table_name")
+  - matches("computeQuery|appendPermanent|datediff|dateadd|quantile$|asDate|datepart|inSchema|uniqueTableName")
 - subtitle: DBI connection
   desc: Functions that accept DBI connections and are useful in cross database DBI code
 - contents:
@@ -31,12 +31,9 @@ reference:
 - subtitle: Eunomia example CDM
   desc: Easily create and use example CDMs in a [duckdb](https://duckdb.org/) database
 - contents:
-  - matches("eunomia|downloadEunomiaData|exampleDatasets|example_datasets")
+  - matches("eunomia|downloadEunomiaData|exampleDatasets|exampleDatasets|requireEunomia")
 - subtitle: Benchmarking
   desc: Run benchmarking of simple queries against your CDM reference
 - contents:
   - matches("benchmarkCDMConnector")
-
-
-
 

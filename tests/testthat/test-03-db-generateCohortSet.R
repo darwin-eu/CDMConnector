@@ -39,12 +39,10 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
   expect_true(all(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %in% colnames(df)))
 
   expect_true(all(c("cohort_set", "cohort_attrition", "cdm_reference") %in% names(attributes(cdm$chrt0))))
-  expect_warning(cohortAttrition(cdm$chrt0))
   attrition_df <- attrition(cdm$chrt0)
   expect_s3_class(attrition_df, "data.frame")
   expect_true(nrow(attrition_df) > 0)
   expect_true("excluded_records" %in% names(attrition_df))
-  expect_warning(cohort_set(cdm$chrt0)) # deprecation warning
   expect_s3_class(settings(cdm$chrt0), "data.frame")
   counts <- cohortCount(cdm$chrt0)
   expect_s3_class(counts, "data.frame")
@@ -111,7 +109,7 @@ test_that("duckdb - phenotype library generation", {
   skip("manual test")
   skip_if_not_installed("PhenotypeLibrary")
 
-  cohort_set <- PhenotypeLibrary::listPhenotypes() %>%
+  cohortSet <- PhenotypeLibrary::listPhenotypes() %>%
     dplyr::pull("cohortId") %>%
     PhenotypeLibrary::getPlCohortDefinitionSet()
 
@@ -120,7 +118,7 @@ test_that("duckdb - phenotype library generation", {
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
   expect_error(
-    generateCohortSet(cdm, cohort_set, name = "cohort", overwrite = TRUE, computeAttrition = TRUE),
+    generateCohortSet(cdm, cohortSet, name = "cohort", overwrite = TRUE, computeAttrition = TRUE),
     NA
   )
   DBI::dbDisconnect(con, shutdown = T)
@@ -200,9 +198,7 @@ test_that("newGeneratedCohortSet works with prefix", {
   expect_true("test_cohort" %in% listTables(con, "main"))
 
   expect_s3_class(cohortCount(cdm$cohort), "data.frame")
-  expect_warning(cohort_set(cdm$cohort), "deprecated")
   expect_s3_class(settings(cdm$cohort), "data.frame")
-  expect_warning(cohort_attrition(cdm$cohort), "deprecated")
 
   expect_s3_class(attrition(cdm$cohort), "data.frame")
 
@@ -218,16 +214,16 @@ test_that("no error is given if attrition table already exists and overwrite = T
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
-  cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+  cohortSet <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
 
   cdm <- generateCohortSet(cdm,
-                           cohort_set,
+                           cohortSet,
                            name = "test",
                            computeAttrition = TRUE)
 
   expect_no_error({
     cdm <- generateCohortSet(cdm,
-                             cohort_set,
+                             cohortSet,
                              name = "test",
                              computeAttrition = FALSE,
                              overwrite = TRUE)
@@ -235,7 +231,7 @@ test_that("no error is given if attrition table already exists and overwrite = T
 
   expect_no_error({
     cdm <- generateCohortSet(cdm,
-                             cohort_set,
+                             cohortSet,
                              name = "test",
                              computeAttrition = TRUE,
                              overwrite = TRUE)
@@ -283,3 +279,33 @@ test_that("invalid cohort table names give an error", {
 test_that("non-utf8 characters in json files should be handled by readCohortSet without errors", {
   expect_no_error(readCohortSet(system.file("cohortsNonUTF8", package = "CDMConnector", mustWork = TRUE)))
 })
+
+
+test_that("cohort era collapse is recorded in attrition", {
+  skip_if_not_installed("CirceR")
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con, "main", "main")
+
+  # this cohort has a lot of records per person with a large era gap parameter
+  cohortSet <- readCohortSet(system.file("cohorts5", package = "CDMConnector"))
+
+  cdm <- generateCohortSet(cdm, cohortSet, name = "cohort")
+
+  actualCohortCount <- cohortCount(cdm$cohort)
+
+  expectedCohortCount <- cdm$cohort %>%
+    dplyr::group_by(cohort_definition_id) %>%
+    dplyr::summarize(number_records = n(), number_subjects = dplyr::n_distinct(subject_id)) %>%
+    dplyr::collect()
+
+  attr(expectedCohortCount, "cohort_set") <- NULL
+  attr(expectedCohortCount, "cohort_attrition") <- NULL
+
+  expect_equal(actualCohortCount, expectedCohortCount)
+
+  expect_true("Cohort records collapsed" %in% attrition(cdm$cohort)$reason)
+
+  cdmDisconnect(cdm)
+})
+

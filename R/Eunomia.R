@@ -18,11 +18,11 @@
 #'
 #' Download the Eunomia data files from https://github.com/darwin-eu/EunomiaDatasets
 #'
-#' @param dataset_name,datasetName The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
+#' @param datasetName The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
 #'  data set name corresponds to the folder with the data set ZIP files
-#' @param cdm_version,cdmVersion The OMOP CDM version. This version will appear in the suffix of the data file,
+#' @param cdmVersion The OMOP CDM version. This version will appear in the suffix of the data file,
 #'  for example: synpuf_5.3.zip. Must be '5.3' (default) or '5.4'.
-#' @param path_to_data,pathToData    The path where the Eunomia data is stored on the file system., By default the
+#' @param pathToData    The path where the Eunomia data is stored on the file system., By default the
 #'  value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
 #' @param overwrite Control whether the existing archive file will be overwritten should it already exist.
 #' @return
@@ -129,28 +129,6 @@ exampleDatasets <- function() {
     "empty_cdm")
 }
 
-#' `r lifecycle::badge("deprecated")`
-#' @export
-#' @rdname exampleDatasets
-example_datasets <- function() {
-  lifecycle::deprecate_soft("1.7.0", "example_datasets()", "exampleDatasets()")
-  exampleDatasets()
-}
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname downloadEunomiaData
-#' @export
-download_eunomia_data <- function(dataset_name = "GiBleed",
-                                  cdm_version = "5.3",
-                                  path_to_data = Sys.getenv("EUNOMIA_DATA_FOLDER"),
-                                  overwrite = FALSE) {
-  lifecycle::deprecate_soft("1.7.0", "download_eunomia_data()", "downloadEunomiaData()")
-  downloadEunomiaData(datasetName = dataset_name,
-                      cdmVersion = cdm_version,
-                      pathToData = path_to_data,
-                      overwrite = overwrite)
-}
-
 #' Create a copy of an example OMOP CDM dataset
 #'
 #' @description
@@ -187,7 +165,7 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' to a folder on your computer where the datasets will be downloaded to. This file can
 #' be opened by calling `usethis::edit_r_environ()`.
 #'
-#' @param datasetName,dataset_name One of "GiBleed" (default),
+#' @param datasetName One of "GiBleed" (default),
 #' "synthea-allergies-10k",
 #' "synthea-anemia-10k",
 #' "synthea-breast_cancer-10k",
@@ -211,8 +189,8 @@ download_eunomia_data <- function(dataset_name = "GiBleed",
 #' "empty_cdm",
 #' "synpuf-1k"
 #'
-#' @param cdmVersion,cdm_version The OMOP CDM version. Must be "5.3" or "5.4".
-#' @param databaseFile,database_file The full path to the new copy of the example CDM dataset.
+#' @param cdmVersion The OMOP CDM version. Must be "5.3" or "5.4".
+#' @param databaseFile The full path to the new copy of the example CDM dataset.
 #'
 #' @return The file path to the new Eunomia dataset copy
 #' @examples
@@ -324,22 +302,10 @@ eunomiaDir <- function(datasetName = "GiBleed",
   return(databaseFile)
 }
 
-#' `r lifecycle::badge("deprecated")`
-#' @export
-#' @rdname eunomiaDir
-eunomia_dir <- function(dataset_name = "GiBleed",
-                        cdm_version = "5.3",
-                        database_file = tempfile(fileext = ".duckdb")) {
-  lifecycle::deprecate_soft("1.7.0", "eunomia_dir()", "eunomiaDir()")
-  eunomiaDir(datasetName = dataset_name,
-             cdmVersion = cdm_version,
-             databaseFile = database_file)
-}
-
 #' Has the Eunomia dataset been cached?
 #'
-#' @param dataset_name,datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
-#' @param cdm_version,cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
+#' @param datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
+#' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
 #'
 #' @return TRUE if the eunomia example dataset is available and FASLE otherwise
 #' @export
@@ -357,22 +323,12 @@ eunomiaIsAvailable <- function(datasetName = "GiBleed",
   return(file.exists(archiveLocation))
 }
 
-#' `r lifecycle::badge("deprecated")`
-#' @rdname eunomiaIsAvailable
-#' @export
-eunomia_is_available <- function(dataset_name = "GiBleed",
-                               cdm_version = "5.3") {
-  lifecycle::deprecate_soft("1.7.0", "eunomia_is_available()", "eunomiaIsAvailable()")
-  eunomiaIsAvailable(datasetName = dataset_name,
-                       cdmVersion = cdm_version)
-}
-
 
 #' Require eunomia to be available. The function makes sure that you can later
 #' create a eunomia database with `eunomiaDir()`.
 #'
-#' @param dataset_name,datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
-#' @param cdm_version,cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
+#' @param datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
+#' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
 #'
 #' @return Path to eunomia database.
 #' @export
@@ -405,13 +361,4 @@ requireEunomia <- function(datasetName = "GiBleed",
   }
 
   return(invisible(TRUE))
-}
-
-#' `r lifecycle::badge("deprecated")`
-#' @rdname requireEunomia
-#' @export
-require_eunomia <- function(dataset_name = "GiBleed",
-                           cdm_version = "5.3") {
-  lifecycle::deprecate_soft("1.7.0", "require_eunomia()", "requireEunomia()")
-  requireEunomia(datasetName = dataset_name, cdmVersion = cdm_version)
 }

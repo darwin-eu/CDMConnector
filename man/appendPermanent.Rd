@@ -2,12 +2,9 @@
 % Please edit documentation in R/compute.R
 \name{appendPermanent}
 \alias{appendPermanent}
-\alias{append_permanent}
 \title{Run a dplyr query and add the result set to an existing}
 \usage{
 appendPermanent(x, name, schema = NULL)
-
-append_permanent(x, name, schema = NULL)
 }
 \arguments{
 \item{x}{A dplyr query}
@@ -23,8 +20,6 @@ A dplyr reference to the newly created table
 }
 \description{
 Run a dplyr query and add the result set to an existing
-
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{

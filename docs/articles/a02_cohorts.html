@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,6 @@
     <li><a class="dropdown-item" href="../articles/a02_cohorts.html">Working with cohorts</a></li>
     <li><a class="dropdown-item" href="../articles/a03_dbplyr.html">CDMConnector and dbplyr</a></li>
     <li><a class="dropdown-item" href="../articles/a04_DBI_connection_examples.html">DBI connection examples</a></li>
-    <li><a class="dropdown-item" href="../articles/a05_cdm_reference_backends.html">CDM reference backends</a></li>
     <li><a class="dropdown-item" href="../articles/a06_using_cdm_attributes.html">Using CDM attributes</a></li>
   </ul>
 </li>
@@ -165,13 +164,13 @@ called “CohortsToCreate.csv” in the folder that specifies the cohort IDs
 and names to use. If this file doesn’t exist IDs will be assigned
 automatically using alphabetical order of the filenames.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">path_to_cohort_json_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts1"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">path_to_cohort_json_files</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">pathToCohortJsonFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts1"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">pathToCohortJsonFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "cerebral_venous_sinus_thrombosis_01.json"</span></span>
 <span><span class="co">#&gt; [2] "CohortsToCreate.csv"                     </span></span>
 <span><span class="co">#&gt; [3] "deep_vein_thrombosis_01.json"</span></span>
 <span></span>
-<span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path_to_cohort_json_files</span>, <span class="st">"CohortsToCreate.csv"</span><span class="op">)</span>,</span>
+<span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pathToCohortJsonFiles</span>, <span class="st">"CohortsToCreate.csv"</span><span class="op">)</span>,</span>
 <span>                show_col_types <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
 <span><span class="co">#&gt;   cohortId cohortName                          jsonPath                         </span></span>
@@ -186,75 +185,51 @@ specify a <code>write_schema</code> when creating the object. Cohort
 tables will go into the CDM’s <code>write_schema</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span>
-<span><span class="va">path_to_cohort_json_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example_cohorts"</span>, </span>
-<span>                                         package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">path_to_cohort_json_files</span><span class="op">)</span></span>
+<span><span class="va">pathToCohortJsonFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example_cohorts"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">pathToCohortJsonFiles</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "GiBleed_default.json" "GIBleed_male.json"</span></span>
 <span></span>
-<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomia_dir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `eunomia_dir()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `eunomiaDir()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_name <span class="op">=</span> <span class="st">"eunomia"</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span>, write_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `cdm_from_con()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `cdmFromCon()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
-<span><span class="co">#&gt; Note: method with signature 'DBIConnection#Id' chosen for function 'dbExistsTable',</span></span>
-<span><span class="co">#&gt;  target signature 'duckdb_connection#Id'.</span></span>
-<span><span class="co">#&gt;  "duckdb_connection#ANY" would also be valid</span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdmFromCon</a></span><span class="op">(</span><span class="va">con</span>, cdmName <span class="op">=</span> <span class="st">"eunomia"</span>, cdmSchema <span class="op">=</span> <span class="st">"main"</span>, writeSchema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cohort_details</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readCohortSet.html">read_cohort_set</a></span><span class="op">(</span><span class="va">path_to_cohort_json_files</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="va">cohortSet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readCohortSet.html">readCohortSet</a></span><span class="op">(</span><span class="va">pathToCohortJsonFiles</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cohort_name <span class="op">=</span> <span class="fu">snakecase</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/snakecase/man/caseconverter.html" class="external-link">to_snake_case</a></span><span class="op">(</span><span class="va">cohort_name</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `read_cohort_set()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `readCohortSet()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span></span>
-<span><span class="va">cohort_details</span></span>
+<span><span class="va">cohortSet</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id cohort_name     cohort       json   cohort_name_snakecase</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 gibleed_default <span style="color: #949494;">&lt;named list&gt;</span> <span style="color: #949494;">&lt;chr&gt;</span>  gibleed_default      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2 gibleed_male    <span style="color: #949494;">&lt;named list&gt;</span> <span style="color: #949494;">&lt;chr&gt;</span>  gibleed_male</span></span>
 <span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generate_cohort_set</a></span><span class="op">(</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generateCohortSet</a></span><span class="op">(</span></span>
 <span>  cdm <span class="op">=</span> <span class="va">cdm</span>, </span>
-<span>  cohort_set <span class="op">=</span> <span class="va">cohort_details</span>,</span>
+<span>  cohortSet <span class="op">=</span> <span class="va">cohortSet</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"study_cohorts"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `generate_cohort_set()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `generateCohortSet()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 2 cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/2) - gibleed_default</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - gibleed_default <span style="color: #B2B2B2;">[122ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - gibleed_default <span style="color: #B2B2B2;">[126ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/2) - gibleed_male</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - gibleed_male <span style="color: #B2B2B2;">[114ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - gibleed_male <span style="color: #B2B2B2;">[109ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.study_cohorts&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpLsEKM4/file15b9b7c1a83cb.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;study_cohorts&gt; [?? x 4]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpZlwlWK/file11bf81f7ad25f.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">2</span>005 2010-02-12        2019-05-25     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">2</span>328 1999-06-28        2019-01-21     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">1</span>846 1987-12-07        2019-03-14     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">2</span>356 2017-02-27        2017-12-27     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1        299 2000-10-07        2019-01-19     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">1</span>902 1985-11-17        2019-03-17     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">4</span>805 2003-08-18        2019-02-23     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">2</span>556 2004-08-16        2018-12-31     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">3</span>820 2005-08-10        2018-12-14     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1        729 2000-04-28        2019-03-30     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1         80 1974-10-27        2019-04-15     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1        392 2012-05-14        2019-02-08     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">1</span>758 2002-11-07        2019-03-08     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">1</span>760 2017-09-23        2018-06-19     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">2</span>914 1997-05-23        2019-04-27     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">3</span>831 1991-05-04        2019-05-05     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">5</span>004 2012-09-13        2019-03-19     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1        915 1995-09-17        2019-03-30     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">1</span>878 2010-10-08        2019-05-05     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">2</span>542 2003-04-24        2019-01-11     </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span></code></pre></div>
 <p>The generated cohort has associated metadata tables. We can access
 these with utility functions.</p>
@@ -270,43 +245,35 @@ name</li>
 (persons, and records dropped at each sequential inclusion rule)</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cohort_count.html">cohort_count</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `cohort_count()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `cohortCount()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2            237             237</span></span>
-<span><span class="fu"><a href="../reference/cohortSet.html">cohort_set</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `cohort_set()` was deprecated in CDMConnector 1.3.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `settings()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id cohort_name    </span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 gibleed_default</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2 gibleed_male</span></span>
 <span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects reason_id reason          </span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479         1 Qualifying init…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2            479             479         1 Qualifying init…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    2            237             237         2 Male            </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    2            237             237         3 30 days prior o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    1            479             479         2 Cohort records …</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    2            479             479         1 Qualifying init…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    2            237             237         2 Male            </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    2            237             237         3 30 days prior o…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    2            237             237         4 Cohort records …</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: excluded_records &lt;int&gt;, excluded_subjects &lt;int&gt;</span></span></span></code></pre></div>
 <p>Note the this cohort table is still in the database so it can be
 quite large. We can also join it to other CDM table or subset the entire
 cdm to just the persons in the cohort.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm_gibleed</span> <span class="op">&lt;-</span> <span class="va">cdm</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="../reference/cdmSubsetCohort.html">cdm_subset_cohort</a></span><span class="op">(</span>cohort_table <span class="op">=</span> <span class="st">"study_cohorts"</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/cdmSubsetCohort.html">cdmSubsetCohort</a></span><span class="op">(</span>cohortTable <span class="op">=</span> <span class="st">"study_cohorts"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="subset-a-cohort">Subset a cohort<a class="anchor" aria-label="anchor" href="#subset-a-cohort"></a>
@@ -317,50 +284,48 @@ new cohort that is a subset of the first. This can be done using the</p>
 cohort based on filtering the Atlas cohort.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span>
-<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomia_dir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdm_from_con</a></span><span class="op">(</span><span class="va">con</span>, cdm_schema <span class="op">=</span> <span class="st">"main"</span>, write_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> cdm name not specified and could not be inferred from the cdm source table</span></span>
+<span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdmFromCon</a></span><span class="op">(</span><span class="va">con</span>, cdmSchema <span class="op">=</span> <span class="st">"main"</span>, writeSchema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cohort_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readCohortSet.html">read_cohort_set</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts3"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cohortSet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/readCohortSet.html">readCohortSet</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts3"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generate_cohort_set</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohort_set</span>, name <span class="op">=</span> <span class="st">"cohort"</span><span class="op">)</span> </span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generateCohortSet</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet</span>, name <span class="op">=</span> <span class="st">"cohort"</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 5 cohorts</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/5) - gibleed_all_end_10</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/5) - gibleed_all_end_10 <span style="color: #B2B2B2;">[60ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/5) - gibleed_all_end_10 <span style="color: #B2B2B2;">[64ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/5) - gibleed_all</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/5) - gibleed_all <span style="color: #B2B2B2;">[52ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/5) - gibleed_all <span style="color: #B2B2B2;">[55ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (3/5) - gibleed_default_with_descendants</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (3/5) - gibleed_default_with_descendants <span style="color: #B2B2B2;">[55ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (4/5) - gibleed_default</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (4/5) - gibleed_default <span style="color: #B2B2B2;">[56ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (4/5) - gibleed_default <span style="color: #B2B2B2;">[54ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (5/5) - gibleed_end_10</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (5/5) - gibleed_end_10 <span style="color: #B2B2B2;">[56ms]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (5/5) - gibleed_end_10 <span style="color: #B2B2B2;">[58ms]</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.cohort&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpLsEKM4/file15b9b6ee046c9.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;cohort&gt; [?? x 4]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpZlwlWK/file11bf8837cdcd.duckdb]</span></span></span>
 <span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1        787 2017-04-02        2017-04-12     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1        795 1982-09-03        1982-09-13     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">2</span>097 2014-04-17        2014-04-27     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">2</span>591 1974-09-16        1974-09-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">5</span>014 1949-01-08        1949-01-18     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">3</span>181 1987-12-16        1987-12-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">3</span>843 2008-06-27        2008-07-07     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">4</span>720 2014-04-25        2014-05-05     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1         61 2005-09-15        2005-09-25     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">3</span>019 2015-11-29        2015-12-09     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">3</span>582 2001-10-27        2001-11-06     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">4</span>116 2012-07-20        2012-07-30     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1        616 2001-03-05        2001-03-15     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">2</span>786 1959-12-27        1960-01-06     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">4</span>009 1992-06-12        1992-06-22     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">4</span>100 1980-03-19        1980-03-29     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">5</span>197 1995-11-12        1995-11-22     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">1</span>579 1988-05-25        1988-06-04     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">2</span>743 1992-04-27        1992-05-07     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">4</span>450 2009-03-03        2009-03-13     </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
 <span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/cohort_count.html">cohort_count</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
@@ -378,46 +343,41 @@ this query and save the result in a new table in the cdm.</p>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="co"># only keep persons who are in the cohort at least 28 days</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="fu"><a href="../reference/datediff.html">datediff</a></span><span class="op">(</span><span class="st">"cohort_start_date"</span>, <span class="st">"cohort_end_date"</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">28</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="co"># optionally you can modify the cohort_id</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cohort_definition_id <span class="op">=</span> <span class="fl">100</span> <span class="op">+</span> <span class="va">cohort_definition_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">compute</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"cohort_subset"</span>, temporary <span class="op">=</span> <span class="cn">FALSE</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="../reference/new_generated_cohort_set.html">new_generated_cohort_set</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `new_generated_cohort_set()` was deprecated in CDMConnector 1.3.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `newCohortTable()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span>  <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/cohort_count.html">cohort_count</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                  102            466             466</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                  103            466             466</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                  104            466             466</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2            479             479</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    3            479             479</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    4            479             479</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    5            479             479</span></span></code></pre></div>
 <p>In this case we can see that cohorts 1 and 5 were dropped completely
 and some patients were dropped from cohorts 2, 3, and 4.</p>
 <p>Let’s confirm that everyone in cohorts 1 and 5 were in the cohort for
 less than 28 days.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">days_in_cohort</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
+<code class="sourceCode R"><span><span class="va">daysInCohort</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cohort_definition_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>days_in_cohort <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="fu"><a href="../reference/datediff.html">datediff</a></span><span class="op">(</span><span class="st">"cohort_start_date"</span>, <span class="st">"cohort_end_date"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">cohort_definition_id</span>, <span class="va">days_in_cohort</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">days_in_cohort</span></span>
+<span><span class="va">daysInCohort</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 3</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id days_in_cohort     n</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1              9     1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    5             10   467</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    5              2     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    5              1    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    1              1    10</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    1             10   467</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    1              2     1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                    5              9     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                    1              1    10</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                    5              1    10</span></span></code></pre></div>
 <p>We have confirmed that everyone in cohorts 1 and 5 were in the cohort
 less than 10 days.</p>
 <p>Now suppose we would like to create a new cohort table with three
@@ -441,8 +401,8 @@ example.</p>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="fu"><a href="../reference/datediff.html">datediff</a></span><span class="op">(</span><span class="st">"cohort_start_date"</span>, <span class="st">"cohort_end_date"</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">28</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cohort_definition_id <span class="op">=</span> <span class="fl">1000</span> <span class="op">+</span> <span class="va">cohort_definition_id</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">compute</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"cohort_subset"</span>, temporary <span class="op">=</span> <span class="cn">FALSE</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="../reference/new_generated_cohort_set.html">new_generated_cohort_set</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># this function creates the cohort object and metadata</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">compute</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"cohort_subset"</span>, temporary <span class="op">=</span> <span class="cn">FALSE</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># %&gt;% </span></span>
+<span>  <span class="co"># newCohortTable() # this function creates the cohort object and metadata</span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>days_in_cohort <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="fu"><a href="../reference/datediff.html">datediff</a></span><span class="op">(</span><span class="st">"cohort_start_date"</span>, <span class="st">"cohort_end_date"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
@@ -456,12 +416,12 @@ example.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                   13               <span style="text-decoration: underline;">7</span>586.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                   14               <span style="text-decoration: underline;">7</span>586.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                   12               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                 <span style="text-decoration: underline;">1</span>004               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                  103               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                  104               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                 <span style="text-decoration: underline;">1</span>003               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                  102               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span>                 <span style="text-decoration: underline;">1</span>002               <span style="text-decoration: underline;">7</span>602.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                  102               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                 <span style="text-decoration: underline;">1</span>002               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                 <span style="text-decoration: underline;">1</span>004               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                  104               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                 <span style="text-decoration: underline;">1</span>003               <span style="text-decoration: underline;">7</span>602.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span>                  103               <span style="text-decoration: underline;">7</span>602.</span></span></code></pre></div>
 <p>This is an example of creating new cohorts from existing cohorts
 using CDMConnector. There is a lot of flexibility with this approach.
 Next we will look at completely custom cohort creation which is quite
@@ -484,30 +444,20 @@ criteria in the initial definition, additional criteria can be applied
 <code class="sourceCode R"><span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateConceptCohortSet.html">generate_concept_cohort_set</a></span><span class="op">(</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateConceptCohortSet.html">generateConceptCohortSet</a></span><span class="op">(</span></span>
 <span>  <span class="va">cdm</span>, </span>
-<span>  concept_set <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>gibleed <span class="op">=</span> <span class="fl">192671</span><span class="op">)</span>, </span>
+<span>  conceptSet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>gibleed <span class="op">=</span> <span class="fl">192671</span><span class="op">)</span>, </span>
 <span>  name <span class="op">=</span> <span class="st">"gibleed2"</span>, <span class="co"># name of the cohort table</span></span>
 <span>  limit <span class="op">=</span> <span class="st">"all"</span>, <span class="co"># use all occurrences of the concept instead of just the first</span></span>
 <span>  end <span class="op">=</span> <span class="fl">10</span> <span class="co"># set explicit cohort end date 10 days after start</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `generate_concept_cohort_set()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `generateConceptCohortSet()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed2</span> <span class="op">&lt;-</span> <span class="va">cdm</span><span class="op">$</span><span class="va">gibleed2</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter-joins.html" class="external-link">semi_join</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span>, <span class="va">gender_concept_id</span> <span class="op">==</span> <span class="fl">8507</span><span class="op">)</span>, </span>
 <span>    by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject_id"</span> <span class="op">=</span> <span class="st">"person_id"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="../reference/record_cohort_attrition.html">record_cohort_attrition</a></span><span class="op">(</span>reason <span class="op">=</span> <span class="st">"Male"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `record_cohort_attrition()` was deprecated in CDMConnector 1.7.0.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `recordCohortAttrition()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span>  <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/recordCohortAttrition.html" class="external-link">recordCohortAttrition</a></span><span class="op">(</span>reason <span class="op">=</span> <span class="st">"Male"</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed2</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
@@ -552,8 +502,8 @@ reference to it and add it to the CDM object.</p>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, name <span class="op">=</span> <span class="st">"cohort"</span>, table <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;main.cohort&gt; [1 x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpLsEKM4/file15b9b6ee046c9.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;cohort&gt; [?? x 4]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpZlwlWK/file11bf8837cdcd.duckdb]</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1          1 1999-01-01        2001-01-01</span></span></code></pre></div>
@@ -564,12 +514,12 @@ reference to it and add it to the CDM object.</p>
 <p>We can see that this cohort is now has the class “cohort_table” as
 well as the various metadata tables.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cohort_count.html">cohort_count</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1              1               1</span></span>
-<span><span class="fu"><a href="../reference/cohortSet.html">cohort_set</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">#&gt;   cohort_definition_id cohort_name</span></span>
 <span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>

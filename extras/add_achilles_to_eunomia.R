@@ -1,8 +1,8 @@
 
 
-CDMConnector::example_datasets()
+CDMConnector::exampleDatasets()
 
-CDMConnector::eunomia_dir("synthea-covid19-10k", database_file = "~/Desktop/synthea-covid19-10k-achilles.duckdb")
+CDMConnector::eunomiaDir("synthea-covid19-10k", database_file = "~/Desktop/synthea-covid19-10k-achilles.duckdb")
 
 connectionDetails <- DatabaseConnector::createConnectionDetails(
   dbms = "duckdb",
@@ -55,5 +55,5 @@ CREATE TABLE main.ACHILLES_ANALYSIS (
 DBI::dbExecute(con, s)
 
 
-con <- DBI::dbConnect(duckdb::duckdb(CDMConnector::eunomia_dir("synthea-snf-10k")))
+con <- DBI::dbConnect(duckdb::duckdb(CDMConnector::eunomiaDir("synthea-snf-10k")))
 Achilles::getAnalysisDetails()

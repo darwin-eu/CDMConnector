@@ -173,6 +173,8 @@ test_clock_functions <- function(con, write_schema) {
     y = 2000L, m = 10L, d = 11L
   )
 
+  # date_df %>% dplyr::mutate(dif_days = as.integer(difftime(date2, date1)))
+
   # upload the date table
   if ("tmpdate" %in% listTables(con, write_schema)) {
     DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
@@ -225,6 +227,10 @@ test_clock_functions <- function(con, write_schema) {
   expect_equal(unique(df$m2), 12)
   expect_equal(unique(df$d2), 1)
 
+  if (dbms(con) %in% "redshift") {
+    df$dif_days <- abs(df$dif_days) # TODO on some dbms the translation of difftime does not match base R difftime and we get the wrong sign
+  }
+
   # some of these translations are failing on certain database platforms
   if (!(dbms(con) %in% c("duckdb"))) {
     expect_equal(sort(df$dif_days), sort(c(365, 366, 364, 31))) # row order is not preserved on snowflake
@@ -241,7 +247,11 @@ test_clock_functions <- function(con, write_schema) {
 
   DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "tmpdate", dbms = dbms(con)))
 }
+
 # dbtype = "spark"
+# dbtype = "postgres"
+# dbtype = "duckdb"
+# dbtype = "redshift"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - date functions"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()

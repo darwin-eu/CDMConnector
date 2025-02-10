@@ -2,20 +2,15 @@
 % Please edit documentation in R/Eunomia.R
 \name{exampleDatasets}
 \alias{exampleDatasets}
-\alias{example_datasets}
 \title{List the available example CDM datasets}
 \usage{
 exampleDatasets()
-
-example_datasets()
 }
 \value{
 A character vector with example CDM dataset identifiers
 }
 \description{
 List the available example CDM datasets
-
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 }
 \examples{
 \dontrun{

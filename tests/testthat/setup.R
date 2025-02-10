@@ -54,6 +54,21 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
       return(con)
     }
 
+    if (dbms == "snowflake") {
+      cli::cli_inform("Testing with DatabseConector on snowflake")
+
+      connectionDetails <- DatabaseConnector::createConnectionDetails(
+        dbms = "snowflake",
+        connectionString = Sys.getenv("SNOWFLAKE_CONNECTION_STRING"),
+        user = Sys.getenv("SNOWFLAKE_USER"),
+        password = Sys.getenv("SNOWFLAKE_PASSWORD")
+      )
+
+      con <- DatabaseConnector::connect(connectionDetails)
+
+      return(con)
+    }
+
     stop(paste("Testing", dbms, "with DatabaseConnector has not been implemented yet."))
 
   }
@@ -162,7 +177,7 @@ get_cdm_schema <- function(dbms) {
   return(s)
 }
 
-get_write_schema <- function(dbms, prefix = paste0("temp", floor(as.numeric(Sys.time())*100) %% 100000L, "_")) {
+get_write_schema <- function(dbms, prefix = paste0("temp", (floor(as.numeric(Sys.time())*100) %% 100000L + Sys.getpid()) %% 100000L, "_")) {
   s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
           "local" = Sys.getenv("LOCAL_POSTGRESQL_SCRATCH_SCHEMA"),

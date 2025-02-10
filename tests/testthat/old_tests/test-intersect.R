@@ -292,7 +292,7 @@
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
 #   x_actual <- x %>%
-#     cohort_collapse() %>%
+#     cohortCollapse() %>%
 #     collect() %>%
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
@@ -307,7 +307,7 @@
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
 #   x_actual <- x %>%
-#     cohort_collapse() %>%
+#     cohortCollapse() %>%
 #     collect() %>%
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
@@ -327,7 +327,7 @@
 #   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 #
 #   x_actual <- x %>%
-#     cohort_collapse() %>%
+#     cohortCollapse() %>%
 #     collect() %>%
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
@@ -347,7 +347,7 @@
 #   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 #
 #   x_actual <- x %>%
-#     cohort_collapse() %>%
+#     cohortCollapse() %>%
 #     collect() %>%
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
@@ -367,7 +367,7 @@
 #   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 #
 #   x_actual <- x %>%
-#     cohort_collapse() %>%
+#     cohortCollapse() %>%
 #     collect() %>%
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
@@ -387,7 +387,7 @@
 #   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 #
 #   x_actual <- x %>%
-#     cohort_collapse() %>%
+#     cohortCollapse() %>%
 #     collect() %>%
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #
@@ -407,7 +407,7 @@
 #   ) %>% dplyr::mutate(dplyr::across(dplyr::matches("date"), as.Date))
 #
 #   x_actual <- x %>%
-#     cohort_collapse() %>%
+#     cohortCollapse() %>%
 #     collect() %>%
 #     arrange(cohort_definition_id, subject_id, cohort_start_date)
 #

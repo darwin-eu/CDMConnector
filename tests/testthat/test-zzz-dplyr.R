@@ -214,10 +214,10 @@
 #
 # test_that("quantile translation works on duckdb", {
 #   skip_if_not(rlang::is_installed("duckdb"))
-#   skip_if_not(eunomia_is_available())
+#   skip_if_not(eunomiaIsAvailable())
 #   skip("manual test")
 #
-#   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomia_dir())
+#   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 #
 #   cdm <- cdm_from_con(con, cdm_schema = "main")
 #

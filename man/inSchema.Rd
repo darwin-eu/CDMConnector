@@ -2,12 +2,9 @@
 % Please edit documentation in R/utils.R
 \name{inSchema}
 \alias{inSchema}
-\alias{in_schema}
 \title{Helper for working with compound schemas}
 \usage{
 inSchema(schema, table, dbms = NULL)
-
-in_schema(schema, table, dbms = NULL)
 }
 \arguments{
 \item{schema}{A schema name as a character string}

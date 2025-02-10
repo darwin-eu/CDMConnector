@@ -84,7 +84,7 @@ and use cdm_name to provide a name for the database.
 ``` r
 library(CDMConnector)
 
-con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomia_dir()))
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
 
 cdm <- cdm_from_con(con = con, 
                     cdm_schema = "main", 
