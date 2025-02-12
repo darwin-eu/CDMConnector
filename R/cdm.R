@@ -133,7 +133,7 @@ cdmFromCon <- function(con,
   checkmate::assert_character(cdmName, any.missing = FALSE, len = 1, null.ok = TRUE)
   checkmate::assert_character(cdmSchema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(writeSchema, min.len = 1, max.len = 3, any.missing = F)
-  checkmate::assert_character(cohortTables, null.ok = TRUE, min.len = 1)
+  checkmate::assert_character(cohortTables, null.ok = TRUE)
   checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_choice(cdmVersion, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
 
@@ -588,37 +588,6 @@ snapshot <- function(cdm) {
       "snapshot_date"
     ) %>%
     dplyr::mutate_all(as.character)
-}
-
-#' Disconnect the connection of the cdm object
-#'
-#' This function will disconnect from the database as well as drop
-#' "temporary" tables that were created on database systems that do not support
-#' actual temporary tables. Currently temp tables are emulated on
-#' Spark/Databricks systems.
-#'
-#' @param cdm cdm reference
-#'
-#' @export
-cdmDisconnect <- function(cdm) {
-  if (!("cdm_reference" %in% class(cdm))) {
-    cli::cli_abort("cdm should be a cdm_reference")
-  }
-
-  if ("db_cdm" %in% class(omopgenerics::cdmSource(cdm))) {
-    con <- cdmCon(cdm)
-    on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
-
-    if (dbms(con) == "spark") {
-      schema <- attr(cdm, "write_schema")
-      tbls <- listTables(con, schema = schema)
-      tempEmulationTablesToDrop <- stringr::str_subset(tbls, attr(cdm, "temp_emulation_prefix"))
-      # try to drop the temp emulation tables
-      purrr::walk(tempEmulationTablesToDrop,
-                  ~tryCatch(DBI::dbRemoveTable(con, .inSchema(schema, ., dbms = dbms(con))),
-                            error = function(e) invisible(NULL)))
-    }
-  }
 }
 
 #' Get cdm write schema

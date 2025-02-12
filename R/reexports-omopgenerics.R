@@ -14,9 +14,17 @@ omopgenerics::attrition
 #' @export
 omopgenerics::newCohortTable
 
+#' @importFrom omopgenerics cdmDisconnect
+#' @export
+omopgenerics::cdmDisconnect
+
 #' @importFrom omopgenerics insertTable
 #' @export
 omopgenerics::insertTable
+
+#' @importFrom omopgenerics insertCdmTo
+#' @export
+omopgenerics::insertCdmTo
 
 #' @importFrom omopgenerics dropTable
 #' @export
