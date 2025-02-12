@@ -53,7 +53,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   # empty data
   expect_error(generateCohortSet(cdm, cohortSet %>% head(0), name = "cohorts", overwrite = TRUE))
-  dropTable(cdm, dplyr::starts_with("chrt0_"))
+  dropSourceTable(cdm, dplyr::starts_with("chrt0_"))
   expect_length(grep("^chrt0_", listTables(con, schema = write_schema)), 0)
 }
 

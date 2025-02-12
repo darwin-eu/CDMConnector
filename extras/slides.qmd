@@ -152,7 +152,7 @@ attrition(cdm[[new_cohort_name]])
 # Easlily clean up your intermediate tables
 
 ```{r}
-dropTable(cdm, starts_with("temp123_"))
+dropSourceTable(cdm, starts_with("temp123_"))
 ```
 
 # Cohort Generation next steps

@@ -93,6 +93,6 @@ test_that("message does not duplicate when prefix is used", {
   con <- DBI::dbConnect(duckdb::duckdb( eunomiaDir()))
   cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = "main", writeSchema = c(prefix = "a_", schema = "main"))
   DBI::dbWriteTable(con, inSchema(attr(attr(cdm, "cdm_source"), "write_schema"), "cars"), cars)
-  expect_no_error(dropTable(cdm, "cars"))
+  expect_warning(dropTable(cdm, "cars")) # deprecated
   DBI::dbDisconnect(con, shutdown = TRUE)
 })

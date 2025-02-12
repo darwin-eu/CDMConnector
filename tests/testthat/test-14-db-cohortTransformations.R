@@ -201,7 +201,7 @@ test_cohortCollapse <- function(con, cdm_schema, write_schema) {
                  dplyr::arrange(cohort_start_date),
                ct_test_cohort_expected %>%
                  dplyr::arrange(cohort_start_date))
-  dropTable(cdm, name = "ct_test_cohort")
+  dropSourceTable(cdm, name = "ct_test_cohort")
 
 
 

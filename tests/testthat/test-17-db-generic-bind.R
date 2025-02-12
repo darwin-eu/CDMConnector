@@ -14,7 +14,7 @@ test_bind_cohorts <- function(con, cdm_schema, write_schema) {
   cdm <- omopgenerics::bind(cdm$cohort1, cdm$cohort2, name = "cohort3")
 
   expect_s3_class(cdm$cohort3, "cohort_table")
-  omopgenerics::dropTable(cdm, c("cohort1", "cohort2", "cohort3"))
+  omopgenerics::dropSourceTable(cdm, c("cohort1", "cohort2", "cohort3"))
 }
 
 for (dbtype in dbToTest) {

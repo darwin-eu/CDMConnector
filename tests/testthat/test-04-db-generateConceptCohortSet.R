@@ -357,7 +357,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   )
 
   # clean up
-  dropTable(cdm, dplyr::contains("gibleed"))
+  dropSourceTable(cdm, dplyr::contains("gibleed"))
 }
 
 # dbtype = "duckdb"

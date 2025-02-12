@@ -37,7 +37,7 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
                                    name = newTbl) |>
                  dplyr::collect()  |>
                  dplyr::arrange(row_id))
-  dropTable(cdm = cdm, name = newTbl)
+  dropSourceTable(cdm = cdm, name = newTbl)
 
   # count records
   expect_equal(penguinsDf |>
@@ -118,7 +118,7 @@ test_dplyr <- function(con, cdm_schema, write_schema) {
                  dplyr::collect() |>
                  dplyr::mutate(n = as.integer(n)))
 
-  dropTable(cdm = cdm, name = penguinsTbl)
+  dropSourceTable(cdm = cdm, name = penguinsTbl)
 
 }
 

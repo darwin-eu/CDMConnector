@@ -22,7 +22,7 @@ test_that("generateCohortSet works with write_prefix on snowflake", {
 
   cohort_table_name <- paste0("tmp_cohort", as.integer(Sys.time()) %% 1000)
 
-  on.exit(dropTable(cdm, dplyr::everything()), add = TRUE)
+  on.exit(dropSourceTable(cdm, dplyr::everything()), add = TRUE)
   on.exit(DBI::dbDisconnect(con), add = TRUE)
   cdm <- generateCohortSet(cdm, cohort_set, name = cohort_table_name, overwrite = TRUE)
 

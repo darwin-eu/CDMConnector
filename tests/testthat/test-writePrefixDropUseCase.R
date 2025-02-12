@@ -12,7 +12,7 @@
 #                       write_schema = write_schema,
 #                       cdm_name = "my_duckdb_database")
 #
-#   dropTable(cdm, dplyr::everything()) # should not be needed.
+#   dropSourceTable(cdm, dplyr::everything()) # should not be needed.
 #
 #   listTables(con, schema = write_schema)
 #
@@ -33,7 +33,7 @@
 #
 #   sloop::s3_dispatch(  dropTable(cdm, name = name))
 #
-#   dropTable(cdm, name = name)
+#   dropSourceTable(cdm, name = name)
 #
 #   listTables(con, schema = write_schema)
 #
@@ -69,7 +69,7 @@
 #   expect_true(length(list_tables(con, write_schema)) > 0)
 #
 #   expect_no_error(
-#     dropTable(cdm, dplyr::starts_with(write_prefix))
+#     dropSourceTable(cdm, dplyr::starts_with(write_prefix))
 #   )
 #
 #   expect_true(length(listTables(con, write_schema)) == 0)

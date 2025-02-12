@@ -243,7 +243,7 @@ for (dbtype in dbToTest) {
                        writeSchema = write_schema)
 
     expect_s3_class(cdm, "cdm_reference")
-    dropTable(cdm, dplyr::contains(write_prefix))
+    dropSourceTable(cdm, dplyr::contains(write_prefix))
     disconnect(con)
   })
 }

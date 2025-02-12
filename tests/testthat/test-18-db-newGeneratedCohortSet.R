@@ -76,9 +76,9 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
   # remove the cohort tables.
   if ("prefix" %in% names(write_schema)) {
-    dropTable(cdm, dplyr::starts_with(write_schema["prefix"]))
+    dropSourceTable(cdm, dplyr::starts_with(write_schema["prefix"]))
   } else {
-    dropTable(cdm, dplyr::starts_with("new_cohort"))
+    dropSourceTable(cdm, dplyr::starts_with("new_cohort"))
   }
 
 }
