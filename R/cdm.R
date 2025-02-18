@@ -473,25 +473,50 @@ dbms <- function(con) {
   if (!is.null(attr(con, "dbms"))) {
     return(attr(con, "dbms"))
   }
-
-  result <- switch(
-    class(con),
-    "Microsoft SQL Server" = "sql server",
-    "PqConnection" = "postgresql",
-    "RedshiftConnection" = "redshift",
-    "BigQueryConnection" = "bigquery",
-    "SQLiteConnection" = "sqlite",
-    "duckdb_connection" = "duckdb",
-    "Spark SQL" = "spark",
-    "OraConnection" = "oracle",
-    "Oracle" = "oracle",
-    "Snowflake" = "snowflake"
-    # add mappings from various connection classes to dbms here
+result <- if (inherits(con, "Microsoft SQL Server")) {
+  "sql server"
+} else if (inherits(con, "PqConnection")) {
+  "postgresql"
+} else if (inherits(con, "RedshiftConnection")) {
+  "redshift"
+} else if (inherits(con, "BigQueryConnection")) {
+  "bigquery"
+} else if (inherits(con, "SQLiteConnection")) {
+  "sqlite"
+} else if (inherits(con, "duckdb_connection")) {
+  "duckdb"
+} else if (inherits(con, "Spark SQL")) {
+  "spark"
+} else if (inherits(con, "spark_connection")) {
+  "spark"
+} else if (inherits(con, "OraConnection")) {
+  "oracle"
+} else if (inherits(con, "Oracle")) {
+  "oracle"
+} else if (inherits(con, "Snowflake")) {
+  "snowflake"
+} else {
+  cli::cli_abort("Unsupported connection class. Connection has class {class(con)}")
+  supported_con <- c(
+    "Microsoft SQL Server",
+    "PqConnection",
+    "RedshiftConnection",
+    "BigQueryConnection",
+    "SQLiteConnection",
+    "duckdb_connection",
+    "Spark SQL",
+    "spark_connection",
+    "OraConnection",
+    "Oracle",
+    "Snowflake"
   )
+  cli::cli_abort(c(
+    "Unsupported connection class",
+    "i" = "Connection has class {class(con)}",
+    "i" = "Only {supported_con} are supported"
+  ))
+}
 
-  if (is.null(result)) {
-    rlang::abort(glue::glue("{class(con)} is not a supported connection type."))
-  }
   return(result)
 }
 
