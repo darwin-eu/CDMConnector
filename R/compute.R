@@ -46,7 +46,7 @@
     }
   }
 
-  if (dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake", "bigquery", "spark")) {
+  if (dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake", "bigquery")) {
 
     if (length(schema) == 2) {
       sql <- dbplyr::build_sql("CREATE TABLE ",
@@ -65,7 +65,7 @@
              if (overwrite) dbplyr::sql("OR REPLACE "),  "TABLE ",
              if (!is.null(schema)) dbplyr::ident(schema),
              if (!is.null(schema)) dbplyr::sql("."), dbplyr::ident(name),
-             " AS ", dbplyr::sql_render(x), con = x$src$con)
+             " USING DELTA AS ", dbplyr::sql_render(x), con = x$src$con)
   } else {
     sql <- glue::glue("SELECT * INTO {fullNameQuoted}
                       FROM ({dbplyr::sql_render(x)}) x")
