@@ -55,6 +55,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   # TODO should the attributes be the exact same? probably. but it will take time to implement that.
   attr(actual, 'cohort_attrition') <- attr(expected, 'cohort_attrition') <- NULL
   attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
+  attr(actual, 'cohort_codelist') <- attr(expected, 'cohort_codelist') <- NULL
   expect_equal(actual, expected)
 
   expect_error({
@@ -227,6 +228,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
   attr(actual, 'cohort_attrition') <- attr(expected, 'cohort_attrition') <- NULL
   attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
+  attr(actual, 'cohort_codelist') <- attr(expected, 'cohort_codelist') <- NULL
   expect_equal(actual, expected)
 
   # all occurrences (no descendants) fixed end date ----
@@ -269,6 +271,7 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
   expect_setequal(unique(expected$subject_id), unique(actual$subject_id))
   attr(actual, 'cohort_attrition') <- attr(expected, 'cohort_attrition') <- NULL
   attr(actual, 'cohort_set') <- attr(expected, 'cohort_set') <- NULL
+  attr(actual, 'cohort_codelist') <- attr(expected, 'cohort_codelist') <- NULL
   expect_equal(actual, expected)
 
   # multiple cohort generation ------
@@ -493,23 +496,23 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
   skip_if_not_installed("duckdb")
   cdm <- cdmFromTables(
     tables = list(
-      "person" = tibble(
+      "person" = dplyr::tibble(
         person_id = 1L, gender_concept_id = 0L, year_of_birth = 1900L,
         race_concept_id = 0L, ethnicity_concept_id = 0L
       ),
-      "observation_period" = tibble(
+      "observation_period" = dplyr::tibble(
         observation_period_id = 1L, person_id = 1L,
         observation_period_start_date = as.Date("1900-01-01"),
         observation_period_end_date = as.Date("2000-01-01"),
         period_type_concept_id = 0L
       ),
-      "drug_exposure" = tibble(
+      "drug_exposure" = dplyr::tibble(
         drug_exposure_id = 1L, person_id = 1L, drug_concept_id = 1L,
         drug_exposure_start_date = as.Date(c("1950-01-01", "1951-01-01")),
         drug_exposure_end_date = as.Date(c("1945-01-01", "1952-01-01")),
         drug_type_concept_id = 0L
       ),
-      "concept" = tibble(
+      "concept" = dplyr::tibble(
         concept_id = 1L, concept_name = "my_drug", domain_id = "Drug",
         vocabulary_id = "vocab", concept_class_id = "0", concept_code = "0",
         valid_start_date = as.Date("1900-01-01"), valid_end_date = as.Date("2030-01-01"),
@@ -529,15 +532,16 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
                                   end = "event_end_date")
 
   actual <- dplyr::collect(cdm$my_cohort) %>%
-    tibble()
+    dplyr::tibble()
 
   # names(attributes(actual))
 
   # remove cohort attributes
   attr(actual, "cohort_set") <- NULL
   attr(actual, "cohort_attrition") <- NULL
+  attr(actual, "cohort_codelist") <- NULL
 
-  expected <- tibble(
+  expected <- dplyr::tibble(
     cohort_definition_id = 1L,
     subject_id = 1L,
     cohort_start_date = as.Date("1951-01-01"),

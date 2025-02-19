@@ -301,6 +301,7 @@ test_that("cohort era collapse is recorded in attrition", {
 
   attr(expectedCohortCount, "cohort_set") <- NULL
   attr(expectedCohortCount, "cohort_attrition") <- NULL
+  attr(expectedCohortCount, "cohort_codelist") <- NULL
 
   expect_equal(actualCohortCount, expectedCohortCount)
 
