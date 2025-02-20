@@ -282,7 +282,10 @@ cdmSubset <- function(cdm, personId) {
     dplyr::rename_all(tolower) %>% # just in case
     compute(name = glue::glue("person_subset_{prefix}"), temporary = TRUE)
 
-  DBI::dbRemoveTable(con, .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)))
+  if (dbms(cdmCon(cdm)) != "spark") {
+    # on spark the temp table seems to need this permanent table it was derived from to work.
+    DBI::dbRemoveTable(con, .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)))
+  }
 
   cdmSamplePerson(cdm, person_subset)
 }
