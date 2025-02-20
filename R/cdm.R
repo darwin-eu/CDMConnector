@@ -125,8 +125,8 @@ cdmFromCon <- function(con,
   }
 
   if (missing(writeSchema)) {
-    cli::cli_abort("{.arg write_schema} is now required to create a cdm object with a database backend.
-                   Please make sure you have a schema in your database where you can create new tables and provide it in the `write_schema` argument.
+    cli::cli_abort("{.arg writeSchema} is now required to create a cdm object with a database backend.
+                   Please make sure you have a schema in your database where you can create new tables and provide it in the `writeSchema` argument.
                    If your schema has multiple parts please provide a length 2 character vector: `write_schema = c('my_db', 'my_schema')`")
   }
 
