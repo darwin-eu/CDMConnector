@@ -46,26 +46,21 @@
     }
   }
 
-  if (dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake", "bigquery")) {
+  if (dbms(x$src$con) %in% c("duckdb", "oracle", "snowflake", "bigquery", "spark")) {
 
     if (length(schema) == 2) {
       sql <- dbplyr::build_sql("CREATE TABLE ",
                                dbplyr::ident(schema[1]), dbplyr::sql("."),
                                dbplyr::ident(schema[2]), dbplyr::sql("."), dbplyr::ident(name),
+                               if (dbms(x$src$con) == "spark")  dbplyr::sql(" USING DELTA "),
                                " AS ", dbplyr::sql_render(x), con = x$src$con)
     } else {
       sql <- dbplyr::build_sql("CREATE TABLE ",
                if (!is.null(schema)) dbplyr::ident(schema),
                if (!is.null(schema)) dbplyr::sql("."), dbplyr::ident(name),
+               if (dbms(x$src$con) == "spark")  dbplyr::sql(" USING DELTA "),
                " AS ", dbplyr::sql_render(x), con = x$src$con)
     }
-
-  } else if (dbms(x$src$con) == "spark") {
-    sql <- dbplyr::build_sql("CREATE ",
-             if (overwrite) dbplyr::sql("OR REPLACE "),  "TABLE ",
-             if (!is.null(schema)) dbplyr::ident(schema),
-             if (!is.null(schema)) dbplyr::sql("."), dbplyr::ident(name),
-             " USING DELTA AS ", dbplyr::sql_render(x), con = x$src$con)
   } else {
     sql <- glue::glue("SELECT * INTO {fullNameQuoted}
                       FROM ({dbplyr::sql_render(x)}) x")
