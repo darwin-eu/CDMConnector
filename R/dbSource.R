@@ -82,8 +82,16 @@ insertTable.db_cdm <- function(cdm,
   return(x)
 }
 
-#' @export
+#' Drop table from a database backed cdm object
+#'
+#' Tables will be dropped from the write schema of the cdm.
+#'
+#' @param cdm a cdm_reference object
+#' @param name A character vector of table names to be dropped
+#'
+#' @importFrom omopgenerics dropTable
 #' @importFrom tidyselect starts_with ends_with matches
+#' @export
 dropTable.db_cdm <- function(cdm, name) {
   # initial checks
   schema <- attr(cdm, "write_schema")
@@ -309,7 +317,7 @@ insertCdmTo.db_cdm <- function(cdm, to) {
     }
     insertTable(cdm = to, name = nm, table = x, overwrite = TRUE)
     if ("cohort_table" %in% cl) {
-      cohorts <- c(cohort, nm)
+      cohorts <- c(cohorts, nm)
       insertTable(cdm = to, name = paste0(nm, "_set"), table = attr(x, "cohort_set"), overwrite = TRUE)
       insertTable(cdm = to, name = paste0(nm, "_attrition"), table = attr(x, "cohort_attrition"), overwrite = TRUE)
       insertTable(cdm = to, name = paste0(nm, "_codelist"), table = attr(x, "cohort_codelist"), overwrite = TRUE)
@@ -341,6 +349,7 @@ insertCdmTo.db_cdm <- function(cdm, to) {
 #'
 #' @param cdm cdm reference
 #' @param dropWriteSchema Whether to drop tables in the writeSchema
+#' @param ... Not used
 #'
 #' @export
 cdmDisconnect.db_cdm <- function(cdm, dropWriteSchema = FALSE, ...) {

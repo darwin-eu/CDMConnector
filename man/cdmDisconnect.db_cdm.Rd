@@ -10,6 +10,8 @@
 \item{cdm}{cdm reference}
 
 \item{dropWriteSchema}{Whether to drop tables in the writeSchema}
+
+\item{...}{Not used}
 }
 \description{
 This function will disconnect from the database as well as drop
