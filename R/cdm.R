@@ -473,12 +473,13 @@ dbms <- function(con) {
   if (!is.null(attr(con, "dbms"))) {
     return(attr(con, "dbms"))
   }
+
 result <- if (inherits(con, "Microsoft SQL Server")) {
   "sql server"
-} else if (inherits(con, "PqConnection")) {
-  "postgresql"
 } else if (inherits(con, "RedshiftConnection")) {
   "redshift"
+} else if (inherits(con, "PqConnection")) {
+  "postgresql"
 } else if (inherits(con, "BigQueryConnection")) {
   "bigquery"
 } else if (inherits(con, "SQLiteConnection")) {
