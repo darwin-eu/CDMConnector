@@ -22,7 +22,7 @@
 <url><loc>/reference/benchmarkCDMConnector.html</loc></url>
 <url><loc>/reference/cash-.cdm_reference.html</loc></url>
 <url><loc>/reference/cdmCon.html</loc></url>
-<url><loc>/reference/cdmDisconnect.html</loc></url>
+<url><loc>/reference/cdmDisconnect.db_cdm.html</loc></url>
 <url><loc>/reference/cdmFlatten.html</loc></url>
 <url><loc>/reference/cdmFromCon.html</loc></url>
 <url><loc>/reference/cdmFromEnvironment.html</loc></url>
@@ -55,6 +55,7 @@
 <url><loc>/reference/dbSource.html</loc></url>
 <url><loc>/reference/dbms.html</loc></url>
 <url><loc>/reference/downloadEunomiaData.html</loc></url>
+<url><loc>/reference/dropTable.db_cdm.html</loc></url>
 <url><loc>/reference/eunomiaDir.html</loc></url>
 <url><loc>/reference/eunomiaIsAvailable.html</loc></url>
 <url><loc>/reference/eunomia_is_available.html</loc></url>

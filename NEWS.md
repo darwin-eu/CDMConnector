@@ -1,4 +1,4 @@
-# CDMConnector 2.0
+# CDMConnector 2.0.0
 
 - Remove snake case functions in favor of only camel case style
 - Remove cohort table manipulation functions 
@@ -6,6 +6,7 @@
 - Increase test coverage
 - Fix bugs with `cdmFlatten` 
 - Add support for snowflake with DatabaseConnector driver
+- Add attrition record for cohort era collapse when generating Atlas cohorts
 
 
 # CDMConnector 1.7.0
