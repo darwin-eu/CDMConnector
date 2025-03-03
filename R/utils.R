@@ -238,6 +238,10 @@ listTables <- function(con, schema = NULL) {
     return(process_prefix(out))
   }
 
+  if (methods::is(con, "DatabaseConnectorDbiConnection")) {
+    return(listTables(con@dbiConnection, schema = schema))
+  }
+
   rlang::abort(paste(paste(class(con), collapse = ", "), "connection not supported"))
 }
 

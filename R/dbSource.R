@@ -358,7 +358,11 @@ cdmDisconnect.db_cdm <- function(cdm, dropWriteSchema = FALSE, ...) {
   con <- attr(cdm, "dbcon")
   writeSchema <- attr(cdm, "write_schema")
 
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  if (methods::is(con, "DatabaseConnectorDbiConnection")) {
+    on.exit(DatabaseConnector::disconnect(con), add = TRUE)
+  } else {
+    on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  }
 
   # drop tables if needed
   if (dropWriteSchema) {

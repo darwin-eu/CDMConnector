@@ -257,3 +257,63 @@ test_that("schema specification with . works", {
   DBI::dbDisconnect(con)
 
 })
+
+
+test_that("DatabaseConnector DBI connections work with duckdb", {
+
+  testthat::skip_if_not_installed("DatabaseConnector")
+  testthat::skip_if_not_installed("duckdb")
+
+  connectionDetails <- DatabaseConnector::createConnectionDetails(
+    "duckdb",
+    server = CDMConnector::eunomiaDir()
+  )
+
+  con <- DatabaseConnector::connect(connectionDetails)
+
+  cdm <- CDMConnector::cdmFromCon(
+    con = con,
+    cdmSchema = "main",
+    writeSchema = "main"
+  )
+
+  df <- dplyr::collect(head(cdm$person))
+  expect_true(is.data.frame(df))
+  cdmDisconnect(cdm)
+})
+
+
+test_that("DatabaseConnector DBI connections work with RPostgres", {
+
+  skip_if_not_installed("DatabaseConnector")
+  skip_if_not_installed("RPostgres")
+  skip_if_not("postgres" %in% dbmsToTest)
+  skip_on_cran()
+
+  connectionDetails <- DatabaseConnector::createDbiConnectionDetails(
+    dbms = "postgresql",
+    drv = RPostgres::Postgres(),
+    dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+    host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+    user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+    password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")
+  )
+
+  writeSchema <- Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA")
+  cdmSchema <- Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA")
+
+  con <- DatabaseConnector::connect(connectionDetails)
+
+  cdm <- CDMConnector::cdmFromCon(
+    con = con,
+    cdmSchema = cdmSchema,
+    writeSchema = writeSchema
+  )
+
+  df <- dplyr::collect(head(cdm$person))
+  expect_true(is.data.frame(df))
+  cdmDisconnect(cdm)
+})
+
+
+
