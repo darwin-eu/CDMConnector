@@ -271,11 +271,13 @@ test_that("DatabaseConnector DBI connections work with duckdb", {
 
   con <- DatabaseConnector::connect(connectionDetails)
 
-  cdm <- CDMConnector::cdmFromCon(
-    con = con,
-    cdmSchema = "main",
-    writeSchema = "main"
-  )
+  suppressMessages({
+    cdm <- CDMConnector::cdmFromCon(
+      con = con,
+      cdmSchema = "main",
+      writeSchema = "main"
+    )
+  })
 
   df <- dplyr::collect(head(cdm$person))
   expect_true(is.data.frame(df))
@@ -287,7 +289,7 @@ test_that("DatabaseConnector DBI connections work with RPostgres", {
 
   skip_if_not_installed("DatabaseConnector")
   skip_if_not_installed("RPostgres")
-  skip_if_not("postgres" %in% dbmsToTest)
+  skip_if_not("postgres" %in% dbToTest)
   skip_on_cran()
 
   connectionDetails <- DatabaseConnector::createDbiConnectionDetails(
