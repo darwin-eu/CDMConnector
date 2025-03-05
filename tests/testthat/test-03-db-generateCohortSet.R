@@ -21,6 +21,12 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   expect_true(methods::is(cdm$chrt0, "cohort_table"))
 
+  cohortCodelist <- dplyr::collect(attr(cdm$chrt0, "cohort_codelist"))
+  expect_true(is.data.frame(cohortCodelist))
+  expect_equal(colnames(cohortCodelist), c("cohort_definition_id", "codelist_name", "concept_id", "type"))
+
+  expect_true(nrow(cohortCount(cdm$chrt0)) == 3)
+
   expect_error(generateCohortSet(cdm, name = "blah", cohortSet = "not a cohort"))
 
   # check already exists
@@ -58,7 +64,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 }
 
 for (dbtype in dbToTest) {
-  # dbtype = "bigquery"
+  # dbtype = "postgres"
   test_that(glue::glue("{dbtype} - generateCohortSet"), {
     skip_if_not_installed("CirceR")
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
@@ -309,4 +315,7 @@ test_that("cohort era collapse is recorded in attrition", {
 
   cdmDisconnect(cdm)
 })
+
+
+
 
