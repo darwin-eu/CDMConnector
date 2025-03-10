@@ -197,6 +197,10 @@ test_clock_functions <- function(con, write_schema) {
                   m2 = clock::get_month(date1),
                   d2 = clock::get_day(date1))
 
+  # date_df |>
+  #   mutate(dif_time = difftime(date2, date1))
+  # in difftime the later date comes first
+
   if (dbms(con) != "duckdb") {
     df <- dplyr::mutate(df,
       dif_days = difftime(date2, date1),
@@ -227,7 +231,7 @@ test_clock_functions <- function(con, write_schema) {
   expect_equal(unique(df$m2), 12)
   expect_equal(unique(df$d2), 1)
 
-  if (dbms(con) %in% c("redshift", "postgres")) {
+  if (dbms(con) %in% c("redshift", "postgres", "sql server")) {
     df$dif_days <- abs(df$dif_days) # TODO on some dbms the translation of difftime does not match base R difftime and we get the wrong sign
   }
 
@@ -252,6 +256,7 @@ test_clock_functions <- function(con, write_schema) {
 # dbtype = "postgres"
 # dbtype = "duckdb"
 # dbtype = "redshift"
+# dbtype = "sqlserver"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - date functions"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
