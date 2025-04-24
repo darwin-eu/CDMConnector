@@ -115,11 +115,11 @@ createCodelistDataframe <- function(cohortSet) {
     df2 <- dplyr::bind_rows(
       dplyr::tibble(
         codelist_id = unname(extractCodesetIds(ch[["PrimaryCriteria"]])),
-        type = "index event"
+        codelist_type = "index event"
       ),
       dplyr::tibble(
         codelist_id = unname(extractCodesetIds(ch[["InclusionRules"]])),
-        type = "inclusion criteria"
+        codelist_type = "inclusion criteria"
       )
     ) |> dplyr::filter(!is.na(.data$codelist_id))
 
@@ -194,14 +194,14 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
       dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
       dplyr::select(
         "cohort_definition_id", "codelist_id",
-        "codelist_name", "type",
+        "codelist_name", "codelist_type",
         "concept_id" = "descendant_concept_id",
         "is_excluded"
       ) %>%
       dplyr::union_all(
         dplyr::select(concepts,
                       "cohort_definition_id", "codelist_id",
-                      "codelist_name", "type",
+                      "codelist_name", "codelist_type",
                       "concept_id", "is_excluded"
         )
       )
@@ -216,7 +216,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
     dplyr::select(
       "cohort_definition_id",
       "codelist_name",
-      "type",
+      "codelist_type",
       "concept_id"
     ) |>
     dplyr::distinct() %>%
@@ -605,7 +605,6 @@ generateCohortSet <- function(cdm,
     cohort_name = as.character(.data$cohort_name))
 
   cohortCodelistRef <- createAtlasCohortCodelistReference(cdm, cohortSet)
-
   cdm[[name]] <- omopgenerics::newCohortTable(
     table = cdm[[name]],
     cohortSetRef = cohortSetRef,
