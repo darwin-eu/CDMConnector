@@ -153,7 +153,6 @@ extractConceptsFromConceptSetList <- function(conceptSets) {
 }
 
 createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
-
   codelistDf <- createCodelistDataframe(cohortSet)
 
   codes <- cohortSet |>
@@ -209,6 +208,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
 
   codelistTableName <- omopgenerics::uniqueTableName("codelist_")
 
+  analyzeParam <- ifelse(dbms(cdmCon(cdm)) == "spark", FALSE, TRUE)
   cohortCodelistRef <- concepts %>%
     dplyr::filter(.data$is_excluded == FALSE) %>%
     # Note that concepts that are not in the vocab will be silently ignored
@@ -220,7 +220,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
       "concept_id"
     ) |>
     dplyr::distinct() %>%
-    dplyr::compute(temporary = FALSE, name = codelistTableName, overwrite = TRUE)
+    dplyr::compute(temporary = FALSE, name = codelistTableName, overwrite = TRUE, analyze = analyzeParam)
 
   return(cohortCodelistRef)
 }

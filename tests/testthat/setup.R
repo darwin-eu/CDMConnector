@@ -69,6 +69,20 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
       return(con)
     }
 
+    if (dbms == "spark") {
+      cli::cli_inform("Testing with DatabseConector on spark")
+
+      connectionDetails <- DatabaseConnector::createConnectionDetails(
+        dbms = "spark",
+        user = Sys.getenv('DATABRICKS_USER'),
+        password = Sys.getenv('DATABRICKS_TOKEN'),
+        connectionString = Sys.getenv('DATABRICKS_CONNECTION_STRING')
+      )
+      con <- DatabaseConnector::connect(connectionDetails)
+
+      return(con)
+    }
+
     stop(paste("Testing", dbms, "with DatabaseConnector has not been implemented yet."))
 
   }
@@ -214,7 +228,7 @@ disconnect <- function(con) {
 }
 
 # databases supported on github actions
-ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake", "bigquery")
+ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake", "bigquery", "spark")
 
 if (Sys.getenv("CI_TEST_DB") == "") {
 

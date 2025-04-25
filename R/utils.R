@@ -360,3 +360,25 @@ dcCreateTable <- function(conn, name, fields) {
   DBI::dbCreateTable(conn, name, fields)
   }
 }
+
+# build and execute the SQL query to insert data into the table
+# .dbInsertData <- function(conn, name, table) {
+#   columns <- colnames(table)
+#   values <- apply(table, 1, function(row) paste0("(", paste(shQuote(row), collapse = ", "), ")"))
+#
+#   tableName <- paste(name@name, collapse = ".")
+#
+#   query <- paste(
+#     "INSERT INTO", tableName, "(", paste(columns, collapse = ", "), ")",
+#     "VALUES", paste(values, collapse = ", ")
+#   )
+#
+#   queryTranslated <- SqlRender::translate(query, dbms(conn))
+#
+#   tryCatch({
+#     DBI::dbExecute(conn, queryTranslated)
+#     cat("Data inserted successfully.\n")
+#   }, error = function(e) {
+#     cat("Error inserting data:", e$message, "\n")
+#   })
+# }

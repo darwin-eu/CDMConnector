@@ -1,0 +1,56 @@
+on:
+  push:
+    branches: [main, master, test, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+name: databaseconnector-spark-test
+
+jobs:
+  Spark-test:
+    # if: github.repository == 'darwin-eu/CDMConnector'
+    runs-on: ubuntu-latest
+    container:
+      image: executionengine.azurecr.io/darwin-base:v0.3
+      env:
+        DATABRICKS_USER: = ${{ secrets.DATABRICKS_USER }}
+        DATABRICKS_TOKEN: =  ${{ secrets.DATABRICKS_TOKEN }}
+        DATABRICKS_CONNECTION_STRING: =  ${{ secrets.DATABRICKS_CONNECTION_STRING }}
+        DATABRICKS_CDM_SCHEMA: = ${{ secrets.DATABRICKS_CDM_SCHEMA}}
+        DATABRICKS_SCRATCH_SCHEMA: = ${{ secrets.DATABRICKS_SCRATCH_SCHEMA}}
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    name: Spark test (DatabaseConnector driver)
+
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run a simple shell command
+        run: ls
+
+      - name: Run one R command
+        run: R -e "getwd()"
+
+      - name: Install Packages
+        run: |
+          print(getwd())
+          print(list.files())
+          install.packages("gert", repos = "https://cloud.r-project.org/")
+          install.packages("usethis", repos = "https://cloud.r-project.org/")
+          install.packages("devtools", repos = "https://cloud.r-project.org/")
+          install.packages("remotes", repos = "https://cloud.r-project.org/")
+          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
+          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          remotes::install_github("tidyverse/dbplyr")
+          remotes::install_github("OHDSI/DatabaseConnector@version_7")
+          CDMConnector::download_eunomia_data()
+          print(paste("eunomiaIsAvailable():", CDMConnector::eunomiaIsAvailable()))
+        shell: Rscript {0}
+
+      - name: Run tests on Spark with DatabaseConnector JDBC driver
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "spark", "TEST_USING_DATABASE_CONNECTOR" = "TRUE"), testthat::test_local())'
+
+
