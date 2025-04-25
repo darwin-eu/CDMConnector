@@ -65,9 +65,9 @@ inSchema <- function(schema, table, dbms = NULL) {
   if (is.null(schema)) {
     # return temp table name
     if (dbms == "sql server") {
-      return(paste0("#", table))
+      return(DBI::Id(table = paste0("#", table)))
     }
-    return(table)
+    return(DBI::Id(table = table))
   }
 
   if ("prefix" %in% names(schema)) {
@@ -95,7 +95,7 @@ inSchema <- function(schema, table, dbms = NULL) {
   if (!is.null(dbms) && dbms == "duckdb" && schema == "main") {
     checkmate::assertCharacter(schema, len = 1)
     # out <- paste(c(schema, table), collapse = ".")
-    out <- table
+    out <- DBI::Id(table = table)
   } else {
     out <- switch(length(schema),
       DBI::Id(schema = schema, table = table),
