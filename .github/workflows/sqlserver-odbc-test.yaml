@@ -39,9 +39,8 @@ jobs:
           print(getwd())
           print(list.files())
           install.packages("devtools", repos = "https://cloud.r-project.org/")
-          # install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
+          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
-          remotes::install_github("darwin-eu-dev/omopgenerics")
 
         shell: Rscript {0}
 
