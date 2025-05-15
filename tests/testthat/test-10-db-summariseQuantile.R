@@ -54,6 +54,47 @@ test_summarise_quantile <- function(con,
 
   expect_equal(actual, expected)
   DBI::dbRemoveTable(con, inSchema(write_schema, tempname, dbms = dbms(con)))
+
+  tempname <- paste0("temp", floor(10*as.numeric(Sys.Date()) %% 1e6))
+  DBI::dbWriteTable(con, inSchema(write_schema, tempname, dbms = dbms(con)), mtcars)
+  mtcars_tbl <- dplyr::tbl(con, inSchema(write_schema, tempname, dbms = dbms(con)))
+
+  # test summariseQuantile2
+  result <- mtcars_tbl %>%
+    dplyr::group_by(cyl) %>%
+    dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
+    summariseQuantile2("mpg", probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),  nameSuffix = "quant") %>%
+    dplyr::collect()
+
+  expected <- dplyr::tibble(
+    cyl = c(8, 4, 6),
+    p0_quant = c(10.4, 21.4, 17.8),
+    p20_quant = c(13.3, 22.8, 18.1),
+    p40_quant = c(15, 24.4, 19.2),
+    p60_quant = c(15.5, 27.3, 21),
+    p80_quant = c(17.3, 30.4, 21),
+    p100_quant = c(19.2, 33.9, 21.4))
+
+  expect_equal(dplyr::arrange(result, .data$cyl), dplyr::arrange(expected, .data$cyl))
+
+  # multiple columns
+  result <- mtcars_tbl %>%
+    dplyr::group_by(cyl) %>%
+    dplyr::mutate(mean = mean(mpg, na.rm = TRUE)) %>%
+    summariseQuantile2(c("mpg", "hp", "wt"), probs = c(0.2, 0.8),  nameSuffix = "{x}_quant") %>%
+    dplyr::collect()
+
+  expected <- dplyr::tibble(
+    cyl = c(8, 4, 6),
+    p20_mpg_quant = c(13.3, 22.8, 18.1),
+    p80_mpg_quant = c(17.3, 30.4, 21),
+    p20_hp_quant = c(175, 65, 110),
+    p80_hp_quant = c(245, 97, 123),
+    p20_wt_quant = c(3.44, 1.835, 2.77),
+    p80_wt_quant = c(5.25, 2.78, 3.44))
+
+  expect_equal(dplyr::arrange(result, .data$cyl), dplyr::arrange(expected, .data$cyl))
+
 }
 
 for (dbtype in dbToTest) {

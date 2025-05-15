@@ -235,13 +235,13 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
     # "bigquery",
     #
-     "duckdb"
+     # "duckdb"
     # ,
     # "postgres"
     # ,
     # "redshift"
     # ,
-    # "sqlserver"
+    "sqlserver"
     # ,
     # "snowflake"
     # ,
