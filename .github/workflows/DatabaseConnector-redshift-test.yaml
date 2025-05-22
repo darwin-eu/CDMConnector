@@ -29,16 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run a simple shell command
-        run: ls
-
-      - name: Run one R command
-        run: R -e "getwd()"
-
       - name: Install Packages
         run: |
-          print(getwd())
-          print(list.files())
           install.packages("gert", repos = "https://cloud.r-project.org/")
           install.packages("usethis", repos = "https://cloud.r-project.org/")
           install.packages("devtools", repos = "https://cloud.r-project.org/")
