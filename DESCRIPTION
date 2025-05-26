@@ -38,7 +38,7 @@ Imports:
     tidyr,
     jsonlite,
     readr,
-    omopgenerics (>= 1.0.0)
+    omopgenerics (>= 1.2.0)
 Suggests: 
     SqlRender,
     CirceR,

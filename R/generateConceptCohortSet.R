@@ -496,12 +496,12 @@ generateConceptCohortSet <- function(cdm,
       excluded_subjects = 0L)
 
     cohortCodelistRef <- df  %>%
-      dplyr::mutate(type = "index event",
+      dplyr::mutate(codelist_type = "index event",
                     concept_id = as.integer(.data$concept_id)) %>%
       dplyr::select("cohort_definition_id",
                     "codelist_name" = "cohort_name",
                     "concept_id",
-                    "type")
+                    "codelist_type")
 
     cdm[[name]] <- omopgenerics::newCohortTable(
       table = cohortRef,
