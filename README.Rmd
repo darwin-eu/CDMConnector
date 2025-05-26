@@ -74,9 +74,9 @@ library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
 
 cdm <- cdmFromCon(con = con, 
-                  cdm_schema = "main", 
-                  write_schema = "main", 
-                  cdm_name = "my_duckdb_database")
+                  cdmSchema = "main", 
+                  writeSchema = "main", 
+                  cdmName = "my_duckdb_database")
 ```
 
 A `cdm_reference` is a named list of table references:
