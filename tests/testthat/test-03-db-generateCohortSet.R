@@ -23,7 +23,7 @@ test_cohort_generation <- function(con, cdm_schema, write_schema) {
 
   cohortCodelist <- dplyr::collect(attr(cdm$chrt0, "cohort_codelist"))
   expect_true(is.data.frame(cohortCodelist))
-  expect_equal(colnames(cohortCodelist), c("cohort_definition_id", "codelist_name", "concept_id", "type"))
+  expect_equal(colnames(cohortCodelist), c("cohort_definition_id", "codelist_name", "concept_id", "codelist_type"))
 
   expect_true(nrow(cohortCount(cdm$chrt0)) == 3)
 
