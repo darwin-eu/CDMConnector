@@ -25,6 +25,7 @@ Authors:
   \item Artem Gorbachev \email{artem.gorbachev@odysseusinc.com}
   \item Edward Burn \email{edward.burn@ndorms.ox.ac.uk}
   \item Marti Catala Sabate \email{marti.catalasabate@ndorms.ox.ac.uk}
+  \item Ioanna Nika \email{i.nika@darwin-eu.org}
 }
 
 }

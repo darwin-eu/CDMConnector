@@ -85,16 +85,16 @@ and use cdm_name to provide a name for the database.
 library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
-```
 
-    ## Creating CDM database /Users/ginberg/Data/eunomia/GiBleed_5.3.zip
-
-``` r
 cdm <- cdmFromCon(con = con, 
                   cdmSchema = "main", 
                   writeSchema = "main", 
                   cdmName = "my_duckdb_database")
 ```
+
+    ## Note: method with signature 'DBIConnection#Id' chosen for function 'dbExistsTable',
+    ##  target signature 'duckdb_connection#Id'.
+    ##  "duckdb_connection#ANY" would also be valid
 
 A `cdm_reference` is a named list of table references:
 
@@ -114,7 +114,8 @@ names(cdm)
     ## [25] "cdm_source"            "concept"               "vocabulary"           
     ## [28] "domain"                "concept_class"         "concept_relationship" 
     ## [31] "relationship"          "concept_synonym"       "concept_ancestor"     
-    ## [34] "source_to_concept_map" "drug_strength"
+    ## [34] "source_to_concept_map" "drug_strength"         "cohort_definition"    
+    ## [37] "attribute_definition"
 
 Use dplyr verbs with the table references.
 
@@ -124,7 +125,7 @@ cdm$person %>%
 ```
 
     ## # Source:   SQL [?? x 1]
-    ## # Database: DuckDB v1.2.2 [root@Darwin 24.4.0:R 4.4.1//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpvKTsvM/file31674f8962ad.duckdb]
+    ## # Database: DuckDB v1.2.1 [root@Darwin 24.0.0:R 4.4.1//private/var/folders/ny/8mfpdl611hz7by4z_3kfl3t00000gn/T/RtmpEXDO3x/file3fc05270671.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -138,7 +139,7 @@ cdm$condition_era %>%
 ```
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB v1.2.2 [root@Darwin 24.4.0:R 4.4.1//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpvKTsvM/file31674f8962ad.duckdb]
+    ## # Database:   DuckDB v1.2.1 [root@Darwin 24.0.0:R 4.4.1//private/var/folders/ny/8mfpdl611hz7by4z_3kfl3t00000gn/T/RtmpEXDO3x/file3fc05270671.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -168,16 +169,16 @@ If you encounter a clear bug, please file an issue with a minimal
 
     ## To cite package 'CDMConnector' in publications use:
     ## 
-    ##   Black A, Gorbachev A, Burn E, Catala Sabate M (????). _CDMConnector:
-    ##   Connect to an OMOP Common Data Model_. R package version 2.0.0,
-    ##   https://github.com/darwin-eu/CDMConnector,
+    ##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (????).
+    ##   _CDMConnector: Connect to an OMOP Common Data Model_. R package
+    ##   version 2.0.0, https://github.com/darwin-eu/CDMConnector,
     ##   <https://darwin-eu.github.io/CDMConnector/>.
     ## 
     ## A BibTeX entry for LaTeX users is
     ## 
     ##   @Manual{,
     ##     title = {CDMConnector: Connect to an OMOP Common Data Model},
-    ##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate}},
+    ##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
     ##     note = {R package version 2.0.0, https://github.com/darwin-eu/CDMConnector},
     ##     url = {https://darwin-eu.github.io/CDMConnector/},
     ##   }
