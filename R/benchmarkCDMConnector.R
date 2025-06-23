@@ -31,7 +31,6 @@
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 benchmarkCDMConnector <- function(cdm) {
-
   checkmate::assertClass(cdm, "cdm_reference")
 
   # will add timings to list
@@ -71,7 +70,9 @@ benchmarkCDMConnector <- function(cdm) {
   startTime <- Sys.time()
   cdm[["concept"]] |>
     dplyr::left_join(cdm[["concept_class"]],
-                     by = c("concept_id" = "concept_class_concept_id")) |>
+      by = c("concept_id" = "concept_class_concept_id"),
+      suffix = c("_x", "_y")
+    ) |>
     dplyr::compute()
   endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
@@ -98,7 +99,8 @@ benchmarkCDMConnector <- function(cdm) {
   startTime <- Sys.time()
   cdm[["person"]] |>
     dplyr::inner_join(cdm[["observation_period"]],
-                      by = "person_id") |>
+      by = "person_id"
+    ) |>
     dplyr::collect()
   endTime <- Sys.time()
   timings[[task]] <- dplyr::tibble(
@@ -111,7 +113,8 @@ benchmarkCDMConnector <- function(cdm) {
   startTime <- Sys.time()
   cdm[["person"]] |>
     dplyr::inner_join(cdm[["observation_period"]],
-                      by = "person_id") |>
+      by = "person_id"
+    ) |>
     dplyr::group_by(.data$gender_concept_id) |>
     dplyr::summarise(
       max = max(.data$observation_period_end_date, na.rm = TRUE),
@@ -129,8 +132,8 @@ benchmarkCDMConnector <- function(cdm) {
     dplyr::mutate(time_taken_mins = round(.data$time_taken_secs / 60, 2)) %>%
     dplyr::mutate(dbms = attr(attr(cdm, "cdm_source"), "source_type")) %>%
     dplyr::mutate(person_n = cdm$person %>%
-                    dplyr::count() %>%
-                    dplyr::pull())
+      dplyr::count() %>%
+      dplyr::pull())
 
 
   return(timings)
