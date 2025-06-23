@@ -221,7 +221,7 @@ cdmFromCon <- function(con,
     achilles_tables <- acTables[which(tolower(acTables) %in% achillesReqTables)]
 
     if (length(achilles_tables) != 3) {
-      cli::cli_abort("Achilles tables not found in {achilles_schema}!")
+      cli::cli_abort("Achilles tables not found in {achillesSchema}!")
     }
 
     achillesTables <- purrr::map(achilles_tables, ~dplyr::tbl(src = src, schema = achillesSchema, .)) %>%
