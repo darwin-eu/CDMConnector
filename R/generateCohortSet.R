@@ -156,7 +156,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
   codelistDf <- createCodelistDataframe(cohortSet)
 
   codes <- cohortSet |>
-    dplyr::select(.data$cohort_definition_id, .data$cohort) |>
+    dplyr::select("cohort_definition_id", "cohort") |>
     dplyr::mutate(df = purrr::map(.data$cohort, ~extractConceptsFromConceptSetList(.$ConceptSets))) |>
     dplyr::select(1, 3) |>
     tidyr::unnest(cols = 2)
