@@ -51,6 +51,7 @@ dbSource <- function(con, writeSchema) {
   return(source)
 }
 
+#' @method insertTable db_cdm
 #' @export
 insertTable.db_cdm <- function(cdm,
                                name,
@@ -91,6 +92,8 @@ insertTable.db_cdm <- function(cdm,
 #'
 #' @importFrom omopgenerics dropTable
 #' @importFrom tidyselect starts_with ends_with matches
+#'
+#' @method dropTable db_cdm
 #' @export
 dropTable.db_cdm <- function(cdm, name) {
   # initial checks
@@ -123,6 +126,7 @@ dropTable.db_cdm <- function(cdm, name) {
 #' @export
 dplyr::compute
 
+#' @method compute db_cdm
 #' @export
 #' @importFrom dplyr compute
 compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
@@ -189,8 +193,9 @@ compute.db_cdm <- function(x, name, temporary = FALSE, overwrite = TRUE, ...) {
   return(x)
 }
 
-#' @export
 #' @importFrom omopgenerics insertFromSource
+#' @method insertFromSource db_cdm
+#' @export
 insertFromSource.db_cdm <- function(cdm, value) {
   if (inherits(value, "data.frame")) {
     cli::cli_abort(
@@ -226,6 +231,7 @@ insertFromSource.db_cdm <- function(cdm, value) {
   return(value)
 }
 
+#' @method cdmTableFromSource db_cdm
 #' @export
 #' @importFrom omopgenerics cdmTableFromSource
 cdmTableFromSource.db_cdm <- function(src, value) {
@@ -263,11 +269,13 @@ cdmTableFromSource.db_cdm <- function(src, value) {
   return(value)
 }
 
+#' @method listSourceTables db_cdm
 #' @export
 listSourceTables.db_cdm <- function(cdm) {
   listTables(con = attr(cdm, "dbcon"), schema = attr(cdm, "write_schema"))
 }
 
+#' @method dropSourceTable db_cdm
 #' @export
 dropSourceTable.db_cdm <- function(cdm, name) {
   # initial checks
@@ -285,6 +293,7 @@ dropSourceTable.db_cdm <- function(cdm, name) {
   return(cdm)
 }
 
+#' @method readSourceTable db_cdm
 #' @export
 readSourceTable.db_cdm <- function(cdm, name) {
   con <- attr(cdm, "dbcon")
@@ -295,6 +304,7 @@ readSourceTable.db_cdm <- function(cdm, name) {
     omopgenerics::newCdmTable(src = cdm, name = tolower(name))
 }
 
+#' @method insertCdmTo db_cdm
 #' @export
 insertCdmTo.db_cdm <- function(cdm, to) {
   # input check
@@ -351,6 +361,7 @@ insertCdmTo.db_cdm <- function(cdm, to) {
 #' @param dropWriteSchema Whether to drop tables in the writeSchema
 #' @param ... Not used
 #'
+#' @method cdmDisconnect db_cdm
 #' @export
 cdmDisconnect.db_cdm <- function(cdm, dropWriteSchema = FALSE, ...) {
   omopgenerics::assertLogical(dropWriteSchema, length = 1)

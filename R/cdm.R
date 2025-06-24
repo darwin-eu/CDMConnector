@@ -168,7 +168,11 @@ cdmFromCon <- function(con,
     checkmate::assertTRUE(all(names(writeSchema) %in% c("catalog", "schema", "prefix")))
   }
 
-  # if writePrefix argument is pass it will be override the prefix in writeSchema
+  if (identical(writePrefix, "")) {
+    writePrefix <- NULL
+  }
+
+  # if writePrefix argument is passed it will be override the prefix in writeSchema
   if (!is.null(writePrefix)) {
     checkmate::assert_character(writePrefix, min.chars = 1, len = 1, pattern = "^[a-z0-9_]+$")
     writeSchema["prefix"] <- writePrefix
@@ -302,8 +306,9 @@ cdmFromCon <- function(con,
   return(cdm)
 }
 
-#' @export
 #' @importFrom dplyr tbl
+#' @method tbl db_cdm
+#' @export
 tbl.db_cdm <- function(src, schema, name, ...) {
   con <- attr(src, "dbcon")
   fullName <- .inSchema(schema = schema, table = name, dbms = dbms(con))
