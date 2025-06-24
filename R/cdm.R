@@ -142,6 +142,11 @@ cdmFromCon <- function(con,
     cdmVersion <- NULL
   }
 
+  # allow empty string to indicate no write prefix
+  if (identical(writePrefix, "")) {
+    writePrefix <- NULL
+  }
+
   checkmate::assert_character(writePrefix, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
 
   # users can give writeSchema = "catalog.schema"
@@ -166,10 +171,6 @@ cdmFromCon <- function(con,
     }
   } else {
     checkmate::assertTRUE(all(names(writeSchema) %in% c("catalog", "schema", "prefix")))
-  }
-
-  if (identical(writePrefix, "")) {
-    writePrefix <- NULL
   }
 
   # if writePrefix argument is passed it will be override the prefix in writeSchema
