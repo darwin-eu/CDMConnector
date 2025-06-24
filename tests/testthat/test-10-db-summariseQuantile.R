@@ -1,7 +1,6 @@
 
 
-test_summarise_quantile <- function(con,
-                                    write_schema) {
+test_summarise_quantile <- function(con, write_schema) {
 
   eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
 
@@ -95,6 +94,7 @@ test_summarise_quantile <- function(con,
 
   expect_equal(dplyr::arrange(result, .data$cyl), dplyr::arrange(expected, .data$cyl))
 
+  DBI::dbRemoveTable(con, inSchema(write_schema, tempname, dbms = dbms(con)))
 }
 
 for (dbtype in dbToTest) {
