@@ -1,10 +1,12 @@
 library(testthat)
 
-withr::local_envvar(
-  R_USER_CACHE_DIR = tempfile(),
-  .local_envir = teardown_env(),
-  EUNOMIA_DATA_FOLDER = Sys.getenv("EUNOMIA_DATA_FOLDER", unset = tempfile())
-)
+if (!interactive()) {
+  withr::local_envvar(
+    R_USER_CACHE_DIR = tempfile(),
+    .local_envir = teardown_env(),
+    EUNOMIA_DATA_FOLDER = Sys.getenv("EUNOMIA_DATA_FOLDER", unset = tempfile())
+  )
+}
 
 tryCatch({
   if (Sys.getenv("skip_eunomia_download_test") != "TRUE") downloadEunomiaData(overwrite = TRUE)
@@ -235,13 +237,13 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
     # "bigquery",
     #
-     # "duckdb"
+    "duckdb"
     # ,
     # "postgres"
     # ,
     # "redshift"
     # ,
-    "sqlserver"
+    # "sqlserver"
     # ,
     # "snowflake"
     # ,

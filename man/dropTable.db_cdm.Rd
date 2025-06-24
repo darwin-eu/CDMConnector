@@ -4,7 +4,7 @@
 \alias{dropTable.db_cdm}
 \title{Drop table from a database backed cdm object}
 \usage{
-dropTable.db_cdm(cdm, name)
+\method{dropTable}{db_cdm}(cdm, name)
 }
 \arguments{
 \item{cdm}{a cdm_reference object}
