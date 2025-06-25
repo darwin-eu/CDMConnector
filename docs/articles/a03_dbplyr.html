@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -152,7 +152,7 @@ duckdb</p>
 <span><span class="co">#&gt; Use `na.rm = TRUE` to silence this warning</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
 <span><span class="co">#&gt; &lt;SQL&gt;</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY year_of_birth)<span style="color: #0000BB;"> AS </span>"median(year_of_birth)"</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">SELECT</span> MEDIAN(year_of_birth)<span style="color: #0000BB;"> AS </span>"median(year_of_birth)"</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">FROM</span> person</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
@@ -183,7 +183,7 @@ duckdb</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate.</p>
+  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
 </div>
 
 <div class="pkgdown-footer-right">

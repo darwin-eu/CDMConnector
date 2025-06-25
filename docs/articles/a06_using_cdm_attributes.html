@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -124,7 +124,7 @@ the version of the cdm we have connected to.</p>
 underlying the cdm reference.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;duckdb_connection 47370 driver=&lt;duckdb_driver dbdir='/private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpMBbqX7/file49e12c2b1c6.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;duckdb_connection 24ef0 driver=&lt;duckdb_driver dbdir='/private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp4HTutT/file16a2b5bdb9ab4.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
 <p>This can be useful, for example, if we want to make use of DBI
 functions to work with the database. For example we could use
 <code>dbListTables</code> to list the names of remote tables accessible
@@ -242,7 +242,7 @@ structure</p>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; Database: DuckDB v1.1.3 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpMBbqX7/file49e12c2b1c6.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB v1.2.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp4HTutT/file16a2b5bdb9ab4.duckdb]</span></span>
 <span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</span></span>
 <span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 273, 61, 351, 579, 549, 116, 163, 304, 326, 285, …</span></span>
 <span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …</span></span>
@@ -287,7 +287,7 @@ analytic packages designed to work with cdm cohorts.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate.</p>
+  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
 </div>
 
 <div class="pkgdown-footer-right">

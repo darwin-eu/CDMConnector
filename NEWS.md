@@ -2,8 +2,9 @@
 
 -   Add support for Redshift and Spark with DatabaseConnector driver (pending version 7) @IoannaNika
 -   Update readme instructions to use camel case functions @ginberg
--   New `summariseQuantile2` function @ablack3
+-   New `summariseQuantile2` function that supports multiple variables @ablack3
 -   Fixed the returned table references @mvankessel-EMC
+-   Validate the writePrefix @xihang-chen
 
 # CDMConnector 2.0.0
 

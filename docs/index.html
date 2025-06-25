@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -108,10 +108,10 @@
 <span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span>dbdir <span class="op">=</span> <span class="fu"><a href="reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdm_from_con</span><span class="op">(</span>con <span class="op">=</span> <span class="va">con</span>, </span>
-<span>                    cdm_schema <span class="op">=</span> <span class="st">"main"</span>, </span>
-<span>                    write_schema <span class="op">=</span> <span class="st">"main"</span>, </span>
-<span>                    cdm_name <span class="op">=</span> <span class="st">"my_duckdb_database"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cdmFromCon.html">cdmFromCon</a></span><span class="op">(</span>con <span class="op">=</span> <span class="va">con</span>, </span>
+<span>                  cdmSchema <span class="op">=</span> <span class="st">"main"</span>, </span>
+<span>                  writeSchema <span class="op">=</span> <span class="st">"main"</span>, </span>
+<span>                  cdmName <span class="op">=</span> <span class="st">"my_duckdb_database"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="do">## Note: method with signature 'DBIConnection#Id' chosen for function 'dbExistsTable',</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="do">##  target signature 'duckdb_connection#Id'.</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="do">##  "duckdb_connection#ANY" would also be valid</span></span></code></pre></div>
@@ -130,13 +130,14 @@
 <span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="do">## [25] "cdm_source"            "concept"               "vocabulary"           </span></span>
 <span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="do">## [28] "domain"                "concept_class"         "concept_relationship" </span></span>
 <span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="do">## [31] "relationship"          "concept_synonym"       "concept_ancestor"     </span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="do">## [34] "source_to_concept_map" "drug_strength"</span></span></code></pre></div>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="do">## [34] "source_to_concept_map" "drug_strength"         "cohort_definition"    </span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="do">## [37] "attribute_definition"</span></span></code></pre></div>
 <p>Use dplyr verbs with the table references.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="do">## # Source:   SQL [1 x 1]</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="do">## # Database: DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpDw9JTb/fileeea2255bd10b.duckdb]</span></span>
+<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="do">## # Source:   SQL [?? x 1]</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="do">## # Database: DuckDB v1.2.1 [root@Darwin 24.0.0:R 4.4.1//private/var/folders/ny/8mfpdl611hz7by4z_3kfl3t00000gn/T/RtmpEXDO3x/file3fc05270671.duckdb]</span></span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="do">##       n</span></span>
 <span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
 <span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
@@ -146,7 +147,7 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condition_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span>top_conditions <span class="op">=</span> <span class="va">concept_name</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">## # Database:   DuckDB v1.1.2 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpDw9JTb/fileeea2255bd10b.duckdb]</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">## # Database:   DuckDB v1.2.1 [root@Darwin 24.0.0:R 4.4.1//private/var/folders/ny/8mfpdl611hz7by4z_3kfl3t00000gn/T/RtmpEXDO3x/file3fc05270671.duckdb]</span></span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
 <span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
@@ -173,17 +174,17 @@
 </h2>
 <div class="sourceCode" id="cb11"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="do">## To cite package 'CDMConnector' in publications use:</span></span>
 <span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="do">##   Black A, Gorbachev A, Burn E, Catala Sabate M (????). _CDMConnector:</span></span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="do">##   Connect to an OMOP Common Data Model_. R package version 1.6.0,</span></span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="do">##   https://github.com/darwin-eu/CDMConnector,</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="do">##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (????).</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="do">##   _CDMConnector: Connect to an OMOP Common Data Model_. R package</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="do">##   version 2.0.0, https://github.com/darwin-eu/CDMConnector,</span></span>
 <span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="do">##   &lt;https://darwin-eu.github.io/CDMConnector/&gt;.</span></span>
 <span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
 <span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="do">##   @Manual{,</span></span>
 <span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="do">##     title = {CDMConnector: Connect to an OMOP Common Data Model},</span></span>
-<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="do">##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate}},</span></span>
-<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="do">##     note = {R package version 1.6.0, https://github.com/darwin-eu/CDMConnector},</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="do">##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="do">##     note = {R package version 2.0.0, https://github.com/darwin-eu/CDMConnector},</span></span>
 <span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="do">##     url = {https://darwin-eu.github.io/CDMConnector/},</span></span>
 <span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div>
 <hr>
@@ -228,6 +229,7 @@
 <li>Artem Gorbachev <br><small class="roles"> Author </small>  </li>
 <li>Edward Burn <br><small class="roles"> Author </small>  </li>
 <li>Marti Catala Sabate <br><small class="roles"> Author </small>  </li>
+<li>Ioanna Nika <br><small class="roles"> Author </small>  </li>
 </ul>
 </div>
 
@@ -251,7 +253,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate.</p>
+  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
 </div>
 
 <div class="pkgdown-footer-right">
