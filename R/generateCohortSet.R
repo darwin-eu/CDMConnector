@@ -219,8 +219,27 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
       "codelist_type",
       "concept_id"
     ) |>
-    dplyr::distinct() %>%
-    dplyr::compute(temporary = FALSE, name = codelistTableName, overwrite = TRUE, analyze = analyzeParam)
+    dplyr::distinct()
+
+  writeSchema <- unname(cdmWriteSchema(cdm))
+
+  # dpbply 2.5 workaround for spark
+  if (dbms(cdmCon(cdm)) == "spark") {
+    cohortCodelistRef <- .computeQuery(
+      cohortCodelistRef,
+      temporary = FALSE,
+      name = codelistTableName,
+      overwrite = TRUE,
+      schema = writeSchema)
+  } else {
+    cohortCodelistRef <- dplyr::compute(
+      cohortCodelistRef,
+      temporary = FALSE,
+      name = codelistTableName,
+      overwrite = TRUE,
+      analyze = analyzeParam)
+  }
+
 
   return(cohortCodelistRef)
 }
