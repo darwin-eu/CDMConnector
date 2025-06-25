@@ -231,7 +231,7 @@ test_clock_functions <- function(con, write_schema) {
   expect_equal(unique(df$m2), 12)
   expect_equal(unique(df$d2), 1)
 
-  if (dbms(con) %in% c("redshift", "postgresql", "sql server", "spark")) {
+  if (dbms(con) %in% c("redshift", "postgresql", "sql server", "spark", "snowflake")) {
     df$dif_days <- abs(df$dif_days) # TODO on some dbms the translation of difftime does not match base R difftime and we get the wrong sign
   }
 
