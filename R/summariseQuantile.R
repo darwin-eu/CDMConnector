@@ -144,11 +144,12 @@ summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
   query <- rlang::expr(
     .data %>%
       dplyr::group_by(!!!group_1) %>%
-      dplyr::summarise(..n = dplyr::n(), .groups = "drop") %>%
+      dplyr::summarise(n__ = dplyr::n(), .groups = "drop") %>%
+      dplyr::mutate(row_id__ = row_number()) %>% # tie breaker for min() expression that result in non-deterministic ordering in SQL
       dplyr::group_by(!!!group_2) %>%
-      dbplyr::window_order(!!x_sym) %>%
-      dplyr::mutate(accumulated = cumsum(.data$..n),
-                    total = sum(.data$..n, na.rm = TRUE)) %>%
+      dbplyr::window_order(!!x_sym, .data$row_id__) %>%
+      dplyr::mutate(accumulated = cumsum(.data$n__),
+                    total = sum(.data$n__, na.rm = TRUE)) %>%
       dplyr::summarize(!!!quant_expr, .groups = "drop")
   )
   eval(query)
