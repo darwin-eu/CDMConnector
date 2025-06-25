@@ -221,7 +221,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
     ) |>
     dplyr::distinct()
 
-  writeSchema <- unname(cdmWriteSchema(cdm))
+  writeSchema <- unname(cdmWriteSchema(cdm)["schema"])
 
   # dpbply 2.5 workaround for spark
   if (dbms(cdmCon(cdm)) == "spark") {
