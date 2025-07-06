@@ -161,55 +161,34 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
     dplyr::select(1, 3) |>
     tidyr::unnest(cols = 2)
 
+  concepts <- dplyr::left_join(codelistDf, codes, by = c("cohort_definition_id", "codelist_id"))
 
-  df <- dplyr::left_join(codelistDf, codes, by = c("cohort_definition_id", "codelist_id"))
+  nm <- omopgenerics::uniqueTableName()
+  cdm <- omopgenerics::insertTable(cdm = cdm, name = nm, table = concepts)
 
-  # upload concept data to the database ----
-  tempName <- omopgenerics::uniqueTableName()
-
-  DBI::dbWriteTable(cdmCon(cdm),
-                    name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(cdmCon(cdm))),
-                    value = df,
-                    overwrite = TRUE)
-
-  on.exit({
-    if (DBI::dbIsValid(cdmCon(cdm))) {
-      DBI::dbRemoveTable(cdmCon(cdm), name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(cdmCon(cdm))))
-    }},
-    add = TRUE
-  )
-
-  if (any(df$include_descendants)) {
-    checkmate::assertTRUE("concept_ancestor" %in% names(cdm))
-  }
-
-  # realize full list of concepts ----
-  concepts <- dplyr::tbl(cdmCon(cdm), .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(cdmCon(cdm)))) %>%
-    dplyr::rename_all(tolower)
-
-  if (any(df$include_descendants)) {
-    concepts <- concepts  %>%
+  if (any(concepts$include_descendants)) {
+    cdm[[nm]] <- cdm[[nm]]  %>%
       dplyr::filter(.data$include_descendants == TRUE) %>%
-      dplyr::inner_join(cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")) %>%
+      dplyr::inner_join(
+        cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")
+      ) %>%
       dplyr::select(
-        "cohort_definition_id", "codelist_id",
-        "codelist_name", "codelist_type",
-        "concept_id" = "descendant_concept_id",
-        "is_excluded"
+        "cohort_definition_id", "codelist_id", "codelist_name", "codelist_type",
+        "concept_id" = "descendant_concept_id", "is_excluded"
       ) %>%
       dplyr::union_all(
-        dplyr::select(concepts,
-                      "cohort_definition_id", "codelist_id",
-                      "codelist_name", "codelist_type",
-                      "concept_id", "is_excluded"
-        )
+        cdm[[nm]] |>
+          dplyr::select(
+            "cohort_definition_id", "codelist_id", "codelist_name",
+            "codelist_type", "concept_id", "is_excluded"
+          )
       )
+  } else {
+    cdm[[nm]] <- cdm[[nm]] |>
+      dplyr::select(!"include_descendants")
   }
 
-  codelistTableName <- omopgenerics::uniqueTableName("codelist_")
-
-  analyzeParam <- ifelse(dbms(cdmCon(cdm)) == "spark", FALSE, TRUE)
-  cohortCodelistRef <- concepts %>%
+  concepts <- cdm[[nm]] %>%
     dplyr::filter(.data$is_excluded == FALSE) %>%
     # Note that concepts that are not in the vocab will be silently ignored
     dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
@@ -219,29 +198,12 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
       "codelist_type",
       "concept_id"
     ) |>
-    dplyr::distinct()
+    dplyr::distinct() |>
+    dplyr::collect()
 
-  writeSchema <- unname(cdmWriteSchema(cdm)["schema"])
+  omopgenerics::dropSourceTable(cdm = cdm, name = nm)
 
-  # dpbply 2.5 workaround for spark
-  if (dbms(cdmCon(cdm)) == "spark") {
-    cohortCodelistRef <- .computeQuery(
-      cohortCodelistRef,
-      temporary = FALSE,
-      name = codelistTableName,
-      overwrite = TRUE,
-      schema = writeSchema)
-  } else {
-    cohortCodelistRef <- dplyr::compute(
-      cohortCodelistRef,
-      temporary = FALSE,
-      name = codelistTableName,
-      overwrite = TRUE,
-      analyze = analyzeParam)
-  }
-
-
-  return(cohortCodelistRef)
+  concepts
 }
 
 
