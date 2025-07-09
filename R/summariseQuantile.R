@@ -125,7 +125,9 @@ summariseQuantile <- function(.data, x = NULL, probs, nameSuffix = "value") {
 
 # Internal function to support summariseQuantile2. Accepts a single variable as a string.
 summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
-  checkmate::assertClass(.data, "tbl_sql")
+  if (!methods::is(.data, "tbl_sql") && !methods::is(.data, "data.frame")) {
+    cli::cli_abort(".data must be tbl_sql or a data.frame")
+  }
   checkmate::assert_double(probs, min.len = 1, lower = 0, upper = 1)
   checkmate::assert_character(nameSuffix, null.ok = TRUE)
   checkmate::assert_character(x, null.ok = TRUE)
@@ -133,7 +135,7 @@ summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
   nameSuffix <- glue::glue(nameSuffix)
 
   x_sym <- as.symbol(x)
-  group_by_vars <- .data$lazy_query$group_vars
+  group_by_vars <- dplyr::group_vars(.data)
   group_1 <- rlang::syms(c(group_by_vars, x_sym))
   group_2 <- rlang::syms(c(group_by_vars))
 
@@ -141,17 +143,45 @@ summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
   quant_expr <- purrr::map(probs, ~ rlang::expr(min(ifelse(accumulated >= !!.x * total, !!x_sym, NA), na.rm = TRUE)))
   names(quant_expr) <- paste0('p', as.character(probs * 100), '_', nameSuffix)
 
-  query <- rlang::expr(
-    .data %>%
-      dplyr::group_by(!!!group_1) %>%
-      dplyr::summarise(n__ = dplyr::n(), .groups = "drop") %>%
-      dplyr::mutate(row_id__ = row_number()) %>% # tie breaker for min() expression that result in non-deterministic ordering in SQL
-      dplyr::group_by(!!!group_2) %>%
-      dbplyr::window_order(!!x_sym, .data$row_id__) %>%
-      dplyr::mutate(accumulated = cumsum(.data$n__),
-                    total = sum(.data$n__, na.rm = TRUE)) %>%
-      dplyr::summarize(!!!quant_expr, .groups = "drop")
-  )
+  if (methods::is(.data, "data.frame")) {
+    query <- rlang::expr(
+      .data %>%
+        dplyr::group_by(!!!group_1) %>%
+        dplyr::summarise(n__ = dplyr::n(), .groups = "drop") %>%
+        dplyr::group_by(!!!group_2) %>%
+        dplyr::arrange(!!x_sym) %>%
+        dplyr::mutate(accumulated = cumsum(.data$n__),
+                      total = sum(.data$n__, na.rm = TRUE)) %>%
+        dplyr::summarize(!!!quant_expr, .groups = "drop")
+    )
+  } else if (dbms(.data$src$con) == "duckdb") {
+    # tie breaker for min() expression that result in non-deterministic ordering in SQL
+    query <- rlang::expr(
+      .data %>%
+        dplyr::group_by(!!!group_1) %>%
+        dplyr::summarise(n__ = dplyr::n(), .groups = "drop") %>%
+        dplyr::mutate(row_id__ = row_number()) %>%
+        dplyr::group_by(!!!group_2) %>%
+        dbplyr::window_order(!!x_sym, .data$row_id__) %>%
+        dplyr::mutate(accumulated = cumsum(.data$n__),
+                      total = sum(.data$n__, na.rm = TRUE)) %>%
+        dplyr::summarize(!!!quant_expr, .groups = "drop")
+    )
+  } else {
+    # tie breaker for min() is not needed on most databases
+    query <- rlang::expr(
+      .data %>%
+        dplyr::group_by(!!!group_1) %>%
+        dplyr::summarise(n__ = dplyr::n(), .groups = "drop") %>%
+        dplyr::mutate(row_id__ = row_number()) %>%
+        dplyr::group_by(!!!group_2) %>%
+        dbplyr::window_order(!!x_sym) %>%
+        dplyr::mutate(accumulated = cumsum(.data$n__),
+                      total = sum(.data$n__, na.rm = TRUE)) %>%
+        dplyr::summarize(!!!quant_expr, .groups = "drop")
+    )
+  }
+
   eval(query)
 }
 
@@ -219,7 +249,9 @@ summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
 #' }
 summariseQuantile2 <- function(.data, x, probs, nameSuffix = "{x}") {
 
-  checkmate::assertClass(.data, "tbl_sql")
+  if (!methods::is(.data, "tbl_sql") && !methods::is(.data, "data.frame")) {
+    cli::cli_abort(".data must be tbl_sql or a data.frame")
+  }
   checkmate::assertCharacter(x, any.missing = FALSE, min.len = 1, min.chars = 1, pattern = "^[A-Za-z][A-Za-z0-9_]*$")
   checkmate::assert_double(probs, min.len = 1, lower = 0, upper = 1, any.missing = FALSE)
 
@@ -227,7 +259,7 @@ summariseQuantile2 <- function(.data, x, probs, nameSuffix = "{x}") {
     rlang::abort("`nameSuffix` should contain {x}, the variable name, when multiple quantiles are calculated.")
   }
 
-  group_by_vars <- .data$lazy_query$group_vars
+  group_by_vars <- dplyr::group_vars(.data)
 
   result <- list()
   for (i in seq_along(x)) {
