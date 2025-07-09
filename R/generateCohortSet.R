@@ -165,6 +165,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
 
   nm <- omopgenerics::uniqueTableName()
   cdm <- omopgenerics::insertTable(cdm = cdm, name = nm, table = concepts)
+  on.exit(omopgenerics::dropSourceTable(cdm = cdm, name = nm), add = TRUE)
 
   if (any(concepts$include_descendants)) {
     cdm[[nm]] <- cdm[[nm]]  %>%
@@ -199,9 +200,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
       "concept_id"
     ) |>
     dplyr::distinct() |>
-    dplyr::collect()
-
-  omopgenerics::dropSourceTable(cdm = cdm, name = nm)
+    dplyr::compute(name = paste0("codeset_", nm))
 
   concepts
 }
