@@ -28,7 +28,7 @@ that starts with a letter and only contains letters, numbers, and underscores.}
 exists? TRUE (default) or FALSE}
 }
 \description{
-A "chort_table" object consists of four components
+A "cohort_table" object consists of four components
 \itemize{
 \item{A remote table reference to an OHDSI cohort table with at least
 the columns: cohort_definition_id, subject_id, cohort_start_date,

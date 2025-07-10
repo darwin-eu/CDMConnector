@@ -6,6 +6,8 @@
 \alias{CDMConnector-package}
 \title{CDMConnector: Connect to an OMOP Common Data Model}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Provides tools for working with observational health data in the Observational Medical Outcomes Partnership (OMOP) Common Data Model format with a pipe friendly syntax. Common data model database table references are stored in a single compound object along with metadata.
 }
 \seealso{

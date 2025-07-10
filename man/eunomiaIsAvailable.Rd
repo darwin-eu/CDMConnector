@@ -12,7 +12,7 @@ eunomiaIsAvailable(datasetName = "GiBleed", cdmVersion = "5.3")
 \item{cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3" or "5.4".}
 }
 \value{
-TRUE if the eunomia example dataset is available and FASLE otherwise
+TRUE if the eunomia example dataset is available and FALSE otherwise
 }
 \description{
 Has the Eunomia dataset been cached?

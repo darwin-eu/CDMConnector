@@ -1,6 +1,7 @@
 template:
   bootstrap: 5
   bootswatch: flatly
+  logo: man/figures/logo.png
   bslib:
     primary: "#123293" # darwin dark blue
     #fg: "#5fa7d7" # darwin light blue

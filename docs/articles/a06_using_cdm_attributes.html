@@ -6,6 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Using CDM attributes • CDMConnector</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -20,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,8 +65,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Using CDM attributes</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Using CDM attributes</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/HEAD/vignettes/a06_using_cdm_attributes.Rmd" class="external-link"><code>vignettes/a06_using_cdm_attributes.Rmd</code></a></small>
@@ -124,7 +129,7 @@ the version of the cdm we have connected to.</p>
 underlying the cdm reference.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cdmCon.html">cdmCon</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;duckdb_connection 24ef0 driver=&lt;duckdb_driver dbdir='/private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp4HTutT/file16a2b5bdb9ab4.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;duckdb_connection 05d00 driver=&lt;duckdb_driver dbdir='/private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmpfrz2Fr/file7a4d6e74f564.duckdb' read_only=FALSE bigint=numeric&gt;&gt;</span></span></code></pre></div>
 <p>This can be useful, for example, if we want to make use of DBI
 functions to work with the database. For example we could use
 <code>dbListTables</code> to list the names of remote tables accessible
@@ -242,11 +247,11 @@ structure</p>
 <span>  <span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; Database: DuckDB v1.2.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp4HTutT/file16a2b5bdb9ab4.duckdb]</span></span>
-<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</span></span>
-<span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 273, 61, 351, 579, 549, 116, 163, 304, 326, 285, …</span></span>
-<span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …</span></span>
-<span><span class="co">#&gt; $ cohort_end_date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …</span></span></code></pre></div>
+<span><span class="co">#&gt; Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmpfrz2Fr/file7a4d6e74f564.duckdb]</span></span>
+<span><span class="co">#&gt; $ cohort_definition_id <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>1…</span></span>
+<span><span class="co">#&gt; $ subject_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 273<span style="color: #949494;">, </span>61<span style="color: #949494;">, </span>351<span style="color: #949494;">, </span>579<span style="color: #949494;">, </span>549<span style="color: #949494;">, </span>116<span style="color: #949494;">, </span>163<span style="color: #949494;">, </span>304<span style="color: #949494;">, </span>326<span style="color: #949494;">, </span>285<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ cohort_start_date    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2011-10-10<span style="color: #949494;">, </span>2005-09-15<span style="color: #949494;">, </span>2018-06-28<span style="color: #949494;">, </span>1999-11-06<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ cohort_end_date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2011-10-10<span style="color: #949494;">, </span>2005-09-15<span style="color: #949494;">, </span>2018-06-28<span style="color: #949494;">, </span>1999-11-06<span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <p>We can add the required attributes using the
 <code>newCohortTable</code> function. The minimum requirement for this
 is that we also define the cohort set to associate with our set of

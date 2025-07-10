@@ -23,7 +23,7 @@
 #' schema.
 #'
 #'
-#' @param con A DBI datbase connection created by `DBI::dbConnect`
+#' @param con A DBI database connection created by `DBI::dbConnect`
 #' @param cdm A cdm reference object created by `CDMConnector::cdmFromCon` or `CDMConnector::cdm_from_con`
 #' @param schema schema name in the remote database where the user has write permission
 #' @param overwrite Should the cohort table be overwritten if it already exists? TRUE or FALSE (default)

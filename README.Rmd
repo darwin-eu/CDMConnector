@@ -4,8 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# [CDMConnector](https://darwin-eu.github.io/CDMConnector/)
-
+# [CDMConnector](https://darwin-eu.github.io/CDMConnector/) <img src="man/figures/logo.png" align="right" height="180"/>
  
 
 <!-- badges: start -->
@@ -101,7 +100,7 @@ cdm$condition_era %>%
   count(top_conditions = concept_name, sort = TRUE)
 ```
 
-And much more besides. See vignettes for further explanations on how to create database connections, make a cdm reference, and start analysing your data.
+And much more besides. See vignettes for further explanations on how to create database connections, make a cdm reference, and start analyzing your data.
 
 ```{r, include=FALSE}
 cdmDisconnect(cdm)

@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# [CDMConnector](https://darwin-eu.github.io/CDMConnector/)
+# [CDMConnector](https://darwin-eu.github.io/CDMConnector/) <img src="man/figures/logo.png" align="right" height="180"/>
 
 <!-- badges: start -->
 
@@ -92,10 +92,6 @@ cdm <- cdmFromCon(con = con,
                   cdmName = "my_duckdb_database")
 ```
 
-    ## Note: method with signature 'DBIConnection#Id' chosen for function 'dbExistsTable',
-    ##  target signature 'duckdb_connection#Id'.
-    ##  "duckdb_connection#ANY" would also be valid
-
 A `cdm_reference` is a named list of table references:
 
 ``` r
@@ -114,8 +110,7 @@ names(cdm)
     ## [25] "cdm_source"            "concept"               "vocabulary"           
     ## [28] "domain"                "concept_class"         "concept_relationship" 
     ## [31] "relationship"          "concept_synonym"       "concept_ancestor"     
-    ## [34] "source_to_concept_map" "drug_strength"         "cohort_definition"    
-    ## [37] "attribute_definition"
+    ## [34] "source_to_concept_map" "drug_strength"
 
 Use dplyr verbs with the table references.
 
@@ -125,7 +120,7 @@ cdm$person %>%
 ```
 
     ## # Source:   SQL [?? x 1]
-    ## # Database: DuckDB v1.2.1 [root@Darwin 24.0.0:R 4.4.1//private/var/folders/ny/8mfpdl611hz7by4z_3kfl3t00000gn/T/RtmpEXDO3x/file3fc05270671.duckdb]
+    ## # Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]
     ##       n
     ##   <dbl>
     ## 1  2694
@@ -139,7 +134,7 @@ cdm$condition_era %>%
 ```
 
     ## # Source:     SQL [?? x 2]
-    ## # Database:   DuckDB v1.2.1 [root@Darwin 24.0.0:R 4.4.1//private/var/folders/ny/8mfpdl611hz7by4z_3kfl3t00000gn/T/RtmpEXDO3x/file3fc05270671.duckdb]
+    ## # Database:   DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]
     ## # Ordered by: desc(n)
     ##    top_conditions                               n
     ##    <chr>                                    <dbl>
@@ -156,7 +151,7 @@ cdm$condition_era %>%
     ## # ℹ more rows
 
 And much more besides. See vignettes for further explanations on how to
-create database connections, make a cdm reference, and start analysing
+create database connections, make a cdm reference, and start analyzing
 your data.
 
 ## Getting help
@@ -171,7 +166,7 @@ If you encounter a clear bug, please file an issue with a minimal
     ## 
     ##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (????).
     ##   _CDMConnector: Connect to an OMOP Common Data Model_. R package
-    ##   version 2.0.0, https://github.com/darwin-eu/CDMConnector,
+    ##   version 2.1.0, https://github.com/darwin-eu/CDMConnector,
     ##   <https://darwin-eu.github.io/CDMConnector/>.
     ## 
     ## A BibTeX entry for LaTeX users is
@@ -179,7 +174,7 @@ If you encounter a clear bug, please file an issue with a minimal
     ##   @Manual{,
     ##     title = {CDMConnector: Connect to an OMOP Common Data Model},
     ##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
-    ##     note = {R package version 2.0.0, https://github.com/darwin-eu/CDMConnector},
+    ##     note = {R package version 2.1.0, https://github.com/darwin-eu/CDMConnector},
     ##     url = {https://darwin-eu.github.io/CDMConnector/},
     ##   }
 

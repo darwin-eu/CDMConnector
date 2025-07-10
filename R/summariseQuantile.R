@@ -160,7 +160,7 @@ summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
       .data %>%
         dplyr::group_by(!!!group_1) %>%
         dplyr::summarise(n__ = dplyr::n(), .groups = "drop") %>%
-        dplyr::mutate(row_id__ = row_number()) %>%
+        dplyr::mutate(row_id__ = dplyr::row_number()) %>%
         dplyr::group_by(!!!group_2) %>%
         dbplyr::window_order(!!x_sym, .data$row_id__) %>%
         dplyr::mutate(accumulated = cumsum(.data$n__),
@@ -173,7 +173,6 @@ summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
       .data %>%
         dplyr::group_by(!!!group_1) %>%
         dplyr::summarise(n__ = dplyr::n(), .groups = "drop") %>%
-        dplyr::mutate(row_id__ = row_number()) %>%
         dplyr::group_by(!!!group_2) %>%
         dbplyr::window_order(!!x_sym) %>%
         dplyr::mutate(accumulated = cumsum(.data$n__),

@@ -7,7 +7,7 @@
 copyCdmTo(con, cdm, schema, overwrite = FALSE)
 }
 \arguments{
-\item{con}{A DBI datbase connection created by \code{DBI::dbConnect}}
+\item{con}{A DBI database connection created by \code{DBI::dbConnect}}
 
 \item{cdm}{A cdm reference object created by \code{CDMConnector::cdmFromCon} or \code{CDMConnector::cdm_from_con}}
 

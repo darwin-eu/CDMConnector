@@ -1,3 +1,8 @@
+# CDMConnector 2.1.1
+
+- fix bug with cohort generation @catalamarti
+- fix bug in summariseQuantile2 @ablack3
+
 # CDMConnector 2.1.0
 
 -   Add support for Redshift and Spark with DatabaseConnector driver (pending version 7) @IoannaNika

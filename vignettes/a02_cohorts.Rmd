@@ -41,7 +41,7 @@ A cohort table can contain multiple cohorts and each cohort can have multiple pe
 
 The $n*4$ cohort table is created through the process of cohort *generation*. To generate a cohort on a specific CDM dataset means that we combine a *cohort definition* with CDM to produce a cohort table. The standardization provided by the OMOP CDM allows researchers to generate the same cohort definition on any OMOP CDM dataset.
 
-A cohort definition is an expression of the rules goverining the inclusion/exclusion of person-days in the cohort. There are three common ways to create cohort definitions for the OMOP CDM.
+A cohort definition is an expression of the rules governing the inclusion/exclusion of person-days in the cohort. There are three common ways to create cohort definitions for the OMOP CDM.
 
 1.  The Atlas cohort builder
 

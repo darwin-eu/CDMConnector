@@ -34,7 +34,7 @@ This vignette is for new users of CDMConnector who have access to data already m
 
 ## Creating a reference to the OMOP CDM
 
-Typically OMOP CDM datasets are stored in a database and can range in size from hundreds of patients with thousands of records to hundreds of millions of patients with billions of records. The Observational Health Data Science and Informatics (OHDSI) community supports a selection of popular database platforms including Postgres, Microsoft SQL Server, Oracle, as well as cloud data platforms suchs as Amazon Redshift, Google Big Query, Databricks, and Snowflake. The first step in using CDMConnector is to create a connection to your database from R. This can take some effort the first time you set up drivers. See the "Database Connection Examples" vignette or check out the [Posit's database documentation.](https://solutions.posit.co/connections/db/getting-started/connect-to-database/)
+Typically OMOP CDM datasets are stored in a database and can range in size from hundreds of patients with thousands of records to hundreds of millions of patients with billions of records. The Observational Health Data Science and Informatics (OHDSI) community supports a selection of popular database platforms including Postgres, Microsoft SQL Server, Oracle, as well as cloud data platforms such as Amazon Redshift, Google Big Query, Databricks, and Snowflake. The first step in using CDMConnector is to create a connection to your database from R. This can take some effort the first time you set up drivers. See the "Database Connection Examples" vignette or check out the [Posit's database documentation.](https://solutions.posit.co/connections/db/getting-started/connect-to-database/)
 
 In our example's we will use some synthetic data from the [Synthea project](https://synthetichealth.github.io/synthea/) that has been mapped to the OMOP CDM format. We'll use the [duckdb](https://duckdb.org/) database which is a file based database similar to SQLite but with better date type support. To see all the example datasets available run `exampleDatasets()`.
 
@@ -46,7 +46,7 @@ con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
 DBI::dbListTables(con)
 ```
 
-If you're using CDMConnector for the first time you may get a message about adding an enviroment vairable `EUNOMIA_DATA_FOLDER` . To do this simply create a new text file in your home directory called .Renviron and add the line `EUNOMIA_DATA_FOLDER="path/to/folder/where/we/can/store/example/data"`. If you run `usethis::edit_r_environ()` this file will be created and opened for you and opened in RStudio.
+If you're using CDMConnector for the first time you may get a message about adding an environment variable `EUNOMIA_DATA_FOLDER` . To do this simply create a new text file in your home directory called .Renviron and add the line `EUNOMIA_DATA_FOLDER="path/to/folder/where/we/can/store/example/data"`. If you run `usethis::edit_r_environ()` this file will be created and opened for you and opened in RStudio.
 
 After connecting to a database containing data mapped to the OMOP CDM, use `cdmFromCon` to create a CDM reference. This CDM reference is a single object that contains dplyr table references to each CDM table along with metadata about the CDM instance.
 

@@ -307,7 +307,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
 #' @param datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
 #' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
 #'
-#' @return TRUE if the eunomia example dataset is available and FASLE otherwise
+#' @return TRUE if the eunomia example dataset is available and FALSE otherwise
 #' @export
 eunomiaIsAvailable <- function(datasetName = "GiBleed",
                                  cdmVersion = "5.3") {
