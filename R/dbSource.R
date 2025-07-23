@@ -394,3 +394,20 @@ cdmDisconnect.db_cdm <- function(cdm, dropWriteSchema = FALSE, ...) {
 
   return(invisible(TRUE))
 }
+
+#' @export
+summary.db_cdm <- function(object, ...) {
+  con <- attr(object, "dbcon")
+  result <- list(package = "CDMConnector")
+  schema <- attr(object, "write_schema")
+  if ("catalog" %in% names(schema)) {
+    result$write_catalog <- schema[["catalog"]]
+  }
+  if ("schema" %in% names(schema)) {
+    result$write_schema <- schema[["schema"]]
+  }
+  if ("prefix" %in% names(schema)) {
+    result$write_prefix <- schema[["prefix"]]
+  }
+  return(result)
+}
