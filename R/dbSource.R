@@ -57,7 +57,8 @@ insertTable.db_cdm <- function(cdm,
                                name,
                                table,
                                overwrite = TRUE,
-                               temporary = FALSE) {
+                               temporary = FALSE,
+                               ...) {
   table <- dplyr::as_tibble(table)
   src <- cdm
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
