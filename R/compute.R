@@ -275,11 +275,26 @@ computeQuery <- function(x,
       DBI::dbExecute(con, sql)
       out <- dplyr::tbl(con, name)
     } else if (dbms(con) == "sql server") {
-      suppressMessages({ # Suppress the "Created a temporary table named" message
-        out <- dplyr::compute(x, name = name, temporary = temporary, ...)
-      })
+
+      if (methods::is(con, "DatabaseConnectorJdbcConnection")) {
+        # dbplyr doesn't recognize the dbms of DatabaseConnector connections and thus writes incorrect SQL
+        sql <- dbplyr::build_sql(
+          "SELECT * \n",
+          "INTO ", dbplyr::ident(paste0("#", name)), " FROM ( \n",
+          dbplyr::sql_render(x), " ) AS qry;",
+          con = con
+        )
+        DBI::dbExecute(con, sql)
+        out <- dplyr::tbl(con, paste0("#", name))
+      } else {
+        # compute works fine with odbc on sql server
+        suppressMessages({ # Suppress the "Created a temporary table named" message
+          out <- dplyr::compute(x, name = name, temporary = temporary, analyze = FALSE, ...)
+        })
+      }
+
     } else {
-      out <- dplyr::compute(x, name = name, temporary = temporary, ...)
+      out <- dplyr::compute(x, name = name, temporary = temporary, analyze = FALSE, ...)
     }
 
   } else {

@@ -19,10 +19,20 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
   if (DatabaseConnector) {
     stopifnot(rlang::is_installed("DatabaseConnector"))
 
-    if (dbms == "postgres") {
+    if (dbms == "duckdb") {
+      cli::cli_inform("Testing with DatabseConector on duckdb")
+      return(
+        con <- DatabaseConnector::connect(
+          dbms = "duckdb",
+          server = eunomiaDir()
+        )
+      )
+    }
+
+    if (dbms == "postgresql" || dbms == "postgres") {
       cli::cli_inform("Testing with DatabseConector on postgresql")
       return(
-        con = DatabaseConnector::connect(
+        con <- DatabaseConnector::connect(
           dbms = "postgresql",
           server = Sys.getenv("CDM5_POSTGRESQL_SERVER"),
           user = Sys.getenv("CDM5_POSTGRESQL_USER"),
@@ -42,18 +52,18 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
       )
     }
 
-    if (dbms == "bigquery") {
-
-      options(sqlRenderTempEmulationSchema = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"))
-
-      connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="bigquery",
-                                                                      connectionString=Sys.getenv("BIGQUERY_CONNECTION_STRING"),
-                                                                      user="",
-                                                                      password='')
-
-      con <- DatabaseConnector::connect(connectionDetails)
-
-      return(con)
+    # if (dbms == "sql server" || dbms == "sqlserver") {
+    if (dbms == "sqlserver") {
+      cli::cli_inform("Testing with DatabseConector on sql server")
+      return(
+        con <- DatabaseConnector::connect(
+          dbms = "sql server",
+          server = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+          user = Sys.getenv("CDM5_SQL_SERVER_USER"),
+          password = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+          port = Sys.getenv("CDM5_SQL_SERVER_PORT")
+        )
+      )
     }
 
     if (dbms == "snowflake") {
@@ -82,6 +92,20 @@ get_connection <- function(dbms, DatabaseConnector = FALSE) {
       )
       con <- DatabaseConnector::connect(connectionDetails)
 
+      return(con)
+    }
+
+    if (dbms == "bigquery") {
+      cli::cli_inform("Testing with DatabseConector on bigquery")
+
+      options(sqlRenderTempEmulationSchema = Sys.getenv("BIGQUERY_SCRATCH_SCHEMA"))
+
+      connectionDetails <- DatabaseConnector::createConnectionDetails(dbms="bigquery",
+                                                                      connectionString=Sys.getenv("BIGQUERY_CONNECTION_STRING"),
+                                                                      user="",
+                                                                      password='')
+
+      con <- DatabaseConnector::connect(connectionDetails)
       return(con)
     }
 
@@ -219,14 +243,15 @@ get_write_schema <- function(dbms, prefix = paste0("temp", (floor(as.numeric(Sys
   return(s)
 }
 
+if (Sys.getenv('TEST_USING_DATABASE_CONNECTOR') %in% c("TRUE", "FALSE")) {
+  testUsingDatabaseConnector <- as.logical(Sys.getenv('TEST_USING_DATABASE_CONNECTOR'))
+} else {
+  testUsingDatabaseConnector <- T
+}
+
 disconnect <- function(con) {
   if (is.null(con)) return(invisible(NULL))
-
-  if (dbms(con) == "duckdb") {
-    DBI::dbDisconnect(con, shutdown = TRUE)
-  } else {
-    DBI::dbDisconnect(con)
-  }
+  DBI::dbDisconnect(con)
 }
 
 # databases supported on github actions
@@ -237,7 +262,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   dbToTest <- c(
     # "bigquery"
     # ,
-    "duckdb"
+    # "duckdb"
     # ,
     # "postgres"
     # ,
@@ -247,7 +272,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
     # ,
     # "snowflake"
     # ,
-    # "spark"
+    "spark"
   )
 
   } else {
@@ -256,11 +281,7 @@ if (Sys.getenv("CI_TEST_DB") == "") {
   print(paste("running CI tests on ", dbToTest))
 }
 
-if (Sys.getenv('TEST_USING_DATABASE_CONNECTOR') %in% c("TRUE", "FALSE")) {
-  testUsingDatabaseConnector <- as.logical(Sys.getenv('TEST_USING_DATABASE_CONNECTOR'))
-} else {
-  testUsingDatabaseConnector <- F
-}
+
 
 # make sure we're only trying to test on dbs we have connection details for
 if ("postgres" %in% dbToTest & Sys.getenv("CDM5_POSTGRESQL_DBNAME") == "") {

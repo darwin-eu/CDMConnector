@@ -137,7 +137,7 @@ listTables <- function(con, schema = NULL) {
   if ("prefix" %in% names(schema)) {
     prefix <- schema["prefix"]
     checkmate::assert_character(prefix, min.chars = 1, len = 1)
-    schema <- schema[names(schema) != "prefix"]
+    schema2 <- schema[names(schema) != "prefix"]
 
     process_prefix <- function(x) {
       np <- nchar(prefix)
@@ -145,10 +145,12 @@ listTables <- function(con, schema = NULL) {
       substr(x, start = np+1, stop = nchar(x))
     }
   } else {
+    prefix <- ""
+    schema2 <- schema
     process_prefix <- function(x) {x}
   }
 
-  checkmate::assert_character(schema, null.ok = TRUE, min.len = 1, max.len = 2, min.chars = 1)
+  checkmate::assert_character(schema2, null.ok = TRUE, min.len = 1, max.len = 2, min.chars = 1)
 
   if (is.null(schema)) {
     if (dbms(con) == "sql server") {
@@ -172,28 +174,28 @@ listTables <- function(con, schema = NULL) {
   withr::local_options(list(arrow.pull_as_vector = TRUE))
 
   if (methods::is(con, "DatabaseConnectorJdbcConnection")) {
-    out <- DBI::dbListTables(con, databaseSchema = paste0(schema, collapse = "."))
+    out <- DBI::dbListTables(con, databaseSchema = paste0(schema2, collapse = "."))
     return(process_prefix(out))
   }
 
   if (methods::is(con, "PqConnection") || methods::is(con, "RedshiftConnection")) {
 
-    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {unname(schema[1])};", .con = con)
+    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {unname(schema2[1])};", .con = con)
     out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
     return(process_prefix(out))
   }
 
   if (methods::is(con, "duckdb_connection")) {
-    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema[[1]]};", .con = con)
+    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema2[[1]]};", .con = con)
     out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
     return(process_prefix(out))
   }
 
   if (methods::is(con, "Snowflake")) {
-    if (length(schema) == 2) {
-      sql <- glue::glue("select table_name from {schema[1]}.information_schema.tables where table_schema = '{schema[2]}';")
+    if (length(schema2) == 2) {
+      sql <- glue::glue("select table_name from {schema2[1]}.information_schema.tables where table_schema = '{schema2[2]}';")
     } else {
-      sql <- glue::glue("select table_name from information_schema.tables where table_schema = '{schema[1]}';")
+      sql <- glue::glue("select table_name from information_schema.tables where table_schema = '{schema2[1]}';")
     }
     out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(1)
     return(process_prefix(out))
@@ -201,7 +203,7 @@ listTables <- function(con, schema = NULL) {
 
   if (methods::is(con, "Spark SQL")) {
     # spark odbc connection
-    sql <- paste("SHOW TABLES", if (!is.null(schema)) paste("IN", paste(schema, collapse = ".")))
+    sql <- paste("SHOW TABLES", if (!is.null(schema2)) paste("IN", paste(schema2, collapse = ".")))
     out <- DBI::dbGetQuery(con, sql) %>%
       dplyr::filter(.data$isTemporary == FALSE) %>%
       dplyr::pull(.data$tableName)
@@ -210,28 +212,28 @@ listTables <- function(con, schema = NULL) {
   }
 
   if (methods::is(con, "OdbcConnection")) {
-    if (length(schema) == 1) {
-      out <- DBI::dbListTables(con, schema_name = schema)
-    } else if (length(schema) == 2) {
-      out <- DBI::dbListTables(con, catalog_name = schema[[1]], schema_name = schema[[2]])
+    if (length(schema2) == 1) {
+      out <- DBI::dbListTables(con, schema_name = schema2)
+    } else if (length(schema2) == 2) {
+      out <- DBI::dbListTables(con, catalog_name = schema2[[1]], schema_name = schema2[[2]])
     } else rlang::abort("schema missing!")
 
     return(process_prefix(out))
   }
 
   if (methods::is(con, "OraConnection")) {
-    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
-    out <- DBI::dbListTables(con, schema = schema)
+    checkmate::assert_character(schema2, null.ok = TRUE, len = 1, min.chars = 1)
+    out <- DBI::dbListTables(con, schema = schema2)
     return(process_prefix(out))
   }
 
   if (methods::is(con, "BigQueryConnection")) {
-    checkmate::assert_character(schema, null.ok = TRUE, len = 1, min.chars = 1)
+    checkmate::assert_character(schema2, null.ok = TRUE, len = 1, min.chars = 1)
 
     out <- DBI::dbGetQuery(con,
                            glue::glue("SELECT table_name
-                         FROM `{schema}`.INFORMATION_SCHEMA.TABLES
-                         WHERE table_schema = '{schema}'"))[[1]]
+                         FROM `{schema2}`.INFORMATION_SCHEMA.TABLES
+                         WHERE table_schema = '{schema2}'"))[[1]]
     return(process_prefix(out))
   }
 
@@ -323,18 +325,22 @@ mapTypes <- function(conn, type) {
 dcCreateTable <- function(conn, name, fields) {
 
   if (tibble::is_tibble(fields)) {
-   fieldsSql <- paste(names(fields),
-     sapply(fields, function(x) mapTypes(conn, class(x)[1])),
-     collapse = ", "
-   )
- } else {
-   fields <- sapply(names(fields), function(field) {
-     paste(field, fields[[field]], sep = " ")
-   })
-   fieldsSql <- paste(fields, collapse = ", ")
- }
+    fieldsSql <- paste(names(fields),
+      sapply(fields, function(x) mapTypes(conn, class(x)[1])),
+      collapse = ", "
+    )
+  } else {
+    fields <- sapply(names(fields), function(field) {
+      paste(field, fields[[field]], sep = " ")
+    })
+    fieldsSql <- paste(fields, collapse = ", ")
+  }
 
-  tableName <- paste(name@name, collapse = ".")
+  if (is.character(name)) {
+    tableName <- paste(name, collapse = ".")
+  } else {
+    tableName <- paste(name@name, collapse = ".")
+  }
 
   if (!(dbms(conn) %in% c("bigquery"))){
     createTableSQL <- SqlRender::render("CREATE TABLE @a ( @b );", a = tableName, b = fieldsSql)
@@ -349,7 +355,7 @@ dcCreateTable <- function(conn, name, fields) {
 
 # branching logic: which createTable function to use based on the connection type
 .dbCreateTable <- function(conn, name, fields) {
-  if (methods::is(conn, "DatabaseConnectorJdbcConnection") || dbms(conn)  %in% c("bigquery")) {
+  if (methods::is(conn, "DatabaseConnectorConnection") || dbms(conn)  %in% c("bigquery")) {
 
     createTableSQLTranslated <- dcCreateTable(conn, name, fields)
     DBI::dbExecute(conn, createTableSQLTranslated)

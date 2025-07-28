@@ -61,6 +61,7 @@ test_that("synpuf-1k example data has achilles tables", {
   skip_on_cran()
   skip_on_ci() # datasets are large and take a while to download
   skip_if_not_installed("duckdb")
+  testthat::skip_if_not("duckdb" %in% dbToTest)
 
   con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("synpuf-1k", "5.3"))
   cdm <- cdmFromCon(con, "main", "main", achillesSchema = "main")
@@ -78,6 +79,7 @@ test_that("synpuf-1k example data has achilles tables", {
 test_that("requireEunomia", {
   withr::with_envvar(list("EUNOMIA_DATA_FOLDER" = ""), {
     skip_if_not_installed("duckdb")
+    testthat::skip_if_not("duckdb" %in% dbToTest)
     expect_identical(Sys.getenv("EUNOMIA_DATA_FOLDER"), "")
     expect_no_error(requireEunomia())
     expect_true(Sys.getenv("EUNOMIA_DATA_FOLDER") != "")

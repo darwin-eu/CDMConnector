@@ -1,6 +1,7 @@
 test_that("pool connections work", {
   skip_if_not_installed("duckdb")
   skip_if_not_installed("pool")
+  skip_if_not("duckdb" %in% dbToTest)
   drv <- duckdb::duckdb(eunomiaDir())
   pool <- pool::dbPool(drv)
 

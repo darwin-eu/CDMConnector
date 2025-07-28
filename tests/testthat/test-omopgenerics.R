@@ -1,6 +1,7 @@
 
 test_that("omopgenerics::bind works for combining cohort tables", {
   skip_if_not_installed("duckdb")
+  skip_if_not("duckdb" %in% dbToTest)
   con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
   cdm <- cdmFromCon(con, "main", "main", cdmName = "gibleed")
 

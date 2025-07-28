@@ -79,6 +79,7 @@ insertTable.db_cdm <- function(cdm,
   }
 
   x <- dplyr::tbl(src = con, fullName) |>
+    dplyr::rename_all(tolower) |>
     omopgenerics::newCdmTable(src = src, name = name) |>
     dplyr::select(colnames(table))
   return(x)

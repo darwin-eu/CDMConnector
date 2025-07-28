@@ -141,7 +141,7 @@ summariseQuantile1 <- function(.data, x = NULL, probs, nameSuffix = "{x}") {
 
   probs <- sort(unique(probs))
   quant_expr <- purrr::map(probs, ~ rlang::expr(min(ifelse(accumulated >= !!.x * total, !!x_sym, NA), na.rm = TRUE)))
-  names(quant_expr) <- paste0('p', as.character(probs * 100), '_', nameSuffix)
+  names(quant_expr) <- paste0('q', sprintf('%02d', as.integer(probs * 100)), '_', nameSuffix)
 
   if (methods::is(.data, "data.frame")) {
     query <- rlang::expr(

@@ -167,9 +167,16 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
   cdm <- omopgenerics::insertTable(cdm = cdm, name = nm, table = concepts)
   on.exit(omopgenerics::dropSourceTable(cdm = cdm, name = nm), add = TRUE)
 
+  if (methods::is(cdmCon(cdm), "DatabaseConnectorJdbcConnection") && dbms(cdmCon(cdm)) == "sql server") {
+    # workaround for dbplyr translation of where clause on sql server when using DatabaseConnector
+    trueValueSql <- 1L
+  } else {
+    trueValueSql <- TRUE
+  }
+
   if (any(concepts$include_descendants)) {
     cdm[[nm]] <- cdm[[nm]]  %>%
-      dplyr::filter(.data$include_descendants == TRUE) %>%
+      dplyr::filter(.data$include_descendants == .env$trueValueSql) %>%
       dplyr::inner_join(
         cdm$concept_ancestor, by = c("concept_id" = "ancestor_concept_id")
       ) %>%
@@ -189,8 +196,9 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
       dplyr::select(!"include_descendants")
   }
 
+  # Database
   concepts <- cdm[[nm]] %>%
-    dplyr::filter(.data$is_excluded == FALSE) %>%
+    dplyr::filter(.data$is_excluded == .env$trueValueSql) %>%
     # Note that concepts that are not in the vocab will be silently ignored
     dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
     dplyr::select(

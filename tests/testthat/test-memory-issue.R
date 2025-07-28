@@ -5,6 +5,7 @@
 test_that("memory leak does not happen", {
   skip_on_cran()
   skip_if_not_installed("duckdb")
+  testthat::skip_if_not("duckdb" %in% dbToTest)
   con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
