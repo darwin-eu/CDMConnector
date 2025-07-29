@@ -179,7 +179,7 @@ test_that("TreatmentPatterns cohort works", {
 # cohort_count(cdm$gibleed)
 
 
-test_that("newGeneratedCohortSet works with prefix", {
+test_that("newCohortTable works with prefix", {
   skip_if_not_installed("duckdb")
   skip_if_not("duckdb" %in% dbToTest)
   con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
@@ -221,6 +221,7 @@ test_that("no error is given if attrition table already exists and overwrite = T
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
   cohortSet <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+  cohortSet2 <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
 
   cdm <- generateCohortSet(cdm,
                            cohortSet,
@@ -229,19 +230,24 @@ test_that("no error is given if attrition table already exists and overwrite = T
 
   expect_no_error({
     cdm <- generateCohortSet(cdm,
-                             cohortSet,
+                             cohortSet2[3,],
                              name = "test",
                              computeAttrition = FALSE,
                              overwrite = TRUE)
   })
 
+  # attrition(cdm$test) # we still get the attrition table but it only has one row with the final count
+  # settings(cdm$test)
+
   expect_no_error({
     cdm <- generateCohortSet(cdm,
-                             cohortSet,
+                             cohortSet2[3,],
                              name = "test",
                              computeAttrition = TRUE,
                              overwrite = TRUE)
   })
+
+  # attrition(cdm$test)
 
   DBI::dbDisconnect(con, shutdown = TRUE)
 })
