@@ -57,8 +57,7 @@ test_that("dropping all tables with write_prefix works as exepected", {
     cdmName = "myDuckdbDatabase"
   )
 
-  listTables(con, writeSchema)
-  expect_true(length(listTables(con, write_schema)) == 0)
+  expect_true(length(listTables(con, writeSchema)) == 0)
 
   cdm <- generateConceptCohortSet(cdm = cdm, conceptSet = list("a" = 4112343), name = "my_new_table_1")
   cdm <- generateConceptCohortSet(cdm = cdm, conceptSet = list("b" = 28060), name = "my_new_table_2")
