@@ -67,12 +67,12 @@ test_summarise_quantile <- function(con, write_schema) {
 
   expected <- dplyr::tibble(
     cyl = c(8, 4, 6),
-    p0_quant = c(10.4, 21.4, 17.8),
-    p20_quant = c(13.3, 22.8, 18.1),
-    p40_quant = c(15, 24.4, 19.2),
-    p60_quant = c(15.5, 27.3, 21),
-    p80_quant = c(17.3, 30.4, 21),
-    p100_quant = c(19.2, 33.9, 21.4))
+    q00_quant = c(10.4, 21.4, 17.8),
+    q20_quant = c(13.3, 22.8, 18.1),
+    q40_quant = c(15, 24.4, 19.2),
+    q60_quant = c(15.5, 27.3, 21),
+    q80_quant = c(17.3, 30.4, 21),
+    q100_quant = c(19.2, 33.9, 21.4))
 
   expect_equal(dplyr::arrange(result, .data$cyl), dplyr::arrange(expected, .data$cyl))
 
@@ -85,12 +85,12 @@ test_summarise_quantile <- function(con, write_schema) {
 
   expected <- dplyr::tibble(
     cyl = c(8, 4, 6),
-    p20_mpg_quant = c(13.3, 22.8, 18.1),
-    p80_mpg_quant = c(17.3, 30.4, 21),
-    p20_hp_quant = c(175, 65, 110),
-    p80_hp_quant = c(245, 97, 123),
-    p20_wt_quant = c(3.44, 1.835, 2.77),
-    p80_wt_quant = c(5.25, 2.78, 3.44))
+    q20_mpg_quant = c(13.3, 22.8, 18.1),
+    q80_mpg_quant = c(17.3, 30.4, 21),
+    q20_hp_quant = c(175, 65, 110),
+    q80_hp_quant = c(245, 97, 123),
+    q20_wt_quant = c(3.44, 1.835, 2.77),
+    q80_wt_quant = c(5.25, 2.78, 3.44))
 
   expect_equal(dplyr::arrange(result, .data$cyl), dplyr::arrange(expected, .data$cyl))
 
