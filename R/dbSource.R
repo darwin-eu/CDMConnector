@@ -29,12 +29,7 @@ dbSource <- function(con, writeSchema) {
     }
     con <- pool::localCheckout(con)
   }
-  # if (methods::is(con, "DatabaseConnectorConnection")) {
-  #   cli::cli_warn(
-  #     "Not all functionality is supported when DatabaseConnector is your
-  #     database driver! Some issues may occur."
-  #   )
-  # }
+
   checkmate::assert_true(.dbIsValid(con))
   if (dbms(con) %in% c("duckdb", "sqlite") && missing(writeSchema)) {
     writeSchema <- c(schema = "main")

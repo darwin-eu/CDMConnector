@@ -84,7 +84,7 @@ inSchema <- function(schema, table, dbms = NULL) {
     checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
   }
 
-  if (isFALSE(dbms %in% c("snowflake", "sql server", "spark"))) {
+  if (isFALSE(dbms %in% c("snowflake", "sql server", "spark", "bigquery"))) {
     # only a few dbms support three part names
     checkmate::assertCharacter(schema, len = 1)
   }
@@ -228,12 +228,20 @@ listTables <- function(con, schema = NULL) {
   }
 
   if (methods::is(con, "BigQueryConnection")) {
-    checkmate::assert_character(schema2, null.ok = TRUE, len = 1, min.chars = 1)
-
-    out <- DBI::dbGetQuery(con,
-                           glue::glue("SELECT table_name
+    if (length(schema2) == 1) {
+      out <- DBI::dbGetQuery(con,
+                             glue::glue("SELECT table_name
                          FROM `{schema2}`.INFORMATION_SCHEMA.TABLES
                          WHERE table_schema = '{schema2}'"))[[1]]
+    } else if (length(schema2) == 2) {
+      out <- DBI::dbGetQuery(con,
+                             glue::glue("SELECT table_name
+                         FROM `{schema2[[1]]}`.`{schema2[[2]]}`.INFORMATION_SCHEMA.TABLES
+                         WHERE table_schema = '{schema2[[2]]}'"))[[1]]
+    } else {
+      rlang::abort("schema must be length 1 or 2")
+    }
+
     return(process_prefix(out))
   }
 
