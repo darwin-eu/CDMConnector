@@ -49,6 +49,12 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
 
   if (!dir.exists(pathToData)) { dir.create(pathToData, recursive = TRUE) }
 
+  if (datasetName == "Synthea27NjParquet" && cdmVersion == "5.3") {
+    cli::cli_abort("Synthea27NjParquet is only available in CDM version 5.4")
+  } else if (!(datasetName %in% c("synpuf-1k", "Synthea27NjParquet")) && cdmVersion == "5.4") {
+    cli::cli_abort("{datasetName} is only available in CDM version 5.3")
+  }
+
   zipName <- glue::glue("{datasetName}_{cdmVersion}.zip")
 
   if (file.exists(file.path(pathToData, zipName)) && !overwrite) {
@@ -63,10 +69,10 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
                               type = "download")
 
   # synpuf is the only dataset we have in both 5.3 and 5.4 at the moment.
-  if (datasetName != "synpuf-1k") {
-    url = glue::glue("https://example-data.ohdsi.dev/{datasetName}.zip")
+  if (datasetName == "Synthea27NjParquet") {
+    url <- "https://github.com/OHDSI/EunomiaDatasets/raw/main/datasets/Synthea27NjParquet/Synthea27NjParquet_5.4.zip"
   } else {
-    url = glue::glue("https://example-data.ohdsi.dev/synpuf-1k_{cdmVersion}.zip")
+    url <- glue::glue("https://cdmconnectordata.blob.core.windows.net/cdmconnector-example-data/{datasetName}_{cdmVersion}.zip")
   }
 
   withr::with_options(list(timeout = 5000), {
@@ -126,7 +132,8 @@ exampleDatasets <- function() {
     "synthea-veterans-10k",
     "synthea-weight_loss-10k",
     "synpuf-1k",
-    "empty_cdm")
+    "empty_cdm",
+    "Synthea27NjParquet")
 }
 
 #' Create a copy of an example OMOP CDM dataset
