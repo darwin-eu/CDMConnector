@@ -24,6 +24,21 @@ test_generate_concept_cohort_set <- function(con, cdm_schema, write_schema) {
     overwrite = TRUE
   )
 
+  # check that date types are correct
+  cdm$gibleed |>
+    head() |>
+    dplyr::collect() |>
+    dplyr::select(3:4) |>
+    purrr::map_chr(class) |>
+    unname() |>
+    expect_equal(c("Date", "Date"))
+
+  # check attrition columns
+  expect_setequal(
+    colnames(attrition(cdm$gibleed)),
+    omopgenerics::cohortColumns(table = "cohort_attrition")
+  )
+
   cohort <- readCohortSet(system.file("cohorts3", package = "CDMConnector")) %>%
     dplyr::filter(cohort_name %in% c("gibleed_default", "GiBleed_default")) %>%
     dplyr::mutate(cohort_definition_id = 1L)
