@@ -424,6 +424,7 @@ dcCreateTable <- function(conn, name, fields) {
 computeDataHashByTable <- function(cdm) {
   overallStartTime <- Sys.time()
   ensureInstalled("DatabaseConnector", "7")
+  ensureInstalled("digest")
 
   con <- cdmCon(cdm)
 
