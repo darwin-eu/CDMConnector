@@ -8,7 +8,13 @@ test_cdmFromCon <- function(con, cdmSchema, writeSchema) {
   expect_s3_class(cdm, "cdm_reference")
   expect_warning(version(cdm))
   expect_true(cdmVersion(cdm) %in% c("5.3", "5.4"))
-  expect_s3_class(snapshot(cdm), "data.frame")
+
+  cdmSnapshot <- snapshot(cdm, computeDataHash = (dbms(con) == "duckdb"))
+  expect_s3_class(cdmSnapshot, "data.frame")
+  if (dbms(con) == "duckdb") {
+    expect_true(nchar(cdmSnapshot$cdm_data_hash) > 1)
+  }
+
   expect_true("concept" %in% names(cdm))
   expect_s3_class(dplyr::collect(head(cdm$concept)), "data.frame")
 

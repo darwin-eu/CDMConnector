@@ -4,10 +4,12 @@
 \alias{snapshot}
 \title{Extract CDM metadata}
 \usage{
-snapshot(cdm)
+snapshot(cdm, computeDataHash = FALSE)
 }
 \arguments{
 \item{cdm}{A cdm object}
+
+\item{computeDataHash}{Compute a hash of the CDM. See ?DatabaseConnector::computeDataHash for details.}
 }
 \value{
 A named list of attributes about the cdm including selected fields
