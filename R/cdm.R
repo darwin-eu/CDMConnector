@@ -532,6 +532,7 @@ result <- if (inherits(con, "Microsoft SQL Server")) {
 #' Extract the name, version, and selected record counts from a cdm.
 #'
 #' @param cdm A cdm object
+#' @param computeDataHash Compute a hash of the CDM. See ?DatabaseConnector::computeDataHash for details.
 #'
 #' @return A named list of attributes about the cdm including selected fields
 #' from the cdm_source table and record counts from the person and
@@ -547,11 +548,29 @@ result <- if (inherits(con, "Microsoft SQL Server")) {
 #'
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
-snapshot <- function(cdm) {
+snapshot <- function(cdm, computeDataHash = FALSE) {
   checkmate::assertTRUE("cdm_source" %in% names(cdm))
   checkmate::assertTRUE("vocabulary" %in% names(cdm))
   checkmate::assertTRUE("person" %in% names(cdm))
   checkmate::assertTRUE("observation_period" %in% names(cdm))
+  checkmate::assertLogical(computeDataHash, len = 1, any.missing = FALSE)
+
+  if (isTRUE(computeDataHash)) {
+
+    if (!isInstalled("DatabaseConnector", "7")) {
+      cli::cli_abort(c("DatabaseConnector version 7 or later is required to use computeDataHash.",
+      i = "Please install the latest version of DatabaseConnector."))
+    }
+
+    if (!methods::is(cdmSource(cdm), "db_cdm")) {
+      cli::cli_abort("Only database backed CDMs are supported by computeDataHash.")
+    }
+
+    cli::cli_inform("Computing a hash of the CDM schema")
+    dataHash <- DatabaseConnector::computeDataHash(cdmCon(cdm), paste(attr(cdm, "cdm_schema"), collapse = "."))
+  } else {
+    dataHash <- ""
+  }
 
   person_count <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
 
@@ -602,7 +621,8 @@ snapshot <- function(cdm) {
       earliest_observation_period_start_date =
         .env$observation_period_range$min,
       latest_observation_period_end_date = .env$observation_period_range$max,
-      snapshot_date = .env$snapshot_date
+      snapshot_date = .env$snapshot_date,
+      cdm_data_hash = .env$dataHash
     ) %>%
     dplyr::select(
       "cdm_name",
@@ -617,7 +637,8 @@ snapshot <- function(cdm) {
       "observation_period_count",
       "earliest_observation_period_start_date",
       "latest_observation_period_end_date",
-      "snapshot_date"
+      "snapshot_date",
+      "cdm_data_hash"
     ) %>%
     dplyr::mutate_all(as.character)
 }
