@@ -246,7 +246,7 @@ get_write_schema <- function(dbms, prefix = paste0("temp", (floor(as.numeric(Sys
 if (Sys.getenv('TEST_USING_DATABASE_CONNECTOR') %in% c("TRUE", "FALSE")) {
   testUsingDatabaseConnector <- as.logical(Sys.getenv('TEST_USING_DATABASE_CONNECTOR'))
 } else {
-  testUsingDatabaseConnector <- T
+  testUsingDatabaseConnector <- F
 }
 
 disconnect <- function(con) {

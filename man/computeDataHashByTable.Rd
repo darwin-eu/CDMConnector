@@ -13,14 +13,16 @@ computeDataHashByTable(cdm)
 A dataframe with one row per table, row counts, unique value counts for one column, and a hash
 }
 \description{
+Compute a hash for each CDM table
+}
+\details{
 This function is used to track changes in CDM databases. It returns a
 dataframe with one hash for each table. The hash is based on the overall row count
 and the number of unique values of one column of the table. For clinical tables
 we count the number of unique concept IDs. For some tables we do not calculate
 any unique value count (e.g. the location table) and simply use the total
 row count.
-}
-\details{
+
 `r lifecycle::badge("experimental")
 }
 \examples{

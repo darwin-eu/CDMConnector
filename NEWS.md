@@ -1,3 +1,13 @@
+# CDMConnector 2.2.0
+
+- Test using DatabaseConnector version 7 JDBC connections on all supported databases @IoannaNika
+- Change summariseQuantile2 output columns to match DrugExposureDiagnostics (e.g. q05, q10)
+- Add `computeDataHash` argument to `snapshot()`
+- Add `computeDataHashByTable` function to compute a hash for each CDM table
+- Update connection examples documentation 
+- Change Eunomia dataset download link
+- Add Synthea27NjParquet example dataset
+
 # CDMConnector 2.1.1
 
 - fix bug with cohort generation @catalamarti
