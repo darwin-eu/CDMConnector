@@ -16,7 +16,7 @@ test_that("drop table works in opposition to insert table", {
   dropSourceTable(cdm, dplyr::everything()) # should not be needed.
 
   expect_equal(listTables(con, schema = writeSchema), character(0L))
-  expect_equal(length(listTables(con, schema = "main")), 39)
+  expect_equal(length(listTables(con, schema = "main")), 35)
 
   name <- paste0(c(sample(letters, 5, replace = TRUE), "_test_table"), collapse = "")
   table <- dplyr::arrange(datasets::cars, dplyr::across(c("speed","dist")))
