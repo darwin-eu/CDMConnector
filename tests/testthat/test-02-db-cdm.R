@@ -9,11 +9,12 @@ test_cdmFromCon <- function(con, cdmSchema, writeSchema) {
   expect_warning(version(cdm))
   expect_true(cdmVersion(cdm) %in% c("5.3", "5.4"))
 
-  cdmSnapshot <- snapshot(cdm, computeDataHash = (dbms(con) == "duckdb"))
+  cdmSnapshot <- snapshot(cdm)
+  # cdmSnapshot <- snapshot(cdm, computeDataHash = (dbms(con) == "duckdb")) # requires DatabaseConnector 7 to be released first
   expect_s3_class(cdmSnapshot, "data.frame")
-  if (dbms(con) == "duckdb") {
-    expect_true(nchar(cdmSnapshot$cdm_data_hash) > 1)
-  }
+  # if (dbms(con) == "duckdb") {
+  #   expect_true(nchar(cdmSnapshot$cdm_data_hash) > 1)
+  # }
 
   expect_true("concept" %in% names(cdm))
   expect_s3_class(dplyr::collect(head(cdm$concept)), "data.frame")

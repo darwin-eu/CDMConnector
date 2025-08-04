@@ -250,9 +250,9 @@ for (dbtype in dbToTest) {
   })
 }
 
-
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - computeDataHashByTable"), {
+    skip_on_ci() # requires DatabaseConnector 7
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
