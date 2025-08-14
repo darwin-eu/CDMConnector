@@ -103,29 +103,43 @@ extractCodesetIds <- function(x) {
 }
 
 createCodelistDataframe <- function(cohortSet) {
-
-  purrr::map2(cohortSet$cohort_definition_id, cohortSet$cohort, function(cohort_definition_id, ch) {
+  dfList <- list()
+  for (i in seq_along(cohortSet$cohort_definition_id)) {
 
     df1 <- dplyr::tibble(
-      cohort_definition_id = cohort_definition_id,
-      codelist_id = purrr::map_int(ch[["ConceptSets"]], "id"),
-      codelist_name = purrr::map_chr(ch[["ConceptSets"]], "name")
+      cohort_definition_id = as.integer(cohortSet$cohort_definition_id[[i]]),
+      codelist_id = purrr::map_int(cohortSet$cohort[[i]][["ConceptSets"]], "id"),
+      codelist_name = purrr::map_chr(cohortSet$cohort[[i]][["ConceptSets"]], "name")
     )
+
+    if (nrow(df1) == 0) {
+      next
+    }
 
     df2 <- dplyr::bind_rows(
       dplyr::tibble(
-        codelist_id = unname(extractCodesetIds(ch[["PrimaryCriteria"]])),
+        codelist_id = unname(extractCodesetIds(cohortSet$cohort[[i]][["PrimaryCriteria"]])),
         codelist_type = "index event"
       ),
       dplyr::tibble(
-        codelist_id = unname(extractCodesetIds(ch[["InclusionRules"]])),
+        codelist_id = unname(extractCodesetIds(cohortSet$cohort[[i]][["InclusionRules"]])),
         codelist_type = "inclusion criteria"
       )
     ) |> dplyr::filter(!is.na(.data$codelist_id))
 
-    return(dplyr::inner_join(df1, df2, by = "codelist_id"))
-  }) |>
-    dplyr::bind_rows()
+    dfList[[i]] <- dplyr::inner_join(df1, df2, by = "codelist_id")
+  }
+
+  if (length(dfList) == 0) {
+    return(dplyr::tibble(
+      cohort_definition_id = integer(),
+      codelist_id = integer(),
+      codelist_name = character(),
+      codelist_type = character()
+    ))
+  } else {
+    return(dplyr::bind_rows(dfList))
+  }
 }
 
 
@@ -154,6 +168,18 @@ extractConceptsFromConceptSetList <- function(conceptSets) {
 
 createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
   codelistDf <- createCodelistDataframe(cohortSet)
+
+  if (nrow(codelistDf) == 0) {
+    emptyCodelist <- dplyr::tibble(
+      cohort_definition_id = integer(),
+      codelist_name = character(),
+      codelist_type = character(),
+      concept_id = integer()
+    )
+    nm <- omopgenerics::uniqueTableName()
+    cdm <- omopgenerics::insertTable(cdm = cdm, name = paste0("codeset_", nm), table = emptyCodelist)
+    return(cdm[[paste0("codeset_", nm)]])
+  }
 
   codes <- cohortSet |>
     dplyr::select("cohort_definition_id", "cohort") |>
@@ -210,7 +236,7 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
     dplyr::distinct() |>
     dplyr::compute(name = paste0("codeset_", nm))
 
-  concepts
+  return(concepts)
 }
 
 
