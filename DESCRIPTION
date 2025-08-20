@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 2.2.0
+Version: 2.2.0.9999
 Authors@R: c(
     person("Adam", "Black", , "black@ohdsi.org", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
