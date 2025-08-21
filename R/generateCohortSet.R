@@ -491,7 +491,12 @@ generateCohortSet <- function(cdm,
       # we need temp emulation on spark as there are no temp tables
 
       if ("schema" %in% names(write_schema)) {
-        s <- unname(write_schema["schema"])
+        if ("catalog" %in% names(write_schema)) {
+          s <- write_schema_sql
+        } else {
+          s <- unname(write_schema["schema"])
+        }
+
       } else if (length(write_schema) == 1) {
         s <- unname(write_schema)
       } else {
