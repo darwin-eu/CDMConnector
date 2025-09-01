@@ -515,18 +515,9 @@ generateCohortSet <- function(cdm,
       }
     } else {
       # we need temp emulation on spark as there are no temp tables
-
-      if ("schema" %in% names(write_schema)) {
-        s <- unname(write_schema["schema"])
-      } else if (length(write_schema) == 1) {
-        s <- unname(write_schema)
-      } else {
-        s <- unname(write_schema[2])
-      }
-
       sql <- SqlRender::translate(sql,
                                   targetDialect = CDMConnector::dbms(con),
-                                  tempEmulationSchema = s)
+                                  tempEmulationSchema = write_schema_sql)
     }
 
     if (dbms(con) == "duckdb") {
