@@ -129,7 +129,7 @@ datediff <- function(start, end, interval = "day") {
       "postgresql" = glue::glue("(CAST({end} AS DATE) - CAST({start} AS DATE))"),
       "sql server" = glue::glue("DATEDIFF(day, {start}, {end})"),
       "spark" = glue::glue("datediff({end},{start})"),
-      "duckdb" = glue::glue("datediff('day', {start}, {end})"),
+      "duckdb" = glue::glue("(CAST(datediff('day', {start}, {end}) AS INTEGER))"),
       "sqlite" = glue::glue("(JULIANDAY(end, 'unixepoch') - JULIANDAY(start, 'unixepoch'))"),
       "bigquery" = glue::glue("DATE_DIFF({end}, {start}, DAY)"),
       "snowflake" = glue::glue('DATEDIFF(day, "{start}", "{end}")'),
@@ -186,7 +186,7 @@ datediff <- function(start, end, interval = "day") {
 #'   dplyr::collect()
 #' }
 asDate <- function(x) {
-  lifecycle::deprecate_soft("1.4.1", "CDMConnector::asDate()", "as.Date()")
+  # lifecycle::deprecate_soft("1.4.1", "CDMConnector::asDate()", "as.Date()")
   x_quo <- rlang::enquo(x)
   .data <- get(".", envir = parent.frame())
   dialect <- CDMConnector::dbms(.data$src$con)
@@ -200,6 +200,11 @@ asDate <- function(x) {
     x <- dbplyr::partial_eval(x_quo, data = .data)
     x <- dbplyr::translate_sql(!!x, con = .data$src$con)
     x <- glue::glue("TO_DATE({x})")
+    return(dplyr::sql(x))
+  } else if (dialect == "duckdb") {
+    x <- dbplyr::partial_eval(x_quo, data = .data)
+    x <- dbplyr::translate_sql(!!x, con = .data$src$con)
+    x <- glue::glue("(DATE {x})")
     return(dplyr::sql(x))
   } else {
     return(rlang::expr(as.Date(!!x_quo)))
