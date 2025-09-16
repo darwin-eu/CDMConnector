@@ -255,6 +255,7 @@ for (dbtype in dbToTest) {
     skip_on_ci() # requires DatabaseConnector 7
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
+    skip_if_not_installed("DatabaseConnector", "7.0.0")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
 

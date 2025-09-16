@@ -60,7 +60,6 @@ Suggests:
     testthat (>= 3.0.0),
     pool,
     snakecase,
-    palmerpenguins,
     digest
 Enhances:
     arrow
