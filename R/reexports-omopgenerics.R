@@ -89,3 +89,7 @@ omopgenerics::uniqueTableName
 #' @importFrom omopgenerics cdmSelect
 #' @export
 omopgenerics::cdmSelect
+
+#' @importFrom omopgenerics sourceType
+#' @export
+omopgenerics::sourceType
