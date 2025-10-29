@@ -93,3 +93,7 @@ omopgenerics::cdmSelect
 #' @importFrom omopgenerics sourceType
 #' @export
 omopgenerics::sourceType
+
+#' @importFrom omopgenerics cdmReference
+#' @export
+omopgenerics::cdmReference
