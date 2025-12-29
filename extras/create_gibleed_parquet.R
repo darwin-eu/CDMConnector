@@ -35,7 +35,7 @@ load_cdm <- function(path) {
       dbms(con) == "redshift" & .data$cdmDatatype == "datetime" ~ "timestamp",
       TRUE ~ cdmDatatype)) %>%
     tidyr::nest(col = -"cdmTableName") %>%
-    dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
+    dplyr::mutate(col = purrr::map(col, ~stats::setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
 
   files_in_path <- tools::file_path_sans_ext(basename(list.files(path)))
 

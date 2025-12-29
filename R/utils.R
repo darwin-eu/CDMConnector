@@ -274,7 +274,7 @@ execute_ddl <- function(con, cdm_schema, cdm_version = "5.3", dbms = "duckdb", t
       dbms(con) == "redshift" & .data$cdmDatatype == "datetime" ~ "timestamp",
       TRUE ~ cdmDatatype)) %>%
     tidyr::nest(col = -"cdmTableName") %>%
-    dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
+    dplyr::mutate(col = purrr::map(col, ~stats::setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
 
   for (i in cli::cli_progress_along(tables)) {
     fields <- specs %>%

@@ -18,7 +18,7 @@ specs <- spec_cdm_field[["5.3"]] %>%
   dplyr::mutate(cdmDatatype = dplyr::if_else(.data$cdmDatatype == "varchar(max)", "varchar(2000)", .data$cdmDatatype)) %>%
   dplyr::mutate(cdmFieldName = dplyr::if_else(.data$cdmFieldName == '"offset"', "offset", .data$cdmFieldName)) %>%
   tidyr::nest(col = -"cdmTableName") %>%
-  dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
+  dplyr::mutate(col = purrr::map(col, ~stats::setNames(as.character(.$cdmDatatype), .$cdmFieldName)))
 
 
 targetdb <- DBI::dbConnect(duckdb::duckdb())

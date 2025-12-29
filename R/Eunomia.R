@@ -275,7 +275,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
       dplyr::mutate(cdm_datatype = dplyr::if_else(.data$cdm_datatype == "varchar(max)", "varchar(2000)", .data$cdm_datatype)) %>%
       dplyr::mutate(cdm_field_name = dplyr::if_else(.data$cdm_field_name == '"offset"', "offset", .data$cdm_field_name)) %>%
       tidyr::nest(col = -"cdm_table_name") %>%
-      dplyr::mutate(col = purrr::map(col, ~setNames(as.character(.$cdm_datatype), .$cdm_field_name)))
+      dplyr::mutate(col = purrr::map(col, ~stats::setNames(as.character(.$cdm_datatype), .$cdm_field_name)))
 
     files <- tools::file_path_sans_ext(basename(list.files(unzipLocation)))
     tables <- specs$cdm_table_name
