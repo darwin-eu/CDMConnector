@@ -93,6 +93,9 @@ inSchema <- function(schema, table, dbms = NULL) {
 
   if (!is.null(dbms) && dbms == "duckdb" && identical(schema, "main")) {
     out <- table
+  } else if (!is.null(dbms) && dbms == "bigquery" && length(schema) == 2) {
+    # https://github.com/darwin-eu/CDMConnector/issues/37
+    out <- paste(c(schema, table), collapse = ".")
   } else {
     out <- switch(length(schema),
       DBI::Id(schema = schema, table = table),
