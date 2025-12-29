@@ -474,6 +474,10 @@ dbms <- function(con) {
     con <- pool::localCheckout(con)
   }
 
+  if (is.null(con)) {
+    return("local")
+  }
+
   checkmate::assertClass(con, "DBIConnection")
 
   if (!is.null(attr(con, "dbms"))) {
