@@ -132,6 +132,7 @@ exampleDatasets <- function() {
     "synthea-veterans-10k",
     "synthea-weight_loss-10k",
     "synpuf-1k",
+    "synpuf-110k",
     "empty_cdm",
     "Synthea27NjParquet")
 }
