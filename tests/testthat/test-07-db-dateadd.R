@@ -322,9 +322,28 @@ for (dbtype in dbToTest) {
   })
 }
 
+test_that("date functions work with local cdms", {
 
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("duckdb")
+  library(dplyr)
 
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con, "main", "main")
 
+  cdm <- dplyr::collect(cdm)
 
+  df <- cdm$visit_occurrence |>
+    select(visit_start_date) %>%
+    mutate(new_date = !!dateadd("visit_start_date", 1, "year")) %>%
+    mutate(datediff = !!datediff("visit_start_date", "new_date", interval = "year")) %>%
+    mutate(m = !!datepart("new_date", "month"),
+           d = !!datepart("new_date", "day"),
+           y = !!datepart("new_date", "year")) |>
+    mutate(txt = paste(y,m,d, sep = "/")) %>%
+    mutate(reconstructed = !!asDate(txt))
 
-
+  expect_s3_class(df, "data.frame")
+  cdmDisconnect(cdm)
+})

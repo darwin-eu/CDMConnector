@@ -39,14 +39,32 @@
 #' DBI::dbDisconnect(con, shutdown = TRUE)
 #' }
 dateadd <- function(date, number, interval = "day") {
-  checkmate::assertCharacter(interval, len = 1)
+
+  checkmate::assertCharacter(interval, len = 1, any.missing = FALSE)
   checkmate::assertSubset(interval, choices = c("day", "year"))
   checkmate::assertCharacter(date, len = 1)
   if(!(checkmate::testCharacter(number, len = 1) || checkmate::testIntegerish(number, len = 1))) {
     rlang::abort("`number` must a character string with a column name or a number.")
   }
 
+  if (!exists(".", envir = parent.frame(), inherits = FALSE)) {
+    rlang::abort("This function must be used with `%>%`, not `|>`, because it relies on `.`.")
+  }
+
   dot <- get(".", envir = parent.frame())
+
+  if (is.data.frame(dot)) {
+    # local cdm
+    date_sym <- rlang::sym(date)
+    num_expr <- if (is.character(number)) rlang::sym(number) else number
+
+    fun <- switch(interval,
+                  day  = clock::add_days,
+                  year = clock::add_years
+    )
+    return(rlang::call2(fun, date_sym, num_expr))
+  }
+
   db <- CDMConnector::dbms(dot$src$con)
 
   if (db %in% c("oracle", "snowflake")) {
@@ -112,7 +130,19 @@ datediff <- function(start, end, interval = "day") {
   checkmate::assertCharacter(start, len = 1)
   checkmate::assertCharacter(end, len = 1)
 
+  if (!exists(".", envir = parent.frame(), inherits = FALSE)) {
+    rlang::abort("This function must be used with `%>%`, not `|>`, because it relies on `.`.")
+  }
+
   dot <- get(".", envir = parent.frame())
+
+  if (is.data.frame(dot)) {
+    # local cdm
+    start_sym <- rlang::sym(start)
+    end_sym <- rlang::sym(end)
+    return(rlang::call2(clock::date_count_between, start = start_sym, end = end_sym, precision = interval))
+  }
+
   db <- CDMConnector::dbms(dot$src$con)
 
 
@@ -188,8 +218,18 @@ datediff <- function(start, end, interval = "day") {
 asDate <- function(x) {
   # lifecycle::deprecate_soft("1.4.1", "CDMConnector::asDate()", "as.Date()")
   x_quo <- rlang::enquo(x)
+
+  if (!exists(".", envir = parent.frame(), inherits = FALSE)) {
+    rlang::abort("This function must be used with `%>%`, not `|>`, because it relies on `.`.")
+  }
+
   .data <- get(".", envir = parent.frame())
-  dialect <- CDMConnector::dbms(.data$src$con)
+
+  if (is.data.frame(.data)) {
+    dialect <- "local"
+  } else {
+    dialect <- CDMConnector::dbms(.data$src$con)
+  }
 
   if (dialect == "oracle") {
     x <- dbplyr::partial_eval(x_quo, data = .data)
@@ -239,14 +279,32 @@ datepart <- function(date, interval = "year", dbms = NULL) {
   checkmate::assertChoice(dbms, choices = supported, null.ok = TRUE)
 
   if (is.null(dbms)) {
+
+    if (!exists(".", envir = parent.frame(), inherits = FALSE)) {
+      rlang::abort("This function must be used with `%>%`, not `|>`, because it relies on `.`.")
+    }
+
     dot <- get(".", envir = parent.frame())
+
+    if (is.data.frame(dot)) {
+      # local cdm
+      date_sym <- rlang::sym(date)
+
+      fun <- switch(interval,
+                    day  = clock::get_day,
+                    month = clock::get_month,
+                    year = clock::get_year
+      )
+      return(rlang::call2(fun, date_sym))
+    }
+
     dbms <- CDMConnector::dbms(dot$src$con)
   }
 
   sql <- switch (dbms,
     "redshift" = "DATE_PART({interval}, {date})",
     "oracle" = 'EXTRACT({toupper(interval)} FROM "{date}")',
-    "postgresql" = "EXTRACT({toupper(interval)} FROM {date})", # TODO use a more dbplyr approach to build sql
+    "postgresql" = "EXTRACT({toupper(interval)} FROM {date})",
     "sql server" = "{toupper(interval)}({date})",
     "spark" = "{toupper(interval)}({date})",
     "duckdb" = "date_part('{interval}', {date})",
