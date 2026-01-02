@@ -15,15 +15,13 @@
 # limitations under the License.
 
 
-# Internal function to remove overlapping periods in cohorts
-# This is used as a helper inside other cohort manipulation functions
-# @param x A cohort table (dataframe, tbl_dbi, arrow table...) that may have overlapping periods
-# @return A dplyr query that collapses any overlapping periods. This is very similar to union.
 cohortCollapse <- function(x) {
-  checkmate::assert_true(methods::is(x, "tbl_dbi"))
-  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
-  checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
 
+  if (is.data.frame(x)) return(cohortCollapseLocal(x))
+
+  checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
+  checkmate::assert_true(methods::is(x, "tbl_dbi"))
+  checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
 
   # note this assumes all columns are fully populated and cohort_end_date >= cohort_start_date
   # TODO do we need to confirm this assumption?
@@ -100,6 +98,48 @@ cohortCollapse <- function(x) {
   x
 }
 
+# A version of cohortCollapse for local dataframes
+cohortCollapseLocal <- function(x) {
+  checkmate::assert_true(is.data.frame(x))
+  checkmate::assert_subset(
+    c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"),
+    colnames(x)
+  )
+
+  x %>%
+    dplyr::mutate(
+      cohort_start_date = as.Date(.data$cohort_start_date),
+      cohort_end_date   = as.Date(.data$cohort_end_date),
+      dur = as.integer(.data$cohort_end_date - .data$cohort_start_date)
+    ) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id) %>%
+    dplyr::arrange(.data$cohort_start_date, .data$dur, .data$cohort_end_date, .by_group = TRUE) %>%
+    dplyr::mutate(
+      # running max of end date across ALL previous rows (SQL win_over max_end with frame -Inf:-1)
+      running_end_num = cummax(as.numeric(.data$cohort_end_date)),
+      prev_end_num    = dplyr::lag(.data$running_end_num),
+
+      # new group iff start_date > previous running max end_date
+      new_group = dplyr::if_else(is.na(.data$prev_end_num), 0L,
+                                 dplyr::if_else(as.numeric(.data$cohort_start_date) <= .data$prev_end_num, 0L, 1L)),
+      groups = cumsum(.data$new_group)
+    ) %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$groups) %>%
+    dplyr::summarise(
+      cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
+      cohort_end_date   = max(.data$cohort_end_date,   na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    dplyr::select(
+      .data$cohort_definition_id,
+      .data$subject_id,
+      .data$cohort_start_date,
+      .data$cohort_end_date
+    )
+}
+
+
 table_refs <- function(domain_id) {
   dplyr::tribble(
     ~domain_id,    ~table_name,            ~concept_id,              ~start_date,                  ~end_date,
@@ -174,7 +214,11 @@ generateConceptCohortSet <- function(cdm,
   # check cdm ----
   checkmate::assertClass(cdm, "cdm_reference")
   con <- cdmCon(cdm)
-  checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
+
+  if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
+    checkmate::assertTRUE(DBI::dbIsValid(cdmCon(cdm)))
+  }
+
   checkmate::assert_character(name, len = 1, min.chars = 1, any.missing = FALSE, pattern = "[a-zA-Z0-9_]+")
 
   checkmate::assertTRUE("observation_period" %in% names(cdm))
@@ -182,7 +226,12 @@ generateConceptCohortSet <- function(cdm,
   # check name ----
   checkmate::assertLogical(overwrite, len = 1, any.missing = FALSE)
   checkmate::assertCharacter(name, len = 1, any.missing = FALSE, min.chars = 1, pattern = "[a-z1-9_]+")
-  existingTables <- listTables(con, cdmWriteSchema(cdm))
+
+  if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
+    existingTables <- listTables(con, cdmWriteSchema(cdm))
+  } else {
+    existingTables <- omopgenerics::listSourceTables(cdm)
+  }
 
   if (name %in% existingTables && !overwrite) {
     rlang::abort(glue::glue("{name} already exists in the CDM write_schema and overwrite is FALSE!"))
@@ -279,9 +328,9 @@ generateConceptCohortSet <- function(cdm,
                        is_excluded = FALSE)
   }
 
-  cohort_set_ref <- df |>
+  cohort_set_ref <- df %>%
     dplyr::select("cohort_definition_id", "cohort_name", "limit",
-                  "prior_observation", "future_observation", "end") |>
+                  "prior_observation", "future_observation", "end") %>%
     dplyr::distinct()
 
   # check target cohort -----
@@ -295,20 +344,31 @@ generateConceptCohortSet <- function(cdm,
    }}
 
   # upload concept data to the database ----
+
+
   tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
-  DBI::dbWriteTable(cdmCon(cdm),
-                    name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
-                    value = df,
-                    overwrite = TRUE)
+  if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
+    DBI::dbWriteTable(cdmCon(cdm),
+                      name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
+                      value = df,
+                      overwrite = TRUE)
+  } else {
+    cdm <- omopgenerics::insertTable(cdm, name = tempName, table = df, overwrite = TRUE)
+  }
+
 
   if (any(df$include_descendants)) {
     checkmate::assertTRUE("concept_ancestor" %in% names(cdm))
   }
 
   # realize full list of concepts ----
-  concepts <- dplyr::tbl(cdmCon(cdm), .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))) %>%
-    dplyr::rename_all(tolower)
+  if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
+    concepts <- dplyr::tbl(cdmCon(cdm), .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))) %>%
+      dplyr::rename_all(tolower)
+  } else {
+    concepts <- cdm[[tempName]]
+  }
 
   if (any(df$include_descendants)) {
     concepts <- concepts  %>%
@@ -320,10 +380,7 @@ generateConceptCohortSet <- function(cdm,
           dplyr::any_of(c("limit", "prior_observation", "future_observation", "end"))
         ) %>%
         dplyr::union_all(
-          dplyr::tbl(
-            cdmCon(cdm),
-            .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con))
-          ) %>%
+          concepts %>%
           dplyr::select(dplyr::any_of(c(
             "cohort_definition_id", "cohort_name", "concept_id", "is_excluded",
             "limit", "prior_observation", "future_observation", "end"
@@ -343,11 +400,15 @@ generateConceptCohortSet <- function(cdm,
     dplyr::compute()
 
   on.exit({
-    if (DBI::dbIsValid(cdmCon(cdm))) {
-      DBI::dbRemoveTable(cdmCon(cdm), name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
-    }},
-    add = TRUE
-  )
+    if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
+
+      if (DBI::dbIsValid(cdmCon(cdm))) {
+        DBI::dbRemoveTable(cdmCon(cdm), name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+      }
+    } else {
+      cdm[[tempName]] <- NULL
+    }
+  }, add = TRUE)
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs
@@ -442,9 +503,6 @@ generateConceptCohortSet <- function(cdm,
         dplyr::inner_join(obs_period, by = "subject_id")
     }
 
-    # TODO remove this variable since it is confusing
-    cohort_start_date <- "cohort_start_date"
-
     cohortRef <- cohort %>%
       dplyr::inner_join(obs_period, by = "subject_id") %>%
       # TODO fix dplyr::between sql translation, also pmin.
@@ -460,8 +518,7 @@ generateConceptCohortSet <- function(cdm,
         .data$cohort_end_date > .data$observation_period_end_date ~ .data$observation_period_end_date,
         TRUE ~ .data$cohort_end_date)) %>%
       dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date") %>%
-      # TODO order_by = .data$cohort_start_date
-      {if (limit == "first") dplyr::slice_min(., n = 1, order_by = cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
+      {if (limit == "first") dplyr::slice_min(., n = 1, order_by = .data$cohort_start_date, by = c("cohort_definition_id", "subject_id")) else .} %>%
       cohortCollapse() %>%
       dplyr::mutate(cohort_start_date = as.Date(.data$cohort_start_date),
                     cohort_end_date = as.Date(.data$cohort_end_date)) %>%
@@ -495,7 +552,7 @@ generateConceptCohortSet <- function(cdm,
       excluded_records = 0L,
       excluded_subjects = 0L)
 
-    cohortCodelistRef <- df  %>%
+    cohortCodelistRef <- df %>%
       dplyr::mutate(codelist_type = "index event",
                     concept_id = as.integer(.data$concept_id)) %>%
       dplyr::select("cohort_definition_id",

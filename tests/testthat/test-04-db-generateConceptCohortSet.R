@@ -614,3 +614,52 @@ test_that("attrition columns are correct", {
   DBI::dbDisconnect(con, shutdown = T)
 })
 
+
+test_that("generateConceptCohortSet works on local CDMs", {
+
+  skip_if_not_installed("duckdb")
+  skip_on_cran()
+
+  con <- duckdb::dbConnect(drv = duckdb::duckdb(dbdir = CDMConnector::eunomiaDir()))
+  cdm <- cdmFromCon(con = con, cdmSchema = "main", writeSchema = "main")
+
+  # this works
+  cdm <- generateConceptCohortSet(cdm = cdm, conceptSet = list(my_concept = 4112343L), name = "my_cohort")
+
+  cols <- c("cohort_definition_id","subject_id","cohort_start_date","cohort_end_date")
+
+  ch1 <- cdm$my_cohort %>%
+    collect() %>%
+    dplyr::arrange(dplyr::across(dplyr::all_of(cols)))
+
+  cdm_local <- dplyr::collect(cdm)
+
+  cdm_local <- generateConceptCohortSet(
+    cdm = cdm_local,
+    conceptSet = list(my_concept = 4112343L),
+    name = "my_cohort"
+  )
+
+  ch2 <- cdm_local$my_cohort %>%
+    collect() %>%
+    dplyr::arrange(dplyr::across(dplyr::all_of(cols)))
+
+  # Remove the "GeneratedCohortSet" class from an object (if present)
+  # This was the old class that was replaced with "cohort_table"
+  # for some reason this class is present when using db cdms but not local cdms
+  dropGeneratedCohortSet <- function(x) {
+    cls <- class(x)
+    if (!is.null(cls) && "GeneratedCohortSet" %in% cls) {
+      class(x) <- cls[cls != "GeneratedCohortSet"]
+    }
+    x
+  }
+
+  ch1 <- dropGeneratedCohortSet(ch1)
+  ch2 <- dropGeneratedCohortSet(ch2)
+
+  expect_equal(ch1, ch2)
+
+  DBI::dbDisconnect(con)
+})
+
