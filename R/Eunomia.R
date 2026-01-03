@@ -51,7 +51,7 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
 
   if (datasetName == "Synthea27NjParquet" && cdmVersion == "5.3") {
     cli::cli_abort("Synthea27NjParquet is only available in CDM version 5.4")
-  } else if (!(datasetName %in% c("synpuf-1k", "Synthea27NjParquet")) && cdmVersion == "5.4") {
+  } else if (!(datasetName %in% c("synpuf-1k", "Synthea27NjParquet", "empty_cdm")) && cdmVersion == "5.4") {
     cli::cli_abort("{datasetName} is only available in CDM version 5.3")
   }
 
