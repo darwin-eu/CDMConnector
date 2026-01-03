@@ -34,7 +34,7 @@ dbSource <- function(con, writeSchema) {
   if (dbms(con) %in% c("duckdb", "sqlite") && missing(writeSchema)) {
     writeSchema <- c(schema = "main")
   }
-  checkmate::assert_character(writeSchema, min.len = 1, max.len = 3)
+  checkmate::assert_character(writeSchema, min.len = 1, max.len = 3, null.ok = TRUE)
 
   source <- structure(
     .Data = list(),

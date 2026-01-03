@@ -100,7 +100,7 @@
 #' @export
 cdmFromCon <- function(con,
                        cdmSchema,
-                       writeSchema,
+                       writeSchema = NULL,
                        cohortTables = NULL,
                        cdmVersion = NULL,
                        cdmName = NULL,
@@ -124,15 +124,9 @@ cdmFromCon <- function(con,
     cli::cli_warn("Oracle database connections are not tested!")
   }
 
-  if (missing(writeSchema)) {
-    cli::cli_abort("{.arg writeSchema} is now required to create a cdm object with a database backend.
-                   Please make sure you have a schema in your database where you can create new tables and provide it in the `writeSchema` argument.
-                   If your schema has multiple parts please provide a length 2 character vector: `write_schema = c('my_db', 'my_schema')`")
-  }
-
   checkmate::assert_character(cdmName, any.missing = FALSE, len = 1, null.ok = TRUE)
   checkmate::assert_character(cdmSchema, min.len = 1, max.len = 3, any.missing = F)
-  checkmate::assert_character(writeSchema, min.len = 1, max.len = 3, any.missing = F)
+  checkmate::assert_character(writeSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_character(cohortTables, null.ok = TRUE)
   checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_choice(cdmVersion, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
@@ -161,13 +155,13 @@ cdmFromCon <- function(con,
   }
 
   # make sure writeSchema is named
-  if (!rlang::is_named(writeSchema)) {
+  if (!rlang::is_named(writeSchema) && !is.null(writeSchema)) {
     if (length(writeSchema) == 1) {
       writeSchema <- c("schema" = writeSchema)
     } else if (length(writeSchema) == 2) {
       writeSchema <- c("catalog" = writeSchema[1], "schema" = writeSchema[2])
     } else {
-      rlang::abort("If `writeSchema` is unnamed then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
+      rlang::abort("If `writeSchema` is unnamed and not NULL then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
     }
   } else {
     checkmate::assertTRUE(all(names(writeSchema) %in% c("catalog", "schema", "prefix")))
