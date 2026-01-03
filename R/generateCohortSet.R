@@ -96,7 +96,10 @@ readCohortSet <- function(path) {
 
 extractCodesetIds <- function(x) {
   if (is.list(x)) {
-    codes <- x[names(x) == "CodesetId"]
+    idNames <- c("CodesetId", "ConditionSourceConcept", "ProcedureSourceConcept",
+                 "DrugSourceConcept", "DeviceSourceConcept", "MeasurementSourceConcept",
+                 "ObservationSourceConcept", "VisitSourceConcept")
+    codes <- x[names(x) %in% idNames]
     return(c(unlist(codes), unlist(purrr::map(x, extractCodesetIds))))
   }
   return(NULL)
@@ -125,7 +128,14 @@ createCodelistDataframe <- function(cohortSet) {
         codelist_id = unname(extractCodesetIds(cohortSet$cohort[[i]][["InclusionRules"]])),
         codelist_type = "inclusion criteria"
       )
-    ) %>% dplyr::filter(!is.na(.data$codelist_id))
+    )
+
+    if (!("codelist_id" %in% names(df2))) {
+      # extractCodesetIds can return NULL
+      df2$codelist_id <- NA
+    }
+
+    df2 <- dplyr::filter(df2, !is.na(.data$codelist_id))
 
     dfList[[i]] <- dplyr::inner_join(df1, df2, by = "codelist_id")
   }
@@ -196,8 +206,10 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
   if (methods::is(cdmCon(cdm), "DatabaseConnectorJdbcConnection") && dbms(cdmCon(cdm)) == "sql server") {
     # workaround for dbplyr translation of where clause on sql server when using DatabaseConnector
     trueValueSql <- 1L
+    falseValueSql <- 0L
   } else {
     trueValueSql <- TRUE
+    falseValueSql <- FALSE
   }
 
   if (any(concepts$include_descendants)) {
@@ -224,7 +236,9 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
 
   # Database
   concepts <- cdm[[nm]] %>%
-    dplyr::filter(.data$is_excluded == .env$trueValueSql) %>%
+    dplyr::distinct() %>%
+    # remove excluded concepts
+    dplyr::filter(.data$is_excluded == .env$falseValueSql) %>%
     # Note that concepts that are not in the vocab will be silently ignored
     dplyr::inner_join(dplyr::select(cdm$concept, "concept_id", "domain_id"), by = "concept_id") %>%
     dplyr::select(
