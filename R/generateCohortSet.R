@@ -798,7 +798,8 @@ computeAttritionTable <- function(cdm,
   finalCounts <- dplyr::tbl(con, .inSchema(schema, cohortStem, dbms(con))) %>%
     dplyr::group_by(.data$cohort_definition_id) %>%
     dplyr::summarise(n_records = dplyr::n(), n_subjects = dplyr::n_distinct(.data$subject_id)) %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    dplyr::mutate_all(as.integer)
 
   lastAttritionRow <- dplyr::slice_max(attrition, n = 1, order_by = .data$reason_id, by = "cohort_definition_id")
 
