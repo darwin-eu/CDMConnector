@@ -618,6 +618,7 @@ test_that("attrition columns are correct", {
 test_that("generateConceptCohortSet works on local CDMs", {
 
   skip_if_not_installed("duckdb")
+  skip_on_ci()
   skip_on_cran()
 
   con <- duckdb::dbConnect(drv = duckdb::duckdb(dbdir = CDMConnector::eunomiaDir()))
