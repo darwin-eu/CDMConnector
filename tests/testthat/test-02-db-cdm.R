@@ -3,7 +3,7 @@ library(dplyr, warn.conflicts = FALSE)
 
 ### CDM object DBI drivers ------
 test_cdmFromCon <- function(con, cdmSchema, writeSchema) {
-  expect_error(cdmFromCon(con, cdmSchema = cdmSchema, cdmName = "test"), "write_schema")
+  # expect_error(cdmFromCon(con, cdmSchema = cdmSchema, cdmName = "test"), "write_schema") # write schema is no longer required by CDMConnector but is required by omopgenerics.
   cdm <- cdmFromCon(con, cdmSchema = cdmSchema, cdmName = "test", writeSchema = writeSchema)
   expect_s3_class(cdm, "cdm_reference")
   expect_warning(version(cdm))
@@ -43,7 +43,7 @@ test_cdmFromCon <- function(con, cdmSchema, writeSchema) {
 
   expect_s3_class(df, "data.frame")
 }
-
+dbtype="snowflake"
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - cdm_from_con"), {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()

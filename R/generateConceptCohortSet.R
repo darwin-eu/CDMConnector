@@ -17,7 +17,7 @@
 
 cohortCollapse <- function(x) {
 
-  if (methods::is(x, "data.frame") || methods::is(x, "tbl_sql")) {
+  if ( !(methods::is(x, "data.frame") || methods::is(x, "tbl_sql")) ) {
     cli::cli_abort("x must be a local dataframe or tbl_sql, not {paste(class(x), collapse = ', ')})")
   }
 
