@@ -261,10 +261,18 @@ cdmSample <- function(cdm,
 cdmSubset <- function(cdm, personId) {
 
   checkmate::assertClass(cdm, "cdm_reference")
-  checkmate::assertIntegerish(personId,
-                              min.len = 1,
-                              max.len = 1e6,
-                              null.ok = FALSE)
+
+  if (!methods::is(personId, "integer64")) {
+    checkmate::assertIntegerish(personId,
+                                min.len = 1,
+                                max.len = 1e6,
+                                null.ok = FALSE)
+
+    personId <- as.integer(personId)
+  } else {
+    stopifnot(all(!is.na(personId)), length(personId) >= 1)
+  }
+
 
   writeSchema <- cdmWriteSchema(cdm)
   if (is.null(writeSchema)) rlang::abort("write_schema is required for subsetting a cdm!")
@@ -273,7 +281,7 @@ cdmSubset <- function(cdm, personId) {
   prefix <- unique_prefix()
   DBI::dbWriteTable(con,
                     name = .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)),
-                    value = data.frame(person_id = as.integer(personId)),
+                    value = data.frame(person_id = personId),
                     overwrite = TRUE)
 
   # Note temporary = TRUE in dbWriteTable does not work on all dbms but we want a temp table here.
