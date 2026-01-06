@@ -1,3 +1,10 @@
+# CDMConnector 2.3.0
+
+- Add empty CDM v5.4 example dataset @ginberg
+- Support integer64 type for personId argument in `cdmSubset` @elinrow
+- Support local CDM objects in `generateConceptCohortSet` and date functions @catalamarti
+- Fix bug with cohortCodelist creation for some cohorts @sulevR
+
 # CDMConnector 2.2.0
 
 - Test using DatabaseConnector version 7 JDBC connections on all supported databases @IoannaNika
