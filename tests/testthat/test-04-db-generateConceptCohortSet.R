@@ -629,7 +629,7 @@ test_that("generateConceptCohortSet works on local CDMs", {
   cols <- c("cohort_definition_id","subject_id","cohort_start_date","cohort_end_date")
 
   ch1 <- cdm$my_cohort %>%
-    collect() %>%
+    dplyr::collect() %>%
     dplyr::arrange(dplyr::across(dplyr::all_of(cols)))
 
   cdm_local <- dplyr::collect(cdm)
@@ -641,7 +641,7 @@ test_that("generateConceptCohortSet works on local CDMs", {
   )
 
   ch2 <- cdm_local$my_cohort %>%
-    collect() %>%
+    dplyr::collect() %>%
     dplyr::arrange(dplyr::across(dplyr::all_of(cols)))
 
   # Remove the "GeneratedCohortSet" class from an object (if present)
