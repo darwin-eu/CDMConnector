@@ -1,0 +1,282 @@
+# [CDMConnector](https://darwin-eu.github.io/CDMConnector/)
+
+> Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
+> Common Data Model?
+>
+> Interact with your CDM in a pipe-friendly way with CDMConnector.
+>
+> - Quickly connect to your CDM and start exploring.
+> - Build data analysis pipelines using familiar dplyr verbs.
+> - Easily extract subsets of CDM data from a database.
+
+## Overview
+
+CDMConnector introduces a single R object that represents an OMOP CDM
+relational database inspired by the [dm](https://dm.cynkra.com/),
+[DatabaseConnector](http://ohdsi.github.io/DatabaseConnector/), and
+[Andromeda](https://ohdsi.github.io/Andromeda/) packages. The cdm
+objects encapsulate references to [OMOP CDM
+tables](https://ohdsi.github.io/CommonDataModel/) in a remote RDBMS as
+well as metadata necessary for interacting with a CDM, allowing for
+dplyr style data analysis pipelines and interactive data exploration.
+
+[![OMOP CDM
+v5.4](https://ohdsi.github.io/CommonDataModel/images/cdm54.png)](https://ohdsi.github.io/CommonDataModel/)
+
+## Features
+
+CDMConnector is meant to be the entry point for composable tidyverse
+style data analysis operations on an OMOP CDM. A `cdm_reference` object
+behaves like a named list of tables.
+
+- Quickly create a list of references to a subset of CDM tables
+- Store connection information for later use inside functions
+- Use any DBI driver back-end with the OMOP CDM
+
+See Getting started for more details.
+
+## Installation
+
+CDMConnector can be installed from CRAN:
+
+``` r
+install.packages("CDMConnector")
+```
+
+The development version can be installed from GitHub:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("darwin-eu/CDMConnector")
+```
+
+## Usage
+
+Create a cdm reference from any DBI connection to a database containing
+OMOP CDM tables. Use the cdm_schema argument to point to a particular
+schema in your database that contains your OMOP CDM tables and the
+write_schema to specify the schema where results tables can be created,
+and use cdm_name to provide a name for the database.
+
+``` r
+library(CDMConnector)
+
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+
+cdm <- cdmFromCon(con = con, 
+                  cdmSchema = "main", 
+                  writeSchema = "main", 
+                  cdmName = "my_duckdb_database")
+```
+
+A `cdm_reference` is a named list of table references:
+
+``` r
+library(dplyr)
+names(cdm)
+```
+
+``` R
+##  [1] "person"                "observation_period"    "visit_occurrence"     
+##  [4] "visit_detail"          "condition_occurrence"  "drug_exposure"        
+##  [7] "procedure_occurrence"  "device_exposure"       "measurement"          
+## [10] "observation"           "death"                 "note"                 
+## [13] "note_nlp"              "specimen"              "fact_relationship"    
+## [16] "location"              "care_site"             "provider"             
+## [19] "payer_plan_period"     "cost"                  "drug_era"             
+## [22] "dose_era"              "condition_era"         "metadata"             
+## [25] "cdm_source"            "concept"               "vocabulary"           
+## [28] "domain"                "concept_class"         "concept_relationship" 
+## [31] "relationship"          "concept_synonym"       "concept_ancestor"     
+## [34] "source_to_concept_map" "drug_strength"
+```
+
+Use dplyr verbs with the table references.
+
+``` r
+cdm$person %>% 
+  tally()
+```
+
+``` R
+## # Source:   SQL [?? x 1]
+## # Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]
+##       n
+##   <dbl>
+## 1  2694
+```
+
+Compose operations with the pipe.
+
+``` r
+cdm$condition_era %>%
+  left_join(cdm$concept, by = c("condition_concept_id" = "concept_id")) %>% 
+  count(top_conditions = concept_name, sort = TRUE)
+```
+
+``` R
+## # Source:     SQL [?? x 2]
+## # Database:   DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]
+## # Ordered by: desc(n)
+##    top_conditions                               n
+##    <chr>                                    <dbl>
+##  1 Viral sinusitis                          17268
+##  2 Acute viral pharyngitis                  10217
+##  3 Acute bronchitis                          8184
+##  4 Otitis media                              3561
+##  5 Osteoarthritis                            2694
+##  6 Streptococcal sore throat                 2656
+##  7 Sprain of ankle                           1915
+##  8 Concussion with no loss of consciousness  1013
+##  9 Sinusitis                                 1001
+## 10 Acute bacterial sinusitis                  939
+## # ℹ more rows
+```
+
+And much more besides. See vignettes for further explanations on how to
+create database connections, make a cdm reference, and start analyzing
+your data.
+
+## Getting help
+
+If you encounter a clear bug, please file an issue with a minimal
+[reproducible example](https://reprex.tidyverse.org/) on
+[GitHub](https://github.com/darwin-eu/CDMConnector/issues).
+
+## Citation
+
+``` R
+## To cite package 'CDMConnector' in publications use:
+## 
+##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (????).
+##   _CDMConnector: Connect to an OMOP Common Data Model_. R package
+##   version 2.1.0, https://github.com/darwin-eu/CDMConnector,
+##   <https://darwin-eu.github.io/CDMConnector/>.
+## 
+## A BibTeX entry for LaTeX users is
+## 
+##   @Manual{,
+##     title = {CDMConnector: Connect to an OMOP Common Data Model},
+##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
+##     note = {R package version 2.1.0, https://github.com/darwin-eu/CDMConnector},
+##     url = {https://darwin-eu.github.io/CDMConnector/},
+##   }
+```
+
+------------------------------------------------------------------------
+
+License: Apache 2.0
+
+# Package index
+
+### CDM Object
+
+Create or transform a CDM reference object. These accept and return cdm
+objects.
+
+- [`cdmCon()`](cdmCon.md) : Get underlying database connection
+- [`cdmDisconnect(`*`<db_cdm>`*`)`](cdmDisconnect.db_cdm.md) :
+  Disconnect the connection of the cdm object
+- [`cdmFlatten()`](cdmFlatten.md) : Flatten a cdm into a single
+  observation table
+- [`cdmFromCon()`](cdmFromCon.md) : Create a CDM reference object from a
+  database connection
+- [`cdmSample()`](cdmSample.md) : Subset a cdm object to a random sample
+  of individuals
+- [`cdmSubset()`](cdmSubset.md) : Subset a cdm object to a set of
+  persons
+- [`cdmSubsetCohort()`](cdmSubsetCohort.md) : Subset a cdm to the
+  individuals in one or more cohorts
+- [`cdmWriteSchema()`](cdmWriteSchema.md) : Get cdm write schema
+- [`computeDataHashByTable()`](computeDataHashByTable.md) : Compute a
+  hash for each CDM table
+- [`copyCdmTo()`](copyCdmTo.md) : Copy a cdm object from one database to
+  another
+- [`dbSource()`](dbSource.md) : Create a source for a cdm in a database.
+- [`dropTable(`*`<db_cdm>`*`)`](dropTable.db_cdm.md) : Drop table from a
+  database backed cdm object
+- [`snapshot()`](snapshot.md) : Extract CDM metadata
+- [`tblGroup()`](tblGroup.md) : CDM table selection helper
+- [`version()`](version.md) : Get the CDM version
+
+### Cohort Creation and Transformation
+
+A cohort is a set of person-days representing the time during which
+people in a CDM exhibited some observable characteristics. Cohorts are
+often the foundation of downstream analyses.
+
+- [`generateCohortSet()`](generateCohortSet.md) **\[experimental\]** :
+  Generate a cohort set on a cdm object
+- [`generateConceptCohortSet()`](generateConceptCohortSet.md) : Create a
+  new generated cohort set from a list of concept sets
+- [`readCohortSet()`](readCohortSet.md) : Read a set of cohort
+  definitions into R
+- [`summariseQuantile()`](summariseQuantile.md) : Quantile calculation
+  using dbplyr
+- [`summariseQuantile2()`](summariseQuantile2.md) : Quantile calculation
+  using dbplyr
+
+### dbplyr workarounds
+
+Functions that can be used in cross database dplyr pipelines
+
+- [`appendPermanent()`](appendPermanent.md) : Run a dplyr query and add
+  the result set to an existing
+- [`asDate()`](asDate.md) : as.Date dbplyr translation wrapper
+- [`computeQuery()`](computeQuery.md) : Execute dplyr query and save
+  result in remote database
+- [`dateadd()`](dateadd.md) : Add days or years to a date in a dplyr
+  query
+- [`datediff()`](datediff.md) : Compute the difference between two days
+- [`datepart()`](datepart.md) : Extract the day, month or year of a date
+  in a dplyr pipeline
+- [`inSchema()`](inSchema.md) : Helper for working with compound schemas
+
+### DBI connection
+
+Functions that accept DBI connections and are useful in cross database
+DBI code
+
+- [`dbms()`](dbms.md) : Get the database management system (dbms) from a
+  cdm_reference or DBI connection
+- [`listTables()`](listTables.md) : List tables in a schema
+
+### Eunomia example CDM
+
+Easily create and use example CDMs in a [duckdb](https://duckdb.org/)
+database
+
+- [`downloadEunomiaData()`](downloadEunomiaData.md) : Download Eunomia
+  data files
+
+- [`eunomiaDir()`](eunomiaDir.md) : Create a copy of an example OMOP CDM
+  dataset
+
+- [`eunomiaIsAvailable()`](eunomiaIsAvailable.md) : Has the Eunomia
+  dataset been cached?
+
+- [`exampleDatasets()`](exampleDatasets.md) : List the available example
+  CDM datasets
+
+- [`requireEunomia()`](requireEunomia.md) :
+
+  Require eunomia to be available. The function makes sure that you can
+  later create a eunomia database with
+  [`eunomiaDir()`](../reference/eunomiaDir.md).
+
+### Benchmarking
+
+Run benchmarking of simple queries against your CDM reference
+
+- [`benchmarkCDMConnector()`](benchmarkCDMConnector.md) : Run benchmark
+  of tasks using CDMConnector
+
+# Articles
+
+### All vignettes
+
+- [Getting Started](a01_getting-started.md):
+- [Working with cohorts](a02_cohorts.md):
+- [CDMConnector and dbplyr](a03_dbplyr.md):
+- [DBI connection examples](a04_DBI_connection_examples.md):
+- [Using CDM attributes](a06_using_cdm_attributes.md):

@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Working with cohorts • CDMConnector</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -26,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -171,17 +170,9 @@ automatically using alphabetical order of the filenames.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pathToCohortJsonFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts1"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">pathToCohortJsonFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "cerebral_venous_sinus_thrombosis_01.json"</span></span>
-<span><span class="co">#&gt; [2] "CohortsToCreate.csv"                     </span></span>
-<span><span class="co">#&gt; [3] "deep_vein_thrombosis_01.json"</span></span>
 <span></span>
 <span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">pathToCohortJsonFiles</span>, <span class="st">"CohortsToCreate.csv"</span><span class="op">)</span>,</span>
-<span>                show_col_types <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
-<span><span class="co">#&gt;   cohortId cohortName                          jsonPath                         </span></span>
-<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                            </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        1 cerebral_venous_sinus_thrombosis_01 cerebral_venous_sinus_thrombosis…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        2 deep_vein_thrombosis_01             deep_vein_thrombosis_01.json</span></span></code></pre></div>
+<span>                show_col_types <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="atlas-cohort-definitions">Atlas cohort definitions<a class="anchor" aria-label="anchor" href="#atlas-cohort-definitions"></a>
 </h3>
@@ -192,7 +183,6 @@ tables will go into the CDM’s <code>write_schema</code>.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span>
 <span><span class="va">pathToCohortJsonFiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"example_cohorts"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">pathToCohortJsonFiles</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "GiBleed_default.json" "GIBleed_male.json"</span></span>
 <span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cdmFromCon.html">cdmFromCon</a></span><span class="op">(</span><span class="va">con</span>, cdmName <span class="op">=</span> <span class="st">"eunomia"</span>, cdmSchema <span class="op">=</span> <span class="st">"main"</span>, writeSchema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span>
@@ -201,41 +191,14 @@ tables will go into the CDM’s <code>write_schema</code>.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cohort_name <span class="op">=</span> <span class="fu">snakecase</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/snakecase/man/caseconverter.html" class="external-link">to_snake_case</a></span><span class="op">(</span><span class="va">cohort_name</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cohortSet</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id cohort_name     cohort       json   cohort_name_snakecase</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 gibleed_default <span style="color: #949494;">&lt;named list&gt;</span> <span style="color: #949494;">&lt;chr&gt;</span>  gibleed_default      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2 gibleed_male    <span style="color: #949494;">&lt;named list&gt;</span> <span style="color: #949494;">&lt;chr&gt;</span>  gibleed_male</span></span>
 <span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generateCohortSet</a></span><span class="op">(</span></span>
 <span>  cdm <span class="op">=</span> <span class="va">cdm</span>, </span>
 <span>  cohortSet <span class="op">=</span> <span class="va">cohortSet</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"study_cohorts"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 2 cohorts</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/2) - gibleed_default</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/2) - gibleed_default <span style="color: #B2B2B2;">[126ms]</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/2) - gibleed_male</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/2) - gibleed_male <span style="color: #B2B2B2;">[119ms]</span></span></span>
-<span><span class="co">#&gt; </span></span>
 <span></span>
-<span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;study_cohorts&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKeUm4S/file946e8a7e2cc.duckdb]</span></span></span>
-<span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
-<span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">1</span>713 2010-07-22        2018-05-16     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">1</span>934 2000-09-08        2019-03-09     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">2</span>579 1992-06-03        2019-06-17     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1        422 2001-03-04        2019-04-28     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">3</span>177 1950-07-05        2012-06-06     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">3</span>960 1997-06-12        2019-04-20     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">4</span>109 2002-03-25        2019-04-23     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1        377 2003-04-02        2018-10-25     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1        793 2010-06-18        2017-12-01     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">1</span>464 2002-11-01        2018-11-22     </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span></code></pre></div>
+<span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span></span></code></pre></div>
 <p>The generated cohort has associated metadata tables. We can access
 these with utility functions.</p>
 <ul>
@@ -251,28 +214,8 @@ name</li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2            237             237</span></span>
 <span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id cohort_name    </span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 gibleed_default</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2 gibleed_male</span></span>
-<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id number_records number_subjects reason_id reason          </span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479         1 Qualifying init…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    1            479             479         2 Cohort records …</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    2            479             479         1 Qualifying init…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    2            237             237         2 Male            </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    2            237             237         3 30 days prior o…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    2            237             237         4 Cohort records …</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: excluded_records &lt;int&gt;, excluded_subjects &lt;int&gt;</span></span></span></code></pre></div>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">study_cohorts</span><span class="op">)</span></span></code></pre></div>
 <p>Note the this cohort table is still in the database so it can be
 quite large. We can also join it to other CDM table or subset the entire
 cdm to just the persons in the cohort.</p>
@@ -296,49 +239,10 @@ cohort based on filtering the Atlas cohort.</p>
 <span></span>
 <span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet.html">generateCohortSet</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet</span>, name <span class="op">=</span> <span class="st">"cohort"</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating 5 cohorts</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (1/5) - gibleed_all_end_10</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (1/5) - gibleed_all_end_10 <span style="color: #B2B2B2;">[70ms]</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (2/5) - gibleed_all</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (2/5) - gibleed_all <span style="color: #B2B2B2;">[56ms]</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (3/5) - gibleed_default_with_descendants</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (3/5) - gibleed_default_with_descendants <span style="color: #B2B2B2;">[57ms]</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (4/5) - gibleed_default</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (4/5) - gibleed_default <span style="color: #B2B2B2;">[53ms]</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Generating cohort (5/5) - gibleed_end_10</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> Generating cohort (5/5) - gibleed_end_10 <span style="color: #B2B2B2;">[55ms]</span></span></span>
-<span><span class="co">#&gt; </span></span>
 <span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;cohort&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKeUm4S/file946e5cf817a6.duckdb]</span></span></span>
-<span><span class="co">#&gt;    cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
-<span><span class="co">#&gt;                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                    1       <span style="text-decoration: underline;">3</span>928 2012-09-11        2012-09-21     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>                    1       <span style="text-decoration: underline;">1</span>118 2014-07-07        2014-07-17     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>                    1       <span style="text-decoration: underline;">2</span>834 1972-03-16        1972-03-26     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>                    1       <span style="text-decoration: underline;">3</span>573 1963-12-21        1963-12-31     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>                    1       <span style="text-decoration: underline;">2</span>649 1993-02-14        1993-02-24     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>                    1       <span style="text-decoration: underline;">5</span>104 2017-06-24        2017-07-04     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>                    1       <span style="text-decoration: underline;">1</span>498 2007-05-02        2007-05-12     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>                    1       <span style="text-decoration: underline;">1</span>737 1950-09-18        1950-09-28     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>                    1       <span style="text-decoration: underline;">4</span>450 2009-03-03        2009-03-13     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                    1       <span style="text-decoration: underline;">5</span>267 2006-04-03        2006-04-13     </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
 <span></span>
-<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    3            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    4            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    5            479             479</span></span></code></pre></div>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span></code></pre></div>
 <p>As an example we will take only people in the cohort that have a
 cohort duration that is longer than 4 weeks. Using dplyr we can write
 this query and save the result in a new table in the cdm.</p>
@@ -351,15 +255,7 @@ this query and save the result in a new table in the cdm.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">compute</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"cohort_subset"</span>, temporary <span class="op">=</span> <span class="cn">FALSE</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    2            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    3            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    4            479             479</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    5            479             479</span></span></code></pre></div>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort_subset</span><span class="op">)</span></span></code></pre></div>
 <p>In this case we can see that cohorts 1 and 5 were dropped completely
 and some patients were dropped from cohorts 2, 3, and 4.</p>
 <p>Let’s confirm that everyone in cohorts 1 and 5 were in the cohort for
@@ -371,18 +267,7 @@ less than 28 days.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">cohort_definition_id</span>, <span class="va">days_in_cohort</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">daysInCohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 3</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id days_in_cohort     n</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    5              1    10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    5             10   467</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                    5              9     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                    1              9     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                    1             10   467</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                    1              1    10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                    1              2     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                    5              2     1</span></span></code></pre></div>
+<span><span class="va">daysInCohort</span></span></code></pre></div>
 <p>We have confirmed that everyone in cohorts 1 and 5 were in the cohort
 less than 10 days.</p>
 <p>Now suppose we would like to create a new cohort table with three
@@ -414,19 +299,7 @@ example.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">cohort_definition_id</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarize</a></span><span class="op">(</span>mean_days_in_cohort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">days_in_cohort</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">mean_days_in_cohort</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 9 × 2</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id mean_days_in_cohort</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                   14               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                   13               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                   12               <span style="text-decoration: underline;">7</span>586.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                 <span style="text-decoration: underline;">1</span>004               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                  102               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                 <span style="text-decoration: underline;">1</span>002               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                  104               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>                  103               <span style="text-decoration: underline;">7</span>602.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span>                 <span style="text-decoration: underline;">1</span>003               <span style="text-decoration: underline;">7</span>602.</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">mean_days_in_cohort</span><span class="op">)</span></span></code></pre></div>
 <p>This is an example of creating new cohorts from existing cohorts
 using CDMConnector. There is a lot of flexibility with this approach.
 Next we will look at completely custom cohort creation which is quite
@@ -464,13 +337,7 @@ criteria in the initial definition, additional criteria can be applied
 <span>  <span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/recordCohortAttrition.html" class="external-link">recordCohortAttrition</a></span><span class="op">(</span>reason <span class="op">=</span> <span class="st">"Male"</span><span class="op">)</span></span>
 <span>  </span>
-<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed2</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id number_records number_subjects reason_id reason          </span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1            479             479         1 Initial qualify…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                    1            237             237         2 Male            </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: excluded_records &lt;int&gt;, excluded_subjects &lt;int&gt;</span></span></span></code></pre></div>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">gibleed2</span><span class="op">)</span> </span></code></pre></div>
 <p>In the above example we built a cohort table from a concept set. The
 cohort essentially captures patient-time based off of the presence or
 absence of OMOP standard concept IDs. We then manually applied an
@@ -490,28 +357,14 @@ set.</p>
 <span>  cohort_end_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2001-01-01"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1          1 1999-01-01        2001-01-01</span></span></code></pre></div>
+<span><span class="va">cohort</span></span></code></pre></div>
 <p>First make sure the table is in the database and create a dplyr table
 reference to it and add it to the CDM object.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/omopgenerics/" class="external-link">omopgenerics</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'omopgenerics'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter</span></span>
 <span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, name <span class="op">=</span> <span class="st">"cohort"</span>, table <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;cohort&gt; [?? x 4]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKeUm4S/file946e5cf817a6.duckdb]</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id subject_id cohort_start_date cohort_end_date</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1          1 1999-01-01        2001-01-01</span></span></code></pre></div>
+<span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span></span></code></pre></div>
 <p>To make this a true generated cohort object use the
 <code>cohort_table</code></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -520,41 +373,20 @@ reference to it and add it to the CDM object.</p>
 well as the various metadata tables.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cohortCount.html" class="external-link">cohortCount</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id number_records number_subjects</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1              1               1</span></span>
 <span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id cohort_name</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 cohort_1</span></span>
-<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id number_records number_subjects reason_id reason          </span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1              1               1         1 Initial qualify…</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: excluded_records &lt;int&gt;, excluded_subjects &lt;int&gt;</span></span></span></code></pre></div>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/attrition.html" class="external-link">attrition</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort</span><span class="op">)</span></span></code></pre></div>
 <p>If you would like to override the attribute tables then pass
 additional dataframes to cohortTable</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span>cdm <span class="op">=</span> <span class="va">cdm</span>, name <span class="op">=</span> <span class="st">"cohort2"</span>, table <span class="op">=</span> <span class="va">cohort</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id cohort_name</span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 cohort_1</span></span>
 <span></span>
 <span><span class="va">cohort_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>cohort_definition_id <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>                         cohort_name <span class="op">=</span> <span class="st">"made_up_cohort"</span><span class="op">)</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html" class="external-link">newCohortTable</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span>, cohortSetRef <span class="op">=</span> <span class="va">cohort_set</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
-<span><span class="co">#&gt;   cohort_definition_id cohort_name   </span></span>
-<span><span class="co">#&gt;                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                    1 made_up_cohort</span></span></code></pre></div>
+<span><span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/settings.html" class="external-link">settings</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">cohort2</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">con</span>, shutdown <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Cohort building is a fundamental building block of observational
@@ -579,7 +411,7 @@ downstream OHDSI analytic packages.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

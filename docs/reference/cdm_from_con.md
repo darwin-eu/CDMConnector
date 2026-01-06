@@ -1,0 +1,147 @@
+# Create a CDM reference object from a database connection
+
+Create a CDM reference object from a database connection
+
+## Usage
+
+``` r
+cdm_from_con(
+  con,
+  cdm_schema,
+  write_schema,
+  cohort_tables = NULL,
+  cdm_version = "5.3",
+  cdm_name = NULL,
+  achilles_schema = NULL,
+  .soft_validation = FALSE,
+  write_prefix = NULL
+)
+
+cdmFromCon(
+  con,
+  cdmSchema,
+  writeSchema,
+  cohortTables = NULL,
+  cdmVersion = "5.3",
+  cdmName = NULL,
+  achillesSchema = NULL,
+  .softValidation = FALSE,
+  writePrefix = NULL
+)
+```
+
+## Arguments
+
+- con:
+
+  A DBI database connection to a database where an OMOP CDM v5.4 or v5.3
+  instance is located.
+
+- cdm_schema, cdmSchema:
+
+  The schema where the OMOP CDM tables are located. Defaults to NULL.
+
+- write_schema, writeSchema:
+
+  An optional schema in the CDM database that the user has write access
+  to.
+
+- cohort_tables, cohortTables:
+
+  A character vector listing the cohort table names to be included in
+  the CDM object.
+
+- cdm_version, cdmVersion:
+
+  The version of the OMOP CDM: "5.3" (default), "5.4", "auto". "auto"
+  attempts to automatically determine the cdm version using heuristics.
+  Cohort tables must be in the write_schema.
+
+- cdm_name, cdmName:
+
+  The name of the CDM. If NULL (default) the cdm_source_name . field in
+  the CDM_SOURCE table will be used.
+
+- achilles_schema, achillesSchema:
+
+  An optional schema in the CDM database that contains achilles tables.
+
+- .soft_validation, .softValidation:
+
+  Normally the observation period table should not have overlapping
+  observation periods for a single person. If `.softValidation` is
+  `TRUE` the validation check that looks for overlapping observation
+  periods will be skipped. Other analytic packages may break or produce
+  incorrect results if `softValidation` is `TRUE` and the observation
+  period table contains overlapping observation periods.
+
+- write_prefix, writePrefix:
+
+  A prefix that will be added to all tables created in the write_schema.
+  This can be used to create namespace in your database write_schema for
+  your tables.
+
+## Value
+
+A list of dplyr database table references pointing to CDM tables
+
+## Details
+
+cdm_from_con / cdmFromCon creates a new cdm reference object from a DBI
+database connection. In addition to the connection the user needs to
+pass in the schema in the database where the cdm data can be found as
+well as another schema where the user has write access to create tables.
+Nearly all downstream analytic packages need the ability to create
+temporary data in the database so the write_schema is required.
+
+Some database systems have the idea of a catalog or a compound schema
+with two components. See examples below for how to pass in catalogs and
+schemas.
+
+You can also specify a `write_prefix`. This is a short character string
+that will be added to any tables created in the `write_schema`
+effectively a namespace in the schema just for your analysis. If the
+write_schema is a shared between multiple users setting a unique
+write_prefix ensures you do not overwrite existing tables and allows you
+to easily clean up tables by dropping all tables that start with the
+prefix.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+library(CDMConnector)
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+
+# minimal example
+cdm <- cdm_from_con(con,
+                    cdm_schema = "main",
+                    write_schema = "scratch")
+
+# write prefix is optional but recommended if write_schema is shared
+cdm <- cdm_from_con(con,
+                    cdm_schema = "main",
+                    write_schema = "scratch",
+                    write_prefix = "tmp_")
+
+# Some database systems use catalogs or compound schemas.
+# These can be specified as follows:
+cdm <- cdm_from_con(con,
+                    cdm_schema = "catalog.main",
+                    write_schema = "catalog.scratch",
+                    write_prefix = "tmp_")
+
+cdm <- cdm_from_con(con,
+                    cdm_schema = c("my_catalog", "main"),
+                    write_schema = c("my_catalog", "scratch"),
+                    write_prefix = "tmp_")
+
+cdm <- cdm_from_con(con,
+                    cdm_schema = c(catalog = "my_catalog", schema = "main"),
+                    write_schema = c(catalog = "my_catalog", schema = "scratch"),
+                    write_prefix = "tmp_")
+
+ DBI::dbDisconnect(con)
+} # }
+
+```

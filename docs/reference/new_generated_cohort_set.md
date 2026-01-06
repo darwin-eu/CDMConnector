@@ -1,0 +1,157 @@
+# Constructor for cohort_table objects
+
+**\[deprecated\]**
+
+## Usage
+
+``` r
+new_generated_cohort_set(
+  cohort_ref,
+  cohort_set_ref = NULL,
+  cohort_attrition_ref = NULL,
+  cohort_count_ref = NULL,
+  overwrite
+)
+
+newGeneratedCohortSet(
+  cohortRef,
+  cohortSetRef = NULL,
+  cohortAttritionRef = NULL,
+  cohortCountRef = NULL,
+  overwrite
+)
+```
+
+## Arguments
+
+- cohort_ref, cohortRef:
+
+  A `tbl_sql` object that points to a remote cohort table with the
+  following first four columns: cohort_definition_id, subject_id,
+  cohort_start_date, cohort_end_date. Additional columns are optional.
+
+- cohort_set_ref, cohortSetRef:
+
+  A `tbl_sql` object that points to a remote table with the following
+  first two columns: cohort_definition_id, cohort_name. Additional
+  columns are optional. cohort_definition_id should be a primary key on
+  this table and uniquely identify rows.
+
+- cohort_attrition_ref, cohortAttritionRef:
+
+  A `tbl_sql` object that points to an attrition table in a remote
+  database with the first column being cohort_definition_id.
+
+- cohort_count_ref, cohortCountRef:
+
+  A `tbl_sql` object that points to a cohort_count table in a remote
+  database with columns cohort_definition_id, cohort_entries,
+  cohort_subjects.
+
+- overwrite:
+
+  Should tables be overwritten if they already exist? TRUE or FALSE
+  (default)
+
+## Value
+
+A `cohort_table` object that is a `tbl_sql` reference to a cohort table
+in the write_schema of an OMOP CDM
+
+## Details
+
+Please use
+[`omopgenerics::newCohortTable()`](https://darwin-eu.github.io/omopgenerics/reference/newCohortTable.html)
+instead.
+
+This constructor function is to be used by analytic package developers
+to create `cohort_table` objects.
+
+A `cohort_table` is a set of person-time from an OMOP CDM database. A
+`cohort_table` can be represented by a table with three columns:
+subject_id, cohort_start_date, cohort_end_date. Subject_id is the same
+as person_id in the OMOP CDM. A `cohort_table` is a collection of one or
+more `cohort_table` and can be represented as a table with four columns:
+cohort_definition_id, subject_id, cohort_start_date, cohort_end_date.
+
+This constructor function defines the `cohort_table` object in R.
+
+The object is an extension of a `tbl_sql` object defined in dplyr. This
+is a lazy database query that points to a cohort table in the database
+with at least the columns cohort_definition_id, subject_id,
+cohort_start_date, cohort_end_date. The table could optionally have more
+columns as well.
+
+In addition the `cohort_table` object has three optional attributes.
+These are: cohort_set, cohort_attrition, cohort_count. Each of these
+attributes is also a lazy SQL query (`tbl_sql`) that points to a table
+in a database and is described below.
+
+### cohort_set
+
+cohort_set is a table with one row per cohort_definition_id. The first
+two columns of the cohort_set table are: cohort_definition_id, and
+cohort_name. Additional columns can be added. The cohort_set table is
+meant to store metadata about the cohort definition. Since this table is
+required it will be created if it it is not supplied.
+
+### cohort_attrition
+
+cohort_attrition is an optional table that stores attrition information
+recorded during the cohort generation process such as how many persons
+were dropped at each step of inclusion rule application. The first
+column of this table should be `cohort_definition_id` but all other
+columns currently have no constraints.
+
+### cohort_count
+
+cohort_count is a option attribute table that records the number of
+records and the number of unique persons in each cohort in a
+`cohort_table`. It is derived metadata that can be re-derived as long as
+cohort_set, the complete list of cohorts in the set, is available.
+Column names of cohort_count are: cohort_definition_id, number_records,
+number_subjects. This table is required for cohort_table objects and
+will be created if not supplied.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+ # This function is for developers who are creating cohort_table
+ # objects in their packages. The function should accept a cdm_reference
+ # object as the first argument and return a cdm_reference object with the
+ # cohort table added. The second argument should be `name` which will be
+ # the prefix for the database tables, the name of the cohort table in the
+ # database and the name of the cohort table in the cdm object.
+ # Other optional arguments can be added after the first two.
+
+ generateCustomCohort <- function(cdm, name, ...) {
+
+   # accept a cdm_reference object as input
+   checkmate::assertClass(cdm, "cdm_reference")
+   con <- attr(cdm, "dbcon")
+
+   # Create the tables in the database however you like
+   # All the tables should be prefixed with `name`
+   # The cohort table should be called `name` in the database
+
+   # Create the dplyr table references
+   cohort_ref <- dplyr::tbl(con, name)
+   cohort_set <- dplyr::tbl(con, paste0(name, "_set"))
+   cohort_attrition_ref <- dplyr::tbl(con, paste0(name, "_attrition"))
+   cohort_count_ref <- dplyr::tbl(con, paste0(name, "_count"))
+
+   # add to the cdm
+   cdm[[name]] <- cohort_ref
+
+   # create the generated cohort set object using the constructor
+   cdm[[name]] <- newGeneratedCohortSet(
+      cdm[[name]],
+      cohortSetRef = cohort_set_ref,
+      cohortAttritionRef = cohort_attrition_ref,
+      cohortCountRef = cohort_count_ref)
+
+   return(cdm)
+ }
+} # }
+```

@@ -7,7 +7,7 @@
 cdmFromCon(
   con,
   cdmSchema,
-  writeSchema,
+  writeSchema = NULL,
   cohortTables = NULL,
   cdmVersion = NULL,
   cdmName = NULL,
