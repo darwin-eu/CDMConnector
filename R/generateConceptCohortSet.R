@@ -35,21 +35,45 @@ cohortCollapse <- function(x) {
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
     {
       if (methods::is(x, "tbl_sql")) {
-        dbplyr::window_order(., .data$cohort_start_date, .data$dur, .data$cohort_end_date)
+        dbplyr::window_order(., .data$cohort_start_date, .data$dur, .data$cohort_end_date) %>%
+        dplyr::mutate(
+          running_end = !!dbplyr::win_over(
+            dbplyr::sql(paste0("MAX(", DBI::dbQuoteIdentifier(x$src$con, "cohort_end_date"), ")")),
+            partition = c("cohort_definition_id", "subject_id"),
+            order = c("cohort_start_date", "cohort_end_date"),
+            frame = c(-Inf, 0),
+            con = x$src$con
+          ),
+          prev_end = dplyr::lag(.data$running_end),
+          new_group = dplyr::if_else(
+            is.na(.data$prev_end),
+            0L,
+            dplyr::if_else(.data$cohort_start_date <= .data$prev_end, 0L, 1L)
+          )
+        ) %>%
+        dplyr::mutate(
+          groups = !!dbplyr::win_over(
+            dbplyr::sql(paste0("SUM(", DBI::dbQuoteIdentifier(x$src$con, "new_group"), ")")),
+            partition = c("cohort_definition_id", "subject_id"),
+            order = c("cohort_start_date", "cohort_end_date"),
+            frame = c(-Inf, 0),
+            con = x$src$con
+          )
+        )
       } else {
-        dplyr::arrange(., .data$cohort_start_date, .data$dur, .data$cohort_end_date)
+        dplyr::arrange(., .data$cohort_start_date, .data$dur, .data$cohort_end_date) %>%
+        dplyr::mutate(
+          running_end = as.Date(cummax(as.integer(.data$cohort_end_date))),
+          prev_end    = dplyr::lag(.data$running_end),
+          new_group   = dplyr::if_else(
+            is.na(.data$prev_end),
+            0L,
+            dplyr::if_else(.data$cohort_start_date <= .data$prev_end, 0L, 1L)
+          ),
+          groups = cumsum(.data$new_group)
+        )
       }
     } %>%
-    dplyr::mutate(
-      running_end = cummax(.data$cohort_end_date),
-      prev_end    = dplyr::lag(.data$running_end),
-      new_group   = dplyr::if_else(
-        is.na(.data$prev_end),
-        0L,
-        dplyr::if_else(.data$cohort_start_date <= .data$prev_end, 0L, 1L)
-      ),
-      groups = cumsum(.data$new_group)
-    ) %>%
     dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$groups, .add = FALSE) %>%
     dplyr::summarise(
       cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
