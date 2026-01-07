@@ -4,6 +4,7 @@
 - Support integer64 type for personId argument in `cdmSubset` @elinrow
 - Support local CDM objects in `generateConceptCohortSet` and date functions @catalamarti
 - Fix bug with cohortCodelist creation for some cohorts @sulevR
+- Simplify `cohortCollapse` logic and support local cdm tables @ablack3
 
 # CDMConnector 2.2.0
 
