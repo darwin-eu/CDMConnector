@@ -23,8 +23,6 @@ A character vector of CDM tables names in the groups
 
 ## Details
 
-![CDM 5.4](figures/cdm54.png)
-
 The "default" table group is meant to capture the most commonly used set
 of CDM tables. Currently the "default" group is: person,
 observation_period, visit_occurrence, visit_detail,
