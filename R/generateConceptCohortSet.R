@@ -21,128 +21,43 @@ cohortCollapse <- function(x) {
     cli::cli_abort("x must be a local dataframe or tbl_sql, not {paste(class(x), collapse = ', ')})")
   }
 
-  if (is.data.frame(x)) return(cohortCollapseLocal(x))
-
   checkmate::assert_subset(c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"), colnames(x))
-  checkmate::assert_true(methods::is(x, "tbl_sql"))
-  checkmate::assertTRUE(DBI::dbIsValid(x$src$con))
 
   # note this assumes all columns are fully populated and cohort_end_date >= cohort_start_date
-  # TODO do we need to confirm this assumption?
-
-  con <- x$src$con
-  min_start_sql <- dbplyr::sql(glue::glue('min({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
-  max_start_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_start_date")})'))
-  max_end_sql <- dbplyr::sql(glue::glue('max({DBI::dbQuoteIdentifier(con, "cohort_end_date")})'))
-
-  x <- x %>%
-    dplyr::distinct() %>%
-    dplyr::mutate(dur = !!datediff("cohort_start_date",
-                                   "cohort_end_date")) %>%
-    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
-    dbplyr::window_order(.data$cohort_start_date, .data$cohort_end_date,
-                         .data$dur) %>%
-    dplyr::mutate(
-      prev_start = dplyr::coalesce(
-        !!dbplyr::win_over(
-          max_start_sql,
-          partition = c("cohort_definition_id", "subject_id"),
-          frame = c(-Inf, -1),
-          order = c("cohort_start_date", "dur"),
-          con = con),
-        as.Date(NA)),
-      prev_end = dplyr::coalesce(
-        !!dbplyr::win_over(
-          max_end_sql,
-          partition = c("cohort_definition_id", "subject_id"),
-          frame = c(-Inf, -1),
-          order = c("cohort_start_date", "dur"),
-          con = con),
-        as.Date(NA)),
-      next_start = dplyr::coalesce(
-        !!dbplyr::win_over(
-          min_start_sql,
-          partition = c("cohort_definition_id", "subject_id"),
-          frame = c(1, Inf),
-          order = c("cohort_start_date", "dur"),
-          con = con),
-        as.Date(NA))
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::compute()
-
-  x <- x %>%
-    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
-    dbplyr::window_order(.data$cohort_definition_id, .data$subject_id,
-                         .data$cohort_start_date, .data$dur) %>%
-    dplyr::mutate(groups = cumsum(
-      dplyr::case_when(is.na(.data$prev_start)  ~ NA,
-                       !is.na(.data$prev_start)  &&
-                         .data$prev_start <= .data$cohort_start_date &&
-                         .data$cohort_start_date <= .data$prev_end ~ 0L,
-                       TRUE ~ 1L)
-    ))
-
-  x <- x  %>%
-    dplyr::mutate(groups = dplyr::if_else(
-      is.na(.data$groups)  &&
-        .data$cohort_end_date >= .data$next_start,
-      0L, .data$groups
-    ))
-
-  x <- x %>%
-    dplyr::group_by(.data$cohort_definition_id,
-                    .data$subject_id, .data$groups, .add = FALSE) %>%
-    dplyr::summarize(cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
-                     cohort_end_date = max(.data$cohort_end_date, na.rm = TRUE),
-                     .groups = "drop") %>%
-    dplyr::select("cohort_definition_id", "subject_id",
-                  "cohort_start_date", "cohort_end_date")
-
-  x
-}
-
-# A version of cohortCollapse for local dataframes
-cohortCollapseLocal <- function(x) {
-  checkmate::assert_true(is.data.frame(x))
-  checkmate::assert_subset(
-    c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date"),
-    colnames(x)
-  )
 
   x %>%
+    dplyr::distinct() %>%
     dplyr::mutate(
       cohort_start_date = as.Date(.data$cohort_start_date),
       cohort_end_date   = as.Date(.data$cohort_end_date),
-      dur = as.integer(.data$cohort_end_date - .data$cohort_start_date)
+      dur = !!datediff("cohort_start_date", "cohort_end_date")
     ) %>%
-    dplyr::distinct() %>%
-    dplyr::group_by(.data$cohort_definition_id, .data$subject_id) %>%
-    dplyr::arrange(.data$cohort_start_date, .data$dur, .data$cohort_end_date, .by_group = TRUE) %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .add = FALSE) %>%
+    {
+      if (methods::is(x, "tbl_sql")) {
+        dbplyr::window_order(., .data$cohort_start_date, .data$dur, .data$cohort_end_date)
+      } else {
+        dplyr::arrange(., .data$cohort_start_date, .data$dur, .data$cohort_end_date)
+      }
+    } %>%
     dplyr::mutate(
-      # running max of end date across ALL previous rows (SQL win_over max_end with frame -Inf:-1)
-      running_end_num = cummax(as.numeric(.data$cohort_end_date)),
-      prev_end_num    = dplyr::lag(.data$running_end_num),
-
-      # new group iff start_date > previous running max end_date
-      new_group = dplyr::if_else(is.na(.data$prev_end_num), 0L,
-                                 dplyr::if_else(as.numeric(.data$cohort_start_date) <= .data$prev_end_num, 0L, 1L)),
+      running_end = cummax(.data$cohort_end_date),
+      prev_end    = dplyr::lag(.data$running_end),
+      new_group   = dplyr::if_else(
+        is.na(.data$prev_end),
+        0L,
+        dplyr::if_else(.data$cohort_start_date <= .data$prev_end, 0L, 1L)
+      ),
       groups = cumsum(.data$new_group)
     ) %>%
-    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$groups) %>%
+    dplyr::group_by(.data$cohort_definition_id, .data$subject_id, .data$groups, .add = FALSE) %>%
     dplyr::summarise(
       cohort_start_date = min(.data$cohort_start_date, na.rm = TRUE),
       cohort_end_date   = max(.data$cohort_end_date,   na.rm = TRUE),
       .groups = "drop"
     ) %>%
-    dplyr::select(
-      "cohort_definition_id",
-      "subject_id",
-      "cohort_start_date",
-      "cohort_end_date"
-    )
+    dplyr::select("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date")
 }
-
 
 table_refs <- function(domain_id) {
   dplyr::tribble(
