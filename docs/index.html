@@ -71,7 +71,7 @@
 <!-- badges: start -->
 
 <blockquote>
-<p>Are you using the <a href="https://www.tidyverse.org/" class="external-link">tidyverse</a> with an OMOP Common Data Model?</p>
+<p>Are you using the <a href="https://tidyverse.org/" class="external-link">tidyverse</a> with an OMOP Common Data Model?</p>
 <p>Interact with your CDM in a pipe-friendly way with CDMConnector.</p>
 <ul>
 <li>Quickly connect to your CDM and start exploring.</li>
@@ -141,7 +141,7 @@
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## # Source:   SQL [?? x 1]</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">## # Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">## # Database: DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnaikmI/file7e465691e16.duckdb]</span></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="do">##       n</span></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
 <span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
@@ -151,7 +151,7 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condition_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span>top_conditions <span class="op">=</span> <span class="va">concept_name</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="do">## # Database:   DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="do">## # Database:   DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnaikmI/file7e465691e16.duckdb]</span></span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
@@ -180,17 +180,16 @@
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">## </span></span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="do">##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (????).</span></span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="do">##   _CDMConnector: Connect to an OMOP Common Data Model_. R package</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="do">##   version 2.1.0, https://github.com/darwin-eu/CDMConnector,</span></span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="do">##   &lt;https://darwin-eu.github.io/CDMConnector/&gt;.</span></span>
-<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
-<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="do">##   @Manual{,</span></span>
-<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="do">##     title = {CDMConnector: Connect to an OMOP Common Data Model},</span></span>
-<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="do">##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},</span></span>
-<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="do">##     note = {R package version 2.1.0, https://github.com/darwin-eu/CDMConnector},</span></span>
-<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="do">##     url = {https://darwin-eu.github.io/CDMConnector/},</span></span>
-<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="do">##   version 2.3.0, &lt;https://darwin-eu.github.io/CDMConnector/&gt;.</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="do">##   @Manual{,</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="do">##     title = {CDMConnector: Connect to an OMOP Common Data Model},</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="do">##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="do">##     note = {R package version 2.3.0},</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="do">##     url = {https://darwin-eu.github.io/CDMConnector/},</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div>
 <hr>
 <p>License: Apache 2.0</p>
 </div>

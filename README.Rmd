@@ -20,7 +20,7 @@ output: github_document
 <!-- badges: end -->
 
 
-> Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP Common Data Model? 
+> Are you using the [tidyverse](https://tidyverse.org/) with an OMOP Common Data Model? 
 >
 > Interact with your CDM in a pipe-friendly way with CDMConnector.
 >

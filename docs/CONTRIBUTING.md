@@ -28,12 +28,12 @@ devtools::check_man()
 ```
 
 Note that
-[`devtools::check_man()`](https://rdrr.io/pkg/devtools/man/check_man.html)
+[`devtools::check_man()`](https://devtools.r-lib.org/reference/check_man.html)
 should not return any warnings. If your commit is limited to only
 package documentation, running the above should be sufficient (although
 running
-[`devtools::check()`](https://rdrr.io/pkg/devtools/man/check.html) will
-always generally be a good idea before submitting a pull request.
+[`devtools::check()`](https://devtools.r-lib.org/reference/check.html)
+will always generally be a good idea before submitting a pull request.
 
 #### Run tests
 

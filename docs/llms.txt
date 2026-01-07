@@ -1,6 +1,6 @@
 # [CDMConnector](https://darwin-eu.github.io/CDMConnector/)
 
-> Are you using the [tidyverse](https://www.tidyverse.org/) with an OMOP
+> Are you using the [tidyverse](https://tidyverse.org/) with an OMOP
 > Common Data Model?
 >
 > Interact with your CDM in a pipe-friendly way with CDMConnector.
@@ -100,7 +100,7 @@ cdm$person %>%
 
 ``` R
 ## # Source:   SQL [?? x 1]
-## # Database: DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]
+## # Database: DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnaikmI/file7e465691e16.duckdb]
 ##       n
 ##   <dbl>
 ## 1  2694
@@ -116,7 +116,7 @@ cdm$condition_era %>%
 
 ``` R
 ## # Source:     SQL [?? x 2]
-## # Database:   DuckDB v1.3.1 [root@Darwin 23.1.0:R 4.3.3//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpKZqlCg/file6cc036a4e64a.duckdb]
+## # Database:   DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnaikmI/file7e465691e16.duckdb]
 ## # Ordered by: desc(n)
 ##    top_conditions                               n
 ##    <chr>                                    <dbl>
@@ -150,15 +150,14 @@ If you encounter a clear bug, please file an issue with a minimal
 ## 
 ##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (????).
 ##   _CDMConnector: Connect to an OMOP Common Data Model_. R package
-##   version 2.1.0, https://github.com/darwin-eu/CDMConnector,
-##   <https://darwin-eu.github.io/CDMConnector/>.
+##   version 2.3.0, <https://darwin-eu.github.io/CDMConnector/>.
 ## 
 ## A BibTeX entry for LaTeX users is
 ## 
 ##   @Manual{,
 ##     title = {CDMConnector: Connect to an OMOP Common Data Model},
 ##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
-##     note = {R package version 2.1.0, https://github.com/darwin-eu/CDMConnector},
+##     note = {R package version 2.3.0},
 ##     url = {https://darwin-eu.github.io/CDMConnector/},
 ##   }
 ```

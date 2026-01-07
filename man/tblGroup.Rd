@@ -18,8 +18,6 @@ The OMOP CDM tables are grouped together and the \code{tblGroup} function allows
 users to easily create a CDM reference including one or more table groups.
 }
 \details{
-{\figure{cdm54.png}{options: width="100\%" alt="CDM 5.4"}}
-
 The "default" table group is meant to capture the most commonly used set
 of CDM tables. Currently the "default" group is: person,
 observation_period, visit_occurrence,
