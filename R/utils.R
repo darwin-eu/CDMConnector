@@ -157,11 +157,34 @@ listTables <- function(con, schema = NULL) {
 
   if (is.null(schema)) {
     if (dbms(con) == "sql server") {
-      # return temp tables
+      # Check if temp table emulation is enabled (for Synapse dedicated pools)
+      tempEmulationSchema <- getOption("sqlRenderTempEmulationSchema")
+      if (!is.null(tempEmulationSchema) && nchar(tempEmulationSchema) > 0) {
+        # Synapse with temp table emulation - query the emulation schema
+        # Temp tables are stored as permanent tables with ## prefix
+        sql <- glue::glue_sql(
+          "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = {tempEmulationSchema}",
+          .con = con
+        )
+        temp_tables <- tryCatch({
+          DBI::dbGetQuery(con, sql)[[1]] %>%
+            stringr::str_subset("^##") %>%
+            stringr::str_remove("^##")
+        }, error = function(e) character(0))
+        return(temp_tables)
+      }
+
+      # Standard SQL Server - return temp tables from tempdb
       # tempdb.sys.objects
-      temp_tables <- DBI::dbGetQuery(con, "select * from tempdb..sysobjects")[[1]] %>%
-        stringr::str_remove("_________________________.*$") %>%
-        stringr::str_remove("^#+")
+      temp_tables <- tryCatch({
+        DBI::dbGetQuery(con, "select * from tempdb..sysobjects")[[1]] %>%
+          stringr::str_remove("_________________________.*$") %>%
+          stringr::str_remove("^#+")
+      }, error = function(e) {
+        # If tempdb query fails (e.g., Synapse without emulation schema set),
+        # return empty character vector
+        character(0)
+      })
 
       return(temp_tables)
 
