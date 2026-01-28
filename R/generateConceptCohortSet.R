@@ -469,12 +469,13 @@ generateConceptCohortSet <- function(cdm,
   }
 
   cohortCountRef <- cohort_set_ref  %>%
-    dplyr::left_join(cohortRef %>%
-    dplyr::group_by(.data$cohort_definition_id) %>%
-    dplyr::summarise(
-      number_records = dplyr::n(),
-      number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
-    dplyr::collect(),
+    dplyr::left_join(
+      cohortRef %>%
+        dplyr::group_by(.data$cohort_definition_id) %>%
+        dplyr::summarise(
+          number_records = dplyr::n(),
+          number_subjects = dplyr::n_distinct(.data$subject_id)) %>%
+        dplyr::collect(),
     by = "cohort_definition_id")  %>%
     dplyr::mutate(number_records = dplyr::if_else(is.na(.data$number_records),
                                                   0L,
