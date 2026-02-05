@@ -10,6 +10,8 @@
   functions [@catalamarti](https://github.com/catalamarti)
 - Fix bug with cohortCodelist creation for some cohorts
   [@sulevR](https://github.com/sulevR)
+- Simplify `cohortCollapse` logic and support local cdm tables
+  [@ablack3](https://github.com/ablack3)
 
 ## CDMConnector 2.2.0
 
