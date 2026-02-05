@@ -331,7 +331,20 @@ generateCohortSet <- function(cdm,
   withr::local_options(list("cli.progress_show_after" = 0, "cli.progress_clear" = FALSE))
   checkmate::assertClass(cdm, "cdm_reference")
   con <- cdmCon(cdm)
+
+  if (is.null(con)) {
+    # local cdm
+    return(generateCohortSetLocal(
+      cdm = cdm,
+      cohortSet = cohortSet,
+      name = name,
+      computeAttrition = computeAttrition,
+      overwrite = overwrite
+    ))
+  }
+
   checkmate::assertTRUE(DBI::dbIsValid(con))
+
   checkmate::assertCharacter(name, len = 1, min.chars = 1, any.missing = FALSE)
   if (name != tolower(name)) {
     rlang::abort("Cohort table name {name} must be lowercase!")
@@ -828,6 +841,101 @@ computeAttritionTable <- function(cdm,
 
   dplyr::tbl(con, .inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con))) %>%
     dplyr::rename_all(tolower)
+}
+
+#' Generate a cohort set on a local CDM (list of dataframes)
+#'
+#' Copies the local CDM to an in-memory DuckDB database, runs
+#' \code{\link{generateCohortSet}}, then collects the generated cohort table
+#' and its attributes back into R and adds them to the input CDM.
+#'
+#' @param cdm A local cdm object (list of dataframes, e.g. from
+#'   \code{dplyr::collect(cdm)}).
+#' @param cohortSet A cohort set from \code{\link{readCohortSet}}.
+#' @param name Name of the cohort table to create.
+#' @param computeAttrition Whether to compute attrition.
+#' @param overwrite Whether to overwrite an existing cohort table.
+#' @return The input \code{cdm} with the new cohort table added (as local
+#'   dataframes).
+#' @keywords internal
+generateCohortSetLocal <- function(cdm,
+                                  cohortSet,
+                                  name,
+                                  computeAttrition = TRUE,
+                                  overwrite = TRUE) {
+  rlang::check_installed("duckdb")
+  checkmate::assert_class(cdm, "cdm_reference")
+  checkmate::assert_list(cdm, names = "named")
+  checkmate::assert_character(name, len = 1L, min.chars = 1L)
+
+  # Create in-memory DuckDB and copy CDM tables (skip existing cohort tables)
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  write_schema <- c(schema = "main")
+  for (nm in names(cdm)) {
+    if (inherits(cdm[[nm]], "cohort_table")) {
+      next
+    }
+    tbl <- cdm[[nm]]
+    full_name <- .inSchema(schema = write_schema, table = nm, dbms = "duckdb")
+    DBI::dbWriteTable(con, name = full_name, value = dplyr::as_tibble(tbl), overwrite = TRUE)
+  }
+
+  cdm_name <- omopgenerics::cdmName(cdm)
+  cdm_db <- cdmFromCon(
+    con = con,
+    cdmSchema = "main",
+    writeSchema = "main",
+    cdmName = cdm_name
+  )
+
+  cdm_db <- generateCohortSet(
+    cdm = cdm_db,
+    cohortSet = cohortSet,
+    name = name,
+    computeAttrition = computeAttrition,
+    overwrite = overwrite
+  )
+
+  # Collect cohort table and attributes back to R
+  cohort_df <- dplyr::collect(cdm_db[[name]]) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::mutate(
+      cohort_definition_id = as.integer(.data$cohort_definition_id),
+      subject_id = as.integer(.data$subject_id),
+      cohort_start_date = as.Date(.data$cohort_start_date),
+      cohort_end_date = as.Date(.data$cohort_end_date)
+    )
+
+  cohort_set_df <- omopgenerics::settings(cdm_db[[name]])
+  cohort_attrition_df <- omopgenerics::attrition(cdm_db[[name]])
+  cohort_codelist_ref <- attr(cdm_db[[name]], "cohort_codelist")
+  cohort_codelist_df <- NULL
+  if (!is.null(cohort_codelist_ref)) {
+    if (inherits(cohort_codelist_ref, "tbl_lazy")) {
+      cohort_codelist_df <- dplyr::collect(cohort_codelist_ref) %>% dplyr::rename_all(tolower)
+    } else if (is.data.frame(cohort_codelist_ref)) {
+      cohort_codelist_df <- cohort_codelist_ref
+    }
+  }
+
+  # Wrap cohort dataframe as cdm_table and add to cdm before newCohortTable
+  # (validation requires cohort to be part of cdm_reference)
+  cohort_tbl <- omopgenerics::newCdmTable(
+    table = cohort_df,
+    src = attr(cdm, "cdm_source"),
+    name = name
+  )
+  cdm[[name]] <- cohort_tbl
+  cdm[[name]] <- omopgenerics::newCohortTable(
+    table = cdm[[name]],
+    cohortSetRef = cohort_set_df,
+    cohortAttritionRef = cohort_attrition_df,
+    cohortCodelistRef = cohort_codelist_df
+  )
+
+  cdm
 }
 
 getInclusionMaskId <- function(numberInclusion) {
