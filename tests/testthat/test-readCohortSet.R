@@ -83,3 +83,13 @@ test_that("cohort json file names with numbers", {
   expect_equal(df$cohort_definition_id, 100)
   expect_equal(df$cohort_name, "cohort_100")
 })
+
+test_that("single json file path", {
+  single_json <- system.file("cohorts1", "cerebral_venous_sinus_thrombosis_01.json", package = "CDMConnector", mustWork = TRUE)
+  data <- readCohortSet(single_json)
+  expect_identical(nrow(data), 1L)
+  expect_identical(ncol(data), 5L)
+  expect_equal(data$cohort_definition_id, 1L)
+  expect_equal(data$cohort_name, "cerebral_venous_sinus_thrombosis_01")
+  expect_true(inherits(data, "CohortSet"))
+})

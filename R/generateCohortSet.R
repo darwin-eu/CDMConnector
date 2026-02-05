@@ -19,14 +19,15 @@
 #' A "cohort set" is a collection of cohort definitions. In R this is stored in
 #' a dataframe with cohort_definition_id, cohort_name, and cohort columns.
 #' On disk this is stored as a folder with a CohortsToCreate.csv file and
-#' one or more json files.
+#' one or more json files, or as a single .json file.
 #' If the CohortsToCreate.csv file is missing then all of the json files in the
 #' folder will be used, cohort_definition_id will be automatically assigned
 #' in alphabetical order, and cohort_name will match the file names.
+#' You may also pass the path to a single .json file to read one cohort.
 #'
 #' @param path The path to a folder containing Circe cohort definition
-#' json files and optionally a csv file named CohortsToCreate.csv with columns
-#' cohortId, cohortName, and jsonPath.
+#' json files (and optionally a csv file named CohortsToCreate.csv with columns
+#' cohortId, cohortName, and jsonPath), or the path to a single .json file.
 #' @importFrom jsonlite read_json
 #' @importFrom dplyr tibble
 #' @export
@@ -35,28 +36,45 @@ readCohortSet <- function(path) {
   ensureInstalled("readr")
   ensureInstalled("jsonlite")
 
-  if (!dir.exists(path)) {
-    rlang::abort(glue::glue("The directory {path} does not exist!"))
+  if (!file.exists(path)) {
+    rlang::abort(glue::glue("Path does not exist: {path}"))
   }
 
-  if (!file.info(path)$isdir) {
-    rlang::abort(glue::glue("{path} is not a directory!"))
+  is_dir <- isTRUE(file.info(path)$isdir)
+  is_single_json <- !is_dir && grepl("\\.json$", path, ignore.case = TRUE)
+
+  if (!is_dir && !is_single_json) {
+    rlang::abort(glue::glue("Path must be a directory or a .json file: {path}"))
   }
 
-  if (file.exists(file.path(path, "CohortsToCreate.csv"))) {
+  if (is_single_json) {
+    json_files <- path
+    folder_path <- dirname(path)
+    has_csv <- FALSE
+  } else {
+    folder_path <- path
+    has_csv <- file.exists(file.path(path, "CohortsToCreate.csv"))
+  }
+
+  if (has_csv) {
     readr::local_edition(1)
-    cohortsToCreate <- readr::read_csv(file.path(path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
-      dplyr::mutate(jsonPath = file.path(path, .data$jsonPath)) %>%
+    cohortsToCreate <- readr::read_csv(file.path(folder_path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
+      dplyr::mutate(jsonPath = file.path(folder_path, .data$jsonPath)) %>%
       dplyr::mutate(cohort = purrr::map(.data$jsonPath, jsonlite::read_json)) %>%
       dplyr::mutate(json = purrr::map(.data$jsonPath, readr::read_file)) %>%
       dplyr::mutate(cohort_definition_id = .data$cohortId, cohort_name = .data$cohortName)
   } else {
-    jsonFiles <- sort(list.files(path, pattern = "\\.json$", full.names = TRUE))
+    if (!is_single_json) {
+      json_files <- sort(list.files(folder_path, pattern = "\\.json$", full.names = TRUE))
+    }
+    if (length(json_files) == 0L) {
+      rlang::abort(glue::glue("No .json files found in {folder_path}"))
+    }
 
     cohortsToCreate <- dplyr::tibble(
-      cohort_definition_id = seq_along(jsonFiles),
-      cohort_name = tools::file_path_sans_ext(basename(jsonFiles)),
-      json_path = jsonFiles) %>%
+      cohort_definition_id = seq_along(json_files),
+      cohort_name = tools::file_path_sans_ext(basename(json_files)),
+      json_path = json_files) %>%
       dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
       dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file)) %>%
       dplyr::mutate(cohort_name = stringr::str_replace_all(tolower(.data$cohort_name), "\\s", "_")) %>%
@@ -66,16 +84,15 @@ readCohortSet <- function(path) {
       dplyr::mutate(cohort_definition_id = dplyr::if_else(stringr::str_detect(.data$cohort_name, "^[0-9]+$"), suppressWarnings(as.integer(.data$cohort_name)), .data$cohort_definition_id)) %>%
       dplyr::mutate(cohort_name = dplyr::if_else(stringr::str_detect(.data$cohort_name, "^[0-9]+$"), paste0("cohort_", .data$cohort_name), .data$cohort_name))
 
-      if (length(unique(cohortsToCreate$cohort_definition_id)) != nrow(cohortsToCreate) ||
-          length(unique(cohortsToCreate$cohort_name)) != nrow(cohortsToCreate)) {
+    if (length(unique(cohortsToCreate$cohort_definition_id)) != nrow(cohortsToCreate) ||
+        length(unique(cohortsToCreate$cohort_name)) != nrow(cohortsToCreate)) {
 
-        tryCatch(
-          cli::cli_abort("Problem creating cohort IDs and names from json file names. IDs and filenames must be unique!"),
-          finally = print(cohortsToCreate[,1:2])
-        )
-      }
-
+      tryCatch(
+        cli::cli_abort("Problem creating cohort IDs and names from json file names. IDs and filenames must be unique!"),
+        finally = print(cohortsToCreate[,1:2])
+      )
     }
+  }
 
   # snakecase name can be used for column names or filenames
   cohortsToCreate <- cohortsToCreate %>%
