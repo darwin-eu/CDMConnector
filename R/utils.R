@@ -137,6 +137,15 @@ listTables <- function(con, schema = NULL) {
     schema <- schema@name
   }
 
+  # Allow "catalog.schema" form (e.g. "cdm.main") for systems with multiple catalogs
+  if (length(schema) == 1 && is.character(schema) && stringr::str_detect(schema, "\\.")) {
+    if (stringr::str_count(schema, "\\.") != 1) {
+      rlang::abort("`schema` can only have one dot when using catalog.schema form.")
+    }
+    schema <- stringr::str_split(schema, "\\.")[[1]] %>%
+      purrr::set_names(c("catalog", "schema"))
+  }
+
   if ("prefix" %in% names(schema)) {
     prefix <- schema["prefix"]
     checkmate::assert_character(prefix, min.chars = 1, len = 1)
@@ -189,7 +198,15 @@ listTables <- function(con, schema = NULL) {
   }
 
   if (methods::is(con, "duckdb_connection")) {
-    sql <- glue::glue_sql("select table_name from information_schema.tables where table_schema = {schema2[[1]]};", .con = con)
+    if (length(schema2) == 2) {
+      # Multiple catalogs (e.g. ATTACH): filter by table_catalog and table_schema
+      sql <- glue::glue_sql(
+        "SELECT table_name FROM information_schema.tables WHERE table_catalog = {schema2[[1]]} AND table_schema = {schema2[[2]]};",
+        .con = con
+      )
+    } else {
+      sql <- glue::glue_sql("SELECT table_name FROM information_schema.tables WHERE table_schema = {schema2[[1]]};", .con = con)
+    }
     out <- DBI::dbGetQuery(con, sql) %>% dplyr::pull(.data$table_name)
     return(process_prefix(out))
   }
