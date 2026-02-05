@@ -190,7 +190,7 @@ test_clock_functions <- function(con, write_schema) {
   # add_years and add_days return datetimes on postgres making the as.Date() conversion is needed
   # date_build does not work on redshift or duckdb https://github.com/tidyverse/dbplyr/pull/1513
 
-  library(clock)
+  suppressWarnings(library(clock))
   # on postgres we need the as.Date conversion around add_years and add_days
   df <- date_tbl %>%
     dplyr::mutate(y2 = clock::get_year(date1),
