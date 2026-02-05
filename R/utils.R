@@ -104,6 +104,19 @@ inSchema <- function(schema, table, dbms = NULL) {
   return(out)
 }
 
+# Build a quoted qualified table name for use in raw SQL (e.g. INSERT INTO ...)
+# fullName: character table name or DBI::Id(schema=, table=) or DBI::Id(catalog=, schema=, table=)
+.qualifiedNameForSql <- function(con, fullName) {
+  if (is.character(fullName) && length(fullName) == 1) {
+    return(DBI::dbQuoteIdentifier(con, fullName))
+  }
+  if (inherits(fullName, "Id")) {
+    parts <- unlist(fullName@name)
+    return(paste(vapply(parts, function(p) DBI::dbQuoteIdentifier(con, p), character(1)), collapse = "."))
+  }
+  fullName
+}
+
 #' List tables in a schema
 #'
 #' DBI::dbListTables can be used to get all tables in a database but not always in a
