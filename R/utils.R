@@ -188,9 +188,9 @@ listTables <- function(con, schema = NULL) {
       return(temp_tables)
 
     } else if (dbms(con) == "snowflake") {
-      # return all tables including temp tables
-      return(DBI::dbGetQuery(con, "show terse tables;")$name)
-
+      # SHOW TERSE TABLES is limited to 10,000 rows; use information_schema to avoid that cap
+      sql <- "SELECT table_name AS name FROM information_schema.tables WHERE table_catalog = CURRENT_DATABASE() AND table_schema = CURRENT_SCHEMA()"
+      return(DBI::dbGetQuery(con, sql)$name)
     } else {
       return(DBI::dbListTables(con))
     }
