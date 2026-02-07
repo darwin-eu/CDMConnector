@@ -1,3 +1,8 @@
+# CDMConnector 2.4.0
+
+- Implement generateCohortSet for local cdms (omock)
+- Allow catalogs in duckdb
+
 # CDMConnector 2.3.0
 
 - Add empty CDM v5.4 example dataset @ginberg

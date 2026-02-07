@@ -69,6 +69,22 @@ insertTable.db_cdm <- function(cdm,
 
   if (dbms(con) %in% c("bigquery") && nrow(table) == 0) {
     .dbCreateTable(con, fullName, table)
+  } else if (dbms(con) == "spark") {
+    # Spark/Simba ODBC often fails on parameterized INSERT (UNBOUND_SQL_PARAMETER).
+    # Create table then insert using literal VALUES.
+    .dbCreateTable(con, fullName, table)
+    if (nrow(table) > 0) {
+      qualifiedName <- .qualifiedNameForSql(con, fullName)
+      cols <- paste(DBI::dbQuoteIdentifier(con, names(table)), collapse = ", ")
+      for (i in seq_len(nrow(table))) {
+        row <- table[i, , drop = FALSE]
+        vals <- vapply(seq_len(ncol(table)), function(j) {
+          DBI::dbQuoteLiteral(con, row[[j]][[1]])
+        }, character(1))
+        sql <- paste0("INSERT INTO ", qualifiedName, " (", cols, ") VALUES (", paste(vals, collapse = ", "), ")")
+        DBI::dbExecute(con, sql)
+      }
+    }
   } else {
     DBI::dbWriteTable(conn = con, name = fullName, value = table, temporary = temporary)
   }

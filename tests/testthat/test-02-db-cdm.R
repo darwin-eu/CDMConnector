@@ -1,5 +1,8 @@
-library(testthat)
-library(dplyr, warn.conflicts = FALSE)
+
+suppressWarnings({
+  library(dplyr, warn.conflicts = FALSE)
+  library(testthat)
+})
 
 ### CDM object DBI drivers ------
 test_cdmFromCon <- function(con, cdmSchema, writeSchema) {

@@ -19,14 +19,15 @@
 #' A "cohort set" is a collection of cohort definitions. In R this is stored in
 #' a dataframe with cohort_definition_id, cohort_name, and cohort columns.
 #' On disk this is stored as a folder with a CohortsToCreate.csv file and
-#' one or more json files.
+#' one or more json files, or as a single .json file.
 #' If the CohortsToCreate.csv file is missing then all of the json files in the
 #' folder will be used, cohort_definition_id will be automatically assigned
 #' in alphabetical order, and cohort_name will match the file names.
+#' You may also pass the path to a single .json file to read one cohort.
 #'
 #' @param path The path to a folder containing Circe cohort definition
-#' json files and optionally a csv file named CohortsToCreate.csv with columns
-#' cohortId, cohortName, and jsonPath.
+#' json files (and optionally a csv file named CohortsToCreate.csv with columns
+#' cohortId, cohortName, and jsonPath), or the path to a single .json file.
 #' @importFrom jsonlite read_json
 #' @importFrom dplyr tibble
 #' @export
@@ -35,28 +36,45 @@ readCohortSet <- function(path) {
   ensureInstalled("readr")
   ensureInstalled("jsonlite")
 
-  if (!dir.exists(path)) {
-    rlang::abort(glue::glue("The directory {path} does not exist!"))
+  if (!file.exists(path)) {
+    rlang::abort(glue::glue("Path does not exist: {path}"))
   }
 
-  if (!file.info(path)$isdir) {
-    rlang::abort(glue::glue("{path} is not a directory!"))
+  is_dir <- isTRUE(file.info(path)$isdir)
+  is_single_json <- !is_dir && grepl("\\.json$", path, ignore.case = TRUE)
+
+  if (!is_dir && !is_single_json) {
+    rlang::abort(glue::glue("Path must be a directory or a .json file: {path}"))
   }
 
-  if (file.exists(file.path(path, "CohortsToCreate.csv"))) {
+  if (is_single_json) {
+    json_files <- path
+    folder_path <- dirname(path)
+    has_csv <- FALSE
+  } else {
+    folder_path <- path
+    has_csv <- file.exists(file.path(path, "CohortsToCreate.csv"))
+  }
+
+  if (has_csv) {
     readr::local_edition(1)
-    cohortsToCreate <- readr::read_csv(file.path(path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
-      dplyr::mutate(jsonPath = file.path(path, .data$jsonPath)) %>%
+    cohortsToCreate <- readr::read_csv(file.path(folder_path, "CohortsToCreate.csv"), show_col_types = FALSE) %>%
+      dplyr::mutate(jsonPath = file.path(folder_path, .data$jsonPath)) %>%
       dplyr::mutate(cohort = purrr::map(.data$jsonPath, jsonlite::read_json)) %>%
       dplyr::mutate(json = purrr::map(.data$jsonPath, readr::read_file)) %>%
       dplyr::mutate(cohort_definition_id = .data$cohortId, cohort_name = .data$cohortName)
   } else {
-    jsonFiles <- sort(list.files(path, pattern = "\\.json$", full.names = TRUE))
+    if (!is_single_json) {
+      json_files <- sort(list.files(folder_path, pattern = "\\.json$", full.names = TRUE))
+    }
+    if (length(json_files) == 0L) {
+      rlang::abort(glue::glue("No .json files found in {folder_path}"))
+    }
 
     cohortsToCreate <- dplyr::tibble(
-      cohort_definition_id = seq_along(jsonFiles),
-      cohort_name = tools::file_path_sans_ext(basename(jsonFiles)),
-      json_path = jsonFiles) %>%
+      cohort_definition_id = seq_along(json_files),
+      cohort_name = tools::file_path_sans_ext(basename(json_files)),
+      json_path = json_files) %>%
       dplyr::mutate(cohort = purrr::map(.data$json_path, jsonlite::read_json)) %>%
       dplyr::mutate(json = purrr::map(.data$json_path, readr::read_file)) %>%
       dplyr::mutate(cohort_name = stringr::str_replace_all(tolower(.data$cohort_name), "\\s", "_")) %>%
@@ -66,16 +84,15 @@ readCohortSet <- function(path) {
       dplyr::mutate(cohort_definition_id = dplyr::if_else(stringr::str_detect(.data$cohort_name, "^[0-9]+$"), suppressWarnings(as.integer(.data$cohort_name)), .data$cohort_definition_id)) %>%
       dplyr::mutate(cohort_name = dplyr::if_else(stringr::str_detect(.data$cohort_name, "^[0-9]+$"), paste0("cohort_", .data$cohort_name), .data$cohort_name))
 
-      if (length(unique(cohortsToCreate$cohort_definition_id)) != nrow(cohortsToCreate) ||
-          length(unique(cohortsToCreate$cohort_name)) != nrow(cohortsToCreate)) {
+    if (length(unique(cohortsToCreate$cohort_definition_id)) != nrow(cohortsToCreate) ||
+        length(unique(cohortsToCreate$cohort_name)) != nrow(cohortsToCreate)) {
 
-        tryCatch(
-          cli::cli_abort("Problem creating cohort IDs and names from json file names. IDs and filenames must be unique!"),
-          finally = print(cohortsToCreate[,1:2])
-        )
-      }
-
+      tryCatch(
+        cli::cli_abort("Problem creating cohort IDs and names from json file names. IDs and filenames must be unique!"),
+        finally = print(cohortsToCreate[,1:2])
+      )
     }
+  }
 
   # snakecase name can be used for column names or filenames
   cohortsToCreate <- cohortsToCreate %>%
@@ -331,7 +348,20 @@ generateCohortSet <- function(cdm,
   withr::local_options(list("cli.progress_show_after" = 0, "cli.progress_clear" = FALSE))
   checkmate::assertClass(cdm, "cdm_reference")
   con <- cdmCon(cdm)
+
+  if (is.null(con)) {
+    # local cdm
+    return(generateCohortSetLocal(
+      cdm = cdm,
+      cohortSet = cohortSet,
+      name = name,
+      computeAttrition = computeAttrition,
+      overwrite = overwrite
+    ))
+  }
+
   checkmate::assertTRUE(DBI::dbIsValid(con))
+
   checkmate::assertCharacter(name, len = 1, min.chars = 1, any.missing = FALSE)
   if (name != tolower(name)) {
     rlang::abort("Cohort table name {name} must be lowercase!")
@@ -828,6 +858,101 @@ computeAttritionTable <- function(cdm,
 
   dplyr::tbl(con, .inSchema(schema, paste0(cohortStem, "_attrition"), dbms(con))) %>%
     dplyr::rename_all(tolower)
+}
+
+#' Generate a cohort set on a local CDM (list of dataframes)
+#'
+#' Copies the local CDM to an in-memory DuckDB database, runs
+#' \code{\link{generateCohortSet}}, then collects the generated cohort table
+#' and its attributes back into R and adds them to the input CDM.
+#'
+#' @param cdm A local cdm object (list of dataframes, e.g. from
+#'   \code{dplyr::collect(cdm)}).
+#' @param cohortSet A cohort set from \code{\link{readCohortSet}}.
+#' @param name Name of the cohort table to create.
+#' @param computeAttrition Whether to compute attrition.
+#' @param overwrite Whether to overwrite an existing cohort table.
+#' @return The input \code{cdm} with the new cohort table added (as local
+#'   dataframes).
+#' @keywords internal
+generateCohortSetLocal <- function(cdm,
+                                  cohortSet,
+                                  name,
+                                  computeAttrition = TRUE,
+                                  overwrite = TRUE) {
+  rlang::check_installed("duckdb")
+  checkmate::assert_class(cdm, "cdm_reference")
+  checkmate::assert_list(cdm, names = "named")
+  checkmate::assert_character(name, len = 1L, min.chars = 1L)
+
+  # Create in-memory DuckDB and copy CDM tables (skip existing cohort tables)
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  write_schema <- c(schema = "main")
+  for (nm in names(cdm)) {
+    if (inherits(cdm[[nm]], "cohort_table")) {
+      next
+    }
+    tbl <- cdm[[nm]]
+    full_name <- .inSchema(schema = write_schema, table = nm, dbms = "duckdb")
+    DBI::dbWriteTable(con, name = full_name, value = dplyr::as_tibble(tbl), overwrite = TRUE)
+  }
+
+  cdm_name <- omopgenerics::cdmName(cdm)
+  cdm_db <- cdmFromCon(
+    con = con,
+    cdmSchema = "main",
+    writeSchema = "main",
+    cdmName = cdm_name
+  )
+
+  cdm_db <- generateCohortSet(
+    cdm = cdm_db,
+    cohortSet = cohortSet,
+    name = name,
+    computeAttrition = computeAttrition,
+    overwrite = overwrite
+  )
+
+  # Collect cohort table and attributes back to R
+  cohort_df <- dplyr::collect(cdm_db[[name]]) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::mutate(
+      cohort_definition_id = as.integer(.data$cohort_definition_id),
+      subject_id = as.integer(.data$subject_id),
+      cohort_start_date = as.Date(.data$cohort_start_date),
+      cohort_end_date = as.Date(.data$cohort_end_date)
+    )
+
+  cohort_set_df <- omopgenerics::settings(cdm_db[[name]])
+  cohort_attrition_df <- omopgenerics::attrition(cdm_db[[name]])
+  cohort_codelist_ref <- attr(cdm_db[[name]], "cohort_codelist")
+  cohort_codelist_df <- NULL
+  if (!is.null(cohort_codelist_ref)) {
+    if (inherits(cohort_codelist_ref, "tbl_lazy")) {
+      cohort_codelist_df <- dplyr::collect(cohort_codelist_ref) %>% dplyr::rename_all(tolower)
+    } else if (is.data.frame(cohort_codelist_ref)) {
+      cohort_codelist_df <- cohort_codelist_ref
+    }
+  }
+
+  # Wrap cohort dataframe as cdm_table and add to cdm before newCohortTable
+  # (validation requires cohort to be part of cdm_reference)
+  cohort_tbl <- omopgenerics::newCdmTable(
+    table = cohort_df,
+    src = attr(cdm, "cdm_source"),
+    name = name
+  )
+  cdm[[name]] <- cohort_tbl
+  cdm[[name]] <- omopgenerics::newCohortTable(
+    table = cdm[[name]],
+    cohortSetRef = cohort_set_df,
+    cohortAttritionRef = cohort_attrition_df,
+    cohortCodelistRef = cohort_codelist_df
+  )
+
+  cdm
 }
 
 getInclusionMaskId <- function(numberInclusion) {
