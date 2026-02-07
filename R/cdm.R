@@ -568,17 +568,26 @@ snapshot <- function(cdm, computeDataHash = FALSE) {
     dataHash <- ""
   }
 
-  person_count <- dplyr::tally(cdm$person, name = "n") %>% dplyr::pull(.data$n)
-
-  observation_period_count <- dplyr::tally(cdm$observation_period, name = "n") %>%
+  person_count <- cdm$person %>%
+    dplyr::ungroup() %>%
+    dplyr::summarise(n = dplyr::n()) %>%
     dplyr::pull(.data$n)
+  stopifnot(length(person_count) == 1L)
+
+  observation_period_count <- cdm$observation_period %>%
+    dplyr::ungroup() %>%
+    dplyr::summarise(n = dplyr::n()) %>%
+    dplyr::pull(.data$n)
+  stopifnot(length(observation_period_count) == 1L)
 
   observation_period_range <- cdm$observation_period %>%
+    dplyr::ungroup() %>%
     dplyr::summarise(
       max = max(.data$observation_period_end_date, na.rm = TRUE),
       min = min(.data$observation_period_start_date, na.rm = TRUE)
     ) %>%
     dplyr::collect()
+  stopifnot(nrow(observation_period_range) == 1L)
 
   snapshot_date <- as.character(format(Sys.Date(), "%Y-%m-%d"))
 
@@ -587,11 +596,12 @@ snapshot <- function(cdm, computeDataHash = FALSE) {
     dplyr::filter(.data$vocabulary_id == "None") %>%
     dplyr::pull(.data$vocabulary_version)
 
-  if (length(vocab_version) == 0) {
+  if (length(vocab_version) == 0L) {
     vocab_version <- NA_character_
+  } else if (length(vocab_version) > 1L) {
+    rlang::warn(paste("More than one vocab_version in the vocabulary table!", paste(vocab_version, collapse = ", ")))
+    vocab_version <- vocab_version[1]
   }
-
-  cdm_source_name <- cdm$cdm_source %>% dplyr::pull(.data$cdm_source_name)
 
   cdm_source <- dplyr::collect(cdm$cdm_source)
   if (nrow(cdm_source) == 0) {

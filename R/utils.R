@@ -84,7 +84,7 @@ inSchema <- function(schema, table, dbms = NULL) {
     checkmate::assertCharacter(schema, min.len = 1, max.len = 2)
   }
 
-  if (isFALSE(dbms %in% c("snowflake", "sql server", "spark", "bigquery"))) {
+  if (isFALSE(dbms %in% c("snowflake", "sql server", "spark", "bigquery", "duckdb"))) {
     # only a few dbms support three part names
     checkmate::assertCharacter(schema, len = 1)
   }
@@ -533,6 +533,123 @@ computeDataHashByTable <- function(cdm) {
   return(out)
 }
 
+#' Insert flattened CDM records as an aligned R comment in the active editor
+#'
+#' Flattens a CDM using [CDMConnector::cdmFlatten()], collects the data into R,
+#' optionally filters by one or more `person_id` values, and inserts an aligned,
+#' copy-pasteable comment block directly below the current cursor line in the
+#' active RStudio document.
+#'
+#' This is intended as a lightweight debugging and documentation helper when
+#' inspecting patient-level timelines (e.g. cohort inclusion, outcome validation,
+#' or study review notes).
+#'
+#' @param cdm A CDM reference object created with CDMConnector.
+#' @param personIds Optional numeric vector of `person_id` values to filter on.
+#'   If `NULL`, all persons in the flattened CDM are used (use with care).
+#'
+#' @return Invisibly returns the collected flattened CDM as a data.frame.
+#'   The primary side effect is insertion of commented text into the active
+#'   RStudio source editor.
+#'
+#' @details
+#' The inserted output is formatted as aligned R comments:
+#'
+#' \preformatted{
+#' # person_id | observation_concept_id | start_date | end_date   | domain
+#' # 12        | 2211751                 | 2021-01-13 | 2021-01-13 | procedure_occurrence
+#' }
+#'
+#' The function requires an interactive RStudio session and will error if
+#' `rstudioapi` is not available.
+#'
+#' @seealso
+#' [CDMConnector::cdmFlatten()]
+#'
+#' @examples
+#' \dontrun{
+#' # Insert patient timeline directly into your script
+#' cdmCommentContents(cdm, 12)
+#'
+#' # Insert multiple patients
+#' cdmCommentContents(cdm, c(12, 22))
+#' }
+#'
+#' @export
+cdmCommentContents <- function(cdm, personIds = NULL) {
+  # This function only makes sense in interactive use.
+  if (!interactive()) return(invisible(NULL))
 
+  if (!requireNamespace("rstudioapi", quietly = TRUE)) {
+    stop("Package 'rstudioapi' is required.", call. = FALSE)
+  }
+  if (!rstudioapi::isAvailable()) {
+    stop("RStudio is required (rstudioapi is not available in this session).", call. = FALSE)
+  }
+
+  if (!is.null(personIds) && !is.numeric(personIds)) {
+    stop("`personIds` must be a numeric vector (or NULL).", call. = FALSE)
+  }
+
+  # 1) Run the pipeline (cdmFlatten -> collect -> optional filter -> arrange)
+  flat <- CDMConnector::cdmFlatten(cdm) |>
+    dplyr::collect()
+
+  if (!is.null(personIds)) {
+    flat <- dplyr::filter(flat, .data$person_id %in% personIds)
+  }
+
+  flat <- dplyr::arrange(
+    flat,
+    .data$person_id,
+    dplyr::desc(.data$start_date),
+    dplyr::desc(.data$end_date)
+  )
+
+  # 2) Convert to aligned comment text (like your first format)
+  df_chr <- as.data.frame(lapply(flat, as.character), stringsAsFactors = FALSE)
+
+  widths <- vapply(
+    names(df_chr),
+    function(col) max(nchar(c(col, df_chr[[col]])), na.rm = TRUE),
+    integer(1)
+  )
+
+  pad <- function(x, w) sprintf(paste0("%-", w, "s"), x)
+
+  lines <- character()
+  header <- paste(mapply(pad, names(df_chr), widths), collapse = " | ")
+  lines <- c(lines, paste0("# ", header))
+
+  for (i in seq_len(nrow(df_chr))) {
+    row <- paste(mapply(pad, df_chr[i, ], widths), collapse = " | ")
+    lines <- c(lines, paste0("# ", row))
+  }
+
+  # 3) Insert directly below the current line in the active RStudio document
+  ctx <- rstudioapi::getActiveDocumentContext()
+  contents <- ctx$contents
+
+  # RStudio rows are 1-based
+  cursor_row <- ctx$selection[[1]]$range$start[["row"]]
+
+  # Find the most recent call line above (or at) the cursor
+  call_row <- cursor_row
+  while (call_row >= 1 && !grepl("\\bcdmCommentContents\\s*\\(", contents[[call_row]])) {
+    call_row <- call_row - 1
+  }
+
+  if (call_row < 1) {
+    stop("Couldn't find a line containing `cdmCommentContents(` above the cursor.", call. = FALSE)
+  }
+
+  # Insert *immediately below* the call line
+  rstudioapi::insertText(
+    location = rstudioapi::document_position(call_row + 1, 1),
+    text = paste0(paste(lines, collapse = "\n"), "\n")
+  )
+
+  invisible(flat)
+}
 
 
