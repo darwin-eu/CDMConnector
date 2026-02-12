@@ -2,52 +2,51 @@
 % Please edit documentation in R/utils.R
 \name{cdmCommentContents}
 \alias{cdmCommentContents}
-\title{Insert flattened CDM records as an aligned R comment in the active editor}
+\title{Insert Patient CDM Contents as Aligned Comments in RStudio}
 \usage{
 cdmCommentContents(cdm, personIds = NULL)
 }
 \arguments{
-\item{cdm}{A CDM reference object created with CDMConnector.}
+\item{cdm}{A CDMConnector cdm_reference object.}
 
-\item{personIds}{Optional numeric vector of \code{person_id} values to filter on.
-If \code{NULL}, all persons in the flattened CDM are used (use with care).}
-}
-\value{
-Invisibly returns the collected flattened CDM as a data.frame.
-The primary side effect is insertion of commented text into the active
-RStudio source editor.
+\item{personIds}{Optional numeric vector of person IDs to filter the rows to include.
+If NULL (default), includes all persons in the cdm.}
 }
 \description{
-Flattens a CDM using \code{\link[=cdmFlatten]{cdmFlatten()}}, collects the data into R,
-optionally filters by one or more \code{person_id} values, and inserts an aligned,
-copy-pasteable comment block directly below the current cursor line in the
-active RStudio document.
+This function retrieves the longitudinal event table for one or more persons
+in a CDM object and inserts it as a nicely formatted, R-style comment block
+directly into your active RStudio document. This is particularly useful for
+documenting reproducible test cases or examples by showing relevant CDM
+contents inline in test scripts or analysis code.
 }
 \details{
-This is intended as a lightweight debugging and documentation helper when
-inspecting patient-level timelines (e.g. cohort inclusion, outcome validation,
-or study review notes).
+Each row of patient data will be aligned in columns as a commented table, making
+it easy to copy, review, and maintain sample data expectations in documentation
+or test suites.
 
-The inserted output is formatted as aligned R comments:
+Requires an interactive RStudio session with the \code{rstudioapi} package available.
+The function utilizes \code{CDMConnector::cdmFlatten()} to extract a longitudinal view,
+and writes the commented results directly below the cursor in the active RStudio document.
 
-\preformatted{
-# person_id | observation_concept_id | start_date | end_date   | domain
-# 12        | 2211751                 | 2021-01-13 | 2021-01-13 | procedure_occurrence
-}
-
-The function requires an interactive RStudio session and will error if
-\code{rstudioapi} is not available.
+This workflow is especially helpful when documenting expected patient timelines for use in
+testthat or other test scripts, or when sharing reproducible CDM content for instructional
+examples.
 }
 \examples{
 \dontrun{
-# Insert patient timeline directly into your script
-cdmCommentContents(cdm, 12)
-
-# Insert multiple patients
-cdmCommentContents(cdm, c(12, 22))
+library(CDMConnector)
+con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+cdm <- cdmFromCon(con, "main", "main")
+cdmCommentContents(cdm, personIds = 6)
+# person_id | observation_concept_id | start_date | end_date   | type_concept_id | domain               | observation_concept_name                                                                                                       | type_concept_name
+# 6         | 40213296               | 2006-01-10 | 2006-01-10 | 581452          | drug_exposure        | hepatitis A vaccine, adult dosage                                                                                              | NA
+# 6         | 40213227               | 2006-01-10 | 2006-01-10 | 581452          | drug_exposure        | tetanus and diphtheria toxoids, adsorbed, preservative free, for adult use                                                     | NA
+# 6         | 1118084                | 2005-07-13 | 2005-07-13 | 38000177        | drug_exposure        | celecoxib                                                                                                                      | NA
+# 6         | 80180                  | 2005-07-13 | NA         | 32020           | condition_occurrence | Osteoarthritis                                                                                                                 | NA
+cdmDisconnect(cdm)
 }
 
 }
 \seealso{
-\code{\link[=cdmFlatten]{cdmFlatten()}}
+\code{\link[CDMConnector]{cdmFlatten}}
 }
