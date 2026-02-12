@@ -38,11 +38,11 @@ library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 cdm <- cdmFromCon(con, "main", "main")
 cdmCommentContents(cdm, personIds = 6)
-# person_id | observation_concept_id | start_date | end_date   | type_concept_id | domain               | observation_concept_name                                                                                                       | type_concept_name
-# 6         | 40213296               | 2006-01-10 | 2006-01-10 | 581452          | drug_exposure        | hepatitis A vaccine, adult dosage                                                                                              | NA
-# 6         | 40213227               | 2006-01-10 | 2006-01-10 | 581452          | drug_exposure        | tetanus and diphtheria toxoids, adsorbed, preservative free, for adult use                                                     | NA
-# 6         | 1118084                | 2005-07-13 | 2005-07-13 | 38000177        | drug_exposure        | celecoxib                                                                                                                      | NA
-# 6         | 80180                  | 2005-07-13 | NA         | 32020           | condition_occurrence | Osteoarthritis                                                                                                                 | NA
+# person_id | observation_concept_id | start_date | end_date   | type_concept_id...
+# 6         | 40213296               | 2006-01-10 | 2006-01-10 | 581452         ...
+# 6         | 40213227               | 2006-01-10 | 2006-01-10 | 581452         ...
+# 6         | 1118084                | 2005-07-13 | 2005-07-13 | 38000177       ...
+# 6         | 80180                  | 2005-07-13 | NA         | 32020          ...
 cdmDisconnect(cdm)
 }
 
