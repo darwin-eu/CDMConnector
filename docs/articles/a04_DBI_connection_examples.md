@@ -159,9 +159,9 @@ DBI::dbDisconnect(con)
 
 Note, as with SQL server we could set up a DSN to simplify this
 connection as described
-[here](https://docs.snowflake.com/developer-guide/odbc/odbc-windows) for
+[here](https://docs.snowflake.com/en/developer-guide/odbc/odbc-windows) for
 windows and
-[here](https://docs.snowflake.com/developer-guide/odbc/odbc-mac) for
+[here](https://docs.snowflake.com/en/developer-guide/odbc/odbc-mac) for
 macOS.
 
 Connect to Snowflake using the DatabaseConnector package (version 7 or
