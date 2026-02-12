@@ -1,7 +1,8 @@
 # CDMConnector 2.4.0
 
-- Implement generateCohortSet for local cdms (omock)
+- Implement generateCohortSet for local cdms (omock) 
 - Allow catalogs in duckdb
+- Add `cdmFromCohortSet` to create synthetic cdms from Atlas cohort definitions
 
 # CDMConnector 2.3.0
 

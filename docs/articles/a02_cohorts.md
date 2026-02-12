@@ -69,9 +69,17 @@ assigned automatically using alphabetical order of the filenames.
 ``` r
 pathToCohortJsonFiles <- system.file("cohorts1", package = "CDMConnector")
 list.files(pathToCohortJsonFiles)
+#> [1] "cerebral_venous_sinus_thrombosis_01.json"
+#> [2] "CohortsToCreate.csv"                     
+#> [3] "deep_vein_thrombosis_01.json"
 
 readr::read_csv(file.path(pathToCohortJsonFiles, "CohortsToCreate.csv"),
                 show_col_types = FALSE)
+#> # A tibble: 2 × 3
+#>   cohortId cohortName                          jsonPath                         
+#>      <dbl> <chr>                               <chr>                            
+#> 1        1 cerebral_venous_sinus_thrombosis_01 cerebral_venous_sinus_thrombosis…
+#> 2        2 deep_vein_thrombosis_01             deep_vein_thrombosis_01.json
 ```
 
 ### Atlas cohort definitions
@@ -84,6 +92,7 @@ into the CDM’s `write_schema`.
 library(CDMConnector)
 pathToCohortJsonFiles <- system.file("example_cohorts", package = "CDMConnector")
 list.files(pathToCohortJsonFiles)
+#> [1] "GiBleed_default.json" "GIBleed_male.json"
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
 cdm <- cdmFromCon(con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
@@ -92,14 +101,41 @@ cohortSet <- readCohortSet(pathToCohortJsonFiles) |>
   mutate(cohort_name = snakecase::to_snake_case(cohort_name))
 
 cohortSet
+#> # A tibble: 2 × 5
+#>   cohort_definition_id cohort_name     cohort       json   cohort_name_snakecase
+#>                  <int> <chr>           <list>       <list> <chr>                
+#> 1                    1 gibleed_default <named list> <chr>  gibleed_default      
+#> 2                    2 gibleed_male    <named list> <chr>  gibleed_male
 
 cdm <- generateCohortSet(
   cdm = cdm, 
   cohortSet = cohortSet,
   name = "study_cohorts"
 )
+#> ℹ Generating 2 cohorts
+#> ℹ Generating cohort (1/2) - gibleed_default
+#> ✔ Generating cohort (1/2) - gibleed_default [310ms]
+#> 
+#> ℹ Generating cohort (2/2) - gibleed_male
+#> ✔ Generating cohort (2/2) - gibleed_male [319ms]
+#> 
 
 cdm$study_cohorts
+#> # Source:   table<study_cohorts> [?? x 4]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpRUt2ZK/file10a9277231378.duckdb]
+#>    cohort_definition_id subject_id cohort_start_date cohort_end_date
+#>                   <int>      <dbl> <date>            <date>         
+#>  1                    1       4222 1987-02-17        2019-06-13     
+#>  2                    1       4820 1995-10-24        2018-06-28     
+#>  3                    1       3224 2002-01-26        2019-06-07     
+#>  4                    1       3961 2011-11-24        2019-02-26     
+#>  5                    1       2160 1998-09-23        2019-03-05     
+#>  6                    1       1916 2007-06-07        2019-06-24     
+#>  7                    1       3287 1980-07-02        2018-10-01     
+#>  8                    1       2703 2014-05-11        2018-03-18     
+#>  9                    1       4466 2008-04-25        2017-08-25     
+#> 10                    1        351 2018-06-28        2018-06-29     
+#> # ℹ more rows
 ```
 
 The generated cohort has associated metadata tables. We can access these
@@ -113,8 +149,28 @@ with utility functions.
 
 ``` r
 cohortCount(cdm$study_cohorts)
+#> # A tibble: 2 × 3
+#>   cohort_definition_id number_records number_subjects
+#>                  <int>          <int>           <int>
+#> 1                    1            479             479
+#> 2                    2            237             237
 settings(cdm$study_cohorts)
+#> # A tibble: 2 × 2
+#>   cohort_definition_id cohort_name    
+#>                  <int> <chr>          
+#> 1                    1 gibleed_default
+#> 2                    2 gibleed_male
 attrition(cdm$study_cohorts)
+#> # A tibble: 6 × 7
+#>   cohort_definition_id number_records number_subjects reason_id reason          
+#>                  <int>          <int>           <int>     <int> <chr>           
+#> 1                    1            479             479         1 Qualifying init…
+#> 2                    1            479             479         2 Cohort records …
+#> 3                    2            479             479         1 Qualifying init…
+#> 4                    2            237             237         2 Male            
+#> 5                    2            237             237         3 30 days prior o…
+#> 6                    2            237             237         4 Cohort records …
+#> # ℹ 2 more variables: excluded_records <int>, excluded_subjects <int>
 ```
 
 Note the this cohort table is still in the database so it can be quite
@@ -143,10 +199,49 @@ cohortSet <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
 
 
 cdm <- generateCohortSet(cdm, cohortSet, name = "cohort") 
+#> ℹ Generating 5 cohorts
+#> ℹ Generating cohort (1/5) - gibleed_all_end_10
+#> ✔ Generating cohort (1/5) - gibleed_all_end_10 [134ms]
+#> 
+#> ℹ Generating cohort (2/5) - gibleed_all
+#> ✔ Generating cohort (2/5) - gibleed_all [103ms]
+#> 
+#> ℹ Generating cohort (3/5) - gibleed_default_with_descendants
+#> ✔ Generating cohort (3/5) - gibleed_default_with_descendants [174ms]
+#> 
+#> ℹ Generating cohort (4/5) - gibleed_default
+#> ✔ Generating cohort (4/5) - gibleed_default [149ms]
+#> 
+#> ℹ Generating cohort (5/5) - gibleed_end_10
+#> ✔ Generating cohort (5/5) - gibleed_end_10 [168ms]
+#> 
 
 cdm$cohort
+#> # Source:   table<cohort> [?? x 4]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpRUt2ZK/file10a9220e17349.duckdb]
+#>    cohort_definition_id subject_id cohort_start_date cohort_end_date
+#>                   <int>      <dbl> <date>            <date>         
+#>  1                    1       1112 2007-08-17        2007-08-27     
+#>  2                    1       3278 1994-02-17        1994-02-27     
+#>  3                    1       3569 1999-10-03        1999-10-13     
+#>  4                    1       3002 2013-01-01        2013-01-11     
+#>  5                    1       5152 2012-06-20        2012-06-30     
+#>  6                    1       1902 1985-11-17        1985-11-27     
+#>  7                    1       2332 1996-12-04        1996-12-14     
+#>  8                    1       2358 2007-10-15        2007-10-25     
+#>  9                    1        320 1995-10-19        1995-10-29     
+#> 10                    1       1967 1994-05-17        1994-05-27     
+#> # ℹ more rows
 
 cohortCount(cdm$cohort)
+#> # A tibble: 5 × 3
+#>   cohort_definition_id number_records number_subjects
+#>                  <int>          <int>           <int>
+#> 1                    1            479             479
+#> 2                    2            479             479
+#> 3                    3            479             479
+#> 4                    4            479             479
+#> 5                    5            479             479
 ```
 
 As an example we will take only people in the cohort that have a cohort
@@ -163,6 +258,14 @@ cdm$cohort_subset <- cdm$cohort %>%
   newCohortTable()
 
 cohortCount(cdm$cohort_subset)
+#> # A tibble: 5 × 3
+#>   cohort_definition_id number_records number_subjects
+#>                  <int>          <int>           <int>
+#> 1                    1            479             479
+#> 2                    2            479             479
+#> 3                    3            479             479
+#> 4                    4            479             479
+#> 5                    5            479             479
 ```
 
 In this case we can see that cohorts 1 and 5 were dropped completely and
@@ -179,6 +282,17 @@ daysInCohort <- cdm$cohort %>%
   collect()
 
 daysInCohort
+#> # A tibble: 8 × 3
+#>   cohort_definition_id days_in_cohort     n
+#>                  <int>          <int> <dbl>
+#> 1                    1              9     1
+#> 2                    5              1    10
+#> 3                    1              2     1
+#> 4                    1             10   467
+#> 5                    5             10   467
+#> 6                    5              2     1
+#> 7                    1              1    10
+#> 8                    5              9     1
 ```
 
 We have confirmed that everyone in cohorts 1 and 5 were in the cohort
@@ -214,6 +328,18 @@ cdm$cohort_subset %>%
   summarize(mean_days_in_cohort = mean(days_in_cohort, na.rm = TRUE)) %>% 
   collect() %>% 
   arrange(mean_days_in_cohort)
+#> # A tibble: 9 × 2
+#>   cohort_definition_id mean_days_in_cohort
+#>                  <dbl>               <dbl>
+#> 1                   13               7586.
+#> 2                   14               7586.
+#> 3                   12               7586.
+#> 4                 1004               7602.
+#> 5                  102               7602.
+#> 6                 1002               7602.
+#> 7                  103               7602.
+#> 8                  104               7602.
+#> 9                 1003               7602.
 ```
 
 This is an example of creating new cohorts from existing cohorts using
@@ -254,6 +380,12 @@ cdm$gibleed2 <- cdm$gibleed2 %>%
   recordCohortAttrition(reason = "Male")
   
 attrition(cdm$gibleed2) 
+#> # A tibble: 2 × 7
+#>   cohort_definition_id number_records number_subjects reason_id reason          
+#>                  <int>          <int>           <int>     <int> <chr>           
+#> 1                    1            479             479         1 Initial qualify…
+#> 2                    1            237             237         2 Male            
+#> # ℹ 2 more variables: excluded_records <int>, excluded_subjects <int>
 ```
 
 In the above example we built a cohort table from a concept set. The
@@ -279,6 +411,10 @@ cohort <- dplyr::tibble(
 )
 
 cohort
+#> # A tibble: 1 × 4
+#>   cohort_definition_id subject_id cohort_start_date cohort_end_date
+#>                  <int>      <int> <date>            <date>         
+#> 1                    1          1 1999-01-01        2001-01-01
 ```
 
 First make sure the table is in the database and create a dplyr table
@@ -286,9 +422,20 @@ reference to it and add it to the CDM object.
 
 ``` r
 library(omopgenerics)
+#> Warning: package 'omopgenerics' was built under R version 4.5.2
+#> 
+#> Attaching package: 'omopgenerics'
+#> The following object is masked from 'package:stats':
+#> 
+#>     filter
 cdm <- insertTable(cdm = cdm, name = "cohort", table = cohort, overwrite = TRUE)
 
 cdm$cohort
+#> # Source:   table<cohort> [?? x 4]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpRUt2ZK/file10a9220e17349.duckdb]
+#>   cohort_definition_id subject_id cohort_start_date cohort_end_date
+#>                  <int>      <int> <date>            <date>         
+#> 1                    1          1 1999-01-01        2001-01-01
 ```
 
 To make this a true generated cohort object use the `cohort_table`
@@ -302,8 +449,21 @@ as the various metadata tables.
 
 ``` r
 cohortCount(cdm$cohort)
+#> # A tibble: 1 × 3
+#>   cohort_definition_id number_records number_subjects
+#>                  <int>          <int>           <int>
+#> 1                    1              1               1
 settings(cdm$cohort)
+#> # A tibble: 1 × 2
+#>   cohort_definition_id cohort_name
+#>                  <int> <chr>      
+#> 1                    1 cohort_1
 attrition(cdm$cohort)
+#> # A tibble: 1 × 7
+#>   cohort_definition_id number_records number_subjects reason_id reason          
+#>                  <int>          <int>           <int>     <int> <chr>           
+#> 1                    1              1               1         1 Initial qualify…
+#> # ℹ 2 more variables: excluded_records <int>, excluded_subjects <int>
 ```
 
 If you would like to override the attribute tables then pass additional
@@ -313,12 +473,20 @@ dataframes to cohortTable
 cdm <- insertTable(cdm = cdm, name = "cohort2", table = cohort, overwrite = TRUE)
 cdm$cohort2 <- newCohortTable(cdm$cohort2)
 settings(cdm$cohort2)
+#> # A tibble: 1 × 2
+#>   cohort_definition_id cohort_name
+#>                  <int> <chr>      
+#> 1                    1 cohort_1
 
 cohort_set <- data.frame(cohort_definition_id = 1L,
                          cohort_name = "made_up_cohort")
 cdm$cohort2 <- newCohortTable(cdm$cohort2, cohortSetRef = cohort_set)
 
 settings(cdm$cohort2)
+#> # A tibble: 1 × 2
+#>   cohort_definition_id cohort_name   
+#>                  <int> <chr>         
+#> 1                    1 made_up_cohort
 ```
 
 ``` r

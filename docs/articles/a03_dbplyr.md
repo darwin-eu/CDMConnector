@@ -9,6 +9,7 @@ installed using ´install.packages()´
 ``` r
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
+#> Warning: package 'dplyr' was built under R version 4.5.2
 library(ggplot2)
 #> Warning: package 'ggplot2' was built under R version 4.5.2
 ```

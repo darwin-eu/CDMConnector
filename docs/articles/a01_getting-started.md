@@ -119,7 +119,7 @@ cdm
 #> • other tables: -
 cdm$observation_period
 #> # Source:   table<observation_period> [?? x 5]
-#> # Database: DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnP2Z5g/file9b814dbdaf3f.duckdb]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpvW8Nsc/file10a77174442f6.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -145,7 +145,7 @@ cdm$person %>%
   dplyr::glimpse()
 #> Rows: ??
 #> Columns: 18
-#> Database: DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnP2Z5g/file9b814dbdaf3f.duckdb]
+#> Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpvW8Nsc/file10a77174442f6.duckdb]
 #> $ person_id                   <int> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…
 #> $ gender_concept_id           <int> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …
 #> $ year_of_birth               <int> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …
@@ -254,18 +254,18 @@ cdm$condition_occurrence %>%
   collect() %>% 
   select("concept_name", "n") 
 #> # A tibble: 113 × 2
-#>    concept_name                                                          n
-#>    <chr>                                                             <dbl>
-#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet    305
-#>  2 Penicillin V Potassium 250 MG Oral Tablet                          1666
-#>  3 Methylphenidate Hydrochloride 20 MG Oral Tablet                      63
-#>  4 Amoxicillin 500 MG Oral Tablet                                      246
-#>  5 Warfarin Sodium 5 MG Oral Tablet                                    135
-#>  6 remifentanil                                                         16
-#>  7 Piperacillin 4000 MG / tazobactam 500 MG Injection                   35
-#>  8 {28 (Norethindrone 0.35 MG Oral Tablet) } Pack [Jolivette 28 Day]    12
-#>  9 Lorazepam 2 MG/ML Injectable Solution                                 1
-#> 10 Aspirin 81 MG Oral Tablet                                          4305
+#>    concept_name                                                                n
+#>    <chr>                                                                   <dbl>
+#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305
+#>  2 Penicillin V Potassium 250 MG Oral Tablet                                1666
+#>  3 Methylphenidate Hydrochloride 20 MG Oral Tablet                            63
+#>  4 Amoxicillin 500 MG Oral Tablet                                            246
+#>  5 Warfarin Sodium 5 MG Oral Tablet                                          135
+#>  6 remifentanil                                                               16
+#>  7 Piperacillin 4000 MG / tazobactam 500 MG Injection                         35
+#>  8 {28 (Norethindrone 0.35 MG Oral Tablet) } Pack [Jolivette 28 Day]          12
+#>  9 Lorazepam 2 MG/ML Injectable Solution                                       1
+#> 10 {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997
 #> # ℹ 103 more rows
 ```
 
@@ -380,19 +380,19 @@ drugs %>% show_query()
 
 drugs
 #> # Source:   table<scratch.test> [?? x 11]
-#> # Database: DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnP2Z5g/file9b814dbdaf3f.duckdb]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpvW8Nsc/file10a77174442f6.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
-#>  1        19074843    82 Cefaclor 250 … Drug      RxNorm        Clinical Drug   
-#>  2         1539411   182 Simvastatin 2… Drug      RxNorm        Clinical Drug   
-#>  3        40222846    41 Memantine hyd… Drug      RxNorm        Clinical Drug   
-#>  4        19089061     4 Prednisone 2.… Drug      RxNorm        Branded Drug Co…
-#>  5        19133905  1060 Penicillin V … Drug      RxNorm        Clinical Drug   
-#>  6        40213227  7203 tetanus and d… Drug      CVX           CVX             
-#>  7        19073183   188 Amoxicillin 2… Drug      RxNorm        Clinical Drug   
-#>  8          920300   779 Nitrofurantoi… Drug      RxNorm        Clinical Drug   
-#>  9         1332419   179 Amlodipine 5 … Drug      RxNorm        Clinical Drug   
-#> 10        42707627    35 rocuronium br… Drug      RxNorm        Clinical Drug   
+#>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
+#>  2        19133873  1666 Penicillin V … Drug      RxNorm        Clinical Drug   
+#>  3        40236446    63 Methylphenida… Drug      RxNorm        Clinical Drug   
+#>  4        19073188   246 Amoxicillin 5… Drug      RxNorm        Clinical Drug   
+#>  5        40163554   135 Warfarin Sodi… Drug      RxNorm        Clinical Drug   
+#>  6        19016749    16 remifentanil   Drug      RxNorm        Ingredient      
+#>  7        46275444    35 Piperacillin … Drug      RxNorm        Clinical Drug   
+#>  8        19129144    12 {28 (Norethin… Drug      RxNorm        Branded Pack    
+#>  9        19057271     1 Lorazepam 2 M… Drug      RxNorm        Clinical Drug   
+#> 10        19128065   997 {7 (Inert Ing… Drug      RxNorm        Branded Pack    
 #> # ℹ more rows
 #> # ℹ 5 more variables: standard_concept <chr>, concept_code <chr>,
 #> #   valid_start_date <date>, valid_end_date <date>, invalid_reason <chr>
@@ -545,16 +545,16 @@ cdmFlatten(cdm_pneumonia,
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1      1847                4024958 1922-11-24 1922-11-24            5001 measu…
-#>  2      3639                4052083 1999-12-27 1999-12-27            5001 measu…
-#>  3      5073                4052083 1970-03-08 1970-03-08            5001 measu…
-#>  4      2821                3006322 1921-08-28 1921-08-28            5001 measu…
-#>  5       334                3006322 1974-09-05 1974-09-05            5001 measu…
-#>  6      3618                4052083 1960-07-13 1960-07-13            5001 measu…
-#>  7      3516                3049273 1996-09-24 1996-09-24            5001 measu…
-#>  8       430               40173590 2011-11-19 2011-11-19        38000177 drug_…
-#>  9      5333               40213160 1955-06-19 1955-06-19          581452 drug_…
-#> 10      1923               40213227 2004-04-16 2004-04-16          581452 drug_…
+#>  1      1923                3001488 1993-07-09 1993-07-09            5001 measu…
+#>  2      1923                3012494 1993-07-09 1993-07-09            5001 measu…
+#>  3      3516                4237458 1996-09-24 1996-11-23           32020 condi…
+#>  4      1923                1713671 1940-05-14 1940-08-06        38000177 drug_…
+#>  5      1954                1127433 1972-11-07 1972-12-12        38000177 drug_…
+#>  6       334               19133873 1940-02-13 1940-02-25        38000177 drug_…
+#>  7      3811                1127433 1991-11-23 1991-12-07        38000177 drug_…
+#>  8      4976                1127433 1956-11-20 1956-12-04        38000177 drug_…
+#>  9      3851                1127433 1918-12-22 1918-12-29        38000177 drug_…
+#> 10       334               40229134 1970-04-21 1970-05-05        38000177 drug_…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```

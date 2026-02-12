@@ -173,11 +173,15 @@ License: Apache 2.0
 Create or transform a CDM reference object. These accept and return cdm
 objects.
 
+- [`cdmCommentContents()`](cdmCommentContents.md) : Insert flattened CDM
+  records as an aligned R comment in the active editor
 - [`cdmCon()`](cdmCon.md) : Get underlying database connection
 - [`cdmDisconnect(`*`<db_cdm>`*`)`](cdmDisconnect.db_cdm.md) :
   Disconnect the connection of the cdm object
 - [`cdmFlatten()`](cdmFlatten.md) : Flatten a cdm into a single
   observation table
+- [`cdmFromCohortSet()`](cdmFromCohortSet.md) : Build a Synthetic CDM
+  from a Cohort Set
 - [`cdmFromCon()`](cdmFromCon.md) : Create a CDM reference object from a
   database connection
 - [`cdmSample()`](cdmSample.md) : Subset a cdm object to a random sample

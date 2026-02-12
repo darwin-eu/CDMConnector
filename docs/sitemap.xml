@@ -21,9 +21,11 @@
 <url><loc>/reference/assert_write_schema.html</loc></url>
 <url><loc>/reference/benchmarkCDMConnector.html</loc></url>
 <url><loc>/reference/cash-.cdm_reference.html</loc></url>
+<url><loc>/reference/cdmCommentContents.html</loc></url>
 <url><loc>/reference/cdmCon.html</loc></url>
 <url><loc>/reference/cdmDisconnect.db_cdm.html</loc></url>
 <url><loc>/reference/cdmFlatten.html</loc></url>
+<url><loc>/reference/cdmFromCohortSet.html</loc></url>
 <url><loc>/reference/cdmFromCon.html</loc></url>
 <url><loc>/reference/cdmFromEnvironment.html</loc></url>
 <url><loc>/reference/cdmFromFiles.html</loc></url>
@@ -62,6 +64,7 @@
 <url><loc>/reference/eunomia_is_available.html</loc></url>
 <url><loc>/reference/exampleDatasets.html</loc></url>
 <url><loc>/reference/generateCohortSet.html</loc></url>
+<url><loc>/reference/generateCohortSetLocal.html</loc></url>
 <url><loc>/reference/generateConceptCohortSet.html</loc></url>
 <url><loc>/reference/inSchema.html</loc></url>
 <url><loc>/reference/index.html</loc></url>

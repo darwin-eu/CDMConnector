@@ -1,6 +1,15 @@
 # Changelog
 
+## CDMConnector 2.4.0
+
+- Implement generateCohortSet for local cdms (omock)
+- Allow catalogs in duckdb
+- Add `cdmFromCohortSet` to create synthetic cdms from Atlas cohort
+  definitions
+
 ## CDMConnector 2.3.0
+
+CRAN release: 2026-01-10
 
 - Add empty CDM v5.4 example dataset
   [@ginberg](https://github.com/ginberg)
