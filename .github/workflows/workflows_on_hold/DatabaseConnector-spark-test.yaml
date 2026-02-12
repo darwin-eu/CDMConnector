@@ -11,7 +11,7 @@ jobs:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-base:v0.3
+      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
       env:
         DATABRICKS_USER: = ${{ secrets.DATABRICKS_USER }}
         DATABRICKS_TOKEN: =  ${{ secrets.DATABRICKS_TOKEN }}

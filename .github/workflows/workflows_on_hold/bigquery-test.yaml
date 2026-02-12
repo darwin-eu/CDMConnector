@@ -11,7 +11,7 @@ jobs:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-base:v0.3
+      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
       env:
         BIGQUERY_SERVICE_ACCOUNT_JSON_PATH: ${{ secrets.BIGQUERY_SERVICE_ACCOUNT_JSON_PATH }}
         BIGQUERY_CONNECTION_STRING: ${{ secrets.BIGQUERY_CONNECTION_STRING }}

@@ -11,7 +11,7 @@ jobs:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-base:v0.3
+      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
       env:
         CDM5_REDSHIFT_USER:           ${{ secrets.CDM5_REDSHIFT_USER }}
         CDM5_REDSHIFT_PORT:           ${{ secrets.CDM5_REDSHIFT_PORT }}
