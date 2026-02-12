@@ -1,8 +1,8 @@
 #' Build a Synthetic CDM from a Cohort Set
 #'
 #' Constructs a synthetic OMOP Common Data Model (CDM) using a set of cohort definitions,
-#' typically created using \code{CDMConnector::readCohortSet()}. The function generates 
-#' synthetic data and returns a cdm reference object backed by a DuckDB database, 
+#' typically created using \code{CDMConnector::readCohortSet()}. The function generates
+#' synthetic data and returns a cdm reference object backed by a DuckDB database,
 #' containing synthetic CDM tables and generated cohort table rows.
 #'
 #' @param cohortSet A data frame (usually from \code{CDMConnector::readCohortSet()})
@@ -12,7 +12,7 @@
 #'   Defaults to 100.
 #'
 #' @return
-#'   A cdm reference object (as returned by \code{CDMConnector::cdmFromCon()}) backed 
+#'   A cdm reference object (as returned by \code{CDMConnector::cdmFromCon()}) backed
 #'   by a DuckDB database. The returned object contains synthetic CDM tables and
 #'   cohort table rows generated from the specified cohort definitions.
 #'
@@ -903,7 +903,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
   run_and_score <- function(con, cohort_sql, cohort_table, cohort_id, n_generated) {
     DBI::dbExecute(con, sprintf("DELETE FROM %s WHERE cohort_definition_id = %d;", cohort_table, cohort_id))
     ran <- tryCatch({
-      statements <- split_sql_core(cohort_sql)
+      statements <- SqlRender::splitSql(cohort_sql)
       for (s in statements) {
         s <- trimws(s)
         if (nzchar(s)) DBI::dbExecute(con, s)
