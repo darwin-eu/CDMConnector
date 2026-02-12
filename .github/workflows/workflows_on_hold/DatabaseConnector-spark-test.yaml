@@ -51,6 +51,6 @@ jobs:
         shell: Rscript {0}
 
       - name: Run tests on Spark with DatabaseConnector JDBC driver
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "spark", "TEST_USING_DATABASE_CONNECTOR" = "TRUE"), testthat::test_local())'
+        run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "spark", "TEST_USING_DATABASE_CONNECTOR" = "TRUE"), testthat::test_local())'
 
 
