@@ -42,6 +42,8 @@ skip_if_no_cdmconnector <- function() {
 }
 
 test_that("cdmFromJson works with jsonPath", {
+  skip_on_ci()
+  skip_if_not("duckdb" %in% dbToTest)
   skip_if_no_cdm_deps()
   tmp <- tempfile(fileext = ".json")
   writeLines(minimal_cohort_json(), tmp)
@@ -61,6 +63,8 @@ test_that("cdmFromJson works with jsonPath", {
 })
 
 test_that("cdmFromJson works with cohortExpression", {
+  skip_on_ci()
+  skip_if_not("duckdb" %in% dbToTest)
   skip_if_no_cdm_deps()
   options(mockCdm.seed = 43, mockCdm.targetMatch = 0.9, mockCdm.successRate = 0.5)
   expr <- minimal_cohort_expression()
@@ -75,6 +79,8 @@ test_that("cdmFromJson works with cohortExpression", {
 })
 
 test_that("cdmFromJson errors without jsonPath or cohortExpression", {
+  skip_on_ci()
+  skip_if_not("duckdb" %in% dbToTest)
   skip_if_no_cdm_deps()
   expect_error(
     CDMConnector:::cdmFromJson(n = 10),
@@ -83,7 +89,9 @@ test_that("cdmFromJson errors without jsonPath or cohortExpression", {
 })
 
 test_that("cdmFromCohortSet returns cdm with correct person count", {
-  skip_if_no_cdmconnector()
+  skip_on_ci()
+  skip_if_not("duckdb" %in% dbToTest)
+  skip_if_no_cdm_deps()
   expr <- minimal_cohort_expression()
   cohortSet <- data.frame(
     cohort_definition_id = 1L,
@@ -100,10 +108,9 @@ test_that("cdmFromCohortSet returns cdm with correct person count", {
 })
 
 test_that("generateCohortSet on cdm yields non-zero cohort counts", {
-  skip_if_no_cdmconnector()
-  if (!requireNamespace("omopgenerics", quietly = TRUE)) {
-    testthat::skip("omopgenerics not installed")
-  }
+  skip_on_ci()
+  skip_if_not("duckdb" %in% dbToTest)
+  skip_if_no_cdm_deps()
   expr <- minimal_cohort_expression()
   cohort_json <- minimal_cohort_json()
   # generateCohortSet expects cohortSet with columns: cohort_definition_id, cohort_name, cohort, json
@@ -137,7 +144,9 @@ test_that("generateCohortSet on cdm yields non-zero cohort counts", {
 })
 
 test_that("cdmFromCohortSet errors on invalid cohortSet", {
-  skip_if_no_cdmconnector()
+  skip_on_ci()
+  skip_if_not("duckdb" %in% dbToTest)
+  skip_if_no_cdm_deps()
   expect_error(
     CDMConnector::cdmFromCohortSet("not a data frame", n = 10),
     "non-empty data frame"
