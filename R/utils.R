@@ -458,6 +458,9 @@ computeDataHashByTable <- function(cdm) {
   overallStartTime <- Sys.time()
   ensureInstalled("digest")
 
+  library(CDMConnector)
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  cdm <- cdmFromCon(con, "main", "main")
   con <- cdmCon(cdm)
 
   cdmSchema <- attr(cdm, "cdm_schema")
@@ -486,8 +489,6 @@ computeDataHashByTable <- function(cdm) {
     "drug_strength" = "drug_concept_id",
     "cdm_source" = "NA")
 
-  tablesInCdmSchema <- tolower(listTables(con, schema = cdmSchema))
-
   out <- dplyr::tibble(
     cdm_name = character(),
     table_name = character(),
@@ -505,8 +506,8 @@ computeDataHashByTable <- function(cdm) {
     tableName <- names(cdmTables)[i]
     uniqueColumn <- cdmTables[i]
 
-    if (tableName %in% tablesInCdmSchema) {
-      table_ref <- dplyr::tbl(con, dplyr::in_schema(cdmSchema, tableName))
+    if (tableName %in% names(cdm)) {
+      table_ref <- cdm[[tableName]]
       if (uniqueColumn != "NA") {
         result <- table_ref |>
           dplyr::summarise(
@@ -547,7 +548,7 @@ computeDataHashByTable <- function(cdm) {
         table_row_count = -1L,
         unique_column = uniqueColumn,
         n_unique_values = -1L,
-        table_hash = "Table not found in CDM schema"
+        table_hash = "Table not found in CDM"
       )
     }
 
