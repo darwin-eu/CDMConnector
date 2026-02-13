@@ -252,17 +252,17 @@ for (dbtype in dbToTest) {
 
 for (dbtype in dbToTest) {
   test_that(glue::glue("{dbtype} - computeDataHashByTable"), {
-    skip_on_ci() # requires DatabaseConnector 7
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
-    skip_if_not_installed("DatabaseConnector", "7.0.0")
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
 
     write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     cdm <- cdmFromCon(con, cdm_schema, write_schema)
-    cdmTableHashes <- computeDataHashByTable(cdm)
+    suppressMessages({
+      cdmTableHashes <- computeDataHashByTable(cdm)
+    })
     expect_s3_class(cdmTableHashes, "data.frame")
     expect_true(nrow(cdmTableHashes) > 1)
     disconnect(con)

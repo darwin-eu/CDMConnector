@@ -456,7 +456,6 @@ dcCreateTable <- function(conn, name, fields) {
 #' }
 computeDataHashByTable <- function(cdm) {
   overallStartTime <- Sys.time()
-  ensureInstalled("DatabaseConnector", "7")
   ensureInstalled("digest")
 
   con <- cdmCon(cdm)
@@ -507,20 +506,22 @@ computeDataHashByTable <- function(cdm) {
     uniqueColumn <- cdmTables[i]
 
     if (tableName %in% tablesInCdmSchema) {
+      table_ref <- dplyr::tbl(con, dplyr::in_schema(cdmSchema, tableName))
       if (uniqueColumn != "NA") {
-        sql = "SELECT COUNT(*) AS n, COUNT(DISTINCT @unique_column) AS n_unique FROM @database_schema.@table_name;"
+        result <- table_ref |>
+          dplyr::summarise(
+            n = dplyr::n(),
+            n_unique = dplyr::n_distinct(.data[[uniqueColumn]])
+          ) |>
+          dplyr::collect()
       } else {
-        sql = "SELECT COUNT(*) AS n, -1 AS n_unique FROM @database_schema.@table_name;"
+        result <- table_ref |>
+          dplyr::summarise(
+            n = dplyr::n(),
+            n_unique = -1L
+          ) |>
+          dplyr::collect()
       }
-
-      result <- DatabaseConnector::renderTranslateQuerySql(
-        connection = con,
-        sql = sql,
-        database_schema = paste(cdmSchema, collapse = "."),
-        unique_column = uniqueColumn,
-        table_name = tableName,
-        warnOnMissingParameters = FALSE
-      )
 
       colnames(result) <- tolower(colnames(result))
 
