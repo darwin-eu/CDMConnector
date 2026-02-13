@@ -281,7 +281,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
   max_attempts <- getOption("mockCdm.maxAttempts", 3)
   success_rate <- getOption("mockCdm.successRate", 0.70)
   start_date   <- as.Date(getOption("mockCdm.startDate", "2019-01-01"))
-  end_date     <- as.Date(getOption("mockCdm.endDate",   "2024-12-31"))
+  end_date     <- min(as.Date(getOption("mockCdm.endDate",   "2024-12-31")), Sys.Date())
   era_pad_opt  <- as.integer(getOption("mockCdm.eraPadDays", 90))
   cohort_table <- getOption("mockCdm.cohortTable", "cohort")
   cohort_id    <- as.integer(getOption("mockCdm.cohortId", 1))
@@ -304,7 +304,10 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
   set.seed(seed)
 
   random_date <- function(nn, start, end) {
-    si <- as.integer(start); ei <- as.integer(end)
+    today <- as.integer(Sys.Date())
+    si <- as.integer(start)
+    ei <- min(as.integer(end), today)
+    if (si > ei) si <- ei
     as.Date(sample(si:ei, nn, replace = TRUE), origin = "1970-01-01")
   }
 
@@ -543,7 +546,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         person_id = person_ids,
         drug_concept_id = concept,
         drug_exposure_start_date = dates,
-        drug_exposure_end_date = dates + ds,
+        drug_exposure_end_date = pmin(dates + ds, Sys.Date()),
         drug_type_concept_id = 0,
         stop_reason = NA_character_,
         refills = NA_integer_,
@@ -645,7 +648,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       occ_n <- get_occurrence_count(criterion_obj)
       reqs <- list()
       for (k in seq_len(occ_n)) {
-        d <- index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L)
+        d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L), Sys.Date())
         reqs <- append(reqs, list(list(type = "ConditionOccurrence", person_ids = person_ids, dates = d, concepts = concepts)))
       }
       return(reqs)
@@ -659,7 +662,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       occ_n <- get_occurrence_count(criterion_obj)
       reqs <- list()
       for (k in seq_len(occ_n)) {
-        d <- index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L)
+        d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L), Sys.Date())
         reqs <- append(reqs, list(list(type = "DrugExposure", person_ids = person_ids, dates = d, concepts = concepts)))
       }
       return(reqs)
@@ -675,7 +678,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
 
     reqs <- list()
     for (k in seq_len(occ_n)) {
-      d <- index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L)
+      d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L), Sys.Date())
       reqs <- append(reqs, list(list(type = t, person_ids = person_ids, dates = d, concepts = concepts)))
     }
     reqs
@@ -1003,7 +1006,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         requests <- append(requests, list(list(
           type = pc$type,
           person_ids = qualifying_ids,
-          dates = q_idx_dates + jitter + (attempt - 1L),
+          dates = pmin(q_idx_dates + jitter + (attempt - 1L), Sys.Date()),
           concepts = concepts
         )))
       }
@@ -1048,8 +1051,9 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     # Observation period: cover each person’s generated dates generously.
     # For simplicity: global min/max across all persons (safe and fast).
     # If PrimaryCriteria has ObservationWindow Prior/Post, this still works since we pad by 365.
+    # Cap global_max at current date so no dates are in the future.
     global_min <- min(idx_dates) - 365
-    global_max <- max(idx_dates) + 365
+    global_max <- min(max(idx_dates) + 365, Sys.Date())
     DBI::dbWriteTable(con, "observation_period", make_observation_period(person_ids, global_min, global_max), append = TRUE)
 
     # Build era tables if needed (or always, cheap enough at this scale)
