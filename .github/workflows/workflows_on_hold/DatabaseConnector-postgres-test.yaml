@@ -48,8 +48,8 @@ jobs:
           install.packages("remotes", repos = "https://cloud.r-project.org/")
           install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
-          remotes::install_github("tidyverse/dbplyr")
-          CDMConnector::download_eunomia_data()
+           install.packages("dbplyr", repos = "https://cloud.r-project.org/")
+          CDMConnector::downloadEunomiaData()
           print(paste("eunomiaIsAvailable():", CDMConnector::eunomiaIsAvailable()))
         shell: Rscript {0}
 
