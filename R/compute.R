@@ -276,23 +276,16 @@ computeQuery <- function(x,
       DBI::dbExecute(con, sql)
       out <- dplyr::tbl(con, name)
     } else if (dbms(con) == "sql server") {
-
-      if (methods::is(con, "DatabaseConnectorJdbcConnection")) {
-        # dbplyr doesn't recognize the dbms of DatabaseConnector connections and thus writes incorrect SQL
-        sql <- dbplyr::build_sql(
-          "SELECT * \n",
-          "INTO ", dbplyr::ident(paste0("#", name)), " FROM ( \n",
-          dbplyr::sql_render(x), " ) AS qry;",
-          con = con
-        )
-        DBI::dbExecute(con, sql)
-        out <- dplyr::tbl(con, paste0("#", name))
-      } else {
-        # compute works fine with odbc on sql server
-        suppressMessages({ # Suppress the "Created a temporary table named" message
-          out <- dplyr::compute(x, name = name, temporary = temporary, analyze = FALSE, ...)
-        })
-      }
+      # SQL Server temp tables: name must be #name without quoting, else it's not a temp table.
+      # dbplyr's default db_save_query quotes the name ("#temp..."), so use custom SQL for all SQL Server.
+      sql <- dbplyr::build_sql(
+        "SELECT * \n",
+        "INTO ", dbplyr::sql(paste0("#", name)), " FROM ( \n",
+        dbplyr::sql_render(x), " ) AS qry;",
+        con = con
+      )
+      DBI::dbExecute(con, sql)
+      out <- dplyr::tbl(con, paste0("#", name))
 
     } else {
       out <- dplyr::compute(x, name = name, temporary = temporary, analyze = FALSE, ...)
