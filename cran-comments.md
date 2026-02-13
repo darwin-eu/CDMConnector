@@ -1,5 +1,6 @@
 ## R CMD check results
 
+
 This is a new minor release. 
 
 RCMD check passed on the following platforms with 0 errors, 0 warnings, and 0 notes 
