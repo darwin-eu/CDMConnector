@@ -1,8 +1,6 @@
-# Helper for working with compound schemas
+# Helper for working with compound schema
 
-This is similar to dbplyr::in_schema but has been tested across multiple
-database platforms. It only exists to work around some of the
-limitations of dbplyr::in_schema.
+Helper for working with compound schema
 
 ## Usage
 

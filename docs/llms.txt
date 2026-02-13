@@ -233,7 +233,7 @@ Functions that can be used in cross database dplyr pipelines
 - [`datediff()`](datediff.md) : Compute the difference between two days
 - [`datepart()`](datepart.md) : Extract the day, month or year of a date
   in a dplyr pipeline
-- [`inSchema()`](inSchema.md) : Helper for working with compound schemas
+- [`inSchema()`](inSchema.md) : Helper for working with compound schema
 
 ### DBI connection
 

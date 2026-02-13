@@ -159,8 +159,8 @@ DBI::dbDisconnect(con)
 
 Note, as with SQL server we could set up a DSN to simplify this
 connection as described
-[here](https://docs.snowflake.com/en/developer-guide/odbc/odbc-windows) for
-windows and
+[here](https://docs.snowflake.com/en/developer-guide/odbc/odbc-windows)
+for windows and
 [here](https://docs.snowflake.com/en/developer-guide/odbc/odbc-mac) for
 macOS.
 

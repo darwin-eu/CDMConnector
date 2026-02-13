@@ -36,11 +36,7 @@ NULL
   }
 }
 
-#' Helper for working with compound schemas
-#'
-#' This is similar to dbplyr::in_schema but has been tested across multiple
-#' database platforms. It only exists to work around some of the limitations
-#' of dbplyr::in_schema.
+#' Helper for working with compound schema
 #'
 #' @param schema A schema name as a character string
 #' @param table A table name as character string
@@ -50,14 +46,11 @@ NULL
 #' @return A DBI::Id that represents a qualified table and schema
 #' @export
 inSchema <- function(schema, table, dbms = NULL) {
-  # TODO deprecate this function after removing it from all tests
-  # lifecycle::deprecate_soft("1.4.1", "CDMConnector::inSchema()", "dbplyr::in_schema()")
   .inSchema(schema, table, dbms)
 }
 
 # internal function
 .inSchema <- function(schema, table, dbms = NULL) {
-  # lifecycle::deprecate_soft("1.4.1", "CDMConnector::inSchema()", "dbplyr::in_schema()")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 3, null.ok = TRUE)
   checkmate::assertCharacter(table, len = 1, min.chars = 1)
   checkmate::assertCharacter(dbms, len = 1, null.ok = TRUE)
