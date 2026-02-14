@@ -507,9 +507,14 @@ generateCohortSet <- function(cdm,
         "BEST_EVENTS",
         paste0("Inclusion_", 0:9))
 
+      # Schema-qualify temp tables so they are created and referenced in write_schema
+      # (avoids "table does not exist or not authorized" when session default schema differs).
+      # Use unquoted names so Snowflake stores/resolves them consistently (uppercase).
+      qual <- function(nm) paste0(write_schema_sql, ".", nm)
+
       # We want actual temp tables; use CREATE OR REPLACE so repeated creates don't fail.
-      sql <- stringr::str_replace_all(sql, "CREATE TABLE #", "CREATE OR REPLACE TEMPORARY TABLE ") %>%
-        stringr::str_replace_all("create table #", "create or replace temporary table ") %>%
+      sql <- stringr::str_replace_all(sql, "CREATE TABLE #", paste0("CREATE OR REPLACE TEMPORARY TABLE ", write_schema_sql, ".")) %>%
+        stringr::str_replace_all("create table #", paste0("create or replace temporary table ", write_schema_sql, ".")) %>%
         stringr::str_replace_all("#", "")
 
       # Circe sometimes emits "CREATE TABLE <name>" without #; convert those for known temp tables
@@ -518,13 +523,33 @@ generateCohortSet <- function(cdm,
         sql <- stringr::str_replace_all(
           sql,
           stringr::regex(paste0("(CREATE TABLE )(", nm, ")(\\s|;)"), ignore_case = TRUE),
-          "CREATE OR REPLACE TEMPORARY TABLE \\2\\3"
+          paste0("CREATE OR REPLACE TEMPORARY TABLE ", qual(nm), "\\3")
+        )
+      }
+
+      # Qualify all other references to these temp tables (TRUNCATE, INSERT, FROM, JOIN, etc.)
+      # so they resolve in write_schema. Process longer names first to avoid partial matches.
+      tempOrdered <- tempTablesToDrop[order(nchar(tempTablesToDrop), decreasing = TRUE)]
+      for (nm in tempOrdered) {
+        # Replace unqualified table name (not already preceded by a dot)
+        sql <- stringr::str_replace_all(
+          sql,
+          stringr::regex(paste0("(?<![.])\\b", nm, "\\b"), ignore_case = TRUE),
+          qual(nm)
         )
       }
 
       for (j in seq_along(tempTablesToDrop)) {
         suppressMessages({
-          invisible(DBI::dbExecute(con, paste("drop table if exists", tempTablesToDrop[j])))
+          invisible(DBI::dbExecute(con, paste("drop table if exists", qual(tempTablesToDrop[j]))))
+        })
+      }
+
+      # Ensure temp tables exist so TRUNCATE in the batch never runs on a missing table
+      # (Circe may emit TRUNCATE without a CREATE for that table in this cohort).
+      for (nm in tempTablesToDrop) {
+        suppressMessages({
+          invisible(DBI::dbExecute(con, paste0("CREATE OR REPLACE TEMPORARY TABLE ", qual(nm), " (dummy INTEGER)")))
         })
       }
 

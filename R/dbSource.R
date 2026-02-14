@@ -396,6 +396,9 @@ cdmDisconnect.db_cdm <- function(cdm, dropPrefixTables = FALSE, ...) {
 
   # if the database is duckdb AND it is in the temp folder, remove the file to save temp space
   isDuckdbInTempdir <- function(con) {
+    # DatabaseConnector and other wrappers don't have con@driver@dbdir; avoid slot access.
+    if (methods::is(con, "DatabaseConnectorConnection")) return(FALSE)
+    if (!methods::is(con, "duckdb_connection")) return(FALSE)
     tryCatch({
       dbdir <- con@driver@dbdir
       if (!is.character(dbdir) || length(dbdir) != 1L || is.na(dbdir) || dbdir == "" || dbdir == ":memory:") {
