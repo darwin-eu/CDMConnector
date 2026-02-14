@@ -231,7 +231,12 @@ computeQuery <- function(x,
     # handle overwrite for temp tables
     # Use dbExistsTable to avoid listing all tables (e.g. Snowflake SHOW TABLES caps at 10k rows)
     # TODO test overwrite of temp tables this across all dbms
-    if (DBI::dbExistsTable(con, name)) {
+    # SQL Server temp tables use #name; dbExistsTable(con, name) does not see them, so check with # prefix
+    check_name <- name
+    if (dbms(con) == "sql server") {
+      check_name <- paste0("#", name)
+    }
+    if (DBI::dbExistsTable(con, check_name)) {
       if (isFALSE(overwrite)) {
         rlang::abort(glue::glue("table {name} already exists and overwrite is FALSE!"))
       }
