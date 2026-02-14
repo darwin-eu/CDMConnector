@@ -20,7 +20,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Adam Black \email{black@ohdsi.org} (\href{https://orcid.org/0000-0001-5576-8701}{ORCID})
+\strong{Maintainer}: Adam Black \email{ablack3@gmail.com} (\href{https://orcid.org/0000-0001-5576-8701}{ORCID})
 
 Authors:
 \itemize{
