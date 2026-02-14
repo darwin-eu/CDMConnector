@@ -4,7 +4,15 @@
 \alias{cdmFromCohortSet}
 \title{Build a Synthetic CDM from a Cohort Set}
 \usage{
-cdmFromCohortSet(cohortSet, n = 100)
+cdmFromCohortSet(
+  cohortSet,
+  n = 100,
+  cohortTable = "cohort",
+  duckdbPath = NULL,
+  seed = 1,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{cohortSet}{A data frame (usually from \code{CDMConnector::readCohortSet()})
@@ -13,11 +21,28 @@ with columns \code{cohort_definition_id}, \code{cohort_name}, and \code{cohort}
 
 \item{n}{Integer. Total number of synthetic persons to generate across all cohorts.
 Defaults to 100.}
+
+\item{cohortTable}{Character. Name of the cohort table (default \code{"cohort"}).}
+
+\item{duckdbPath}{Character or NULL. Path for the final merged DuckDB; if NULL a
+temporary file is used.}
+
+\item{seed}{Integer. Base RNG seed; each cohort uses \code{seed + cohort_index} for reproducibility (default 1).}
+
+\item{verbose}{If TRUE, print progress per cohort and per attempt (default FALSE).}
+
+\item{...}{Arguments passed through to \code{cdmFromJson} for each cohort (e.g.
+\code{targetMatch}, \code{successRate}, \code{visitConceptId}, \code{eventDateJitter}, \code{visitDateJitter},
+\code{demographicVariety}, \code{sourceAndTypeVariety}, \code{valueVariety}). \code{seed} is overridden per cohort.
+\code{targetMatch} is per cohort: that fraction of each cohort's generated persons are intended to qualify for that cohort only.}
 }
 \value{
 A cdm reference object (as returned by \code{CDMConnector::cdmFromCon()}) backed
 by a DuckDB database. The returned object contains synthetic CDM tables and
 cohort table rows generated from the specified cohort definitions.
+The returned \code{cdm} has an attribute \code{synthetic_summary} (a list with
+\code{cohort_summaries}, \code{cohort_index}, \code{n_cohorts}, \code{summary}
+(one-line text), \code{any_low_match}) for diagnostics and match rates.
 }
 \description{
 Constructs a synthetic OMOP Common Data Model (CDM) using a set of cohort definitions,
@@ -25,6 +50,13 @@ typically created using \code{CDMConnector::readCohortSet()}. The function gener
 synthetic data and returns a cdm reference object backed by a DuckDB database,
 containing synthetic CDM tables and generated cohort table rows.
 }
+\section{Reproducibility}{
+
+With the same \code{seed}, \code{cohortSet}, and other arguments, \code{cdmFromCohortSet}
+produces the same synthetic data. Changing \code{seed} or \code{n} changes the data.
+The data are random but reproducible.
+}
+
 \examples{
 \dontrun{
 library(CDMConnector)

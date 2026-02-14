@@ -10,11 +10,28 @@
 #'   (cohort definition as a list or JSON string).
 #' @param n Integer. Total number of synthetic persons to generate across all cohorts.
 #'   Defaults to 100.
+#' @param cohortTable Character. Name of the cohort table (default \code{"cohort"}).
+#' @param duckdbPath Character or NULL. Path for the final merged DuckDB; if NULL a
+#'   temporary file is used.
+#' @param seed Integer. Base RNG seed; each cohort uses \code{seed + cohort_index} for reproducibility (default 1).
+#' @param verbose If TRUE, print progress per cohort and per attempt (default FALSE).
+#' @param ... Arguments passed through to \code{cdmFromJson} for each cohort (e.g.
+#'   \code{targetMatch}, \code{successRate}, \code{visitConceptId}, \code{eventDateJitter}, \code{visitDateJitter},
+#'   \code{demographicVariety}, \code{sourceAndTypeVariety}, \code{valueVariety}). \code{seed} is overridden per cohort.
+#'   \code{targetMatch} is per cohort: that fraction of each cohort's generated persons are intended to qualify for that cohort only.
+#'
+#' @section Reproducibility:
+#'   With the same \code{seed}, \code{cohortSet}, and other arguments, \code{cdmFromCohortSet}
+#'   produces the same synthetic data. Changing \code{seed} or \code{n} changes the data.
+#'   The data are random but reproducible.
 #'
 #' @return
 #'   A cdm reference object (as returned by \code{CDMConnector::cdmFromCon()}) backed
 #'   by a DuckDB database. The returned object contains synthetic CDM tables and
 #'   cohort table rows generated from the specified cohort definitions.
+#'   The returned \code{cdm} has an attribute \code{synthetic_summary} (a list with
+#'   \code{cohort_summaries}, \code{cohort_index}, \code{n_cohorts}, \code{summary}
+#'   (one-line text), \code{any_low_match}) for diagnostics and match rates.
 #'
 #' @examples
 #' \dontrun{
@@ -25,7 +42,7 @@
 #' }
 #'
 #' @export
-cdmFromCohortSet <- function(cohortSet, n = 100) {
+cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbPath = NULL, seed = 1, verbose = FALSE, ...) {
 
   req <- c("DBI", "duckdb")
   missing_pkgs <- req[!vapply(req, requireNamespace, logical(1), quietly = TRUE)]
@@ -38,7 +55,6 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
 
   `%||%` <- function(x, y) if (!is.null(x)) x else y
 
-  # Validate cohortSet: expect data frame with cohort_definition_id, cohort_name, cohort
   if (!is.data.frame(cohortSet) || nrow(cohortSet) == 0) {
     stop("cohortSet must be a non-empty data frame (e.g. from CDMConnector::readCohortSet()).")
   }
@@ -47,11 +63,13 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
   if (length(missing_cols) > 0) {
     stop("cohortSet must have columns: ", paste(required, collapse = ", "), ". Missing: ", paste(missing_cols, collapse = ", "))
   }
-
-  cohort_table <- getOption("mockCdm.cohortTable", "cohort")
+  n <- as.integer(n)
+  n_cohorts <- nrow(cohortSet)
+  if (is.na(n) || n < 1L) stop("n must be a positive integer.")
+  if (n < n_cohorts) stop("n (", n, ") must be >= number of cohorts (", n_cohorts, ") so each cohort gets at least one person.")
 
   # Create final DuckDB as a copy of CDMConnector empty_cdm (no DDL; tables + vocabulary already exist)
-  final_path <- getOption("mockCdm.multi.duckdbPath", NULL)
+  final_path <- duckdbPath
   if (is.null(final_path) || !nzchar(final_path)) {
     empty_path <- CDMConnector::eunomiaDir("empty_cdm", cdmVersion = "5.4")
     final_path <- tempfile(fileext = ".duckdb")
@@ -69,7 +87,7 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
 
   try(DBI::dbExecute(con_final, sprintf(
     "CREATE TABLE IF NOT EXISTS %s (cohort_definition_id INTEGER, subject_id INTEGER, cohort_start_date DATE, cohort_end_date DATE);",
-    cohort_table
+    cohortTable
   )), silent = TRUE)
   try(DBI::dbExecute(con_final, "CREATE TABLE IF NOT EXISTS mockcdm_cohort_index (
     cohort_definition_id INTEGER, cohort_name VARCHAR, n_requested INTEGER,
@@ -81,6 +99,10 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     device_type_concept_id INTEGER, unique_device_id VARCHAR, quantity INTEGER,
     provider_id INTEGER, visit_occurrence_id INTEGER, device_source_value VARCHAR,
     device_source_concept_id INTEGER);"), silent = TRUE)
+  try(DBI::dbExecute(con_final, "CREATE TABLE IF NOT EXISTS death (
+    person_id INTEGER, death_date DATE, death_datetime TIMESTAMP,
+    death_type_concept_id INTEGER, cause_concept_id INTEGER, cause_source_value VARCHAR,
+    cause_source_concept_id INTEGER);"), silent = TRUE)
 
   copy_with_offsets <- function(con_src, con_dst, table, id_col, id_offset, person_offset, person_col = "person_id") {
     df <- try(DBI::dbGetQuery(con_src, sprintf("SELECT * FROM %s;", table)), silent = TRUE)
@@ -129,12 +151,12 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
 
   tables <- c("person", "observation_period", "visit_occurrence", "condition_occurrence",
               "procedure_occurrence", "drug_exposure", "measurement", "observation",
-              "device_exposure", "condition_era", "drug_era")
-  n_cohorts <- nrow(cohortSet)
+              "device_exposure", "condition_era", "drug_era", "death")
   n_per_cohort <- max(1L, as.integer(n / n_cohorts))
   cohort_results <- vector("list", n_cohorts)
 
   for (i in seq_len(n_cohorts)) {
+    if (verbose) message("Generating cohort ", i, "/", n_cohorts, " (id=", cohortSet$cohort_definition_id[[i]], ") ...")
     cid   <- as.integer(cohortSet$cohort_definition_id[[i]])
     cname <- as.character(cohortSet$cohort_name[[i]])
     coh   <- cohortSet$cohort[[i]]
@@ -153,7 +175,6 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
       stop("cohortSet$cohort[[", i, "]] must be a list (Circe expression) or character (JSON/path).")
     }
 
-    # Generate synthetic CDM for this cohort into a temp copy of empty_cdm
     temp_db <- tempfile(fileext = ".duckdb")
     empty_path <- CDMConnector::eunomiaDir("empty_cdm", cdmVersion = "5.4")
     if (dir.exists(empty_path)) {
@@ -162,12 +183,16 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     } else {
       file.copy(empty_path, temp_db)
     }
-    old_opts <- options(
-      mockCdm.cohortId = cid,
-      mockCdm.duckdbPath = temp_db
-    )
-
-    res_i <- cdmFromJson(cohortExpression = cohort_expr, n = n_per_cohort)
+    dots <- list(...)
+    dots$seed <- as.integer(seed) + i
+    dots$verbose <- verbose
+    res_i <- do.call(cdmFromJson, c(list(
+      cohortExpression = cohort_expr,
+      n = n_per_cohort,
+      cohortId = cid,
+      duckdbPath = temp_db,
+      cohortTable = cohortTable
+    ), dots))
     cohort_results[[i]] <- res_i
 
     con_src <- DBI::dbConnect(duckdb::duckdb(), res_i$duckdb_path, read_only = TRUE)
@@ -185,20 +210,25 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
 
     for (t in setdiff(tables, "person")) {
       id_col <- pk[[t]]
-      id_offset <- offsets[[id_col]]
-      tmp <- copy_with_offsets(con_src, con_final, t, id_col = id_col, id_offset = id_offset,
-                               person_offset = person_offset, person_col = "person_id")
-      offsets[[id_col]] <- tmp$id_offset
+      if (is.null(id_col)) {
+        tmp <- copy_with_offsets(con_src, con_final, t, id_col = NULL, id_offset = 0L,
+                                 person_offset = person_offset, person_col = "person_id")
+      } else {
+        id_offset <- offsets[[id_col]]
+        tmp <- copy_with_offsets(con_src, con_final, t, id_col = id_col, id_offset = id_offset,
+                                 person_offset = person_offset, person_col = "person_id")
+        offsets[[id_col]] <- tmp$id_offset
+      }
     }
 
     # Cohort rows
     df_cohort <- try(DBI::dbGetQuery(con_src, sprintf(
       "SELECT cohort_definition_id, subject_id, cohort_start_date, cohort_end_date FROM %s WHERE cohort_definition_id = %d;",
-      cohort_table, cid
+      cohortTable, cid
     )), silent = TRUE)
     if (!inherits(df_cohort, "try-error") && nrow(df_cohort) > 0) {
       df_cohort$subject_id <- df_cohort$subject_id + person_offset
-      DBI::dbWriteTable(con_final, cohort_table, df_cohort, append = TRUE)
+      DBI::dbWriteTable(con_final, cohortTable, df_cohort, append = TRUE)
     }
 
     summ <- res_i$summary
@@ -214,7 +244,7 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     DBI::dbWriteTable(con_final, "mockcdm_cohort_index", idx_row, append = TRUE)
 
     DBI::dbDisconnect(con_src, shutdown = TRUE)
-    options(old_opts)
+    try(unlink(temp_db, force = TRUE), silent = TRUE)
   }
 
   # Disconnect so CDMConnector can attach to the same path
@@ -226,43 +256,99 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     con,
     cdmSchema = "main",
     writeSchema = "main",
-    cohortTables = cohort_table,
+    cohortTables = cohortTable,
     cdmName = "synthetic_cdm"
+  )
+  cohort_index_df <- tryCatch(
+    DBI::dbGetQuery(con, "SELECT * FROM mockcdm_cohort_index;"),
+    error = function(e) NULL
+  )
+  total_persons <- if (is.null(cohort_index_df) || nrow(cohort_index_df) == 0) 0L else sum(cohort_index_df$n_generated, na.rm = TRUE)
+  rates <- if (is.null(cohort_index_df) || !"matched_rate" %in% names(cohort_index_df)) numeric(0) else cohort_index_df$matched_rate
+  rates <- rates[!is.na(rates)]
+  min_rate <- if (length(rates) > 0) min(rates) else NA_real_
+  max_rate <- if (length(rates) > 0) max(rates) else NA_real_
+  summary_str <- sprintf(
+    "%d cohort(s), %d total persons, match rates %s",
+    n_cohorts,
+    total_persons,
+    if (is.na(min_rate) || is.na(max_rate)) "N/A" else sprintf("%.2f-%.2f", min_rate, max_rate)
+  )
+  attr(cdm, "synthetic_summary") <- list(
+    cohort_summaries = lapply(cohort_results, function(r) r$summary),
+    cohort_index = cohort_index_df,
+    n_cohorts = n_cohorts,
+    summary = summary_str,
+    any_low_match = length(rates) > 0 && any(rates < 0.7)
   )
   cdm
 }
 
-cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
+#' Generate a synthetic CDM from a single cohort definition (JSON or list)
+#'
+#' Used by \code{cdmFromCohortSet}; can also be called directly for one cohort.
+#' Builds synthetic person/visit/condition/drug/etc. rows so that running the
+#' cohort SQL yields approximately \code{targetMatch} of \code{n} persons for
+#' \emph{this} cohort only (target match is per cohort, not across cohorts).
+#'
+#' @param jsonPath Path to ATLAS cohort expression JSON file. Optional if \code{cohortExpression} is provided.
+#' @param n Number of synthetic persons to generate (default 5000).
+#' @param cohortExpression Parsed cohort list (e.g. from \code{jsonlite::fromJSON}). Used when \code{jsonPath} is not set.
+#' @param duckdbPath Path to DuckDB file; if NULL a temporary copy of empty_cdm is used.
+#' @param targetMatch Fraction of the \code{n} persons generated that should qualify for this cohort (default 0.85). Applied per cohort only.
+#' @param seed RNG seed (default 1).
+#' @param maxAttempts Retries if match rate is low (default 3).
+#' @param successRate Stop when match rate >= this (default 0.70).
+#' @param startDate Min event date (default \code{"2019-01-01"}).
+#' @param endDate Max event date (default \code{"2024-12-31"}).
+#' @param eraPadDays Default era pad days if not in cohort JSON (default 90).
+#' @param cohortTable Cohort table name (default \code{"cohort"}).
+#' @param cohortId \code{cohort_definition_id} written (default 1).
+#' @param visitConceptId Concept ID for synthetic visits, e.g. 9202 = outpatient (default 9202).
+#' @param deathFraction Fraction of persons to add to death table; 0 = none (default 0).
+#' @param priorDays Override observation period prior days; NULL = use cohort ObservationWindow (default NULL).
+#' @param postDays Override observation period post days; NULL = use cohort ObservationWindow (default NULL).
+#' @param nearMissFraction Fraction of non-qualifiers given events outside the window for attrition testing (default 0).
+#' @param verbose If TRUE, print attempt and match rate each attempt (default FALSE).
+#' @param eventDateJitter Max plus/minus days to add to event dates (0 = no jitter; default 3) for more realistic variation.
+#' @param visitDateJitter Max plus/minus days for the synthetic visit date (0 = exact index date; default 2).
+#' @param demographicVariety If TRUE, sample \code{race_concept_id} and \code{ethnicity_concept_id} from a small set for variety (default FALSE).
+#' @param sourceAndTypeVariety If TRUE, sample \code{*_type_concept_id} and \code{*_source_value} from small sets for conditions, procedures, drugs, etc. (default FALSE).
+#' @param valueVariety If TRUE, fill \code{value_as_number} and \code{value_as_concept_id} for measurements and observations from a small range or set (default FALSE).
+#'
+#' @section Reproducibility:
+#'   With the same \code{seed}, cohort definition, and other arguments, \code{cdmFromJson}
+#'   produces the same synthetic data. Changing \code{seed} or \code{n} changes the data.
+#'
+#' @return List with \code{duckdb_path}, \code{summary}, \code{diagnostics}, \code{cohort_sql}, \code{cohort_json}.
+#' @noRd
+cdmFromJson <- function(jsonPath = NULL,
+                        n = 5000,
+                        cohortExpression = NULL,
+                        duckdbPath = NULL,
+                        targetMatch = 0.85,
+                        seed = 1,
+                        maxAttempts = 3,
+                        successRate = 0.70,
+                        startDate = "2019-01-01",
+                        endDate = "2024-12-31",
+                        eraPadDays = 90,
+                        cohortTable = "cohort",
+                        cohortId = 1,
+                        visitConceptId = 9202L,
+                        deathFraction = 0,
+                        priorDays = NULL,
+                        postDays = NULL,
+                        nearMissFraction = 0,
+                        verbose = FALSE,
+                        eventDateJitter = 3L,
+                        visitDateJitter = 2L,
+                        demographicVariety = FALSE,
+                        sourceAndTypeVariety = FALSE,
+                        valueVariety = FALSE) {
   # ----------------------------------------------------------------------------
   # Synthetic OMOP CDM generator driven by an ATLAS cohort expression JSON.
-  #
-  # Inputs:
-  #   - jsonPath: path to ATLAS cohort expression JSON file (as exported by ATLAS).
-  #               Optional if cohortExpression is provided.
-  #   - n: number of people to generate
-  #   - cohortExpression: optional list (parsed Circe cohort expression). If
-  #                        provided, used instead of reading from jsonPath.
-  #
-  # Reads optional configuration via options():
-  #   - mockCdm.duckdbPath   : existing DuckDB path with CDM tables (+vocab optional). If NULL -> create temp DB.
-  #   - mockCdm.targetMatch  : fraction of people intended to qualify (default 0.85)
-  #   - mockCdm.seed         : RNG seed (default 1)
-  #   - mockCdm.maxAttempts  : retry attempts if under-matching (default 3)
-  #   - mockCdm.successRate  : acceptance threshold match rate (default 0.70)
-  #   - mockCdm.startDate    : min event date (default "2019-01-01")
-  #   - mockCdm.endDate      : max event date (default "2024-12-31")
-  #   - mockCdm.eraPadDays   : default era pad if not in JSON (default 90)
-  #   - mockCdm.cohortTable  : name of cohort results table (default "cohort")
-  #   - mockCdm.cohortId     : cohort_definition_id written (default 1)
-  #
-  # Returns:
-  #   list(
-  #     duckdb_path = <path>,
-  #     summary = list(n_generated, matched, matched_rate, best_attempt, target_match),
-  #     diagnostics = data.frame(attempt,...),
-  #     cohort_sql = <duckdb SQL string>,
-  #     cohort_json = <parsed cohort list>
-  #   )
+  # Returns list(duckdb_path, summary, diagnostics, cohort_sql, cohort_json).
   # ----------------------------------------------------------------------------
 
   req <- c("DBI", "duckdb", "jsonlite", "CirceR", "SqlRender")
@@ -283,20 +369,40 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     stop("Provide either jsonPath (path to ATLAS cohort JSON file) or cohortExpression (parsed list).")
   }
 
-  duckdb_path  <- getOption("mockCdm.duckdbPath", NULL)
-  target_match <- getOption("mockCdm.targetMatch", 0.85)
-  seed         <- getOption("mockCdm.seed", 1)
-  max_attempts <- getOption("mockCdm.maxAttempts", 3)
-  success_rate <- getOption("mockCdm.successRate", 0.70)
-  start_date   <- as.Date(getOption("mockCdm.startDate", "2019-01-01"))
-  end_date     <- min(as.Date(getOption("mockCdm.endDate",   "2024-12-31")), Sys.Date())
-  era_pad_opt  <- as.integer(getOption("mockCdm.eraPadDays", 90))
-  cohort_table <- getOption("mockCdm.cohortTable", "cohort")
-  cohort_id    <- as.integer(getOption("mockCdm.cohortId", 1))
+  if (is.null(cohort$PrimaryCriteria)) {
+    stop("Cohort must contain PrimaryCriteria. The cohort definition may be invalid or from an unsupported format.")
+  }
+  n <- as.integer(n)
+  if (is.na(n) || n < 1L) stop("n must be a positive integer.")
+  if (!is.numeric(targetMatch) || targetMatch < 0 || targetMatch > 1) stop("targetMatch must be between 0 and 1.")
+  if (!is.numeric(successRate) || successRate < 0 || successRate > 1) stop("successRate must be between 0 and 1.")
+  if (!is.numeric(maxAttempts) || (max_attempts <- as.integer(maxAttempts)) < 1L) stop("maxAttempts must be at least 1.")
+  start_d <- as.Date(startDate)
+  end_d <- as.Date(endDate)
+  if (is.na(start_d) || is.na(end_d) || start_d > end_d) stop("startDate must be before or equal to endDate.")
+
+  duckdb_path   <- duckdbPath
+  target_match  <- targetMatch
+  success_rate  <- successRate
+  start_date    <- start_d
+  end_date      <- min(end_d, Sys.Date())
+  era_pad_opt   <- as.integer(eraPadDays)
+  visit_concept <- as.integer(visitConceptId)
+  death_fraction <- as.numeric(deathFraction)
+  near_miss_frac <- as.numeric(nearMissFraction)
+  cohort_table   <- cohortTable
+  cohort_id      <- as.integer(cohortId)
+  event_date_jitter <- as.integer(eventDateJitter %||% 0)
+  visit_date_jitter <- as.integer(visitDateJitter %||% 0)
+  if (is.na(event_date_jitter) || event_date_jitter < 0) event_date_jitter <- 0L
+  if (is.na(visit_date_jitter) || visit_date_jitter < 0) visit_date_jitter <- 0L
+  demographic_variety <- isTRUE(demographicVariety)
+  source_and_type_variety <- isTRUE(sourceAndTypeVariety)
+  value_variety <- isTRUE(valueVariety)
 
   if (is.null(duckdb_path) || !nzchar(duckdb_path)) {
     if (!requireNamespace("CDMConnector", quietly = TRUE)) {
-      stop("When mockCdm.duckdbPath is not set, CDMConnector is required (for empty CDM). Install CDMConnector or set options(mockCdm.duckdbPath = ...).")
+      stop("CDMConnector is required when duckdbPath is not set. Install it or pass duckdbPath.")
     }
     empty_path <- CDMConnector::eunomiaDir("empty_cdm", cdmVersion = "5.4")
     duckdb_path <- tempfile(fileext = ".duckdb")
@@ -310,6 +416,11 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
   }
 
   set.seed(seed)
+
+  # OMOP gender concept IDs (for default synthetic demographics)
+  .gender_male   <- 8507L
+  .gender_female <- 8532L
+  .gender_unknown <- 0L
 
   random_date <- function(nn, start, end) {
     today <- as.integer(Sys.Date())
@@ -397,8 +508,10 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
           val <- as.integer(d$Age$Value %||% NA_integer_)
           op <- as.character(d$Age$Op %||% "")
           if (!is.na(val)) {
-            if (op %in% c("gte", "gt", ">=", ">")) min_age <<- if (is.na(min_age)) val else min(min_age, val)
-            if (op %in% c("lte", "lt", "<=", "<")) max_age <<- if (is.na(max_age)) val else max(max_age, val)
+            if (op %in% c("gte", ">=")) min_age <<- if (is.na(min_age)) val else min(min_age, val)
+            if (op %in% c("gt", ">"))  min_age <<- if (is.na(min_age)) val + 1L else min(min_age, val + 1L)
+            if (op %in% c("lte", "<=")) max_age <<- if (is.na(max_age)) val else max(max_age, val)
+            if (op %in% c("lt", "<"))  max_age <<- if (is.na(max_age)) val - 1L else max(max_age, val - 1L)
           }
           if (!is.null(d$Age$Extent)) {
             ext <- as.integer(d$Age$Extent)
@@ -428,6 +541,19 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
   primary    <- parse_criteria_list(cohort$PrimaryCriteria$CriteriaList %||% list())
   inc_rules  <- parse_inclusion_rules(cohort)
   demog_crit <- extract_demographic_criteria(cohort)
+
+  obs_window  <- cohort$PrimaryCriteria$ObservationWindow %||% list()
+  prior_days  <- priorDays
+  if (is.null(prior_days) || is.na(prior_days)) prior_days <- as.integer(obs_window$PriorDays %||% 365) else prior_days <- as.integer(prior_days)
+  post_days   <- postDays
+  if (is.null(post_days) || is.na(post_days)) post_days <- as.integer(obs_window$PostDays %||% 365) else post_days <- as.integer(post_days)
+
+  censoring_criteria <- cohort$CensoringCriteria %||% list()
+  censoring_on_death  <- any(vapply(censoring_criteria, function(c) !is.null(c$Death), logical(1)))
+  if (censoring_on_death && death_fraction <= 0) {
+    death_fraction <- 0.1
+    if (verbose) message("CensoringCriteria includes death; setting deathFraction to 0.1 so censoring has rows.")
+  }
 
   era_pad_json <- as.integer(cohort$CollapseSettings$EraPad %||% era_pad_opt)
   collapse_type <- cohort$CollapseSettings$CollapseType %||% "ERA"
@@ -496,12 +622,16 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     device_type_concept_id INTEGER, unique_device_id VARCHAR, quantity INTEGER,
     provider_id INTEGER, visit_occurrence_id INTEGER, device_source_value VARCHAR,
     device_source_concept_id INTEGER);"), silent = TRUE)
+  try(DBI::dbExecute(con, "CREATE TABLE IF NOT EXISTS death (
+    person_id INTEGER, death_date DATE, death_datetime TIMESTAMP,
+    death_type_concept_id INTEGER, cause_concept_id INTEGER, cause_source_value VARCHAR,
+    cause_source_concept_id INTEGER);"), silent = TRUE)
 
   clear_patient_data <- function(con) {
     tabs <- c(
       "person","observation_period","visit_occurrence","condition_occurrence",
       "procedure_occurrence","drug_exposure","measurement","observation",
-      "device_exposure","condition_era","drug_era", cohort_table
+      "device_exposure","condition_era","drug_era","death", cohort_table
     )
     for (t in tabs) try(DBI::dbExecute(con, sprintf("DELETE FROM %s;", t)), silent = TRUE)
   }
@@ -512,7 +642,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     yob <- sample(1940:2006, nn, replace = TRUE)
     mob <- sample(1:12, nn, replace = TRUE)
     dob <- sample(1:28, nn, replace = TRUE)
-    gender <- sample(c(8507L, 8532L, 0L), nn, replace = TRUE) # male/female/unknown
+    gender <- sample(c(.gender_male, .gender_female, .gender_unknown), nn, replace = TRUE)
 
     if (!is.null(demographic_constraints) && length(person_ids) > 0) {
       qset <- qualifying_ids %||% integer(0)
@@ -538,6 +668,12 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       }
     }
 
+    race_concept_id <- rep(0L, nn)
+    ethnicity_concept_id <- rep(0L, nn)
+    if (demographic_variety && nn > 0) {
+      race_concept_id <- sample(c(0L, 8527L, 8657L, 8552L), nn, replace = TRUE)
+      ethnicity_concept_id <- sample(c(0L, 38003563L, 38003564L), nn, replace = TRUE)
+    }
     data.frame(
       person_id = person_ids,
       gender_concept_id = gender,
@@ -545,8 +681,8 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       month_of_birth = mob,
       day_of_birth = dob,
       birth_datetime = as.POSIXct(NA),
-      race_concept_id = 0L,
-      ethnicity_concept_id = 0L
+      race_concept_id = race_concept_id,
+      ethnicity_concept_id = ethnicity_concept_id
     )
   }
 
@@ -562,21 +698,31 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
 
   add_events <- function(type, person_ids, dates, concept_ids, id_offset = 0L, visit_occurrence_id = NA_integer_) {
     # concept_ids: vector of concept ids to sample from
+    # visit_occurrence_id: scalar or vector of length(person_ids) for linking events to visits
     if (length(person_ids) == 0) return(list(df = NULL, next_id = id_offset))
     if (length(concept_ids) == 0) stop("Empty concept set for ", type)
 
     nn <- length(person_ids)
+    if (length(visit_occurrence_id) == 1) visit_occurrence_id <- rep(visit_occurrence_id, nn)
+    if (length(visit_occurrence_id) != nn) visit_occurrence_id <- rep(NA_integer_, nn)
+
     ids <- seq.int(from = id_offset + 1L, length.out = nn)
     # R's sample(x, n, replace=TRUE) when length(x)==1 samples from 1:x, not from x; index explicitly
     concept <- concept_ids[sample(length(concept_ids), nn, replace = TRUE)]
 
     if (type == "VisitOccurrence") {
+      end_dates <- dates
+      multi_day <- runif(nn) < 0.3
+      if (any(multi_day)) {
+        end_dates[multi_day] <- dates[multi_day] + sample(0:3, sum(multi_day), replace = TRUE)
+        end_dates <- pmin(pmax(end_dates, dates), Sys.Date())
+      }
       df <- data.frame(
         visit_occurrence_id = ids,
         person_id = person_ids,
         visit_concept_id = concept,
         visit_start_date = dates,
-        visit_end_date = dates,
+        visit_end_date = end_dates,
         visit_type_concept_id = 0,
         provider_id = NA_integer_,
         care_site_id = NA_integer_,
@@ -589,17 +735,25 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     }
 
     if (type == "ConditionOccurrence") {
+      end_dates <- dates
+      ongoing <- runif(nn) < 0.25
+      if (any(ongoing)) {
+        end_dates[ongoing] <- dates[ongoing] + sample(1:14, sum(ongoing), replace = TRUE)
+        end_dates <- pmin(pmax(end_dates, dates), Sys.Date())
+      }
+      type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
+      src_val <- if (source_and_type_variety) sample(c("ICD10CM", "SNOMED", "EHR", "Claim"), nn, replace = TRUE) else rep(NA_character_, nn)
       df <- data.frame(
         condition_occurrence_id = ids,
         person_id = person_ids,
         condition_concept_id = concept,
         condition_start_date = dates,
-        condition_end_date = dates,
-        condition_type_concept_id = 0,
+        condition_end_date = end_dates,
+        condition_type_concept_id = type_concept,
         stop_reason = NA_character_,
         provider_id = NA_integer_,
         visit_occurrence_id = visit_occurrence_id,
-        condition_source_value = NA_character_,
+        condition_source_value = src_val,
         condition_source_concept_id = 0,
         condition_status_source_value = NA_character_,
         condition_status_concept_id = 0
@@ -608,18 +762,20 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     }
 
     if (type == "ProcedureOccurrence") {
+      type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
+      src_val <- if (source_and_type_variety) sample(c("CPT4", "HCPCS", "ICD10PCS", "EHR"), nn, replace = TRUE) else rep(NA_character_, nn)
       df <- data.frame(
         procedure_occurrence_id = ids,
         person_id = person_ids,
         procedure_concept_id = concept,
         procedure_date = dates,
         procedure_datetime = as.POSIXct(dates),
-        procedure_type_concept_id = 0,
+        procedure_type_concept_id = type_concept,
         modifier_concept_id = 0,
         quantity = NA_integer_,
         provider_id = NA_integer_,
         visit_occurrence_id = visit_occurrence_id,
-        procedure_source_value = NA_character_,
+        procedure_source_value = src_val,
         procedure_source_concept_id = 0,
         modifier_source_value = NA_character_
       )
@@ -628,13 +784,15 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
 
     if (type == "DrugExposure") {
       ds <- sample(0:30, nn, replace = TRUE)
+      type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
+      src_val <- if (source_and_type_variety) sample(c("RxNorm", "NDC", "EHR", "Claim"), nn, replace = TRUE) else rep(NA_character_, nn)
       df <- data.frame(
         drug_exposure_id = ids,
         person_id = person_ids,
         drug_concept_id = concept,
         drug_exposure_start_date = dates,
         drug_exposure_end_date = pmin(dates + ds, Sys.Date()),
-        drug_type_concept_id = 0,
+        drug_type_concept_id = type_concept,
         stop_reason = NA_character_,
         refills = NA_integer_,
         quantity = NA_real_,
@@ -644,7 +802,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         lot_number = NA_character_,
         provider_id = NA_integer_,
         visit_occurrence_id = visit_occurrence_id,
-        drug_source_value = NA_character_,
+        drug_source_value = src_val,
         drug_source_concept_id = 0,
         route_source_value = NA_character_,
         dose_unit_source_value = NA_character_
@@ -653,6 +811,10 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     }
 
     if (type == "Measurement") {
+      type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
+      src_val <- if (source_and_type_variety) sample(c("LOINC", "EHR", "Claim", "Lab"), nn, replace = TRUE) else rep(NA_character_, nn)
+      value_num <- if (value_variety) round(runif(nn, 50, 200), 2) else rep(NA_real_, nn)
+      value_concept <- if (value_variety) sample(c(0L, 45878584L, 45878583L, 45878585L), nn, replace = TRUE) else rep(0L, nn)
       df <- data.frame(
         measurement_id = ids,
         person_id = person_ids,
@@ -660,16 +822,16 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         measurement_date = dates,
         measurement_datetime = as.POSIXct(dates),
         measurement_time = NA_character_,
-        measurement_type_concept_id = 0,
+        measurement_type_concept_id = type_concept,
         operator_concept_id = 0,
-        value_as_number = NA_real_,
-        value_as_concept_id = 0,
+        value_as_number = value_num,
+        value_as_concept_id = value_concept,
         unit_concept_id = 0,
         range_low = NA_real_,
         range_high = NA_real_,
         provider_id = NA_integer_,
         visit_occurrence_id = visit_occurrence_id,
-        measurement_source_value = NA_character_,
+        measurement_source_value = src_val,
         measurement_source_concept_id = 0,
         unit_source_value = NA_character_,
         value_source_value = NA_character_
@@ -678,21 +840,25 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     }
 
     if (type == "Observation") {
+      type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
+      src_val <- if (source_and_type_variety) sample(c("LOINC", "SNOMED", "EHR", "Claim"), nn, replace = TRUE) else rep(NA_character_, nn)
+      value_num <- if (value_variety) round(runif(nn, 0, 100), 2) else rep(NA_real_, nn)
+      value_concept <- if (value_variety) sample(c(0L, 45878584L, 45878583L, 45878585L), nn, replace = TRUE) else rep(0L, nn)
       df <- data.frame(
         observation_id = ids,
         person_id = person_ids,
         observation_concept_id = concept,
         observation_date = dates,
         observation_datetime = as.POSIXct(dates),
-        observation_type_concept_id = 0,
-        value_as_number = NA_real_,
+        observation_type_concept_id = type_concept,
+        value_as_number = value_num,
         value_as_string = NA_character_,
-        value_as_concept_id = 0,
+        value_as_concept_id = value_concept,
         qualifier_concept_id = 0,
         unit_concept_id = 0,
         provider_id = NA_integer_,
         visit_occurrence_id = visit_occurrence_id,
-        observation_source_value = NA_character_,
+        observation_source_value = src_val,
         observation_source_concept_id = 0,
         unit_source_value = NA_character_,
         qualifier_source_value = NA_character_
@@ -701,6 +867,8 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     }
 
     if (type == "DeviceExposure") {
+      type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
+      src_val <- if (source_and_type_variety) sample(c("GUDID", "EHR", "Claim", "UDI"), nn, replace = TRUE) else rep(NA_character_, nn)
       df <- data.frame(
         device_exposure_id = ids,
         person_id = person_ids,
@@ -709,12 +877,12 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         device_exposure_start_datetime = as.POSIXct(dates),
         device_exposure_end_date = dates,
         device_exposure_end_datetime = as.POSIXct(dates),
-        device_type_concept_id = 0L,
+        device_type_concept_id = type_concept,
         unique_device_id = NA_character_,
         quantity = NA_integer_,
         provider_id = NA_integer_,
         visit_occurrence_id = visit_occurrence_id,
-        device_source_value = NA_character_,
+        device_source_value = src_val,
         device_source_concept_id = 0L
       )
       return(list(df = df, next_id = max(ids)))
@@ -724,11 +892,22 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
   }
 
   # ---- Inclusion rule satisfaction (recursive) --------------------------------
+  # Parse StartWindow: Start/End can be integers or list(Days, Coeff) per ATLAS export
+  window_offset_days <- function(x) {
+    if (is.null(x)) return(0L)
+    if (is.list(x)) {
+      days <- as.integer(x$Days %||% 0)
+      coeff <- as.integer(x$Coeff %||% 1)
+      return(days * coeff)
+    }
+    as.integer(x)
+  }
   get_window_days <- function(crit) {
-    # ATLAS criterion usually has StartWindow with Start/End; default 0..0
     sw <- crit$StartWindow %||% list(Start = 0, End = 0)
-    s <- as.integer(sw$Start %||% 0)
-    e <- as.integer(sw$End %||% 0)
+    s <- window_offset_days(sw$Start)
+    e <- window_offset_days(sw$End)
+    if (is.na(s)) s <- 0L
+    if (is.na(e)) e <- 0L
     if (s > e) { tmp <- s; s <- e; e <- tmp }
     list(start = s, end = e)
   }
@@ -738,15 +917,19 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     as.integer(if (!is.null(occ)) (occ$Count %||% 1) else 1)
   }
 
+  apply_event_date_jitter <- function(d) {
+    if (event_date_jitter > 0 && length(d) > 0) {
+      d <- d + sample(-event_date_jitter:event_date_jitter, length(d), replace = TRUE)
+      d <- pmin(pmax(d, as.Date("1970-01-01")), Sys.Date())
+    }
+    d
+  }
+
   criterion_to_event_requests <- function(criterion_obj, person_ids, index_dates) {
-    # criterion_obj is an element from CriteriaList, e.g. { ConditionOccurrence: {CodesetId: 12}, StartWindow:{}, Occurrence:{} }
     t <- criterion_type(criterion_obj)
     if (is.na(t)) return(list())
-
-    # ObservationPeriod is handled by ensuring long OP; no event rows required
     if (t == "ObservationPeriod") return(list())
 
-    # Era criteria: we satisfy by generating occurrences/exposures (then building eras)
     if (t == "ConditionEra") {
       csid <- as.character(criterion_obj$ConditionEra$CodesetId %||% NA_integer_)
       concepts <- codesets[[csid]] %||% integer(0)
@@ -755,7 +938,9 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       occ_n <- get_occurrence_count(criterion_obj)
       reqs <- list()
       for (k in seq_len(occ_n)) {
-        d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L), Sys.Date())
+        occ_offset <- (k - 1L) * 7 + sample(-2:2, length(person_ids), replace = TRUE)
+        d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + occ_offset, Sys.Date())
+        d <- apply_event_date_jitter(d)
         reqs <- append(reqs, list(list(type = "ConditionOccurrence", person_ids = person_ids, dates = d, concepts = concepts)))
       }
       return(reqs)
@@ -769,23 +954,24 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       occ_n <- get_occurrence_count(criterion_obj)
       reqs <- list()
       for (k in seq_len(occ_n)) {
-        d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L), Sys.Date())
+        occ_offset <- (k - 1L) * 7 + sample(-2:2, length(person_ids), replace = TRUE)
+        d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + occ_offset, Sys.Date())
+        d <- apply_event_date_jitter(d)
         reqs <- append(reqs, list(list(type = "DrugExposure", person_ids = person_ids, dates = d, concepts = concepts)))
       }
       return(reqs)
     }
 
-    # Standard criteria: use CodesetId
     csid <- as.character(criterion_obj[[t]]$CodesetId %||% NA_integer_)
     concepts <- codesets[[csid]] %||% integer(0)
     if (length(concepts) == 0) return(list())
-
     w <- get_window_days(criterion_obj)
     occ_n <- get_occurrence_count(criterion_obj)
-
     reqs <- list()
     for (k in seq_len(occ_n)) {
-      d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + (k - 1L), Sys.Date())
+      occ_offset <- (k - 1L) * 7 + sample(-2:2, length(person_ids), replace = TRUE)
+      d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + occ_offset, Sys.Date())
+      d <- apply_event_date_jitter(d)
       reqs <- append(reqs, list(list(type = t, person_ids = person_ids, dates = d, concepts = concepts)))
     }
     reqs
@@ -1011,17 +1197,46 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
   cohort_sql <- compile_cohort_sql(cohort)
 
   run_and_score <- function(con, cohort_sql, cohort_table, cohort_id, n_generated) {
+    used_vocab_fallback <- FALSE
     DBI::dbExecute(con, sprintf("DELETE FROM %s WHERE cohort_definition_id = %d;", cohort_table, cohort_id))
-    ran <- tryCatch({
+    run_sql <- function() {
       statements <- SqlRender::splitSql(cohort_sql)
       for (s in statements) {
         s <- trimws(s)
         if (nzchar(s)) DBI::dbExecute(con, s)
       }
       TRUE
-    }, error = function(e) FALSE)
+    }
+    ran <- tryCatch(run_sql(), error = function(e) FALSE)
     if (!ran) {
-      # Cohort SQL may require CONCEPT/vocabulary tables. Insert minimal cohort rows so the table is populated.
+      concept_ids <- unique(as.integer(unlist(codesets)))
+      concept_ids <- concept_ids[!is.na(concept_ids) & concept_ids > 0]
+      if (length(concept_ids) > 0) {
+        tryCatch({
+          DBI::dbGetQuery(con, "SELECT 1 FROM concept LIMIT 0")
+          existing <- tryCatch(DBI::dbGetQuery(con, "SELECT concept_id FROM concept"), error = function(e) data.frame(concept_id = integer(0)))
+          concept_ids_new <- setdiff(concept_ids, existing$concept_id)
+          if (length(concept_ids_new) > 0) {
+            concept_df <- data.frame(
+              concept_id = concept_ids_new,
+              concept_name = paste0("Concept ", concept_ids_new),
+              domain_id = "Condition",
+              vocabulary_id = "Synthetic",
+              concept_class_id = "Clinical Finding",
+              standard_concept = "S",
+              concept_code = as.character(concept_ids_new),
+              valid_start_date = as.Date("1970-01-01"),
+              valid_end_date = as.Date("2099-12-31"),
+              invalid_reason = NA_character_
+            )
+            DBI::dbWriteTable(con, "concept", concept_df, append = TRUE)
+            used_vocab_fallback <- TRUE
+          }
+        }, error = function(e) NULL)
+        ran <- tryCatch(run_sql(), error = function(e) FALSE)
+      }
+    }
+    if (!ran) {
       op <- DBI::dbGetQuery(con, "SELECT person_id, observation_period_start_date, observation_period_end_date FROM observation_period LIMIT 1;")
       if (nrow(op) > 0) {
         start_d <- op$observation_period_start_date[1]
@@ -1036,28 +1251,30 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         cohort_end_date = end_d
       )
       DBI::dbWriteTable(con, cohort_table, cohort_fallback, append = TRUE)
-      return(n_generated)
+      return(list(matched = n_generated, used_vocab_fallback = used_vocab_fallback))
     }
     q <- DBI::dbGetQuery(con, sprintf(
       "SELECT COUNT(DISTINCT subject_id) AS n FROM %s WHERE cohort_definition_id = %d;",
       cohort_table, cohort_id
     ))
-    as.integer(q$n[[1]])
+    list(matched = as.integer(q$n[[1]]), used_vocab_fallback = used_vocab_fallback)
   }
 
   # ---- Generation loop --------------------------------------------------------
   diagnostics <- data.frame(
-    attempt = integer(0),
-    n_generated = integer(0),
-    target_match = numeric(0),
-    matched = integer(0),
-    matched_rate = numeric(0),
+    attempt = integer(max_attempts),
+    n_generated = integer(max_attempts),
+    target_match = numeric(max_attempts),
+    matched = integer(max_attempts),
+    matched_rate = numeric(max_attempts),
     stringsAsFactors = FALSE
   )
+  n_diag <- 0L
 
   best_attempt <- NA_integer_
   best_rate <- -Inf
   best_matched <- 0L
+  vocab_fallback_used <- FALSE
 
   for (attempt in seq_len(max_attempts)) {
     clear_patient_data(con)
@@ -1091,11 +1308,11 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         csid <- as.character(pc$codesetId)
         concepts <- codesets[[csid]] %||% integer(0)
         if (length(concepts) == 0) next
-        # add one event per qualifier for this primary criterion
+        # add one event per qualifier for this primary criterion (with optional jitter)
         requests <- append(requests, list(list(
           type = pc$type,
           person_ids = qualifying_ids,
-          dates = q_idx_dates,
+          dates = apply_event_date_jitter(q_idx_dates),
           concepts = concepts
         )))
       }
@@ -1110,19 +1327,52 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
 
     # If we failed previously, increase redundancy: add extra copies of primary evidence with slight date jitter.
     if (attempt > 1 && length(primary) > 0) {
+      jitter_range <- if (event_date_jitter > 0) -event_date_jitter:event_date_jitter else -7:7
       for (pc in primary) {
         csid <- as.character(pc$codesetId)
         concepts <- codesets[[csid]] %||% integer(0)
         if (length(concepts) == 0) next
-        jitter <- sample(-7:7, length(qualifying_ids), replace = TRUE)
+        jitter <- sample(jitter_range, length(qualifying_ids), replace = TRUE)
         requests <- append(requests, list(list(
           type = pc$type,
           person_ids = qualifying_ids,
-          dates = pmin(q_idx_dates + jitter + (attempt - 1L), Sys.Date()),
+          dates = pmin(pmax(q_idx_dates + jitter + (attempt - 1L), as.Date("1970-01-01")), Sys.Date()),
           concepts = concepts
         )))
       }
     }
+
+    # Near-miss: for a fraction of non-qualifiers, add events outside the cohort window (wrong time) for attrition testing
+    if (near_miss_frac > 0 && length(nonqual_ids) > 0 && length(primary) > 0) {
+      n_near <- max(1L, round(length(nonqual_ids) * near_miss_frac))
+      near_miss_ids <- sample(nonqual_ids, min(n_near, length(nonqual_ids)))
+      nq_dates <- idx_dates[near_miss_ids]
+      wrong_dates <- nq_dates - sample(400:600, length(near_miss_ids), replace = TRUE)
+      for (pc in primary) {
+        csid <- as.character(pc$codesetId)
+        concepts <- codesets[[csid]] %||% integer(0)
+        if (length(concepts) == 0) next
+        requests <- append(requests, list(list(
+          type = pc$type,
+          person_ids = near_miss_ids,
+          dates = pmax(wrong_dates, as.Date("1970-01-01")),
+          concepts = concepts
+        )))
+      }
+    }
+
+    # Ensure every qualifier has at least one visit (for visit linkage of events); optional visit date jitter
+    visit_dates <- q_idx_dates
+    if (visit_date_jitter > 0 && length(qualifying_ids) > 0) {
+      visit_dates <- visit_dates + sample(-visit_date_jitter:visit_date_jitter, length(qualifying_ids), replace = TRUE)
+      visit_dates <- pmin(pmax(visit_dates, start_date), Sys.Date())
+    }
+    requests <- c(list(list(
+      type = "VisitOccurrence",
+      person_ids = qualifying_ids,
+      dates = visit_dates,
+      concepts = visit_concept
+    )), requests)
 
     # Materialize requests into OMOP tables with unique IDs per table
     offsets <- list(
@@ -1135,17 +1385,11 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       device_exposure = 0L
     )
 
-    # Bucket by type -> insert batch per table for speed
-    # We flatten to per-request batches (keeps logic simple and stable).
+    # Pass 1: materialize VisitOccurrence and build person -> visit_occurrence_id map (first visit per person)
+    visit_rows <- list()
     for (req in requests) {
       t <- req$type
-      if (is.null(t) || is.na(t)) next
-
-      # Map era criteria types to their underlying occurrence types already handled in requests creation.
-      # So here we only materialize occurrence-like tables.
-      if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod")) next
-      if (!t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
-
+      if (is.null(t) || t != "VisitOccurrence") next
       table <- map_type_to_table(t)
       res <- add_events(
         type = t,
@@ -1158,16 +1402,82 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       if (!is.null(res$df)) {
         DBI::dbWriteTable(con, table, res$df, append = TRUE)
         offsets[[table]] <- res$next_id
+        visit_rows[[length(visit_rows) + 1L]] <- res$df[, c("person_id", "visit_occurrence_id")]
+      }
+    }
+    if (length(visit_rows) > 0) {
+      visit_all <- do.call(rbind, visit_rows)
+      person_to_visit <- visit_all[!duplicated(visit_all$person_id), , drop = FALSE]
+    } else {
+      person_to_visit <- data.frame(person_id = integer(0), visit_occurrence_id = integer(0))
+    }
+    # Pass 2: materialize non-visit events with visit linkage
+    for (req in requests) {
+      t <- req$type
+      if (is.null(t) || is.na(t)) next
+      if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod")) next
+      if (!t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
+      if (t == "VisitOccurrence") next
+      table <- map_type_to_table(t)
+      visit_ids <- person_to_visit$visit_occurrence_id[match(req$person_ids, person_to_visit$person_id)]
+      res <- add_events(
+        type = t,
+        person_ids = req$person_ids,
+        dates = req$dates,
+        concept_ids = req$concepts,
+        id_offset = offsets[[table]],
+        visit_occurrence_id = visit_ids
+      )
+      if (!is.null(res$df)) {
+        DBI::dbWriteTable(con, table, res$df, append = TRUE)
+        offsets[[table]] <- res$next_id
       }
     }
 
-    # Observation period: cover each person’s generated dates generously.
-    # For simplicity: global min/max across all persons (safe and fast).
-    # If PrimaryCriteria has ObservationWindow Prior/Post, this still works since we pad by 365.
-    # Cap global_max at current date so no dates are in the future.
-    global_min <- min(idx_dates) - 365
-    global_max <- min(max(idx_dates) + 365, Sys.Date())
-    DBI::dbWriteTable(con, "observation_period", make_observation_period(person_ids, global_min, global_max), append = TRUE)
+    # Per-person observation periods: flatten (person_id, date) from requests and aggregate min/max
+    event_rows <- list()
+    for (req in requests) {
+      t <- req$type
+      if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod")) next
+      if (is.null(t) || !t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
+      event_rows[[length(event_rows) + 1L]] <- data.frame(person_id = req$person_ids, date = as.Date(req$dates))
+    }
+    person_date_min <- setNames(rep(as.Date(NA), n), person_ids)
+    person_date_max <- setNames(rep(as.Date(NA), n), person_ids)
+    if (length(event_rows) > 0) {
+      event_df <- do.call(rbind, event_rows)
+      agg_min <- aggregate(date ~ person_id, data = event_df, FUN = min)
+      agg_max <- aggregate(date ~ person_id, data = event_df, FUN = max)
+      person_date_min[as.character(agg_min$person_id)] <- agg_min$date
+      person_date_max[as.character(agg_max$person_id)] <- agg_max$date
+    }
+    prior_pad <- pmax(0, prior_days + sample(-5:5, n, replace = TRUE))
+    post_pad <- pmax(0, post_days + sample(-5:5, n, replace = TRUE))
+    op_start <- person_date_min - prior_pad[match(as.character(person_ids), names(person_date_min))]
+    op_end <- pmin(person_date_max + post_pad[match(as.character(person_ids), names(person_date_max))], Sys.Date())
+    op_start[is.na(person_date_min)] <- idx_dates[is.na(person_date_min)] - prior_pad[is.na(person_date_min[as.character(person_ids)])]
+    op_end[is.na(person_date_max)] <- pmin(idx_dates[is.na(person_date_max)] + post_pad[is.na(person_date_max[as.character(person_ids)])], Sys.Date())
+    op_start <- op_start[as.character(person_ids)]
+    op_end <- op_end[as.character(person_ids)]
+    op_start <- pmin(op_start, op_end)
+    op_end <- pmax(op_start, op_end)
+    DBI::dbWriteTable(con, "observation_period", make_observation_period(person_ids, op_start, op_end), append = TRUE)
+
+    if (death_fraction > 0 && length(person_ids) > 0) {
+      n_death <- max(1L, round(length(person_ids) * death_fraction))
+      death_persons <- sample(person_ids, min(n_death, length(person_ids)))
+      op_ends_death <- op_end[as.character(death_persons)]
+      death_df <- data.frame(
+        person_id = death_persons,
+        death_date = pmin(as.Date(op_ends_death) + 1L, Sys.Date()),
+        death_datetime = as.POSIXct(NA),
+        death_type_concept_id = 0L,
+        cause_concept_id = NA_integer_,
+        cause_source_value = NA_character_,
+        cause_source_concept_id = NA_integer_
+      )
+      try(DBI::dbWriteTable(con, "death", death_df, append = TRUE), silent = TRUE)
+    }
 
     # Build era tables if needed (or always, cheap enough at this scale)
     # We build from already inserted occurrences/exposures.
@@ -1182,17 +1492,17 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       if (nrow(dre) > 0) DBI::dbWriteTable(con, "drug_era", dre, append = TRUE)
     }
 
-    matched <- run_and_score(con, cohort_sql, cohort_table, cohort_id, n_generated = n)
+    run_res <- run_and_score(con, cohort_sql, cohort_table, cohort_id, n_generated = n)
+    matched <- run_res$matched
+    if (run_res$used_vocab_fallback) vocab_fallback_used <- TRUE
     rate <- matched / n
 
-    diagnostics <- rbind(diagnostics, data.frame(
-      attempt = attempt,
-      n_generated = n,
-      target_match = target_match,
-      matched = matched,
-      matched_rate = rate,
-      stringsAsFactors = FALSE
-    ))
+    if (verbose) {
+      message("Attempt ", attempt, "/", max_attempts, ": matched ", matched, "/", n, " (", round(rate * 100), "%; target ", round(success_rate * 100), "%)")
+    }
+
+    n_diag <- n_diag + 1L
+    diagnostics[n_diag, ] <- list(attempt = attempt, n_generated = n, target_match = target_match, matched = matched, matched_rate = rate)
 
     if (rate > best_rate) {
       best_rate <- rate
@@ -1201,6 +1511,15 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     }
 
     if (rate >= success_rate) break
+  }
+
+  diagnostics <- diagnostics[seq_len(n_diag), , drop = FALSE]
+
+  if (vocab_fallback_used) {
+    warning("Cohort SQL failed initially; minimal concept rows were inserted and the cohort was re-run. For more reliable results, use an empty_cdm that includes vocabulary tables.")
+  }
+  if (best_rate < success_rate && n_diag >= max_attempts) {
+    warning("Match rate (", round(best_rate * 100), "%) remained below successRate (", round(success_rate * 100), "%) after ", max_attempts, " attempt(s). Consider increasing maxAttempts or targetMatch, or check the cohort definition.")
   }
 
   # Connection is closed by on.exit; avoid double-disconnect
@@ -1226,9 +1545,8 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
 # ------------------------------------------------------------------------------
 # Example
 # ------------------------------------------------------------------------------
-# options(mockCdm.duckdbPath = "empty_cdm.duckdb")  # optional: use your preloaded CDM+vocab DuckDB
-# options(mockCdm.targetMatch = 0.90, mockCdm.successRate = 0.80, mockCdm.seed = 42)
-# res <- mockCdmFromJson("path/to/atlas_cohort.json", n = 5000)
+# res <- cdmFromJson("path/to/atlas_cohort.json", n = 5000,
+#   duckdbPath = "empty_cdm.duckdb", targetMatch = 0.90, successRate = 0.80, seed = 42)
 # res$summary
 # library(DBI); library(duckdb)
 # con <- dbConnect(duckdb(), res$duckdb_path, read_only = TRUE)

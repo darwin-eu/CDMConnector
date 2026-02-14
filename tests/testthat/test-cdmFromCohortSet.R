@@ -48,8 +48,7 @@ test_that("cdmFromJson works with jsonPath", {
   tmp <- tempfile(fileext = ".json")
   writeLines(minimal_cohort_json(), tmp)
   on.exit(unlink(tmp))
-  options(mockCdm.seed = 42, mockCdm.targetMatch = 0.9, mockCdm.successRate = 0.5)
-  res <- CDMConnector:::cdmFromJson(jsonPath = tmp, n = 50)
+  res <- CDMConnector:::cdmFromJson(jsonPath = tmp, n = 50, seed = 42, targetMatch = 0.9, successRate = 0.5)
   expect_type(res, "list")
   expect_true("duckdb_path" %in% names(res))
   expect_true("summary" %in% names(res))
@@ -66,9 +65,8 @@ test_that("cdmFromJson works with cohortExpression", {
   skip_on_ci()
   skip_if_not("duckdb" %in% dbToTest)
   skip_if_no_cdm_deps()
-  options(mockCdm.seed = 43, mockCdm.targetMatch = 0.9, mockCdm.successRate = 0.5)
   expr <- minimal_cohort_expression()
-  res <- CDMConnector:::cdmFromJson(cohortExpression = expr, n = 30)
+  res <- CDMConnector:::cdmFromJson(cohortExpression = expr, n = 30, seed = 43, targetMatch = 0.9, successRate = 0.5)
   expect_type(res, "list")
   expect_true("duckdb_path" %in% names(res))
   expect_equal(res$summary$n_generated, 30)
@@ -99,8 +97,7 @@ test_that("cdmFromCohortSet returns cdm with correct person count", {
     cohort = I(list(expr)),
     stringsAsFactors = FALSE
   )
-  options(mockCdm.seed = 44, mockCdm.targetMatch = 0.9, mockCdm.successRate = 0.5)
-  cdm <- CDMConnector::cdmFromCohortSet(cohortSet, n = 25)
+  cdm <- CDMConnector::cdmFromCohortSet(cohortSet, n = 25, seed = 44, targetMatch = 0.9, successRate = 0.5)
   expect_type(cdm, "list")
   expect_true("person" %in% names(cdm))
   n_persons <- nrow(dplyr::collect(cdm$person))
@@ -121,8 +118,7 @@ test_that("generateCohortSet on cdm yields non-zero cohort counts", {
     json = cohort_json,
     stringsAsFactors = FALSE
   )
-  options(mockCdm.seed = 44, mockCdm.targetMatch = 0.9, mockCdm.successRate = 0.5)
-  cdm <- CDMConnector::cdmFromCohortSet(cohortSet, n = 25)
+  cdm <- CDMConnector::cdmFromCohortSet(cohortSet, n = 25, seed = 44, targetMatch = 0.9, successRate = 0.5)
   expect_equal(nrow(dplyr::collect(cdm$person)), 25)
 
   # Generate cohort using CDMConnector (runs cohort SQL on the cdm)
