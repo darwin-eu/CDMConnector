@@ -74,6 +74,13 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
   try(DBI::dbExecute(con_final, "CREATE TABLE IF NOT EXISTS mockcdm_cohort_index (
     cohort_definition_id INTEGER, cohort_name VARCHAR, n_requested INTEGER,
     n_generated INTEGER, matched INTEGER, matched_rate DOUBLE);"), silent = TRUE)
+  try(DBI::dbExecute(con_final, "CREATE TABLE IF NOT EXISTS device_exposure (
+    device_exposure_id INTEGER, person_id INTEGER, device_concept_id INTEGER,
+    device_exposure_start_date DATE, device_exposure_start_datetime TIMESTAMP,
+    device_exposure_end_date DATE, device_exposure_end_datetime TIMESTAMP,
+    device_type_concept_id INTEGER, unique_device_id VARCHAR, quantity INTEGER,
+    provider_id INTEGER, visit_occurrence_id INTEGER, device_source_value VARCHAR,
+    device_source_concept_id INTEGER);"), silent = TRUE)
 
   copy_with_offsets <- function(con_src, con_dst, table, id_col, id_offset, person_offset, person_col = "person_id") {
     df <- try(DBI::dbGetQuery(con_src, sprintf("SELECT * FROM %s;", table)), silent = TRUE)
@@ -85,11 +92,10 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     }
     if (!is.null(id_col) && id_col %in% names(df)) {
       df[[id_col]] <- df[[id_col]] + id_offset
+      # Return max id written so next cohort gets unique ids (id_offset + 1, ...)
+      id_offset <- max(df[[id_col]], na.rm = TRUE)
     }
     DBI::dbWriteTable(con_dst, table, df, append = TRUE)
-    if (!is.null(id_col) && id_col %in% names(df)) {
-      id_offset <- max(df[[id_col]])
-    }
     list(id_offset = id_offset, person_offset = person_offset)
   }
 
@@ -102,6 +108,7 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     drug_exposure = "drug_exposure_id",
     measurement = "measurement_id",
     observation = "observation_id",
+    device_exposure = "device_exposure_id",
     condition_era = "condition_era_id",
     drug_era = "drug_era_id"
   )
@@ -115,13 +122,14 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     drug_exposure_id = 0L,
     measurement_id = 0L,
     observation_id = 0L,
+    device_exposure_id = 0L,
     condition_era_id = 0L,
     drug_era_id = 0L
   )
 
   tables <- c("person", "observation_period", "visit_occurrence", "condition_occurrence",
               "procedure_occurrence", "drug_exposure", "measurement", "observation",
-              "condition_era", "drug_era")
+              "device_exposure", "condition_era", "drug_era")
   n_cohorts <- nrow(cohortSet)
   n_per_cohort <- max(1L, as.integer(n / n_cohorts))
   cohort_results <- vector("list", n_cohorts)
@@ -158,7 +166,6 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
       mockCdm.cohortId = cid,
       mockCdm.duckdbPath = temp_db
     )
-    on.exit(options(old_opts), add = TRUE)
 
     res_i <- cdmFromJson(cohortExpression = cohort_expr, n = n_per_cohort)
     cohort_results[[i]] <- res_i
@@ -207,6 +214,7 @@ cdmFromCohortSet <- function(cohortSet, n = 100) {
     DBI::dbWriteTable(con_final, "mockcdm_cohort_index", idx_row, append = TRUE)
 
     DBI::dbDisconnect(con_src, shutdown = TRUE)
+    options(old_opts)
   }
 
   # Disconnect so CDMConnector can attach to the same path
@@ -371,9 +379,55 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     out
   }
 
-  codesets  <- extract_codesets(cohort)
-  primary   <- parse_criteria_list(cohort$PrimaryCriteria$CriteriaList %||% list())
-  inc_rules <- parse_inclusion_rules(cohort)
+  # Extract demographic constraints (Gender, Age) from PrimaryCriteria and InclusionRules
+  extract_demographic_criteria <- function(cohort) {
+    gender_concept_ids <- integer(0)
+    min_age <- NA_integer_
+    max_age <- NA_integer_
+
+    collect_demog <- function(demog_list) {
+      for (d in demog_list %||% list()) {
+        if (!is.null(d$Gender) && is.list(d$Gender)) {
+          for (g in d$Gender) {
+            cid <- as.integer(g$CONCEPT_ID %||% g$ValueAsConceptId)
+            if (!is.na(cid)) gender_concept_ids <<- unique(c(gender_concept_ids, cid))
+          }
+        }
+        if (!is.null(d$Age)) {
+          val <- as.integer(d$Age$Value %||% NA_integer_)
+          op <- as.character(d$Age$Op %||% "")
+          if (!is.na(val)) {
+            if (op %in% c("gte", "gt", ">=", ">")) min_age <<- if (is.na(min_age)) val else min(min_age, val)
+            if (op %in% c("lte", "lt", "<=", "<")) max_age <<- if (is.na(max_age)) val else max(max_age, val)
+          }
+          if (!is.null(d$Age$Extent)) {
+            ext <- as.integer(d$Age$Extent)
+            if (!is.na(ext)) max_age <<- if (is.na(max_age)) ext else max(max_age, ext)
+          }
+        }
+      }
+    }
+
+    pc <- cohort$PrimaryCriteria %||% list()
+    if (!is.null(pc$CriteriaList))
+      for (c in pc$CriteriaList) if (!is.null(c$Age)) collect_demog(list(list(Age = c$Age)))
+    for (r in (cohort$InclusionRules %||% list())) {
+      expr <- r$expression %||% r
+      collect_demog(expr$DemographicCriteriaList %||% list())
+      for (g in (expr$Groups %||% list())) collect_demog(g$DemographicCriteriaList %||% list())
+    }
+
+    list(
+      gender_concept_ids = if (length(gender_concept_ids) > 0) gender_concept_ids else NULL,
+      min_age = min_age,
+      max_age = max_age
+    )
+  }
+
+  codesets   <- extract_codesets(cohort)
+  primary    <- parse_criteria_list(cohort$PrimaryCriteria$CriteriaList %||% list())
+  inc_rules  <- parse_inclusion_rules(cohort)
+  demog_crit <- extract_demographic_criteria(cohort)
 
   era_pad_json <- as.integer(cohort$CollapseSettings$EraPad %||% era_pad_opt)
   collapse_type <- cohort$CollapseSettings$CollapseType %||% "ERA"
@@ -435,31 +489,64 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     "CREATE TABLE IF NOT EXISTS %s (cohort_definition_id INTEGER, subject_id INTEGER, cohort_start_date DATE, cohort_end_date DATE);",
     cohort_table
   )), silent = TRUE)
+  try(DBI::dbExecute(con, "CREATE TABLE IF NOT EXISTS device_exposure (
+    device_exposure_id INTEGER, person_id INTEGER, device_concept_id INTEGER,
+    device_exposure_start_date DATE, device_exposure_start_datetime TIMESTAMP,
+    device_exposure_end_date DATE, device_exposure_end_datetime TIMESTAMP,
+    device_type_concept_id INTEGER, unique_device_id VARCHAR, quantity INTEGER,
+    provider_id INTEGER, visit_occurrence_id INTEGER, device_source_value VARCHAR,
+    device_source_concept_id INTEGER);"), silent = TRUE)
 
   clear_patient_data <- function(con) {
     tabs <- c(
       "person","observation_period","visit_occurrence","condition_occurrence",
       "procedure_occurrence","drug_exposure","measurement","observation",
-      "condition_era","drug_era", cohort_table
+      "device_exposure","condition_era","drug_era", cohort_table
     )
     for (t in tabs) try(DBI::dbExecute(con, sprintf("DELETE FROM %s;", t)), silent = TRUE)
   }
 
   # ---- Event materializers ----------------------------------------------------
-  make_person <- function(person_ids) {
+  make_person <- function(person_ids, qualifying_ids = NULL, index_dates = NULL, demographic_constraints = NULL) {
     nn <- length(person_ids)
     yob <- sample(1940:2006, nn, replace = TRUE)
     mob <- sample(1:12, nn, replace = TRUE)
     dob <- sample(1:28, nn, replace = TRUE)
+    gender <- sample(c(8507L, 8532L, 0L), nn, replace = TRUE) # male/female/unknown
+
+    if (!is.null(demographic_constraints) && length(person_ids) > 0) {
+      qset <- qualifying_ids %||% integer(0)
+      idx_dates <- index_dates %||% rep(as.Date("2020-01-01"), nn)
+      if (length(qset) > 0 && length(idx_dates) >= nn) {
+        gids <- demographic_constraints$gender_concept_ids
+        min_a <- demographic_constraints$min_age
+        max_a <- demographic_constraints$max_age
+        for (i in seq_len(nn)) {
+          if (person_ids[i] %in% qset) {
+            if (length(gids) > 0)
+              gender[i] <- gids[sample(length(gids), 1L)]
+            if (!is.na(min_a) || !is.na(max_a)) {
+              ref_year <- as.integer(format(idx_dates[i], "%Y"))
+              if (is.na(ref_year)) ref_year <- 2020L
+              lo <- if (!is.na(max_a)) ref_year - max_a else 1940L
+              hi <- if (!is.na(min_a)) ref_year - min_a else 2006L
+              if (lo > hi) lo <- hi
+              yob[i] <- sample(lo:hi, 1L)
+            }
+          }
+        }
+      }
+    }
+
     data.frame(
       person_id = person_ids,
-      gender_concept_id = sample(c(8507, 8532, 0), nn, replace = TRUE), # male/female/unknown
+      gender_concept_id = gender,
       year_of_birth = yob,
       month_of_birth = mob,
       day_of_birth = dob,
       birth_datetime = as.POSIXct(NA),
-      race_concept_id = 0,
-      ethnicity_concept_id = 0
+      race_concept_id = 0L,
+      ethnicity_concept_id = 0L
     )
   }
 
@@ -609,6 +696,26 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
         observation_source_concept_id = 0,
         unit_source_value = NA_character_,
         qualifier_source_value = NA_character_
+      )
+      return(list(df = df, next_id = max(ids)))
+    }
+
+    if (type == "DeviceExposure") {
+      df <- data.frame(
+        device_exposure_id = ids,
+        person_id = person_ids,
+        device_concept_id = concept,
+        device_exposure_start_date = dates,
+        device_exposure_start_datetime = as.POSIXct(dates),
+        device_exposure_end_date = dates,
+        device_exposure_end_datetime = as.POSIXct(dates),
+        device_type_concept_id = 0L,
+        unique_device_id = NA_character_,
+        quantity = NA_integer_,
+        provider_id = NA_integer_,
+        visit_occurrence_id = visit_occurrence_id,
+        device_source_value = NA_character_,
+        device_source_concept_id = 0L
       )
       return(list(df = df, next_id = max(ids)))
     }
@@ -965,8 +1072,13 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
     q_idx_dates <- idx_dates[qualifying_ids]
     nq_idx_dates <- if (length(nonqual_ids) > 0) idx_dates[nonqual_ids] else as.Date(character(0))
 
-    # PERSON
-    DBI::dbWriteTable(con, "person", make_person(person_ids), append = TRUE)
+    # PERSON (qualifiers get demographics that satisfy cohort criteria when specified)
+    DBI::dbWriteTable(con, "person", make_person(
+      person_ids,
+      qualifying_ids = qualifying_ids,
+      index_dates = idx_dates,
+      demographic_constraints = demog_crit
+    ), append = TRUE)
 
     # Collect event requests for qualifying people
     requests <- list()
@@ -1019,7 +1131,8 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       procedure_occurrence = 0L,
       drug_exposure = 0L,
       measurement = 0L,
-      observation = 0L
+      observation = 0L,
+      device_exposure = 0L
     )
 
     # Bucket by type -> insert batch per table for speed
@@ -1031,7 +1144,7 @@ cdmFromJson <- function(jsonPath = NULL, n = 5000, cohortExpression = NULL) {
       # Map era criteria types to their underlying occurrence types already handled in requests creation.
       # So here we only materialize occurrence-like tables.
       if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod")) next
-      if (!t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation")) next
+      if (!t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
 
       table <- map_type_to_table(t)
       res <- add_events(
