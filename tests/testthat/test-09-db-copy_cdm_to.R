@@ -5,10 +5,13 @@ test_copy_cdm_to <- function(con, write_schema) {
 
   # copy a duckdb cdm to another database
   con1 <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
-  on.exit(DBI::dbDisconnect(con1, shutdown = TRUE), add = TRUE)
+
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", cdmName = "test", writeSchema = "main") %>%
+      cdmSubset(personId = 6) %>%
       cdmSelect("person", "observation_period", "vocabulary")
+
+  on.exit(cdmDisconnect(cdm), add = T)
 
   # create another cdm
   cdm2 <- copyCdmTo(con = con, cdm = cdm, schema = write_schema)
