@@ -373,29 +373,54 @@ insertCdmTo.db_cdm <- function(cdm, to) {
 #' Spark/Databricks systems.
 #'
 #' @param cdm cdm reference
-#' @param dropWriteSchema Whether to drop tables in the writeSchema
-#' @param ... Not used
+#' @param dropPrefixTables Whether to drop tables in the writeSchema prefixed with `writePrefix`
+#' @param ... Not used. Included for compatibility with generic.
 #'
 #' @method cdmDisconnect db_cdm
 #' @export
-cdmDisconnect.db_cdm <- function(cdm, dropWriteSchema = FALSE, ...) {
-  omopgenerics::assertLogical(dropWriteSchema, length = 1)
+cdmDisconnect.db_cdm <- function(cdm, dropPrefixTables = FALSE, ...) {
+  omopgenerics::assertLogical(dropPrefixTables, length = 1)
 
+  # if the database is duckdb AND it is in the temp folder, remove the file to save temp space
+  isDuckdbInTempdir <- function(con) {
+    db_path  <- normalizePath(con@driver@dbdir, winslash = "/", mustWork = FALSE)
+    tmp_path <- normalizePath(tempdir(), winslash = "/", mustWork = FALSE)
+    # macOS often has /private prefix
+    db_path  <- sub("^/private", "", db_path)
+    tmp_path <- sub("^/private", "", tmp_path)
+    startsWith(db_path, tmp_path)
+  }
+
+  # NOTE: what is pass in as cdm from omopgenerics is actually a cdm source
   con <- attr(cdm, "dbcon")
-  writeSchema <- attr(cdm, "write_schema")
-
-  if (methods::is(con, "DatabaseConnectorDbiConnection")) {
-    on.exit(DatabaseConnector::disconnect(con), add = TRUE)
-  } else {
-    on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  if (dbms(con) == "duckdb" && isDuckdbInTempdir(con)) {
+    fileToRemove <- con@driver@dbdir
+    DBI::dbDisconnect(con, shutdown = TRUE)
+    try(unlink(fileToRemove))
+    if (file.exists(fileToRemove)) {
+      cli::cli_inform("Unable to remove temp duckdb file: {fileToRemove}")
+    }
+    return(invisible(TRUE))
   }
 
-  # drop tables if needed
-  if (dropWriteSchema) {
-    dropSourceTable(cdm = cdm, name = dplyr::everything())
+  if (dropPrefixTables) {
+    # remove prefix tables
+    writeSchema <- attr(cdm, "write_schema")
+    writePrefix <- writeSchema["prefix"]
+
+    if (is.na(writePrefix) || writePrefix == "") {
+      cli::cli_inform("`dropPrefixTables = TRUE` but no writePrefix was specified for the cdm")
+    } else {
+      checkmate::assertCharacter(writePrefix, len = 1, any.missing = FALSE, min.chars = 1)
+      # listTables returns only the prefixed tables since prefix is in the writeSchema
+      tablesToDrop <- listTables(con, writeSchema)
+      if (length(tablesToDrop) > 0) {
+        invisible(dropSourceTable(cdm = cdm, name = tablesToDrop))
+      }
+    }
   }
 
-  if (dbms(con) == "spark") {
+   # if (dbms(con) == "spark") {
     # TODO drop temp emulation prefix (it has to be incorporated in the dbSource object, so it is available in this function)
 
     # tbls <- listTables(con, schema = schema)
@@ -404,8 +429,15 @@ cdmDisconnect.db_cdm <- function(cdm, dropWriteSchema = FALSE, ...) {
     # purrr::walk(tempEmulationTablesToDrop,
     #             ~tryCatch(DBI::dbRemoveTable(con, .inSchema(schema, ., dbms = dbms(con))),
     #                       error = function(e) invisible(NULL)))
-  }
+   # }
 
+  if (methods::is(con, "DatabaseConnectorDbiConnection")) {
+    DatabaseConnector::disconnect(con)
+  } else if (dbms(con) == "duckdb") {
+    DBI::dbDisconnect(con, shutdown = TRUE)
+  } else {
+    DBI::dbDisconnect(con)
+  }
   return(invisible(TRUE))
 }
 

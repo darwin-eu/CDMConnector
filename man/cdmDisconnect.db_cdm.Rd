@@ -4,14 +4,14 @@
 \alias{cdmDisconnect.db_cdm}
 \title{Disconnect the connection of the cdm object}
 \usage{
-\method{cdmDisconnect}{db_cdm}(cdm, dropWriteSchema = FALSE, ...)
+\method{cdmDisconnect}{db_cdm}(cdm, dropPrefixTables = FALSE, ...)
 }
 \arguments{
 \item{cdm}{cdm reference}
 
-\item{dropWriteSchema}{Whether to drop tables in the writeSchema}
+\item{dropPrefixTables}{Whether to drop tables in the writeSchema prefixed with \code{writePrefix}}
 
-\item{...}{Not used}
+\item{...}{Not used. Included for compatibility with generic.}
 }
 \description{
 This function will disconnect from the database as well as drop
