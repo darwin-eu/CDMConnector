@@ -712,7 +712,7 @@ cdmFromJson <- function(jsonPath = NULL,
 
     if (type == "VisitOccurrence") {
       end_dates <- dates
-      multi_day <- runif(nn) < 0.3
+      multi_day <- stats::runif(nn) < 0.3
       if (any(multi_day)) {
         end_dates[multi_day] <- dates[multi_day] + sample(0:3, sum(multi_day), replace = TRUE)
         end_dates <- pmin(pmax(end_dates, dates), Sys.Date())
@@ -736,7 +736,7 @@ cdmFromJson <- function(jsonPath = NULL,
 
     if (type == "ConditionOccurrence") {
       end_dates <- dates
-      ongoing <- runif(nn) < 0.25
+      ongoing <- stats::runif(nn) < 0.25
       if (any(ongoing)) {
         end_dates[ongoing] <- dates[ongoing] + sample(1:14, sum(ongoing), replace = TRUE)
         end_dates <- pmin(pmax(end_dates, dates), Sys.Date())
@@ -813,7 +813,7 @@ cdmFromJson <- function(jsonPath = NULL,
     if (type == "Measurement") {
       type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
       src_val <- if (source_and_type_variety) sample(c("LOINC", "EHR", "Claim", "Lab"), nn, replace = TRUE) else rep(NA_character_, nn)
-      value_num <- if (value_variety) round(runif(nn, 50, 200), 2) else rep(NA_real_, nn)
+      value_num <- if (value_variety) round(stats::runif(nn, 50, 200), 2) else rep(NA_real_, nn)
       value_concept <- if (value_variety) sample(c(0L, 45878584L, 45878583L, 45878585L), nn, replace = TRUE) else rep(0L, nn)
       df <- data.frame(
         measurement_id = ids,
@@ -842,7 +842,7 @@ cdmFromJson <- function(jsonPath = NULL,
     if (type == "Observation") {
       type_concept <- if (source_and_type_variety) sample(c(32020L, 38000184L), nn, replace = TRUE) else rep(0L, nn)
       src_val <- if (source_and_type_variety) sample(c("LOINC", "SNOMED", "EHR", "Claim"), nn, replace = TRUE) else rep(NA_character_, nn)
-      value_num <- if (value_variety) round(runif(nn, 0, 100), 2) else rep(NA_real_, nn)
+      value_num <- if (value_variety) round(stats::runif(nn, 0, 100), 2) else rep(NA_real_, nn)
       value_concept <- if (value_variety) sample(c(0L, 45878584L, 45878583L, 45878585L), nn, replace = TRUE) else rep(0L, nn)
       df <- data.frame(
         observation_id = ids,
@@ -1442,12 +1442,12 @@ cdmFromJson <- function(jsonPath = NULL,
       if (is.null(t) || !t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
       event_rows[[length(event_rows) + 1L]] <- data.frame(person_id = req$person_ids, date = as.Date(req$dates))
     }
-    person_date_min <- setNames(rep(as.Date(NA), n), person_ids)
-    person_date_max <- setNames(rep(as.Date(NA), n), person_ids)
+    person_date_min <- stats::setNames(rep(as.Date(NA), n), person_ids)
+    person_date_max <- stats::setNames(rep(as.Date(NA), n), person_ids)
     if (length(event_rows) > 0) {
       event_df <- do.call(rbind, event_rows)
-      agg_min <- aggregate(date ~ person_id, data = event_df, FUN = min)
-      agg_max <- aggregate(date ~ person_id, data = event_df, FUN = max)
+      agg_min <- stats::aggregate(date ~ person_id, data = event_df, FUN = min)
+      agg_max <- stats::aggregate(date ~ person_id, data = event_df, FUN = max)
       person_date_min[as.character(agg_min$person_id)] <- agg_min$date
       person_date_max[as.character(agg_max$person_id)] <- agg_max$date
     }
