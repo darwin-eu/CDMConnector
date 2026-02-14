@@ -493,12 +493,6 @@ generateCohortSet <- function(cdm,
       )
 
     if (dbms(con) == "snowflake") {
-      # we don't want to use temp emulation on snowflake. We want to use actual temp tables.
-      # Use CREATE OR REPLACE so repeated creates in the same batch (or leftover from prior run) don't fail.
-      sql <- stringr::str_replace_all(sql, "CREATE TABLE #", "CREATE OR REPLACE TEMPORARY TABLE ") %>%
-        stringr::str_replace_all("create table #", "create or replace temporary table ") %>%
-        stringr::str_replace_all("#", "")
-
       # temp tables created by circe that can be left dangling.
       tempTablesToDrop <- c(
         "Codesets",
@@ -512,6 +506,21 @@ generateCohortSet <- function(cdm,
         "inclusion_rules",
         "BEST_EVENTS",
         paste0("Inclusion_", 0:9))
+
+      # We want actual temp tables; use CREATE OR REPLACE so repeated creates don't fail.
+      sql <- stringr::str_replace_all(sql, "CREATE TABLE #", "CREATE OR REPLACE TEMPORARY TABLE ") %>%
+        stringr::str_replace_all("create table #", "create or replace temporary table ") %>%
+        stringr::str_replace_all("#", "")
+
+      # Circe sometimes emits "CREATE TABLE <name>" without #; convert those for known temp tables
+      # so they become temp and OR REPLACE, and so CREATEs are reordered before TRUNCATE/INSERT.
+      for (nm in tempTablesToDrop) {
+        sql <- stringr::str_replace_all(
+          sql,
+          stringr::regex(paste0("(CREATE TABLE )(", nm, ")(\\s|;)"), ignore_case = TRUE),
+          "CREATE OR REPLACE TEMPORARY TABLE \\2\\3"
+        )
+      }
 
       for (j in seq_along(tempTablesToDrop)) {
         suppressMessages({
