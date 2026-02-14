@@ -17,8 +17,8 @@
 #' Create a source for a cdm in a database.
 #'
 #' @param con Connection to a database.
-#' @param writeSchema Schema where cohort tables are. You must have read and
-#' write access to it.
+#' @param writeSchema Schema where cohort tables are. If provided must have read and
+#' write access to it. If NULL the cdm will be created without a write_schema.
 #'
 #' @export
 dbSource <- function(con, writeSchema) {
@@ -42,7 +42,13 @@ dbSource <- function(con, writeSchema) {
     "write_schema" = writeSchema
   )
   class(source) <- "db_cdm"
-  source <- omopgenerics::newCdmSource(src = source, sourceType = dbms(con))
+
+  if (is.null(writeSchema)) {
+    # create cdm source without a write schema
+    source <- structure(.Data = source, source_type = dbms(con), class = c("cdm_source", class(source)))
+  } else {
+    source <- omopgenerics::newCdmSource(src = source, sourceType = dbms(con))
+  }
   return(source)
 }
 

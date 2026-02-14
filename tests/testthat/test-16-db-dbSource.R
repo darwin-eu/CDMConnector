@@ -80,4 +80,19 @@ for (dbtype in dbToTest) {
 }
 
 
+test_that("cdmFromCon works without a write schema", {
+  skip_if_not_installed("duckdb")
+  skip_on_cran()
+  skip_if_not("duckdb" %in% dbToTest)
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+
+  expect_no_error({
+    cdm <- cdmFromCon(con, "main")
+  })
+
+  df <- cdm$person %>%
+    dplyr::collect()
+
+  expect_true(is.data.frame(df))
+})
 
