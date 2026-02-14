@@ -38,15 +38,18 @@ copyCdmTo <- function(con, cdm, schema, overwrite = FALSE) {
   checkmate::assertLogical(overwrite, len = 1)
 
   # create a new source
+  message("Creating a new cdm")
   newSource <- dbSource(con = con, writeSchema = schema)
 
   # insert person and observation_period
   cdmTables <- list()
   for (tab in c("person", "observation_period")) {
+    table <-  cdm[[tab]] |> dplyr::collect() |> dplyr::as_tibble()
+    message(paste0("Uploading table ", tab, " (", nrow(table), "rows) - [", i, "/", length(tables_to_copy)+2, "]"))
     cdmTables[[tab]] <- omopgenerics::insertTable(
       cdm = newSource,
       name = tab,
-      table = cdm[[tab]] |> dplyr::collect() |> dplyr::as_tibble(),
+      table = table,
       overwrite = overwrite
     )
   }
@@ -61,8 +64,10 @@ copyCdmTo <- function(con, cdm, schema, overwrite = FALSE) {
   tables_to_copy <- tables_to_copy[
     !tables_to_copy %in% c("person", "observation_period")
   ]
-  for (i in cli::cli_progress_along(tables_to_copy)) {
+  for (i in seq_along(tables_to_copy)) {
     table_name <- tables_to_copy[i]
+    table <- cdm[[table_name]] |> dplyr::collect() |> dplyr::as_tibble()
+    message(paste0("Uploading table ", table_name, " (", nrow(table), "rows) - [", i+2, "/", length(tables_to_copy)+2, "]"))
     cohort <- inherits(cdm[[table_name]], "cohort_table")
     if (cohort) {
       set <- omopgenerics::settings(cdm[[table_name]]) |> dplyr::as_tibble()
@@ -79,7 +84,7 @@ copyCdmTo <- function(con, cdm, schema, overwrite = FALSE) {
     newCdm <- omopgenerics::insertTable(
       cdm = newCdm,
       name = table_name,
-      table = cdm[[table_name]] |> dplyr::collect() |> dplyr::as_tibble(),
+      table = table,
       overwrite = overwrite
     )
     if (cohort) {
