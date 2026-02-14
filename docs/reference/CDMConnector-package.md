@@ -17,7 +17,7 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Adam Black <black@ohdsi.org>
+**Maintainer**: Adam Black <ablack3@gmail.com>
 ([ORCID](https://orcid.org/0000-0001-5576-8701))
 
 Authors:

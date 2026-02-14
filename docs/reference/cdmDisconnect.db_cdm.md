@@ -9,7 +9,7 @@ Spark/Databricks systems.
 
 ``` r
 # S3 method for class 'db_cdm'
-cdmDisconnect(cdm, dropWriteSchema = FALSE, ...)
+cdmDisconnect(cdm, dropPrefixTables = FALSE, ...)
 ```
 
 ## Arguments
@@ -18,10 +18,10 @@ cdmDisconnect(cdm, dropWriteSchema = FALSE, ...)
 
   cdm reference
 
-- dropWriteSchema:
+- dropPrefixTables:
 
-  Whether to drop tables in the writeSchema
+  Whether to drop tables in the writeSchema prefixed with `writePrefix`
 
 - ...:
 
-  Not used
+  Not used. Included for compatibility with generic.

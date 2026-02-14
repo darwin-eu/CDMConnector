@@ -2,13 +2,15 @@
 
 ## CDMConnector 2.4.0
 
-- Implement generateCohortSet for local cdms (e.g. with omock)
+- Implement `generateCohortSet` for local cdms (e.g. with omock)
 - Allow catalogs in duckdb connections
   [@lyoganathan](https://github.com/lyoganathan)
 - Add `cdmFromCohortSet` to create synthetic cdms from Atlas cohort
   definitions
 - Add `cdmCommentContents` for creating comments with the contents of a
   CDM in tests and documentation
+- Make `writeSchema` optional in `cdmFromCon`
+  [@SulevR](https://github.com/SulevR)
 
 ## CDMConnector 2.3.0
 

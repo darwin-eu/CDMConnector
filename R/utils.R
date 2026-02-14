@@ -703,6 +703,9 @@ cdmCommentContents <- function(cdm, personIds = NULL) {
     stop("`personIds` must be a numeric vector (or NULL).", call. = FALSE)
   }
 
+  checkmate::assertClass(cdm, "cdm_reference")
+  checkmate::assertTRUE("person" %in% names(cdm))
+
   if (is.null(personIds)) {
     nPersons <- cdm$person %>% dplyr::ungroup() %>% dplyr::tally() %>% dplyr::pull("n")
     if (nPersons > 1000) {

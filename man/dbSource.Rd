@@ -9,8 +9,8 @@ dbSource(con, writeSchema)
 \arguments{
 \item{con}{Connection to a database.}
 
-\item{writeSchema}{Schema where cohort tables are. You must have read and
-write access to it.}
+\item{writeSchema}{Schema where cohort tables are. If provided must have read and
+write access to it. If NULL the cdm will be created without a write_schema.}
 }
 \description{
 Create a source for a cdm in a database.

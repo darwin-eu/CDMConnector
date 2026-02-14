@@ -114,7 +114,7 @@ cdm <- generateCohortSet(
 )
 #> ℹ Generating 2 cohorts
 #> ℹ Generating cohort (1/2) - gibleed_default
-#> ✔ Generating cohort (1/2) - gibleed_default [301ms]
+#> ✔ Generating cohort (1/2) - gibleed_default [412ms]
 #> 
 #> ℹ Generating cohort (2/2) - gibleed_male
 #> ✔ Generating cohort (2/2) - gibleed_male [347ms]
@@ -122,19 +122,19 @@ cdm <- generateCohortSet(
 
 cdm$study_cohorts
 #> # Source:   table<study_cohorts> [?? x 4]
-#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp1LP4QO/file14f0161afbd5d.duckdb]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpZW1oh7/file13b97ef1c5cb.duckdb]
 #>    cohort_definition_id subject_id cohort_start_date cohort_end_date
 #>                   <int>      <dbl> <date>            <date>         
-#>  1                    1       1409 1960-04-29        2019-01-07     
-#>  2                    1       1491 2006-05-25        2011-07-19     
-#>  3                    1       1566 2003-01-01        2019-02-07     
-#>  4                    1       3067 1976-10-06        2019-04-22     
-#>  5                    1       1215 2009-06-07        2018-04-28     
-#>  6                    1       3178 1994-10-06        2018-09-16     
-#>  7                    1        821 1985-02-18        2019-01-26     
-#>  8                    1       4419 1991-01-20        2018-08-13     
-#>  9                    1       2097 2014-04-17        2019-03-16     
-#> 10                    1        133 2019-04-05        2019-04-06     
+#>  1                    1       1751 2017-11-13        2017-11-22     
+#>  2                    1       2349 2005-02-03        2019-01-06     
+#>  3                    1       1900 1996-01-04        2018-09-11     
+#>  4                    1       2088 1945-04-25        2018-08-07     
+#>  5                    1       2543 2001-06-21        2019-03-17     
+#>  6                    1       2780 2001-12-20        2019-04-24     
+#>  7                    1       3304 2001-06-08        2018-07-05     
+#>  8                    1       4689 2007-12-12        2019-06-26     
+#>  9                    1       3226 2012-08-04        2018-07-29     
+#> 10                    1       3545 2012-03-07        2019-03-27     
 #> # ℹ more rows
 ```
 
@@ -201,36 +201,36 @@ cohortSet <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
 cdm <- generateCohortSet(cdm, cohortSet, name = "cohort") 
 #> ℹ Generating 5 cohorts
 #> ℹ Generating cohort (1/5) - gibleed_all_end_10
-#> ✔ Generating cohort (1/5) - gibleed_all_end_10 [137ms]
+#> ✔ Generating cohort (1/5) - gibleed_all_end_10 [339ms]
 #> 
 #> ℹ Generating cohort (2/5) - gibleed_all
-#> ✔ Generating cohort (2/5) - gibleed_all [107ms]
+#> ✔ Generating cohort (2/5) - gibleed_all [191ms]
 #> 
 #> ℹ Generating cohort (3/5) - gibleed_default_with_descendants
-#> ✔ Generating cohort (3/5) - gibleed_default_with_descendants [117ms]
+#> ✔ Generating cohort (3/5) - gibleed_default_with_descendants [135ms]
 #> 
 #> ℹ Generating cohort (4/5) - gibleed_default
-#> ✔ Generating cohort (4/5) - gibleed_default [146ms]
+#> ✔ Generating cohort (4/5) - gibleed_default [139ms]
 #> 
 #> ℹ Generating cohort (5/5) - gibleed_end_10
-#> ✔ Generating cohort (5/5) - gibleed_end_10 [120ms]
+#> ✔ Generating cohort (5/5) - gibleed_end_10 [168ms]
 #> 
 
 cdm$cohort
 #> # Source:   table<cohort> [?? x 4]
-#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp1LP4QO/file14f012a1ecf49.duckdb]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpZW1oh7/file13b91df142c.duckdb]
 #>    cohort_definition_id subject_id cohort_start_date cohort_end_date
 #>                   <int>      <dbl> <date>            <date>         
-#>  1                    1        951 1985-11-07        1985-11-17     
-#>  2                    1       3950 2015-01-14        2015-01-24     
-#>  3                    1       1641 1997-11-10        1997-11-20     
-#>  4                    1       2622 1975-05-22        1975-06-01     
-#>  5                    1       2740 2010-05-13        2010-05-23     
-#>  6                    1       3536 2000-02-18        2000-02-28     
-#>  7                    1       1751 2017-11-13        2017-11-22     
-#>  8                    1       2349 2005-02-03        2005-02-13     
-#>  9                    1       3226 2012-08-04        2012-08-14     
-#> 10                    1        616 2001-03-05        2001-03-15     
+#>  1                    1       1854 2012-05-19        2012-05-29     
+#>  2                    1       5017 2015-08-17        2015-08-27     
+#>  3                    1       2586 2007-11-24        2007-12-04     
+#>  4                    1       3777 2018-09-19        2018-09-29     
+#>  5                    1       3966 2003-05-31        2003-06-10     
+#>  6                    1       3161 1990-01-04        1990-01-14     
+#>  7                    1       3831 1991-05-04        1991-05-14     
+#>  8                    1       3621 1955-11-19        1955-11-29     
+#>  9                    1       4018 2001-09-09        2001-09-19     
+#> 10                    1       4391 1978-08-14        1978-08-24     
 #> # ℹ more rows
 
 cohortCount(cdm$cohort)
@@ -285,14 +285,14 @@ daysInCohort
 #> # A tibble: 8 × 3
 #>   cohort_definition_id days_in_cohort     n
 #>                  <int>          <int> <dbl>
-#> 1                    5             10   467
-#> 2                    5              9     1
-#> 3                    1             10   467
-#> 4                    1              1    10
-#> 5                    5              1    10
+#> 1                    1              9     1
+#> 2                    5              1    10
+#> 3                    1              2     1
+#> 4                    1             10   467
+#> 5                    5             10   467
 #> 6                    5              2     1
-#> 7                    1              2     1
-#> 8                    1              9     1
+#> 7                    1              1    10
+#> 8                    5              9     1
 ```
 
 We have confirmed that everyone in cohorts 1 and 5 were in the cohort
@@ -432,7 +432,7 @@ cdm <- insertTable(cdm = cdm, name = "cohort", table = cohort, overwrite = TRUE)
 
 cdm$cohort
 #> # Source:   table<cohort> [?? x 4]
-#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp1LP4QO/file14f012a1ecf49.duckdb]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpZW1oh7/file13b91df142c.duckdb]
 #>   cohort_definition_id subject_id cohort_start_date cohort_end_date
 #>                  <int>      <int> <date>            <date>         
 #> 1                    1          1 1999-01-01        2001-01-01
