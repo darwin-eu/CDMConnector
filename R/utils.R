@@ -703,6 +703,13 @@ cdmCommentContents <- function(cdm, personIds = NULL) {
     stop("`personIds` must be a numeric vector (or NULL).", call. = FALSE)
   }
 
+  if (is.null(personIds)) {
+    nPersons <- cdm$person %>% dplyr::ungroup() %>% dplyr::tally() %>% dplyr::pull("n")
+    if (nPersons > 1000) {
+      cli::cli_abort("Your cdm has {nPersons} persons in it. Use the `personIds` argument to subset to just a few persons for printing.")
+    }
+  }
+
   # 1) Run the pipeline (cdmFlatten -> collect -> optional filter -> arrange)
   flat <- .cdm_comment_flatten(cdm) |>
     .cdm_comment_collect()
@@ -716,7 +723,8 @@ cdmCommentContents <- function(cdm, personIds = NULL) {
     .data$person_id,
     dplyr::desc(.data$start_date),
     dplyr::desc(.data$end_date)
-  )
+  ) |>
+  head(1000) # limit comment to 1000 lines
 
   # 2) Convert to aligned comment text (like your first format)
   df_chr <- as.data.frame(lapply(flat, as.character), stringsAsFactors = FALSE)
