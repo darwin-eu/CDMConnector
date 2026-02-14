@@ -278,14 +278,18 @@ computeQuery <- function(x,
     } else if (dbms(con) == "sql server") {
       # SQL Server temp tables: name must be #name without quoting, else it's not a temp table.
       # dbplyr's default db_save_query quotes the name ("#temp..."), so use custom SQL for all SQL Server.
+      # Always drop if exists first: dbExistsTable(con, name) may not see temp tables (name has no #),
+      # so the overwrite check above can skip the drop and SELECT INTO would then fail with "already exists".
+      temp_name <- paste0("#", name)
+      DBI::dbExecute(con, dbplyr::sql(glue::glue("DROP TABLE IF EXISTS {temp_name};")))
       sql <- dbplyr::build_sql(
         "SELECT * \n",
-        "INTO ", dbplyr::sql(paste0("#", name)), " FROM ( \n",
+        "INTO ", dbplyr::sql(temp_name), " FROM ( \n",
         dbplyr::sql_render(x), " ) AS qry;",
         con = con
       )
       DBI::dbExecute(con, sql)
-      out <- dplyr::tbl(con, paste0("#", name))
+      out <- dplyr::tbl(con, temp_name)
 
     } else {
       out <- dplyr::compute(x, name = name, temporary = temporary, analyze = FALSE, ...)
