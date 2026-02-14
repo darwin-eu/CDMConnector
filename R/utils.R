@@ -400,6 +400,21 @@ dcCreateTable <- function(conn, name, fields) {
   }
 }
 
+# Convert Date/POSIXt to ISO character for Spark INSERT so ODBC doesn't produce malformed timestamps (e.g. 00-00-00).
+.formatDatesForSparkInsert <- function(table) {
+  dplyr::mutate(
+    table,
+    dplyr::across(
+      where(~ inherits(.x, "Date")),
+      ~ format(.x, "%Y-%m-%d")
+    ),
+    dplyr::across(
+      where(~ inherits(.x, "POSIXt")),
+      ~ format(.x, "%Y-%m-%d %H:%M:%S")
+    )
+  )
+}
+
 # build and execute the SQL query to insert data into the table
 # .dbInsertData <- function(conn, name, table) {
 #   columns <- colnames(table)

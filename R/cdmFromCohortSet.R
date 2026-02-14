@@ -1,7 +1,7 @@
 #' Build a Synthetic CDM from a Cohort Set
 #'
 #' Constructs a synthetic OMOP Common Data Model (CDM) using a set of cohort definitions,
-#' typically created using \code{CDMConnector::readCohortSet()}. The function generates
+#' created using \code{CDMConnector::readCohortSet()}. The function generates
 #' synthetic data and returns a cdm reference object backed by a DuckDB database,
 #' containing synthetic CDM tables and generated cohort table rows.
 #'
