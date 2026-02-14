@@ -2,7 +2,7 @@
 test_compute_query <- function(con, cdm_schema, write_schema) {
   cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = cdm_schema, writeSchema = write_schema)
 
-  new_table_name <- paste0("temp", floor(10*as.numeric(Sys.time()) %% 1e7))
+  new_table_name <- uniqueTableName()
 
   # temp table creation from query ----
   q <- cdm$concept %>%
@@ -38,7 +38,7 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
   # TODO: test removal of temp tables. Also need to be able to get temp table names.
 
   # permanent table creation from query ----
-  new_table_name <- paste0("temp", floor(10*as.numeric(Sys.time()) %% 1e7))
+  new_table_name <- uniqueTableName()
   x <- cdm$vocabulary %>%
     dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
     compute(name = new_table_name, temporary = FALSE, overwrite = TRUE)
