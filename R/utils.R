@@ -405,11 +405,11 @@ dcCreateTable <- function(conn, name, fields) {
   dplyr::mutate(
     table,
     dplyr::across(
-      where(~ inherits(.x, "Date")),
+      tidyselect::where(~ inherits(.x, "Date")),
       ~ format(.x, "%Y-%m-%d")
     ),
     dplyr::across(
-      where(~ inherits(.x, "POSIXt")),
+      tidyselect::where(~ inherits(.x, "POSIXt")),
       ~ format(.x, "%Y-%m-%d %H:%M:%S")
     )
   )
