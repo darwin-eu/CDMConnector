@@ -386,6 +386,13 @@ insertCdmTo.db_cdm <- function(cdm, to) {
 #' @export
 cdmDisconnect.db_cdm <- function(cdm, dropPrefixTables = FALSE, ...) {
   omopgenerics::assertLogical(dropPrefixTables, length = 1)
+  # we are expecting a cdm source
+  checkmate::assert_class(cdm, "cdm_source")
+  # NOTE: what is pass in as cdm from omopgenerics is actually a cdm source
+  con <- attr(cdm, "dbcon")
+  if (!methods::is(con, "DatabaseConnectorConnection")) {
+    checkmate::assertTRUE(DBI::dbIsValid(con))
+  }
 
   # if the database is duckdb AND it is in the temp folder, remove the file to save temp space
   isDuckdbInTempdir <- function(con) {
@@ -397,9 +404,8 @@ cdmDisconnect.db_cdm <- function(cdm, dropPrefixTables = FALSE, ...) {
     startsWith(db_path, tmp_path)
   }
 
-  # NOTE: what is pass in as cdm from omopgenerics is actually a cdm source
-  con <- attr(cdm, "dbcon")
-  if (dbms(con) == "duckdb" && isDuckdbInTempdir(con)) {
+  # TODO implement this cleanup for database connector duckdb connections
+  if (dbms(con) == "duckdb" && isDuckdbInTempdir(con) && !methods::is(con, "DatabaseConnectorConnection")) {
     fileToRemove <- con@driver@dbdir
     DBI::dbDisconnect(con, shutdown = TRUE)
     try(unlink(fileToRemove))
