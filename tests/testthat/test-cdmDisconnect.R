@@ -2,7 +2,7 @@ test_that("prefixed tables are dropped", {
 
   # only testing on snowflake for now. should be the same for other dbs.
   # TODO: run this on all databases
-  # skip_if_not("snowflake" %in% dbToTest)
+  skip_if_not("snowflake" %in% dbToTest)
 
   con <- DBI::dbConnect(odbc::odbc(),
                         SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
@@ -57,7 +57,7 @@ test_that("prefixed tables are dropped", {
 test_that("temporary duckdb files are cleaned up on disconnect", {
   skip_if_not_installed("duckdb")
   skip_on_cran()
-  # skip_if_not("duckdb" %in% dbToTest)
+  skip_if_not("duckdb" %in% dbToTest)
   tempDuckdbFile <- tempfile(fileext = ".duckdb")
   con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir(databaseFile = tempDuckdbFile))
   cdm <- cdmFromCon(con, "main", "main")
