@@ -396,12 +396,18 @@ cdmDisconnect.db_cdm <- function(cdm, dropPrefixTables = FALSE, ...) {
 
   # if the database is duckdb AND it is in the temp folder, remove the file to save temp space
   isDuckdbInTempdir <- function(con) {
-    db_path  <- normalizePath(con@driver@dbdir, winslash = "/", mustWork = FALSE)
-    tmp_path <- normalizePath(tempdir(), winslash = "/", mustWork = FALSE)
-    # macOS often has /private prefix
-    db_path  <- sub("^/private", "", db_path)
-    tmp_path <- sub("^/private", "", tmp_path)
-    startsWith(db_path, tmp_path)
+    tryCatch({
+      dbdir <- con@driver@dbdir
+      if (!is.character(dbdir) || length(dbdir) != 1L || is.na(dbdir) || dbdir == "" || dbdir == ":memory:") {
+        return(FALSE)
+      }
+      db_path  <- normalizePath(dbdir, winslash = "/", mustWork = FALSE)
+      tmp_path <- normalizePath(tempdir(), winslash = "/", mustWork = FALSE)
+      # macOS often has /private prefix
+      db_path  <- sub("^/private", "", db_path)
+      tmp_path <- sub("^/private", "", tmp_path)
+      startsWith(db_path, tmp_path)
+    }, error = function(e) FALSE)
   }
 
   # TODO implement this cleanup for database connector duckdb connections
