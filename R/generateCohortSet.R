@@ -584,6 +584,12 @@ generateCohortSet <- function(cdm,
       stringr::str_c(";") %>% # remove empty statements
       stringr::str_subset("^;$", negate = TRUE)
 
+    # Snowflake: run all CREATE TEMPORARY TABLE before other statements so temp tables exist when referenced (e.g. INCLUSION_EVENTS).
+    if (dbms(con) == "snowflake") {
+      create_temp <- grepl("CREATE\\s+(OR\\s+REPLACE\\s+)?TEMPORARY\\s+TABLE", sql, ignore.case = TRUE)
+      sql <- sql[c(which(create_temp), which(!create_temp))]
+    }
+
     # drop temp tables if they already exist
     drop_statements <- c(
       stringr::str_subset(sql, "DROP TABLE") %>%
