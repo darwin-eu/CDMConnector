@@ -493,78 +493,10 @@ generateCohortSet <- function(cdm,
       )
 
     if (dbms(con) == "snowflake") {
-      # temp tables created by circe that can be left dangling.
-      tempTablesToDrop <- c(
-        "Codesets",
-        "qualified_events",
-        "cohort_rows",
-        "Inclusion",
-        "strategy_ends",
-        "inclusion_events",
-        "included_events",
-        "final_cohort",
-        "inclusion_rules",
-        "BEST_EVENTS",
-        paste0("Inclusion_", 0:9))
-
-      # Schema-qualify temp tables so they are created and referenced in write_schema
-      # (avoids "table does not exist or not authorized" when session default schema differs).
-      # Use unquoted names so Snowflake stores/resolves them consistently (uppercase).
-      qual <- function(nm) paste0(write_schema_sql, ".", nm)
-
-      # We want actual temp tables; use CREATE OR REPLACE so repeated creates don't fail.
-      sql <- stringr::str_replace_all(sql, "CREATE TABLE #", paste0("CREATE OR REPLACE TEMPORARY TABLE ", write_schema_sql, ".")) %>%
-        stringr::str_replace_all("create table #", paste0("create or replace temporary table ", write_schema_sql, ".")) %>%
-        stringr::str_replace_all("#", "")
-
-      # Circe sometimes emits "CREATE TABLE <name>" without #; convert those for known temp tables
-      # so they become temp and OR REPLACE, and so CREATEs are reordered before TRUNCATE/INSERT.
-      for (nm in tempTablesToDrop) {
-        sql <- stringr::str_replace_all(
-          sql,
-          stringr::regex(paste0("(CREATE TABLE )(", nm, ")(\\s|;)"), ignore_case = TRUE),
-          paste0("CREATE OR REPLACE TEMPORARY TABLE ", qual(nm), "\\3")
-        )
-      }
-
-      # Qualify all other references to these temp tables (TRUNCATE, INSERT, FROM, JOIN, etc.)
-      # so they resolve in write_schema. Process longer names first to avoid partial matches.
-      tempOrdered <- tempTablesToDrop[order(nchar(tempTablesToDrop), decreasing = TRUE)]
-      for (nm in tempOrdered) {
-        # Replace unqualified table name (not already preceded by a dot)
-        sql <- stringr::str_replace_all(
-          sql,
-          stringr::regex(paste0("(?<![.])\\b", nm, "\\b"), ignore_case = TRUE),
-          qual(nm)
-        )
-      }
-
-      for (j in seq_along(tempTablesToDrop)) {
-        suppressMessages({
-          invisible(DBI::dbExecute(con, paste("drop table if exists", qual(tempTablesToDrop[j]))))
-        })
-      }
-
-      # Ensure temp tables exist so TRUNCATE in the batch never runs on a missing table
-      # (Circe may emit TRUNCATE without a CREATE for that table in this cohort).
-      for (nm in tempTablesToDrop) {
-        suppressMessages({
-          invisible(DBI::dbExecute(con, paste0("CREATE OR REPLACE TEMPORARY TABLE ", qual(nm), " (dummy INTEGER)")))
-        })
-      }
-
-      namesToQuote <- c("cohort_definition_id",
-                        "subject_id",
-                        "cohort_start_date",
-                        "cohort_end_date",
-                        "mode_id",
-                        "inclusion_rule_mask",
-                        "person_count",
-                        "rule_sequence",
-                        "gain_count",
-                        "person_total",
-                        "base_count", "final_count")
-
+      # Quote column names that Snowflake may otherwise treat inconsistently.
+      namesToQuote <- c("cohort_definition_id", "subject_id", "cohort_start_date", "cohort_end_date",
+                        "mode_id", "inclusion_rule_mask", "person_count", "rule_sequence",
+                        "gain_count", "person_total", "base_count", "final_count")
       for (n in namesToQuote) {
         sql <- stringr::str_replace_all(sql, n, DBI::dbQuoteIdentifier(con, n))
       }
@@ -583,20 +515,19 @@ generateCohortSet <- function(cdm,
     # --([^\n])*?\n => match strings starting with -- followed by anything except a newline
     sql <- stringr::str_replace_all(sql, "--([^\n])*?\n", "\n")
 
-    if (dbms(con) != "spark" && dbms(con) != "bigquery") {
+    if (dbms(con) %in% c("spark", "bigquery", "snowflake")) {
+      # Use temp emulation: Spark/BigQuery have no temp tables; Snowflake uses it so # is not stripped.
+      sql <- SqlRender::translate(sql,
+                                  targetDialect = CDMConnector::dbms(con),
+                                  tempEmulationSchema = write_schema_sql)
+    } else {
       sql <- SqlRender::translate(sql,
                                   targetDialect = CDMConnector::dbms(con),
                                   tempEmulationSchema = "SQL ERROR")
-
       if (stringr::str_detect(sql, "SQL ERROR")) {
         cli::cli_abort("sqlRenderTempEmulationSchema being used for cohort generation!
         Please open a github issue at {.url https://github.com/darwin-eu/CDMConnector/issues} with your cohort definition.")
       }
-    } else {
-      # we need temp emulation on spark as there are no temp tables
-      sql <- SqlRender::translate(sql,
-                                  targetDialect = CDMConnector::dbms(con),
-                                  tempEmulationSchema = write_schema_sql)
     }
 
     if (dbms(con) == "duckdb") {
@@ -618,10 +549,22 @@ generateCohortSet <- function(cdm,
       stringr::str_c(";") %>% # remove empty statements
       stringr::str_subset("^;$", negate = TRUE)
 
-    # Snowflake: run all CREATE TEMPORARY TABLE before other statements so temp tables exist when referenced (e.g. INCLUSION_EVENTS).
+    # Snowflake: drop all SqlRender temp-emulation tables before running any cohort SQL.
     if (dbms(con) == "snowflake") {
-      create_temp <- grepl("CREATE\\s+(OR\\s+REPLACE\\s+)?TEMPORARY\\s+TABLE", sql, ignore.case = TRUE)
-      sql <- sql[c(which(create_temp), which(!create_temp))]
+      snowflakeTempNames <- c(
+        "Codesets", "qualified_events", "cohort_rows", "Inclusion", "strategy_ends",
+        "inclusion_events", "included_events", "final_cohort", "inclusion_rules", "BEST_EVENTS",
+        paste0("Inclusion_", 0:9))
+      # Prefix is in the same translated SQL (e.g. "xyz123qualified_events"); extract from full text.
+      sql_one <- paste(sql, collapse = " ")
+      m <- regexpr("[a-zA-Z0-9]+qualified_events", sql_one)
+      prefix <- if (m[[1]] > 0) sub("qualified_events.*", "", regmatches(sql_one, m)[[1]]) else ""
+      if (nzchar(prefix)) {
+        for (nm in snowflakeTempNames) {
+          full <- paste0(write_schema_sql, ".", DBI::dbQuoteIdentifier(con, paste0(prefix, nm)))
+          suppressMessages(invisible(DBI::dbExecute(con, paste("DROP TABLE IF EXISTS", full))))
+        }
+      }
     }
 
     # drop temp tables if they already exist
