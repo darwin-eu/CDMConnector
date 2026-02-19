@@ -390,8 +390,10 @@ cdmDisconnect.db_cdm <- function(cdm, dropPrefixTables = FALSE, ...) {
   checkmate::assert_class(cdm, "cdm_source")
   # NOTE: what is pass in as cdm from omopgenerics is actually a cdm source
   con <- attr(cdm, "dbcon")
-  if (!methods::is(con, "DatabaseConnectorConnection")) {
-    checkmate::assertTRUE(DBI::dbIsValid(con))
+
+  if (!DBI::dbIsValid(con) && !methods::is(con, "DatabaseConnectorConnection")) {
+    rlang::inform("Database connection already closed.")
+    return(invisible(NULL))
   }
 
   # if the database is duckdb AND it is in the temp folder, remove the file to save temp space
