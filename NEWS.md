@@ -1,3 +1,7 @@
+# CDMConnector 2.5.0
+
+- Add Delphi-100k example dataset
+
 # CDMConnector 2.4.0
 
 - Implement `generateCohortSet` for local cdms (e.g. with omock)

@@ -49,9 +49,9 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
 
   if (!dir.exists(pathToData)) { dir.create(pathToData, recursive = TRUE) }
 
-  if (datasetName == "Synthea27NjParquet" && cdmVersion == "5.3") {
-    cli::cli_abort("Synthea27NjParquet is only available in CDM version 5.4")
-  } else if (!(datasetName %in% c("synpuf-1k", "Synthea27NjParquet", "empty_cdm")) && cdmVersion == "5.4") {
+  if (datasetName %in% c("Synthea27NjParquet", "delphi-100k") && cdmVersion == "5.3") {
+    cli::cli_abort("{datasetName}is only available in CDM version 5.4")
+  } else if (!(datasetName %in% c("synpuf-1k", "Synthea27NjParquet", "empty_cdm", "delphi-100k")) && cdmVersion == "5.4") {
     cli::cli_abort("{datasetName} is only available in CDM version 5.3")
   }
 
@@ -134,7 +134,8 @@ exampleDatasets <- function() {
     "synpuf-1k",
     "synpuf-110k",
     "empty_cdm",
-    "Synthea27NjParquet")
+    "Synthea27NjParquet",
+    "delphi-100k")
 }
 
 #' Create a copy of an example OMOP CDM dataset
@@ -195,7 +196,8 @@ exampleDatasets <- function() {
 #' "synthea-veterans-10k",
 #' "synthea-weight_loss-10k",
 #' "empty_cdm",
-#' "synpuf-1k"
+#' "synpuf-1k",
+#' "delphi-100k
 #'
 #' @param cdmVersion The OMOP CDM version. Must be "5.3" or "5.4".
 #' @param databaseFile The full path to the new copy of the example CDM dataset.
@@ -233,6 +235,11 @@ eunomiaDir <- function(datasetName = "GiBleed",
   rlang::check_installed("duckdb")
 
   checkmate::assertChoice(datasetName, choices = exampleDatasets())
+
+  if (datasetName == "delphi-100k") {
+    cli::cli_inform("delphi is only available in CDM version 5.4")
+    cdmVersion <- "5.4"
+  }
 
   # duckdb database are tied to a specific version of duckdb until it reaches v1.0
   duckdbVersion <- substr(utils::packageVersion("duckdb"), 1, 3)
