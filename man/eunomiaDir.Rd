@@ -33,7 +33,8 @@ eunomiaDir(
 "synthea-veterans-10k",
 "synthea-weight_loss-10k",
 "empty_cdm",
-"synpuf-1k"}
+"synpuf-1k",
+"delphi-100k}
 
 \item{cdmVersion}{The OMOP CDM version. Must be "5.3" or "5.4".}
 
