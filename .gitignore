@@ -48,3 +48,4 @@ inst/doc
 errorReportSql.txt
 *.DS_Store*
 /revdep/
+.claude/
