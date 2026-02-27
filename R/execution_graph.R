@@ -1525,7 +1525,7 @@ emit_final_cohort <- function(node, dag, options) {
 
   # Single INSERT with CTEs — no intermediate tables created.
   # CTEs must come before INSERT INTO (SQL Server requires this).
-  paste0(
+  final_cohort_sql <- paste0(
     "-- Final cohort for cohort_id=", cohort_id, "\n",
     "WITH cohort_rows AS (\n",
     "  select person_id, start_date, end_date\n",
@@ -1566,6 +1566,45 @@ emit_final_cohort <- function(node, dag, options) {
     start_date_expr, ", ", end_date_expr, "\n",
     "FROM final_cohort CO;"
   )
+
+  # ---- Inclusion data for attrition computation ----
+  # Populate inclusion_events_stage with raw per-rule matches and
+
+  # inclusion_stats_stage with qualified events total (for "Qualifying initial records" count).
+  ie_def <- ie_node$definition
+  ir_hashes <- ie_def$ir_hashes %||% character(0)
+  qe_hash <- ie_def$qe_hash
+  qe_tbl <- qualify_table(dag$nodes[[qe_hash]]$temp_table, options)
+  ies_tbl <- qualify_table("inclusion_events_stage", options)
+  iss_tbl <- qualify_table("inclusion_stats_stage", options)
+
+  inclusion_data_sql <- ""
+
+  # Store raw inclusion events (one row per person/event/rule match)
+  if (length(ir_hashes) > 0) {
+    ir_unions <- character(length(ir_hashes))
+    for (idx in seq_along(ir_hashes)) {
+      ir_tbl <- qualify_table(dag$nodes[[ir_hashes[idx]]]$temp_table, options)
+      ir_unions[idx] <- sprintf("SELECT %d, %d, person_id, event_id FROM %s",
+                                cohort_id, idx - 1L, ir_tbl)
+    }
+    inclusion_data_sql <- paste0(
+      "\n-- Inclusion events for cohort_id=", cohort_id, "\n",
+      "INSERT INTO ", ies_tbl, " (cohort_definition_id, inclusion_rule_id, person_id, event_id)\n",
+      paste(ir_unions, collapse = "\nUNION ALL\n"), ";\n"
+    )
+  }
+
+  # Store qualified events total for attrition "Qualifying initial records" row.
+  # inclusion_rule_id = -1 is a sentinel marking this as the total count.
+  stats_sql <- paste0(
+    "\n-- Qualified events total for cohort_id=", cohort_id, "\n",
+    "INSERT INTO ", iss_tbl, " (cohort_definition_id, inclusion_rule_id, person_count, gain_count, person_total)\n",
+    "SELECT ", cohort_id, ", -1, COUNT(DISTINCT person_id), 0, COUNT(*)\n",
+    "FROM ", qe_tbl, ";\n"
+  )
+
+  paste0(final_cohort_sql, inclusion_data_sql, stats_sql)
 }
 
 #' Emit finalize block: staging -> output tables.

@@ -402,25 +402,148 @@ extract_write_prefix <- function(x) {
   ""
 }
 
-#' Generate Cohort set 2
+#' Generate a cohort set on a CDM object (optimized, no Java dependency)
 #'
-#' @param cdm cdm
-#' @param cohortSet cohortSet
-#' @param name cohort table name
+#' @description
+#' Generates cohort sets using an optimized DAG-based SQL pipeline that does not
+#' require Java or CirceR. This is a faster alternative to
+#' \code{\link{generateCohortSet}} that produces equivalent results.
+#'
+#' A "cohort_table" object consists of four components:
+#' \itemize{
+#'   \item{A remote table reference to an OHDSI cohort table with columns:
+#'         cohort_definition_id, subject_id, cohort_start_date,
+#'         cohort_end_date.}
+#'   \item{A **settings attribute** containing cohort settings including names.}
+#'   \item{An **attrition attribute** with attrition information recorded during
+#'         generation. This attribute is optional. Since calculating attrition
+#'         takes additional compute it can be skipped resulting in a NULL
+#'         attrition attribute.}
+#'   \item{A **cohortCounts attribute** containing cohort counts.}
+#' }
+#'
+#' @param cdm A cdm reference created by CDMConnector. write_schema must be
+#'   specified.
+#' @param cohortSet A cohortSet dataframe created with \code{\link{readCohortSet}}.
+#' @param name Name of the cohort table to be created. This will also be used
+#'   as a prefix for the cohort attribute tables. Must be a lowercase character
+#'   string that starts with a letter and only contains letters, numbers, and
+#'   underscores.
+#' @param computeAttrition Should attrition be computed? TRUE (default) or FALSE
+#' @param overwrite Should the cohort table be overwritten if it already
+#'   exists? TRUE (default) or FALSE
 #' @param cache Logical; if TRUE, enable incremental DAG caching. Previously
 #'   computed intermediate tables are reused, and only changed portions of the
 #'   DAG are recomputed. Default FALSE.
 #'
-#' @returns a cdm with the cohort table
+#' @return A cdm reference with the generated cohort table added.
 #' @export
-generateCohortSet2 <- function(cdm, cohortSet, name, cache = FALSE) {
+#' @examples
+#' \dontrun{
+#' library(CDMConnector)
+#' con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+#' cdm <- cdmFromCon(con,
+#'                   cdmSchema = "main",
+#'                   writeSchema = "main")
+#'
+#' cohortSet <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
+#' cdm <- generateCohortSet2(cdm, cohortSet, name = "cohort")
+#'
+#' print(cdm$cohort)
+#'
+#' attrition(cdm$cohort)
+#' settings(cdm$cohort)
+#' cohortCount(cdm$cohort)
+#' }
+generateCohortSet2 <- function(cdm,
+                                cohortSet,
+                                name,
+                                computeAttrition = TRUE,
+                                overwrite = TRUE,
+                                cache = FALSE) {
 
+  # ---- Argument validation ----
+  checkmate::assertClass(cdm, "cdm_reference")
+
+  if (!is.data.frame(cohortSet)) {
+    rlang::abort("`cohortSet` must be a dataframe from the output of `readCohortSet()`.")
+  }
+  checkmate::assertDataFrame(cohortSet, min.rows = 1, col.names = "named")
+
+  # Handle OHDSI column name variants
+  if ("cohortId" %in% names(cohortSet) && !("cohort_definition_id" %in% names(cohortSet))) {
+    cohortSet$cohort_definition_id <- cohortSet$cohortId
+  }
+  if ("cohortName" %in% names(cohortSet) && !("cohort_name" %in% names(cohortSet))) {
+    cohortSet$cohort_name <- cohortSet$cohortName
+  }
+
+  # Parse JSON to cohort list-column if needed
+  if (!("cohort" %in% names(cohortSet)) && ("json" %in% names(cohortSet))) {
+    cohortColumn <- list()
+    for (i in seq_len(nrow(cohortSet))) {
+      x <- cohortSet$json[i]
+      if (!validUTF8(x)) { rlang::abort("Failed to convert json UTF-8 encoding") }
+      cohortColumn[[i]] <- jsonlite::fromJSON(x, simplifyVector = FALSE)
+    }
+    cohortSet$cohort <- cohortColumn
+  }
+
+  stopifnot(all(c("cohort_definition_id", "cohort_name") %in% names(cohortSet)))
+  stopifnot("cohort" %in% names(cohortSet) || "json" %in% names(cohortSet))
+
+  checkmate::assertCharacter(name, len = 1, min.chars = 1, any.missing = FALSE)
+  if (name != tolower(name)) {
+    cli::cli_abort("Cohort table name {name} must be lowercase!")
+  }
+  if (!grepl("^[a-z]", substr(name, 1, 1))) {
+    cli::cli_abort("Cohort table name {name} must start with a letter!")
+  }
+  if (!grepl("^[a-z][a-z0-9_]*$", name)) {
+    cli::cli_abort("Cohort table name {name} must only contain letters, numbers, and underscores!")
+  }
+  checkmate::assertLogical(computeAttrition, len = 1)
+  checkmate::assertLogical(overwrite, len = 1)
+
+  cli::cli_alert_info("Generating {nrow(cohortSet)} cohort{?s}")
+
+  # ---- Local CDM dispatch ----
   con <- cdmCon(cdm)
+  if (is.null(con)) {
+    return(generateCohortSetLocal2(
+      cdm = cdm,
+      cohortSet = cohortSet,
+      name = name,
+      computeAttrition = computeAttrition,
+      overwrite = overwrite
+    ))
+  }
+
+  checkmate::assertTRUE(DBI::dbIsValid(con))
   db <- dbms(con)
   results_schema <- cdmWriteSchema(cdm)
   cdm_schema_str <- normalize_schema_str(attr(cdm, "cdm_schema"))
   results_schema_str <- normalize_schema_str(results_schema)
   write_prefix <- extract_write_prefix(results_schema)
+  checkmate::assert_character(results_schema,
+                              min.chars = 1,
+                              min.len = 1,
+                              max.len = 3,
+                              null.ok = FALSE)
+
+  # ---- Overwrite logic ----
+  existingTables <- listTables(con, results_schema)
+  tables_to_check <- c(name, paste0(name, "_set"), paste0(name, "_attrition"))
+  for (x in tables_to_check) {
+    if (x %in% existingTables) {
+      if (overwrite) {
+        DBI::dbRemoveTable(con, .inSchema(results_schema, x, dbms = db))
+      } else {
+        cli::cli_abort("The cohort table {paste0(write_prefix, name)} already exists.\nSpecify overwrite = TRUE to overwrite it.")
+      }
+    }
+  }
+
   target_dialect <- switch(db,
     "duckdb"     = "duckdb",
     "sqlserver"  = "sql server",
@@ -643,14 +766,302 @@ generateCohortSet2 <- function(cdm, cohortSet, name, cache = FALSE) {
   }
 
   cdm[[name]] <- dplyr::tbl(con, inSchema(results_schema, name, dbms = db))
-  # Pass full cohort set so cohortCount() includes empty cohorts with 0 (like CDMConnector::generateCohortSet)
+
+  # ---- Compute attrition ----
+  if (computeAttrition) {
+    cohort_attrition_ref <- computeAttritionTable2(
+      cdm = cdm,
+      name = name,
+      cohortSet = cohortSet
+    )
+  } else {
+    cohort_attrition_ref <- NULL
+  }
+
+  # ---- Build cohort object ----
   cohort_set_ref <- dplyr::tibble(
     cohort_definition_id = as.integer(cohortSet$cohort_definition_id),
     cohort_name = if ("cohort_name" %in% names(cohortSet)) as.character(cohortSet$cohort_name) else paste0("cohort_", cohortSet$cohort_definition_id)
   )
-  cdm[[name]] <- omopgenerics::newCohortTable(cdm[[name]], cohortSetRef = cohort_set_ref)
+
+  cdm[[name]] <- omopgenerics::newCdmTable(
+    table = cdm[[name]],
+    src = attr(cdm, "cdm_source"),
+    name = name
+  )
+
+  cohortCodelistRef <- createAtlasCohortCodelistReference(cdm, cohortSet)
+  cdm[[name]] <- omopgenerics::newCohortTable(
+    table = cdm[[name]],
+    cohortSetRef = cohort_set_ref,
+    cohortAttritionRef = cohort_attrition_ref,
+    cohortCodelistRef = cohortCodelistRef
+  )
+
   cdm
 }
+
+
+# Compute sequential attrition from the DAG's inclusion_events/inclusion_stats tables
+#
+# @description Internal function that computes sequential attrition from the
+# output tables populated by the optimized DAG pipeline. Uses the
+# inclusion_events table (raw per-rule matches) and inclusion_stats table
+# (qualified events total) to compute cumulative attrition.
+#
+# @param cdm A cdm_reference
+# @param name Character; cohort table stem name
+# @param cohortSet Data frame with cohort_definition_id and cohort columns
+#
+# @return A data.frame with attrition data (cohort_definition_id, number_records,
+#   number_subjects, reason_id, reason, excluded_records, excluded_subjects)
+# @keywords internal
+computeAttritionTable2 <- function(cdm, name, cohortSet) {
+  con <- cdmCon(cdm)
+  schema <- cdmWriteSchema(cdm)
+  db <- dbms(con)
+
+  # Read the inclusion_events and inclusion_stats tables from DB
+  ie_tbl_name <- "inclusion_events"
+  is_tbl_name <- "inclusion_stats"
+  ie_tbl <- dplyr::tbl(con, inSchema(schema, ie_tbl_name, dbms = db)) %>%
+    dplyr::rename_all(tolower)
+  is_tbl <- dplyr::tbl(con, inSchema(schema, is_tbl_name, dbms = db)) %>%
+    dplyr::rename_all(tolower)
+
+  cohort_tbl <- dplyr::tbl(con, inSchema(schema, name, dbms = db)) %>%
+    dplyr::rename_all(tolower)
+
+  attrition_list <- list()
+
+  for (i in seq_len(nrow(cohortSet))) {
+    id <- as.integer(cohortSet$cohort_definition_id[i])
+
+    # Get inclusion rule names from parsed cohort JSON
+    inclusion_rules <- cohortSet$cohort[[i]]$InclusionRules %||%
+      cohortSet$cohort[[i]]$inclusionRules %||%
+      list()
+    n_rules <- length(inclusion_rules)
+
+    # Get qualified events total from inclusion_stats (sentinel row with rule_id = -1)
+    total_stats <- is_tbl %>%
+      dplyr::filter(.data$cohort_definition_id == .env$id,
+                     .data$inclusion_rule_id == -1L) %>%
+      dplyr::collect()
+
+    if (n_rules == 0 || nrow(total_stats) == 0) {
+      # No inclusion rules: single row from final cohort counts
+      counts <- cohort_tbl %>%
+        dplyr::filter(.data$cohort_definition_id == .env$id) %>%
+        dplyr::summarise(
+          n_records = dplyr::n(),
+          n_subjects = dplyr::n_distinct(.data$subject_id)
+        ) %>%
+        dplyr::collect()
+
+      attrition_list[[i]] <- dplyr::tibble(
+        cohort_definition_id = id,
+        number_records = as.integer(counts$n_records),
+        number_subjects = as.integer(counts$n_subjects),
+        reason_id = 1L,
+        reason = "Qualifying initial records",
+        excluded_records = 0L,
+        excluded_subjects = 0L
+      )
+    } else {
+      # Sequential attrition: count persons/events matching ALL rules 0..k
+      total_records <- as.integer(total_stats$person_total[1])
+      total_subjects <- as.integer(total_stats$person_count[1])
+
+      rows <- list()
+      rows[[1]] <- dplyr::tibble(
+        cohort_definition_id = id,
+        number_records = total_records,
+        number_subjects = total_subjects,
+        reason_id = 1L,
+        reason = "Qualifying initial records"
+      )
+
+      for (k in seq_len(n_rules)) {
+        rule_name <- inclusion_rules[[k]]$name %||% "Unnamed criteria"
+
+        # Count persons/events matching ALL of rules 0..(k-1)
+        # A person/event passes all k rules if they appear k times in
+        # the inclusion_events table for rules 0..k-1
+        counts <- ie_tbl %>%
+          dplyr::filter(.data$cohort_definition_id == .env$id,
+                         .data$inclusion_rule_id <= .env$k - 1L) %>%
+          dplyr::group_by(.data$person_id, .data$event_id) %>%
+          dplyr::summarise(n_matched = dplyr::n(), .groups = "drop") %>%
+          dplyr::filter(.data$n_matched == .env$k) %>%
+          dplyr::ungroup() %>%
+          dplyr::summarise(
+            n_records = dplyr::n(),
+            n_subjects = dplyr::n_distinct(.data$person_id)
+          ) %>%
+          dplyr::collect()
+
+        rows[[k + 1]] <- dplyr::tibble(
+          cohort_definition_id = id,
+          number_records = as.integer(counts$n_records),
+          number_subjects = as.integer(counts$n_subjects),
+          reason_id = as.integer(k + 1L),
+          reason = rule_name
+        )
+      }
+
+      attrition <- dplyr::bind_rows(rows) %>%
+        dplyr::mutate(
+          excluded_records =
+            dplyr::lag(.data$number_records, 1, order_by = .data$reason_id) -
+            .data$number_records,
+          excluded_subjects =
+            dplyr::lag(.data$number_subjects, 1, order_by = .data$reason_id) -
+            .data$number_subjects
+        ) %>%
+        dplyr::mutate(
+          excluded_records = dplyr::coalesce(.data$excluded_records, 0L),
+          excluded_subjects = dplyr::coalesce(.data$excluded_subjects, 0L)
+        )
+
+      attrition_list[[i]] <- attrition
+    }
+  }
+
+  attrition <- dplyr::bind_rows(attrition_list) %>%
+    dplyr::transmute(
+      cohort_definition_id = as.integer(.data$cohort_definition_id),
+      number_records = as.integer(.data$number_records),
+      number_subjects = as.integer(.data$number_subjects),
+      reason_id = as.integer(.data$reason_id),
+      reason = as.character(.data$reason),
+      excluded_records = as.integer(.data$excluded_records),
+      excluded_subjects = as.integer(.data$excluded_subjects)
+    )
+
+  # Check if final cohort counts differ from last attrition row (era-ification collapse)
+  final_counts <- cohort_tbl %>%
+    dplyr::group_by(.data$cohort_definition_id) %>%
+    dplyr::summarise(n_records = dplyr::n(), n_subjects = dplyr::n_distinct(.data$subject_id)) %>%
+    dplyr::collect() %>%
+    dplyr::mutate_all(as.integer)
+
+  last_attrition_row <- dplyr::slice_max(attrition, n = 1, order_by = .data$reason_id, by = "cohort_definition_id")
+
+  new_attrition_row <- dplyr::inner_join(final_counts, last_attrition_row, by = "cohort_definition_id") %>%
+    dplyr::filter(.data$number_records != .data$n_records |
+                  .data$number_subjects != .data$n_subjects) %>%
+    dplyr::transmute(
+      cohort_definition_id = .data$cohort_definition_id,
+      number_records = .data$n_records,
+      number_subjects = .data$n_subjects,
+      reason_id = 1L + .data$reason_id,
+      reason = "Cohort records collapsed",
+      excluded_records = .data$number_records - .data$n_records,
+      excluded_subjects = .data$number_subjects - .data$n_subjects
+    )
+
+  attrition <- dplyr::bind_rows(attrition, new_attrition_row) %>%
+    dplyr::arrange(.data$cohort_definition_id, .data$reason_id)
+
+  attrition
+}
+
+
+#' Generate a cohort set on a local CDM using the optimized pipeline
+#'
+#' Copies the local CDM to an in-memory DuckDB database, runs
+#' \code{\link{generateCohortSet2}}, then collects the generated cohort table
+#' and its attributes back into R and adds them to the input CDM.
+#'
+#' @param cdm A local cdm object (list of dataframes).
+#' @param cohortSet A cohort set from \code{\link{readCohortSet}}.
+#' @param name Name of the cohort table to create.
+#' @param computeAttrition Whether to compute attrition.
+#' @param overwrite Whether to overwrite an existing cohort table.
+#' @return The input \code{cdm} with the new cohort table added (as local
+#'   dataframes).
+#' @keywords internal
+generateCohortSetLocal2 <- function(cdm,
+                                    cohortSet,
+                                    name,
+                                    computeAttrition = TRUE,
+                                    overwrite = TRUE) {
+  rlang::check_installed("duckdb")
+  checkmate::assert_class(cdm, "cdm_reference")
+  checkmate::assert_list(cdm, names = "named")
+  checkmate::assert_character(name, len = 1L, min.chars = 1L)
+
+  # Create in-memory DuckDB and copy CDM tables (skip existing cohort tables)
+  con <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  write_schema <- c(schema = "main")
+  for (nm in names(cdm)) {
+    if (inherits(cdm[[nm]], "cohort_table")) {
+      next
+    }
+    tbl <- cdm[[nm]]
+    full_name <- .inSchema(schema = write_schema, table = nm, dbms = "duckdb")
+    DBI::dbWriteTable(con, name = full_name, value = dplyr::as_tibble(tbl), overwrite = TRUE)
+  }
+
+  cdm_name <- omopgenerics::cdmName(cdm)
+  cdm_db <- cdmFromCon(
+    con = con,
+    cdmSchema = "main",
+    writeSchema = "main",
+    cdmName = cdm_name
+  )
+
+  cdm_db <- generateCohortSet2(
+    cdm = cdm_db,
+    cohortSet = cohortSet,
+    name = name,
+    computeAttrition = computeAttrition,
+    overwrite = overwrite
+  )
+
+  # Collect cohort table and attributes back to R
+  cohort_df <- dplyr::collect(cdm_db[[name]]) %>%
+    dplyr::rename_all(tolower) %>%
+    dplyr::mutate(
+      cohort_definition_id = as.integer(.data$cohort_definition_id),
+      subject_id = as.integer(.data$subject_id),
+      cohort_start_date = as.Date(.data$cohort_start_date),
+      cohort_end_date = as.Date(.data$cohort_end_date)
+    )
+
+  cohort_set_df <- omopgenerics::settings(cdm_db[[name]])
+  cohort_attrition_df <- omopgenerics::attrition(cdm_db[[name]])
+  cohort_codelist_ref <- attr(cdm_db[[name]], "cohort_codelist")
+  cohort_codelist_df <- NULL
+  if (!is.null(cohort_codelist_ref)) {
+    if (inherits(cohort_codelist_ref, "tbl_lazy")) {
+      cohort_codelist_df <- dplyr::collect(cohort_codelist_ref) %>% dplyr::rename_all(tolower)
+    } else if (is.data.frame(cohort_codelist_ref)) {
+      cohort_codelist_df <- cohort_codelist_ref
+    }
+  }
+
+  # Wrap cohort dataframe as cdm_table and add to cdm before newCohortTable
+  # (validation requires cohort to be part of cdm_reference)
+  cohort_tbl <- omopgenerics::newCdmTable(
+    table = cohort_df,
+    src = attr(cdm, "cdm_source"),
+    name = name
+  )
+  cdm[[name]] <- cohort_tbl
+  cdm[[name]] <- omopgenerics::newCohortTable(
+    table = cdm[[name]],
+    cohortSetRef = cohort_set_df,
+    cohortAttritionRef = cohort_attrition_df,
+    cohortCodelistRef = cohort_codelist_df
+  )
+
+  cdm
+}
+
 
 #' Validate batch vs single-cohort equivalence
 #'

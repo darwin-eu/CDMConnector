@@ -212,3 +212,162 @@ test_that("buildBatchCohortQuery errors on mismatched lengths", {
     "must match"
   )
 })
+
+# --- generateCohortSet2 argument validation ---
+
+test_that("generateCohortSet2 validates name argument", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+
+  expect_error(generateCohortSet2(cdm, cs, name = "UPPERCASE"), "lowercase")
+  expect_error(generateCohortSet2(cdm, cs, name = "1startsnum"), "start with a letter")
+  expect_error(generateCohortSet2(cdm, cs, name = "has space"), "letters, numbers, and underscores")
+})
+
+test_that("generateCohortSet2 validates cohortSet argument", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+
+  expect_error(generateCohortSet2(cdm, "not_a_df", name = "test"), "dataframe")
+  expect_error(generateCohortSet2("not_cdm", data.frame(x = 1), name = "test"), "cdm_reference")
+})
+
+# --- overwrite behavior ---
+
+test_that("generateCohortSet2 overwrite=TRUE allows re-run", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+
+  cdm <- generateCohortSet2(cdm, cs, name = "ow_test", overwrite = TRUE)
+  expect_true("ow_test" %in% names(cdm))
+
+  # Running again with overwrite=TRUE should succeed
+  cdm <- generateCohortSet2(cdm, cs, name = "ow_test", overwrite = TRUE)
+  expect_true("ow_test" %in% names(cdm))
+})
+
+test_that("generateCohortSet2 overwrite=FALSE errors if table exists", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+
+  cdm <- generateCohortSet2(cdm, cs, name = "noow_test", overwrite = TRUE)
+  expect_error(
+    generateCohortSet2(cdm, cs, name = "noow_test", overwrite = FALSE),
+    "already exists"
+  )
+})
+
+# --- computeAttrition ---
+
+test_that("generateCohortSet2 computeAttrition=TRUE with inclusion rules", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
+
+  cdm <- generateCohortSet2(cdm, cs, name = "att_test", computeAttrition = TRUE)
+
+  att <- omopgenerics::attrition(cdm$att_test)
+  expect_true(is.data.frame(att))
+  expect_true(nrow(att) > 0)
+  expect_true(all(c("cohort_definition_id", "number_records", "number_subjects",
+                     "reason_id", "reason", "excluded_records", "excluded_subjects") %in% names(att)))
+
+  # GIBleed_male has 2 inclusion rules: Male, 30 days prior observation
+  # Look up its ID by name rather than assuming a fixed ID
+  s <- omopgenerics::settings(cdm$att_test)
+  gibleed_id <- s$cohort_definition_id[s$cohort_name == "gibleed_male"]
+  att_gb <- att[att$cohort_definition_id == gibleed_id, ]
+  expect_true(nrow(att_gb) >= 3)  # qualifying + 2 rules
+  expect_equal(att_gb$reason[1], "Qualifying initial records")
+  expect_equal(att_gb$reason[2], "Male")
+  expect_equal(att_gb$reason[3], "30 days prior observation")
+
+  # Records should decrease or stay same through sequential rules
+  expect_true(att_gb$number_records[1] >= att_gb$number_records[2])
+  expect_true(att_gb$number_records[2] >= att_gb$number_records[3])
+})
+
+test_that("generateCohortSet2 attrition matches v1 counts", {
+  skip_if_not_installed("duckdb")
+  skip_if_not_installed("CirceR")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
+
+  cdm <- generateCohortSet(cdm, cs, name = "v1", computeAttrition = TRUE)
+  cdm <- generateCohortSet2(cdm, cs, name = "v2", computeAttrition = TRUE)
+
+  # Cohort counts should match
+  c1 <- omopgenerics::cohortCount(cdm$v1)
+  c2 <- omopgenerics::cohortCount(cdm$v2)
+  expect_equal(nrow(c1), nrow(c2))
+  for (cid in c1$cohort_definition_id) {
+    expect_equal(
+      c1$number_records[c1$cohort_definition_id == cid],
+      c2$number_records[c2$cohort_definition_id == cid],
+      info = paste("Cohort", cid, "record count mismatch")
+    )
+  }
+
+  # Attrition: both should have "Qualifying initial records" as first reason
+  # and matching counts for each cohort
+  att1 <- omopgenerics::attrition(cdm$v1)
+  att2 <- omopgenerics::attrition(cdm$v2)
+  for (cid in unique(att2$cohort_definition_id)) {
+    a2 <- att2[att2$cohort_definition_id == cid, ]
+    expect_equal(a2$reason[1], "Qualifying initial records")
+    # v1 and v2 qualifying counts should match
+    a1 <- att1[att1$cohort_definition_id == cid, ]
+    if (nrow(a1) > 0 && nrow(a2) > 0) {
+      expect_equal(a1$number_records[1], a2$number_records[1],
+                   info = paste("Cohort", cid, "qualifying records mismatch"))
+    }
+  }
+})
+
+test_that("generateCohortSet2 computeAttrition=FALSE skips attrition", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
+
+  cdm <- generateCohortSet2(cdm, cs, name = "noatt_test", computeAttrition = FALSE)
+
+  # omopgenerics provides default attrition when NULL is passed
+  att <- omopgenerics::attrition(cdm$noatt_test)
+  expect_true(is.data.frame(att))
+  # Should NOT have detailed inclusion rule attrition (just defaults)
+  att_c3 <- att[att$cohort_definition_id == 3, ]
+  expect_true(nrow(att_c3) <= 1)  # Only default row, no inclusion rules
+})
+
+# --- cohort codelist ---
+
+test_that("generateCohortSet2 includes cohort codelist", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
+
+  cdm <- generateCohortSet2(cdm, cs, name = "cl_test")
+
+  # Check codelist attribute exists
+  cl <- attr(cdm$cl_test, "cohort_codelist")
+  expect_false(is.null(cl))
+})
