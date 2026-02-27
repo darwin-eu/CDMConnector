@@ -6,6 +6,13 @@
 \usage{
 add_provider_specialty_filter(criteria, cdm_schema, alias_prefix)
 }
+\arguments{
+\item{criteria}{Criteria list (e.g. with ProviderSpecialty).}
+
+\item{cdm_schema}{CDM schema name.}
+
+\item{alias_prefix}{Table alias prefix.}
+}
 \value{
 list with select_col (to add to inner SELECT), join_sql, where_parts
 }

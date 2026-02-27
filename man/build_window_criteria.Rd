@@ -6,6 +6,13 @@
 \usage{
 build_window_criteria(start_window, end_window, check_observation_period)
 }
+\arguments{
+\item{start_window}{Start window definition.}
+
+\item{end_window}{End window definition.}
+
+\item{check_observation_period}{Whether to check observation period.}
+}
 \description{
 Build window criteria clause from StartWindow/EndWindow
 }

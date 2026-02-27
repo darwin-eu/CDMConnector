@@ -988,6 +988,7 @@ emit_codesets <- function(dag, options) {
 #' @noRd
 emit_domain_filtered <- function(used_tables, cdm_schema, options) {
   ac_tbl <- qualify_table("all_concepts", options)
+  cdm_table_sql <- options$cdm_table_sql  # May be NULL (no CDM modifications)
   # Max: 1 (obs_period) + 7 (domain tables) = 8 chunks
 
   chunks <- vector("list", 8L)
@@ -995,22 +996,34 @@ emit_domain_filtered <- function(used_tables, cdm_schema, options) {
 
   if ("OBSERVATION_PERIOD" %in% used_tables) {
     op_tbl <- qualify_table("atlas_observation_period", options)
+    # Use CDM subquery if available (e.g., cdmSubset filtered observation_period)
+    op_src <- if (!is.null(cdm_table_sql[["OBSERVATION_PERIOD"]])) {
+      paste0("(", cdm_table_sql[["OBSERVATION_PERIOD"]], ") _op")
+    } else {
+      paste0(cdm_schema, ".OBSERVATION_PERIOD")
+    }
     ci <- ci + 1L
     chunks[[ci]] <- c(
       paste0("DROP TABLE IF EXISTS ", op_tbl, ";"),
-      sprintf("SELECT * INTO %s FROM %s.OBSERVATION_PERIOD;", op_tbl, cdm_schema), "")
+      sprintf("SELECT * INTO %s FROM %s;", op_tbl, op_src), "")
   }
 
   for (dc in DOMAIN_CONFIG) {
     if (!dc$table %in% used_tables) next
     a <- dc$alias; ft <- qualify_table(dc$filtered, options); std <- dc$std_col; src <- dc$src_col
+    # Use CDM subquery if available (e.g., cdmSubset filtered tables)
+    tbl_src <- if (!is.null(cdm_table_sql[[dc$table]])) {
+      paste0("(", cdm_table_sql[[dc$table]], ") ", a)
+    } else {
+      paste0(cdm_schema, ".", dc$table, " ", a)
+    }
     ci <- ci + 1L
     chunks[[ci]] <- c(
       sprintf("DROP TABLE IF EXISTS %s;", ft),
-      sprintf(paste0("SELECT * INTO %s FROM %s.%s %s WHERE %s.%s IN ",
+      sprintf(paste0("SELECT * INTO %s FROM %s WHERE %s.%s IN ",
                      "(SELECT concept_id FROM %s) OR %s.%s IN ",
                      "(SELECT concept_id FROM %s);"),
-              ft, cdm_schema, dc$table, a, a, std, ac_tbl, a, src, ac_tbl),
+              ft, tbl_src, a, std, ac_tbl, a, src, ac_tbl),
       "")
   }
   if (ci == 0L) return(character(0))

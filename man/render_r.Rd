@@ -2,12 +2,18 @@
 % Please edit documentation in R/sqlrender.R
 \name{render_r}
 \alias{render_r}
-\title{Render parameterized SQL with @param substitution and {cond}?{then}:{else}
-(Pure R implementation — kept as fallback)}
+\title{Render parameterized SQL (Pure R implementation — fallback)}
 \usage{
 render_r(sql, warnOnMissingParameters = TRUE, ...)
 }
-\description{
-Render parameterized SQL with @param substitution and {cond}?{then}:{else}
-(Pure R implementation — kept as fallback)
+\arguments{
+\item{sql}{SQL string.}
+
+\item{warnOnMissingParameters}{Whether to warn on missing parameters.}
+
+\item{...}{Named parameters for substitution.}
 }
+\description{
+Supports @param substitution and conditional \code{{cond}?{then}:{else}} syntax.
+}
+\keyword{internal}

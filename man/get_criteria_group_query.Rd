@@ -10,6 +10,13 @@ get_criteria_group_query(
   cdm_schema = "@cdm_database_schema"
 )
 }
+\arguments{
+\item{group}{Criteria group (Type, CriteriaList, Groups, etc.).}
+
+\item{event_table}{Event table expression.}
+
+\item{cdm_schema}{CDM schema name.}
+}
 \description{
 Get criteria group query
 }

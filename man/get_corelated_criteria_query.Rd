@@ -11,6 +11,15 @@ get_corelated_criteria_query(
   cdm_schema
 )
 }
+\arguments{
+\item{correlated_item}{Correlated criteria item.}
+
+\item{event_table}{Event table expression.}
+
+\item{index_id}{Index id.}
+
+\item{cdm_schema}{CDM schema name.}
+}
 \description{
 Get correlated criteria query for a criteria list item (Criteria + StartWindow + Occurrence)
 }

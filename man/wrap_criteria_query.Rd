@@ -6,6 +6,13 @@
 \usage{
 wrap_criteria_query(base_query, group, cdm_schema = "@cdm_database_schema")
 }
+\arguments{
+\item{base_query}{Base SQL query.}
+
+\item{group}{Criteria group.}
+
+\item{cdm_schema}{CDM schema name.}
+}
 \description{
 Wrap base criteria query with correlated criteria group
 }

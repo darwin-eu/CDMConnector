@@ -6,6 +6,9 @@
 \usage{
 get_occurrence_operator(occ_type)
 }
+\arguments{
+\item{occ_type}{Occurrence type (0, 1, or 2).}
+}
 \description{
 Get occurrence operator from type (0=Exactly, 1=AtMost, 2=AtLeast)
 }

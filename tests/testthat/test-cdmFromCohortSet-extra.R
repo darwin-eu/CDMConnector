@@ -40,6 +40,7 @@ test_that("cdmFromCohortSet creates CDM from multiple cohorts", {
 })
 
 test_that("cdmFromCohortSet errors on empty cohort set", {
+  skip_if_not_installed("duckdb")
   empty_set <- data.frame(
     cohort_definition_id = integer(0),
     cohort_name = character(0),
@@ -50,6 +51,7 @@ test_that("cdmFromCohortSet errors on empty cohort set", {
 })
 
 test_that("cdmFromCohortSet errors on missing columns", {
+  skip_if_not_installed("duckdb")
   bad_set <- data.frame(id = 1, name = "test")
   expect_error(cdmFromCohortSet(bad_set, n = 10), "columns")
 })
@@ -449,33 +451,39 @@ test_that("cdmFromJson with AT_LEAST group type", {
 # --- cdmFromJson input validation ---
 
 test_that("cdmFromJson errors without jsonPath or cohortExpression", {
+  skip_if_not_installed("duckdb")
   expect_error(CDMConnector:::cdmFromJson(), "Provide either")
 })
 
 test_that("cdmFromJson errors on invalid n", {
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
   json_path <- system.file("cohorts3/GiBleed_default.json", package = "CDMConnector")
   expect_error(CDMConnector:::cdmFromJson(jsonPath = json_path, n = 0), "positive integer")
 })
 
 test_that("cdmFromJson errors on out-of-range targetMatch", {
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
   json_path <- system.file("cohorts3/GiBleed_default.json", package = "CDMConnector")
   expect_error(CDMConnector:::cdmFromJson(jsonPath = json_path, n = 10, targetMatch = 2), "between 0 and 1")
 })
 
 test_that("cdmFromJson errors on invalid date range", {
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
   json_path <- system.file("cohorts3/GiBleed_default.json", package = "CDMConnector")
   expect_error(CDMConnector:::cdmFromJson(jsonPath = json_path, n = 10, startDate = "2030-01-01", endDate = "2020-01-01"), "before")
 })
 
 test_that("cdmFromJson errors on non-existent path", {
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
   expect_error(CDMConnector:::cdmFromJson(jsonPath = "/nonexistent.json"), "does not exist")
 })
 
 test_that("cdmFromJson errors on expression without PrimaryCriteria", {
+  skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
   expect_error(CDMConnector:::cdmFromJson(cohortExpression = list(x = 1)), "PrimaryCriteria")
 })

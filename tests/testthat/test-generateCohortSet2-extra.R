@@ -371,3 +371,111 @@ test_that("generateCohortSet2 includes cohort codelist", {
   cl <- attr(cdm$cl_test, "cohort_codelist")
   expect_false(is.null(cl))
 })
+
+# --- CDM table subquery support (cdmSubset, dplyr filter) ---
+
+test_that("generateCohortSet2 works with cdmSubset (single person)", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+
+  # Subset to person 6 only
+  cdm_sub <- cdmSubset(cdm, personId = 6L)
+
+  # Verify subset worked — person table should have only 1 person
+
+  expect_equal(dplyr::pull(dplyr::tally(cdm_sub$person), "n"), 1)
+
+  # sql_render should show a JOIN (proof of modification)
+  rendered <- as.character(dbplyr::sql_render(cdm_sub$condition_occurrence))
+  expect_true(grepl("JOIN", rendered, ignore.case = TRUE))
+
+  cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+
+  # This should succeed — previously would fail with "observations outside observation period"
+  cdm_sub <- generateCohortSet2(cdm_sub, cs, name = "sub_cohort")
+
+  expect_true("sub_cohort" %in% names(cdm_sub))
+  result <- dplyr::collect(cdm_sub$sub_cohort)
+  expect_true(is.data.frame(result))
+  expect_true(all(c("cohort_definition_id", "subject_id",
+                     "cohort_start_date", "cohort_end_date") %in% names(result)))
+
+  # All cohort results should be for person 6 only
+  if (nrow(result) > 0) {
+    expect_true(all(result$subject_id == 6L))
+  }
+})
+
+test_that("generateCohortSet2 works with cdmSample (small subset)", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+
+  # Sample 5 persons
+  cdm_sam <- cdmSample(cdm, n = 5, seed = 42)
+  sampled_persons <- sort(dplyr::pull(cdm_sam$person, "person_id"))
+  expect_equal(length(sampled_persons), 5)
+
+  cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+  cdm_sam <- generateCohortSet2(cdm_sam, cs, name = "sam_cohort")
+
+  expect_true("sam_cohort" %in% names(cdm_sam))
+  result <- dplyr::collect(cdm_sam$sam_cohort)
+  expect_true(is.data.frame(result))
+
+  # All results must be within the sampled person set
+  if (nrow(result) > 0) {
+    expect_true(all(result$subject_id %in% sampled_persons))
+  }
+})
+
+test_that("generateCohortSet2 errors on missing required CDM table", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+
+  # cohorts1 uses condition_occurrence; remove it from the CDM
+  cdm$condition_occurrence <- NULL
+
+  cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+
+  expect_error(
+    generateCohortSet2(cdm, cs, name = "missing_test"),
+    "missing table"
+  )
+})
+
+test_that("generateCohortSet2 works with dplyr-filtered CDM table", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+
+  # Get baseline count with unfiltered CDM
+  cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
+  cdm <- generateCohortSet2(cdm, cs, name = "baseline")
+  baseline <- dplyr::collect(cdm$baseline)
+
+  # Now apply a dplyr filter on observation_period (restrict to recent obs)
+  cdm2 <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
+  cdm2$observation_period <- cdm2$observation_period %>%
+    dplyr::filter(observation_period_start_date >= as.Date("2000-01-01"))
+
+  # Verify filter is present in SQL
+  rendered <- as.character(dbplyr::sql_render(cdm2$observation_period))
+  expect_true(grepl("WHERE", rendered, ignore.case = TRUE))
+
+  cdm2 <- generateCohortSet2(cdm2, cs, name = "filtered")
+  filtered <- dplyr::collect(cdm2$filtered)
+
+  expect_true(is.data.frame(filtered))
+  expect_true(all(c("cohort_definition_id", "subject_id",
+                     "cohort_start_date", "cohort_end_date") %in% names(filtered)))
+
+  # Filtered result should have <= baseline records (fewer obs periods → fewer cohort entries)
+  expect_true(nrow(filtered) <= nrow(baseline))
+})

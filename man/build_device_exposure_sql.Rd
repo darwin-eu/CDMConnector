@@ -6,6 +6,11 @@
 \usage{
 build_device_exposure_sql(criteria, cdm_schema = "@cdm_database_schema")
 }
+\arguments{
+\item{criteria}{Criteria list.}
+
+\item{cdm_schema}{CDM schema name.}
+}
 \description{
 Build Device Exposure SQL
 }

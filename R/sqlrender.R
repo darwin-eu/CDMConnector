@@ -216,6 +216,7 @@ replace_with_concat <- function(val) {
 NULL
 
 #' Null coalescing operator
+#' @name or-or
 #' @param x Left value
 #' @param y Right value (used when x is NULL)
 #' @return x or y
@@ -1097,13 +1098,19 @@ translate_spark <- function(sql) {
 }
 # Render and translate SQL (from SqlRendereR - in-tree)
 
+#' @importFrom utils read.csv
 listSupportedDialects <- function() {
   pathToCsv <- system.file("csv", "supportedDialects.csv", package = "CDMConnector")
   read.csv(pathToCsv, stringsAsFactors = FALSE)
 }
 
-#' Render parameterized SQL with @param substitution and {cond}?{then}:{else}
-#' (Pure R implementation — kept as fallback)
+#' Render parameterized SQL (Pure R implementation — fallback)
+#'
+#' Supports @param substitution and conditional \code{{cond}?{then}:{else}} syntax.
+#' @param sql SQL string.
+#' @param warnOnMissingParameters Whether to warn on missing parameters.
+#' @param ... Named parameters for substitution.
+#' @keywords internal
 render_r <- function(sql, warnOnMissingParameters = TRUE, ...) {
   checkmate::assertCharacter(sql, len = 1)
   checkmate::assertLogical(warnOnMissingParameters, len = 1)
@@ -1121,6 +1128,11 @@ render_r <- function(sql, warnOnMissingParameters = TRUE, ...) {
 
 #' Translate SQL to target dialect
 #' (Pure R implementation — kept as fallback)
+#' @param sql SQL string.
+#' @param targetDialect Target dialect.
+#' @param tempEmulationSchema Temp schema for emulation.
+#' @param oracleTempSchema Oracle temp schema.
+#' @keywords internal
 translate_r <- function(sql,
                       targetDialect,
                       tempEmulationSchema = getOption("sqlRenderTempEmulationSchema"),

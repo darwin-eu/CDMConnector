@@ -6,6 +6,9 @@
 \usage{
 get_domain_concept_col(criteria)
 }
+\arguments{
+\item{criteria}{Criteria item (list).}
+}
 \description{
 Get domain concept column for criteria type (for COUNT DISTINCT)
 }

@@ -159,11 +159,13 @@ quote_cdm_table_refs <- function(sql, con, cdm_schema_str) {
   quoted_schema <- paste(vapply(schema_parts, function(p) {
     as.character(DBI::dbQuoteIdentifier(con, p))
   }, character(1)), collapse = ".")
-  # Build all patterns and replacements at once, then apply in sequence.
-  # Use uppercase table names in quoting — SQL Server/PostgreSQL are case-insensitive
-  # so "CONCEPT" works, and Snowflake is case-sensitive with uppercase defaults.
+  # PostgreSQL: quoted identifiers are case-sensitive and CDM tables are stored
+  # as lowercase. Snowflake: stored as uppercase. DuckDB/SQL Server: insensitive.
+  db <- dbms(con)
+  is_pg <- db %in% c("postgresql", "postgres")
   for (table_upper in CDM_TABLE_NAMES_FOR_QUOTE) {
-    ref <- paste0(quoted_schema, ".", DBI::dbQuoteIdentifier(con, table_upper))
+    table_name <- if (is_pg) tolower(table_upper) else table_upper
+    ref <- paste0(quoted_schema, ".", DBI::dbQuoteIdentifier(con, table_name))
     pattern <- paste0("(?i)\\b", schema_esc, "\\.", table_upper, "\\b")
     sql <- stringi::stri_replace_all_regex(sql, pattern, ref)
   }
@@ -317,7 +319,8 @@ atlas_json_to_sql_batch <- function(json_inputs,
                                     force_full_path = FALSE,
                                     cache = FALSE,
                                     con = NULL,
-                                    resolved_schema = NULL) {
+                                    resolved_schema = NULL,
+                                    cdm_table_sql = NULL) {
   if (is.data.frame(json_inputs)) {
     stopifnot("cohort_definition_id" %in% names(json_inputs), "cohort" %in% names(json_inputs))
     cohort_ids <- as.integer(json_inputs$cohort_definition_id)
@@ -359,7 +362,8 @@ atlas_json_to_sql_batch <- function(json_inputs,
   result <- buildBatchCohortQuery(cohort_list, cohort_ids, list(
     cdm_schema = cdm_schema,
     results_schema = results_schema,
-    table_prefix = table_prefix
+    table_prefix = table_prefix,
+    cdm_table_sql = cdm_table_sql
   ), cache = cache, con = con, schema = resolved_schema)
 
   if (isTRUE(cache)) {
@@ -437,6 +441,7 @@ extract_write_prefix <- function(x) {
 #'   DAG are recomputed. Default FALSE.
 #'
 #' @return A cdm reference with the generated cohort table added.
+#' @importFrom utils flush.console
 #' @export
 #' @examples
 #' \dontrun{
@@ -584,8 +589,42 @@ generateCohortSet2 <- function(cdm,
   } else {
     prefix <- paste0(write_prefix, atlas_unique_prefix())
   }
-  # Generate SQL WITHOUT dialect translation -- translation is done per-statement
+  # ---- Detect CDM table modifications (subset, filter, etc.) ----
+  # Parse cohorts to find which CDM tables are needed
+  cohort_list_parsed <- lapply(cohortSet$cohort, function(c) {
+    if (is.character(c) && length(c) == 1L) cohortExpressionFromJson(c)
+    else if (is.list(c)) cohortExpressionFromJson(jsonlite::toJSON(c, auto_unbox = TRUE, null = "null"))
+    else c
+  })
+  needed_tables <- collect_batch_used_domains_from_cohorts(cohort_list_parsed)
 
+  # Validate: error if required CDM tables are missing from the CDM object
+  cdm_names_lower <- tolower(names(cdm))
+  for (tbl_upper in needed_tables) {
+    tbl_lower <- tolower(tbl_upper)
+    if (!tbl_lower %in% cdm_names_lower) {
+      cli::cli_abort("CDM is missing table {.val {tbl_lower}} required by the cohort definitions.")
+    }
+  }
+
+  # Extract CDM table SQL for modified tables (cdmSubset / dplyr filter support).
+  # Only for domain tables + OBSERVATION_PERIOD; only when the rendered SQL
+  # contains JOIN/WHERE/UNION/EXCEPT/INTERSECT (i.e., the table has been modified).
+  # Unmodified tables keep using the raw @cdm_database_schema.TABLE reference.
+  cdm_table_sql <- NULL
+  domain_plus_op <- c(vapply(DOMAIN_CONFIG, `[[`, character(1), "table"), "OBSERVATION_PERIOD")
+  for (tbl_upper in intersect(needed_tables, domain_plus_op)) {
+    tbl_lower <- tolower(tbl_upper)
+    if (tbl_lower %in% cdm_names_lower && inherits(cdm[[tbl_lower]], "tbl_lazy")) {
+      rendered <- as.character(dbplyr::sql_render(cdm[[tbl_lower]]))
+      if (grepl("(JOIN|WHERE|UNION|EXCEPT|INTERSECT)", rendered, ignore.case = TRUE)) {
+        if (is.null(cdm_table_sql)) cdm_table_sql <- list()
+        cdm_table_sql[[tbl_upper]] <- rendered
+      }
+    }
+  }
+
+  # Generate SQL WITHOUT dialect translation -- translation is done per-statement
   # later to avoid O(n^2) SqlRender::translate on the full batch string.
   batch_result <- atlas_json_to_sql_batch(json_inputs = cohortSet,
                                  cdm_schema = cdm_schema_str,
@@ -595,7 +634,8 @@ generateCohortSet2 <- function(cdm,
                                  table_prefix = prefix,
                                  cache = cache,
                                  con = if (isTRUE(cache)) con else NULL,
-                                 resolved_schema = if (isTRUE(cache)) results_schema_str else NULL)
+                                 resolved_schema = if (isTRUE(cache)) results_schema_str else NULL,
+                                 cdm_table_sql = cdm_table_sql)
 
   # Extract SQL and cache metadata
   if (isTRUE(cache)) {
@@ -1319,7 +1359,8 @@ buildBatchCohortQuery <- function(cohort_list, cohort_ids, options = list(),
     cdm_schema = cdm_schema,
     results_schema = results_schema,
     vocabulary_schema = vocab_schema,
-    table_prefix = table_prefix
+    table_prefix = table_prefix,
+    cdm_table_sql = options$cdm_table_sql
   )
 
   dag <- build_execution_dag(cohort_list, cohort_ids, dag_options)

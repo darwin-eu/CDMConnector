@@ -6,6 +6,11 @@
 \usage{
 build_drug_era_sql(criteria, cdm_schema = "@cdm_database_schema")
 }
+\arguments{
+\item{criteria}{Criteria list.}
+
+\item{cdm_schema}{CDM schema name.}
+}
 \description{
 Build Drug Era SQL
 }

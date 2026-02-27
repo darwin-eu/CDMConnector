@@ -6,6 +6,9 @@
 \usage{
 scalar(x)
 }
+\arguments{
+\item{x}{Vector or value.}
+}
 \description{
 Get scalar from possibly-vector value (JSON may return arrays)
 }

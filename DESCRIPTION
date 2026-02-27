@@ -61,7 +61,8 @@ Suggests:
     pool,
     snakecase,
     digest,
-    rstudioapi
+    rstudioapi,
+    uuid
 Enhances:
     arrow
 Config/testthat/edition: 3

@@ -6,6 +6,9 @@
 \usage{
 is_group_empty(group)
 }
+\arguments{
+\item{group}{Criteria group list.}
+}
 \description{
 Check if criteria group is empty
 }

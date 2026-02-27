@@ -49,3 +49,5 @@ errorReportSql.txt
 *.DS_Store*
 /revdep/
 .claude/
+.vscode/
+coverage_results.rds

@@ -12,7 +12,17 @@ translate_r(
   oracleTempSchema = NULL
 )
 }
+\arguments{
+\item{sql}{SQL string.}
+
+\item{targetDialect}{Target dialect.}
+
+\item{tempEmulationSchema}{Temp schema for emulation.}
+
+\item{oracleTempSchema}{Oracle temp schema.}
+}
 \description{
 Translate SQL to target dialect
 (Pure R implementation — kept as fallback)
 }
+\keyword{internal}

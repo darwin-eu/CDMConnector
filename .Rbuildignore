@@ -1,5 +1,7 @@
 ^CDMConnector\.Rproj$
 ^\.Rproj\.user$
+^\.claude$
+^coverage_results\.rds$
 ^LICENSE\.md$
 ^codecov\.yml$
 ^\.github$

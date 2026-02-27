@@ -11,6 +11,7 @@
 #'
 #' @param json_str Character string containing cohort definition JSON
 #' @return List structure representing the cohort expression (validated)
+#' @importFrom stats setNames
 #' @keywords internal
 cohort_expression_from_json <- function(json_str) {
   data <- jsonlite::fromJSON(json_str, simplifyDataFrame = FALSE)
@@ -467,6 +468,9 @@ get_codeset_clause <- function(criteria, standard_col, source_col = NULL) {
 }
 
 #' Add ProviderSpecialty filter support to a domain builder
+#' @param criteria Criteria list (e.g. with ProviderSpecialty).
+#' @param cdm_schema CDM schema name.
+#' @param alias_prefix Table alias prefix.
 #' @return list with select_col (to add to inner SELECT), join_sql, where_parts
 add_provider_specialty_filter <- function(criteria, cdm_schema, alias_prefix) {
   ps <- criteria$ProviderSpecialty %||% criteria$providerSpecialty
@@ -487,6 +491,8 @@ add_provider_specialty_filter <- function(criteria, cdm_schema, alias_prefix) {
 }
 
 #' Build Condition Occurrence SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_condition_occurrence_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "co.condition_concept_id", "co.condition_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -553,6 +559,8 @@ build_condition_occurrence_sql <- function(criteria, cdm_schema = "@cdm_database
 }
 
 #' Build Death SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_death_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_join_expression(
     criteria$CodesetId %||% criteria$codesetId,
@@ -589,6 +597,8 @@ build_death_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
 }
 
 #' Build Observation Period SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_observation_period_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   select_clause <- "op.person_id, op.observation_period_id, op.period_type_concept_id, op.observation_period_start_date as start_date, op.observation_period_end_date as end_date"
   ordinal <- ", row_number() over (PARTITION BY op.person_id ORDER BY op.observation_period_start_date) as ordinal"
@@ -605,6 +615,8 @@ build_observation_period_sql <- function(criteria, cdm_schema = "@cdm_database_s
 }
 
 #' Build Location Region SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_location_region_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_id <- criteria$CodesetId %||% criteria$codesetId
   cs_tbl <- .sql_context$codesets_table
@@ -613,6 +625,8 @@ build_location_region_sql <- function(criteria, cdm_schema = "@cdm_database_sche
 }
 
 #' Build Drug Exposure SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_drug_exposure_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "de.drug_concept_id", "de.drug_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -699,6 +713,8 @@ build_drug_exposure_sql <- function(criteria, cdm_schema = "@cdm_database_schema
 }
 
 #' Build Visit Occurrence SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_visit_occurrence_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "vo.visit_concept_id", "vo.visit_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -758,6 +774,8 @@ build_visit_occurrence_sql <- function(criteria, cdm_schema = "@cdm_database_sch
 }
 
 #' Build Procedure Occurrence SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_procedure_occurrence_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "po.procedure_concept_id", "po.procedure_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -835,6 +853,8 @@ build_procedure_occurrence_sql <- function(criteria, cdm_schema = "@cdm_database
 }
 
 #' Build Measurement SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_measurement_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "m.measurement_concept_id", "m.measurement_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -962,6 +982,8 @@ build_measurement_sql <- function(criteria, cdm_schema = "@cdm_database_schema")
 }
 
 #' Build Observation SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_observation_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "o.observation_concept_id", "o.observation_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -1037,6 +1059,8 @@ build_observation_sql <- function(criteria, cdm_schema = "@cdm_database_schema")
 }
 
 #' Build Device Exposure SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_device_exposure_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "de.device_concept_id", "de.device_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -1103,6 +1127,8 @@ build_device_exposure_sql <- function(criteria, cdm_schema = "@cdm_database_sche
 }
 
 #' Build Specimen SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_specimen_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "s.specimen_concept_id", "s.specimen_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -1115,6 +1141,8 @@ build_specimen_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
 }
 
 #' Build Condition Era SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_condition_era_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_where_clause(criteria$CodesetId %||% criteria$codesetId, "ce.condition_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -1127,6 +1155,8 @@ build_condition_era_sql <- function(criteria, cdm_schema = "@cdm_database_schema
 }
 
 #' Build Drug Era SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_drug_era_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_where_clause(criteria$CodesetId %||% criteria$codesetId, "de.drug_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -1139,6 +1169,8 @@ build_drug_era_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
 }
 
 #' Build Dose Era SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_dose_era_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_where_clause(criteria$CodesetId %||% criteria$codesetId, "de.drug_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -1151,6 +1183,8 @@ build_dose_era_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
 }
 
 #' Build Visit Detail SQL
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_visit_detail_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   codeset_clause <- get_codeset_clause(criteria, "vd.visit_detail_concept_id", "vd.visit_detail_source_concept_id")
   first <- criteria$First %||% criteria$first %||% FALSE
@@ -1163,6 +1197,8 @@ build_visit_detail_sql <- function(criteria, cdm_schema = "@cdm_database_schema"
 }
 
 #' Build Payer Plan Period SQL (simplified)
+#' @param criteria Criteria list.
+#' @param cdm_schema CDM schema name.
 build_payer_plan_period_sql <- function(criteria, cdm_schema = "@cdm_database_schema") {
   first <- criteria$First %||% criteria$first %||% FALSE
   ordinal <- if (first) ", row_number() over (PARTITION BY ppp.person_id ORDER BY ppp.payer_plan_period_start_date) as ordinal" else ""
@@ -1521,9 +1557,13 @@ GROUP BY p.person_id, p.event_id
 "
 
 #' Get scalar from possibly-vector value (JSON may return arrays)
+#' @param x Vector or value.
 scalar <- function(x) if (is.null(x)) NULL else if (length(x) > 0) x[[1]] else NULL
 
 #' Build window criteria clause from StartWindow/EndWindow
+#' @param start_window Start window definition.
+#' @param end_window End window definition.
+#' @param check_observation_period Whether to check observation period.
 build_window_criteria <- function(start_window, end_window, check_observation_period) {
   clauses <- character(0)
   if (check_observation_period) {
@@ -1587,11 +1627,13 @@ build_window_criteria <- function(start_window, end_window, check_observation_pe
 }
 
 #' Get occurrence operator from type (0=Exactly, 1=AtMost, 2=AtLeast)
+#' @param occ_type Occurrence type (0, 1, or 2).
 get_occurrence_operator <- function(occ_type) {
   switch(as.character(occ_type), "0" = "=", "1" = "<=", "2" = ">=", "=")
 }
 
 #' Get domain concept column for criteria type (for COUNT DISTINCT)
+#' @param criteria Criteria item (list).
 get_domain_concept_col <- function(criteria) {
   ext <- extract_criteria(criteria)
   if (is.null(ext)) return(NULL)
@@ -1605,6 +1647,10 @@ get_domain_concept_col <- function(criteria) {
 }
 
 #' Get correlated criteria query for a criteria list item (Criteria + StartWindow + Occurrence)
+#' @param correlated_item Correlated criteria item.
+#' @param event_table Event table expression.
+#' @param index_id Index id.
+#' @param cdm_schema CDM schema name.
 get_corelated_criteria_query <- function(correlated_item, event_table, index_id, cdm_schema) {
   occ <- correlated_item$Occurrence %||% correlated_item$occurrence
   occ_type <- occ$Type %||% occ$type %||% 2
@@ -1695,6 +1741,9 @@ get_demographic_criteria_query <- function(dc, event_table, index_id, cdm_schema
 }
 
 #' Get criteria group query
+#' @param group Criteria group (Type, CriteriaList, Groups, etc.).
+#' @param event_table Event table expression.
+#' @param cdm_schema CDM schema name.
 get_criteria_group_query <- function(group, event_table, cdm_schema = "@cdm_database_schema") {
   criteria_list <- group$CriteriaList %||% group$criteriaList %||% list()
   groups <- group$Groups %||% group$groups %||% list()
@@ -1763,6 +1812,7 @@ get_criteria_group_query <- function(group, event_table, cdm_schema = "@cdm_data
 }
 
 #' Check if criteria group is empty
+#' @param group Criteria group list.
 is_group_empty <- function(group) {
   cl <- length(group$CriteriaList %||% group$criteriaList %||% list())
   gr <- length(group$Groups %||% group$groups %||% list())
@@ -1771,6 +1821,9 @@ is_group_empty <- function(group) {
 }
 
 #' Wrap base criteria query with correlated criteria group
+#' @param base_query Base SQL query.
+#' @param group Criteria group.
+#' @param cdm_schema CDM schema name.
 wrap_criteria_query <- function(base_query, group, cdm_schema = "@cdm_database_schema") {
   q_op <- paste0("SELECT Q.person_id, Q.event_id, Q.start_date, Q.end_date, Q.visit_occurrence_id, OP.observation_period_start_date as op_start_date, OP.observation_period_end_date as op_end_date\nFROM (\n", base_query, "\n) Q\nJOIN ", cdm_schema, ".OBSERVATION_PERIOD OP on Q.person_id = OP.person_id and OP.observation_period_start_date <= Q.start_date and OP.observation_period_end_date >= Q.start_date")
   event_table <- paste0("(\n", q_op, "\n)")
