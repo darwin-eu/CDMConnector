@@ -291,16 +291,6 @@ createAtlasCohortCodelistReference <- function(cdm, cohortSet) {
 #'         containing cohort counts}
 #' }
 #'
-#' Each of the three attributes are tidy tables. The implementation of this
-#' object is experimental and user feedback is welcome.
-#'
-#' `r lifecycle::badge("experimental")`
-
-#' One key design principle is that cohort_table objects are created once
-#' and can persist across analysis execution but should not be modified after
-#' creation. While it is possible to modify a cohort_table object doing
-#' so will invalidate it and it's attributes may no longer be accurate.
-#'
 #' @param cdm A cdm reference created by CDMConnector. write_schema must be
 #'   specified.
 #' @param name Name of the cohort table to be created. This will also be used
