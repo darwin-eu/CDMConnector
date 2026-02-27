@@ -104,6 +104,32 @@ test_that("cdmFromCohortSet returns cdm with correct person count", {
   expect_equal(n_persons, 25, info = "cdm should have exactly 25 persons")
 })
 
+test_that("cdmFromCohortSet builds condition_era, drug_era, dose_era and cdm_source", {
+  skip_on_ci()
+  skip_if_not("duckdb" %in% dbToTest)
+  skip_if_no_cdm_deps()
+  expr <- minimal_cohort_expression()
+  cohortSet <- data.frame(
+    cohort_definition_id = 1L,
+    cohort_name = "test_cohort",
+    cohort = I(list(expr)),
+    stringsAsFactors = FALSE
+  )
+  cdm <- CDMConnector::cdmFromCohortSet(cohortSet, n = 25, seed = 44, targetMatch = 0.9, successRate = 0.5)
+  expect_true("condition_era" %in% names(cdm))
+  expect_true("drug_era" %in% names(cdm))
+  expect_true("dose_era" %in% names(cdm))
+  expect_true("cdm_source" %in% names(cdm))
+  # Drug era should have rows when we have drug_exposure (primary criterion is DrugExposure)
+  drug_era_n <- nrow(dplyr::collect(cdm$drug_era))
+  expect_gte(drug_era_n, 1)
+  # cdm_source should have one row
+  cdm_src <- dplyr::collect(cdm$cdm_source)
+  expect_equal(nrow(cdm_src), 1)
+  expect_true("cdm_source_name" %in% names(cdm_src))
+  expect_true("cdm_version" %in% names(cdm_src))
+})
+
 test_that("generateCohortSet on cdm yields non-zero cohort counts", {
   skip_on_ci()
   skip_if_not("duckdb" %in% dbToTest)

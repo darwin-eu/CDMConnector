@@ -109,6 +109,12 @@ cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbP
     if (inherits(df, "try-error") || is.null(df) || nrow(df) == 0) {
       return(list(id_offset = id_offset, person_offset = person_offset))
     }
+    # Only append columns that exist in the target table (e.g. empty_cdm may have production_id; our DDL may not)
+    target_cols <- try(DBI::dbListFields(con_dst, table), silent = TRUE)
+    if (!inherits(target_cols, "try-error") && length(target_cols) > 0) {
+      keep <- target_cols[target_cols %in% names(df)]
+      if (length(keep) > 0) df <- df[, keep, drop = FALSE]
+    }
     if (person_col %in% names(df)) {
       df[[person_col]] <- df[[person_col]] + person_offset
     }
@@ -130,9 +136,7 @@ cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbP
     drug_exposure = "drug_exposure_id",
     measurement = "measurement_id",
     observation = "observation_id",
-    device_exposure = "device_exposure_id",
-    condition_era = "condition_era_id",
-    drug_era = "drug_era_id"
+    device_exposure = "device_exposure_id"
   )
 
   offsets <- list(
@@ -144,16 +148,27 @@ cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbP
     drug_exposure_id = 0L,
     measurement_id = 0L,
     observation_id = 0L,
-    device_exposure_id = 0L,
-    condition_era_id = 0L,
-    drug_era_id = 0L
+    device_exposure_id = 0L
   )
 
+  # condition_era, drug_era, dose_era are built at the end from condition_occurrence/drug_exposure
   tables <- c("person", "observation_period", "visit_occurrence", "condition_occurrence",
               "procedure_occurrence", "drug_exposure", "measurement", "observation",
-              "device_exposure", "condition_era", "drug_era", "death")
+              "device_exposure", "death")
   n_per_cohort <- max(1L, as.integer(n / n_cohorts))
   cohort_results <- vector("list", n_cohorts)
+
+  # Resolve empty_cdm source once (avoids repeated eunomiaDir/copy and saves disk)
+  empty_path <- CDMConnector::eunomiaDir("empty_cdm", cdmVersion = "5.4")
+  empty_cdm_file <- if (dir.exists(empty_path)) {
+    f <- list.files(empty_path, pattern = "\\.duckdb$", full.names = TRUE, recursive = TRUE)
+    if (length(f) == 0) stop("empty_cdm directory contains no .duckdb file.")
+    f[1]
+  } else {
+    empty_path
+  }
+  # Single temp DB path reused for every cohort; overwritten each iteration, removed via cdmDisconnect or unlink
+  temp_db <- tempfile(fileext = ".duckdb")
 
   for (i in seq_len(n_cohorts)) {
     if (verbose) message("Generating cohort ", i, "/", n_cohorts, " (id=", cohortSet$cohort_definition_id[[i]], ") ...")
@@ -175,79 +190,206 @@ cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbP
       stop("cohortSet$cohort[[", i, "]] must be a list (Circe expression) or character (JSON/path).")
     }
 
-    temp_db <- tempfile(fileext = ".duckdb")
-    empty_path <- CDMConnector::eunomiaDir("empty_cdm", cdmVersion = "5.4")
-    if (dir.exists(empty_path)) {
-      f <- list.files(empty_path, pattern = "\\.duckdb$", full.names = TRUE, recursive = TRUE)
-      if (length(f) > 0) file.copy(f[1], temp_db)
-    } else {
-      file.copy(empty_path, temp_db)
+    # Overwrite single temp file with fresh empty_cdm each cohort (no extra temp files)
+    if (!file.copy(empty_cdm_file, temp_db, overwrite = TRUE)) {
+      stop("Copying empty_cdm to temp file failed. Check disk space and write permission.")
     }
     dots <- list(...)
     dots$seed <- as.integer(seed) + i
     dots$verbose <- verbose
-    res_i <- do.call(cdmFromJson, c(list(
-      cohortExpression = cohort_expr,
-      n = n_per_cohort,
-      cohortId = cid,
-      duckdbPath = temp_db,
-      cohortTable = cohortTable
-    ), dots))
-    cohort_results[[i]] <- res_i
+    res_i <- NULL
+    tryCatch({
+      res_i <- do.call(cdmFromJson, c(list(
+        cohortExpression = cohort_expr,
+        n = n_per_cohort,
+        cohortId = cid,
+        duckdbPath = temp_db,
+        cohortTable = cohortTable
+      ), dots))
+      cohort_results[[i]] <- res_i
 
-    con_src <- DBI::dbConnect(duckdb::duckdb(), res_i$duckdb_path, read_only = TRUE)
-    on.exit(DBI::dbDisconnect(con_src, shutdown = TRUE), add = TRUE)
-
-    person_offset <- offsets$person_id
-
-    # Copy person first
-    df_person <- DBI::dbGetQuery(con_src, "SELECT * FROM person;")
-    if (nrow(df_person) > 0) {
-      df_person$person_id <- df_person$person_id + person_offset
-      DBI::dbWriteTable(con_final, "person", df_person, append = TRUE)
-      offsets$person_id <- max(df_person$person_id)
-    }
-
-    for (t in setdiff(tables, "person")) {
-      id_col <- pk[[t]]
-      if (is.null(id_col)) {
-        tmp <- copy_with_offsets(con_src, con_final, t, id_col = NULL, id_offset = 0L,
-                                 person_offset = person_offset, person_col = "person_id")
+      # If we could not generate suitable data (0 matched), log and skip copying this cohort
+      summ <- res_i$summary
+      matched <- as.integer(summ$matched %||% NA_integer_)
+      success_rate <- dots$successRate %||% 0.70
+      matched_rate <- as.numeric(summ$matched_rate %||% NA_real_)
+      if (!is.na(matched) && matched == 0L) {
+        if (verbose) message("  Skipping copy for cohort ", cid, " (", cname, "): no persons matched cohort definition.")
       } else {
-        id_offset <- offsets[[id_col]]
-        tmp <- copy_with_offsets(con_src, con_final, t, id_col = id_col, id_offset = id_offset,
-                                 person_offset = person_offset, person_col = "person_id")
-        offsets[[id_col]] <- tmp$id_offset
+        con_src <- DBI::dbConnect(duckdb::duckdb(), res_i$duckdb_path, read_only = TRUE)
+        person_offset <- offsets$person_id
+
+        # Copy person first (only columns that exist in target, in case schemas differ)
+        df_person <- DBI::dbGetQuery(con_src, "SELECT * FROM person;")
+        if (nrow(df_person) > 0) {
+          target_person_cols <- try(DBI::dbListFields(con_final, "person"), silent = TRUE)
+          if (!inherits(target_person_cols, "try-error") && length(target_person_cols) > 0) {
+            keep <- target_person_cols[target_person_cols %in% names(df_person)]
+            if (length(keep) > 0) df_person <- df_person[, keep, drop = FALSE]
+          }
+          df_person$person_id <- df_person$person_id + person_offset
+          DBI::dbWriteTable(con_final, "person", df_person, append = TRUE)
+          offsets$person_id <- max(df_person$person_id)
+        }
+
+        for (t in setdiff(tables, "person")) {
+          id_col <- pk[[t]]
+          if (is.null(id_col)) {
+            tmp <- copy_with_offsets(con_src, con_final, t, id_col = NULL, id_offset = 0L,
+                                     person_offset = person_offset, person_col = "person_id")
+          } else {
+            id_offset <- offsets[[id_col]]
+            tmp <- copy_with_offsets(con_src, con_final, t, id_col = id_col, id_offset = id_offset,
+                                     person_offset = person_offset, person_col = "person_id")
+            offsets[[id_col]] <- tmp$id_offset
+          }
+        }
+
+        # Cohort rows
+        df_cohort <- try(DBI::dbGetQuery(con_src, sprintf(
+          "SELECT cohort_definition_id, subject_id, cohort_start_date, cohort_end_date FROM %s WHERE cohort_definition_id = %d;",
+          cohortTable, cid
+        )), silent = TRUE)
+        if (!inherits(df_cohort, "try-error") && nrow(df_cohort) > 0) {
+          df_cohort$subject_id <- df_cohort$subject_id + person_offset
+          DBI::dbWriteTable(con_final, cohortTable, df_cohort, append = TRUE)
+        }
+
+        # Use cdmDisconnect to disconnect and remove temp file when it's in tempdir
+        cdm_src <- structure(list(), class = c("db_cdm", "cdm_reference", "cdm_source"), dbcon = con_src)
+        CDMConnector::cdmDisconnect(cdm_src)
       }
-    }
 
-    # Cohort rows
-    df_cohort <- try(DBI::dbGetQuery(con_src, sprintf(
-      "SELECT cohort_definition_id, subject_id, cohort_start_date, cohort_end_date FROM %s WHERE cohort_definition_id = %d;",
-      cohortTable, cid
-    )), silent = TRUE)
-    if (!inherits(df_cohort, "try-error") && nrow(df_cohort) > 0) {
-      df_cohort$subject_id <- df_cohort$subject_id + person_offset
-      DBI::dbWriteTable(con_final, cohortTable, df_cohort, append = TRUE)
-    }
-
-    summ <- res_i$summary
-    idx_row <- data.frame(
-      cohort_definition_id = cid,
-      cohort_name = cname,
-      n_requested = as.integer(n_per_cohort),
-      n_generated = as.integer(summ$n_generated %||% n_per_cohort),
-      matched = as.integer(summ$matched %||% NA_integer_),
-      matched_rate = as.numeric(summ$matched_rate %||% NA_real_),
-      stringsAsFactors = FALSE
-    )
-    DBI::dbWriteTable(con_final, "mockcdm_cohort_index", idx_row, append = TRUE)
-
-    DBI::dbDisconnect(con_src, shutdown = TRUE)
+      idx_row <- data.frame(
+        cohort_definition_id = cid,
+        cohort_name = cname,
+        n_requested = as.integer(n_per_cohort),
+        n_generated = as.integer(summ$n_generated %||% n_per_cohort),
+        matched = as.integer(summ$matched %||% NA_integer_),
+        matched_rate = as.numeric(summ$matched_rate %||% NA_real_),
+        stringsAsFactors = FALSE
+      )
+      DBI::dbWriteTable(con_final, "mockcdm_cohort_index", idx_row, append = TRUE)
+    }, error = function(e) {
+      msg <- conditionMessage(e)
+      message("Cohort ", cid, " (", cname, "): ", msg, " — skipping and continuing.")
+      summ_err <- if (!is.null(res_i) && !is.null(res_i$summary)) res_i$summary else list()
+      idx_row <- data.frame(
+        cohort_definition_id = cid,
+        cohort_name = cname,
+        n_requested = as.integer(n_per_cohort),
+        n_generated = as.integer(summ_err$n_generated %||% NA_integer_),
+        matched = as.integer(summ_err$matched %||% NA_integer_),
+        matched_rate = as.numeric(summ_err$matched_rate %||% NA_real_),
+        stringsAsFactors = FALSE
+      )
+      try(DBI::dbWriteTable(con_final, "mockcdm_cohort_index", idx_row, append = TRUE), silent = TRUE)
+      if (exists("con_src")) {
+        cdm_src <- structure(list(), class = c("db_cdm", "cdm_reference", "cdm_source"), dbcon = con_src)
+        try(CDMConnector::cdmDisconnect(cdm_src), silent = TRUE)
+      }
+      try(unlink(temp_db, force = TRUE), silent = TRUE)
+    })
+    # Remove temp file if we skipped copy (never opened con_src)
     try(unlink(temp_db, force = TRUE), silent = TRUE)
   }
 
-  # Disconnect so CDMConnector can attach to the same path
+  # Collapse overlapping observation_period by person_id (min start, max end) and cap all CDM dates to Sys.Date()
+  today_str <- format(Sys.Date(), "%Y-%m-%d")
+  op_df <- try(DBI::dbGetQuery(con_final, "SELECT person_id, observation_period_start_date, observation_period_end_date FROM observation_period;"), silent = TRUE)
+  if (!inherits(op_df, "try-error") && !is.null(op_df) && nrow(op_df) > 0) {
+    op_collapsed <- .collapse_observation_period(op_df)
+    try(DBI::dbExecute(con_final, "DELETE FROM observation_period;"), silent = TRUE)
+    DBI::dbWriteTable(con_final, "observation_period", op_collapsed, append = TRUE)
+  }
+  date_cap_sql <- list(
+    visit_occurrence = c("visit_start_date", "visit_end_date"),
+    condition_occurrence = c("condition_start_date", "condition_end_date"),
+    procedure_occurrence = "procedure_date",
+    drug_exposure = c("drug_exposure_start_date", "drug_exposure_end_date"),
+    measurement = "measurement_date",
+    observation = "observation_date",
+    device_exposure = c("device_exposure_start_date", "device_exposure_end_date"),
+    death = "death_date",
+    observation_period = c("observation_period_start_date", "observation_period_end_date")
+  )
+  for (tbl in names(date_cap_sql)) {
+    cols <- date_cap_sql[[tbl]]
+    for (col in cols) {
+      try(DBI::dbExecute(con_final, sprintf(
+        "UPDATE %s SET %s = LEAST(%s, CAST('%s' AS DATE)) WHERE %s > CAST('%s' AS DATE);",
+        tbl, col, col, today_str, col, today_str
+      )), silent = TRUE)
+    }
+  }
+  try(DBI::dbExecute(con_final, sprintf(
+    "UPDATE %s SET cohort_start_date = LEAST(cohort_start_date, CAST('%s' AS DATE)), cohort_end_date = LEAST(cohort_end_date, CAST('%s' AS DATE)) WHERE cohort_start_date > CAST('%s' AS DATE) OR cohort_end_date > CAST('%s' AS DATE);",
+    cohortTable, today_str, today_str, today_str, today_str
+  )), silent = TRUE)
+
+  # Build derived tables from final condition_occurrence and drug_exposure (30-day persistence window)
+  era_pad_days <- 30L
+  try(DBI::dbExecute(con_final, "DROP TABLE IF EXISTS condition_era;"), silent = TRUE)
+  try(DBI::dbExecute(con_final, "CREATE TABLE condition_era (
+    condition_era_id INTEGER, person_id INTEGER, condition_concept_id INTEGER,
+    condition_era_start_date DATE, condition_era_end_date DATE, condition_occurrence_count INTEGER);"), silent = TRUE)
+  try(DBI::dbExecute(con_final, "DROP TABLE IF EXISTS drug_era;"), silent = TRUE)
+  try(DBI::dbExecute(con_final, "CREATE TABLE drug_era (
+    drug_era_id INTEGER, person_id INTEGER, drug_concept_id INTEGER,
+    drug_era_start_date DATE, drug_era_end_date DATE, drug_exposure_count INTEGER, gap_days INTEGER);"), silent = TRUE)
+  co_df <- try(DBI::dbGetQuery(con_final, "SELECT person_id, condition_concept_id, condition_start_date, condition_end_date FROM condition_occurrence;"), silent = TRUE)
+  if (!inherits(co_df, "try-error") && !is.null(co_df) && nrow(co_df) > 0) {
+    ce <- .build_condition_era_df(co_df, era_pad_days = era_pad_days, start_id = 1L)
+    if (nrow(ce) > 0) DBI::dbWriteTable(con_final, "condition_era", ce, append = TRUE)
+  }
+  de_df <- try(DBI::dbGetQuery(con_final, "SELECT person_id, drug_concept_id, drug_exposure_start_date, drug_exposure_end_date FROM drug_exposure;"), silent = TRUE)
+  if (!inherits(de_df, "try-error") && !is.null(de_df) && nrow(de_df) > 0) {
+    dre <- .build_drug_era_df(de_df, era_pad_days = era_pad_days, start_id = 1L)
+    if (nrow(dre) > 0) DBI::dbWriteTable(con_final, "drug_era", dre, append = TRUE)
+  }
+  # Dose era: requires drug_strength; create table if missing, then build when drug_strength present
+  try(DBI::dbExecute(con_final, "DROP TABLE IF EXISTS dose_era;"), silent = TRUE)
+  try(DBI::dbExecute(con_final, "CREATE TABLE dose_era (
+    dose_era_id INTEGER, person_id INTEGER, drug_concept_id INTEGER, unit_concept_id INTEGER,
+    dose_value DOUBLE, dose_era_start_date DATE, dose_era_end_date DATE);"), silent = TRUE)
+  ds_df <- try(DBI::dbGetQuery(con_final, "SELECT drug_concept_id, ingredient_concept_id, amount_value, amount_unit_concept_id, numerator_value, numerator_unit_concept_id FROM drug_strength;"), silent = TRUE)
+  if (!inherits(de_df, "try-error") && !is.null(de_df) && nrow(de_df) > 0 &&
+      !inherits(ds_df, "try-error") && !is.null(ds_df) && nrow(ds_df) > 0) {
+    dose_era_df <- .build_dose_era_df(de_df, ds_df, era_pad_days = era_pad_days, start_id = 1L)
+    if (nrow(dose_era_df) > 0) {
+      DBI::dbWriteTable(con_final, "dose_era", dose_era_df, append = TRUE)
+    }
+  }
+  # Populate cdm_source (one row)
+  try(DBI::dbExecute(con_final, "DROP TABLE IF EXISTS cdm_source;"), silent = TRUE)
+  try(DBI::dbExecute(con_final, "CREATE TABLE cdm_source (
+    cdm_source_name VARCHAR, cdm_source_abbreviation VARCHAR, cdm_holder VARCHAR,
+    source_description VARCHAR, source_documentation_reference VARCHAR, cdm_etl_reference VARCHAR,
+    source_release_date DATE, cdm_release_date DATE, cdm_version VARCHAR,
+    cdm_version_concept_id INTEGER, vocabulary_version VARCHAR);"), silent = TRUE)
+  vocab_row <- try(DBI::dbGetQuery(con_final, "SELECT vocabulary_version FROM vocabulary WHERE vocabulary_id = 'None' LIMIT 1;"), silent = TRUE)
+  vocab_version <- if (!inherits(vocab_row, "try-error") && !is.null(vocab_row) && nrow(vocab_row) > 0) {
+    as.character(vocab_row$vocabulary_version[1])
+  } else {
+    as.character(Sys.Date())
+  }
+  cdm_source_row <- data.frame(
+    cdm_source_name = "Synthetic CDM from Cohort Set",
+    cdm_source_abbreviation = "synthetic_cdm",
+    cdm_holder = "CDMConnector",
+    source_description = "Synthetic OMOP CDM generated by CDMConnector::cdmFromCohortSet from cohort definitions.",
+    source_documentation_reference = NA_character_,
+    cdm_etl_reference = "CDMConnector::cdmFromCohortSet",
+    source_release_date = format(Sys.Date(), "%Y-%m-%d"),
+    cdm_release_date = format(Sys.Date(), "%Y-%m-%d"),
+    cdm_version = "v5.4",
+    cdm_version_concept_id = 756265L,
+    vocabulary_version = vocab_version,
+    stringsAsFactors = FALSE
+  )
+  DBI::dbWriteTable(con_final, "cdm_source", cdm_source_row, append = TRUE)
+
+  # Disconnect so CDMConnector can attach to the same path (do not unlink final_path; we reconnect immediately)
   DBI::dbDisconnect(con_final, shutdown = TRUE)
   on.exit(NULL)
 
@@ -1033,147 +1175,6 @@ cdmFromJson <- function(jsonPath = NULL,
     reqs
   }
 
-  # ---- Era builders -----------------------------------------------------------
-  build_condition_era_df <- function(condition_occurrence_df, era_pad_days, start_id = 1L) {
-    if (is.null(condition_occurrence_df) || nrow(condition_occurrence_df) == 0) {
-      return(data.frame(
-        condition_era_id = integer(0),
-        person_id = integer(0),
-        condition_concept_id = integer(0),
-        condition_era_start_date = as.Date(character(0)),
-        condition_era_end_date = as.Date(character(0)),
-        condition_occurrence_count = integer(0)
-      ))
-    }
-
-    df <- condition_occurrence_df[, c("person_id", "condition_concept_id", "condition_start_date", "condition_end_date")]
-    df$condition_end_date[is.na(df$condition_end_date)] <- df$condition_start_date[is.na(df$condition_end_date)]
-    df <- df[order(df$person_id, df$condition_concept_id, df$condition_start_date), , drop = FALSE]
-
-    out <- list()
-    cur_id <- start_id
-
-    split_keys <- paste(df$person_id, df$condition_concept_id, sep = "|")
-    idx <- split(seq_len(nrow(df)), split_keys)
-
-    for (k in names(idx)) {
-      rows <- df[idx[[k]], , drop = FALSE]
-      start <- rows$condition_start_date[1]
-      end <- rows$condition_end_date[1]
-      count <- 1L
-
-      if (nrow(rows) > 1) {
-        for (i in 2:nrow(rows)) {
-          s <- rows$condition_start_date[i]
-          e <- rows$condition_end_date[i]
-          # merge if gap <= pad
-          if (as.integer(s - end) <= era_pad_days) {
-            if (e > end) end <- e
-            count <- count + 1L
-          } else {
-            out[[length(out) + 1L]] <- data.frame(
-              condition_era_id = cur_id,
-              person_id = rows$person_id[1],
-              condition_concept_id = rows$condition_concept_id[1],
-              condition_era_start_date = start,
-              condition_era_end_date = end,
-              condition_occurrence_count = count
-            )
-            cur_id <- cur_id + 1L
-            start <- s
-            end <- e
-            count <- 1L
-          }
-        }
-      }
-
-      out[[length(out) + 1L]] <- data.frame(
-        condition_era_id = cur_id,
-        person_id = rows$person_id[1],
-        condition_concept_id = rows$condition_concept_id[1],
-        condition_era_start_date = start,
-        condition_era_end_date = end,
-        condition_occurrence_count = count
-      )
-      cur_id <- cur_id + 1L
-    }
-
-    do.call(rbind, out)
-  }
-
-  build_drug_era_df <- function(drug_exposure_df, era_pad_days, start_id = 1L) {
-    if (is.null(drug_exposure_df) || nrow(drug_exposure_df) == 0) {
-      return(data.frame(
-        drug_era_id = integer(0),
-        person_id = integer(0),
-        drug_concept_id = integer(0),
-        drug_era_start_date = as.Date(character(0)),
-        drug_era_end_date = as.Date(character(0)),
-        drug_exposure_count = integer(0),
-        gap_days = integer(0)
-      ))
-    }
-
-    df <- drug_exposure_df[, c("person_id", "drug_concept_id", "drug_exposure_start_date", "drug_exposure_end_date")]
-    df$drug_exposure_end_date[is.na(df$drug_exposure_end_date)] <- df$drug_exposure_start_date[is.na(df$drug_exposure_end_date)]
-    df <- df[order(df$person_id, df$drug_concept_id, df$drug_exposure_start_date), , drop = FALSE]
-
-    out <- list()
-    cur_id <- start_id
-
-    split_keys <- paste(df$person_id, df$drug_concept_id, sep = "|")
-    idx <- split(seq_len(nrow(df)), split_keys)
-
-    for (k in names(idx)) {
-      rows <- df[idx[[k]], , drop = FALSE]
-      start <- rows$drug_exposure_start_date[1]
-      end <- rows$drug_exposure_end_date[1]
-      count <- 1L
-      gap <- 0L
-
-      if (nrow(rows) > 1) {
-        for (i in 2:nrow(rows)) {
-          s <- rows$drug_exposure_start_date[i]
-          e <- rows$drug_exposure_end_date[i]
-          g <- as.integer(s - end)
-          if (g <= era_pad_days) {
-            if (e > end) end <- e
-            count <- count + 1L
-            if (g > gap) gap <- g
-          } else {
-            out[[length(out) + 1L]] <- data.frame(
-              drug_era_id = cur_id,
-              person_id = rows$person_id[1],
-              drug_concept_id = rows$drug_concept_id[1],
-              drug_era_start_date = start,
-              drug_era_end_date = end,
-              drug_exposure_count = count,
-              gap_days = gap
-            )
-            cur_id <- cur_id + 1L
-            start <- s
-            end <- e
-            count <- 1L
-            gap <- 0L
-          }
-        }
-      }
-
-      out[[length(out) + 1L]] <- data.frame(
-        drug_era_id = cur_id,
-        person_id = rows$person_id[1],
-        drug_concept_id = rows$drug_concept_id[1],
-        drug_era_start_date = start,
-        drug_era_end_date = end,
-        drug_exposure_count = count,
-        gap_days = gap
-      )
-      cur_id <- cur_id + 1L
-    }
-
-    do.call(rbind, out)
-  }
-
   # ---- Cohort SQL compilation (CirceR + SqlRender) ----
   compile_cohort_sql <- function(cohort_list) {
     cohort_json <- as.character(jsonlite::toJSON(cohort_list, auto_unbox = TRUE, null = "null"))
@@ -1453,15 +1454,30 @@ cdmFromJson <- function(jsonPath = NULL,
     }
     prior_pad <- pmax(0, prior_days + sample(-5:5, n, replace = TRUE))
     post_pad <- pmax(0, post_days + sample(-5:5, n, replace = TRUE))
+    today <- Sys.Date()
     op_start <- person_date_min - prior_pad[match(as.character(person_ids), names(person_date_min))]
-    op_end <- pmin(person_date_max + post_pad[match(as.character(person_ids), names(person_date_max))], Sys.Date())
+    op_end <- pmin(person_date_max + post_pad[match(as.character(person_ids), names(person_date_max))], today)
     op_start[is.na(person_date_min)] <- idx_dates[is.na(person_date_min)] - prior_pad[is.na(person_date_min[as.character(person_ids)])]
-    op_end[is.na(person_date_max)] <- pmin(idx_dates[is.na(person_date_max)] + post_pad[is.na(person_date_max[as.character(person_ids)])], Sys.Date())
+    op_end[is.na(person_date_max)] <- pmin(idx_dates[is.na(person_date_max)] + post_pad[is.na(person_date_max[as.character(person_ids)])], today)
     op_start <- op_start[as.character(person_ids)]
     op_end <- op_end[as.character(person_ids)]
     op_start <- pmin(op_start, op_end)
     op_end <- pmax(op_start, op_end)
-    DBI::dbWriteTable(con, "observation_period", make_observation_period(person_ids, op_start, op_end), append = TRUE)
+    op_start <- pmin(op_start, today)
+    op_end <- pmin(op_end, today)
+    op_new <- make_observation_period(person_ids, op_start, op_end)
+    op_existing <- try(DBI::dbGetQuery(con, "SELECT person_id, observation_period_start_date, observation_period_end_date FROM observation_period;"), silent = TRUE)
+    if (inherits(op_existing, "try-error") || is.null(op_existing) || nrow(op_existing) == 0) {
+      op_combined <- op_new[, c("person_id", "observation_period_start_date", "observation_period_end_date")]
+    } else {
+      op_combined <- rbind(
+        op_existing[, c("person_id", "observation_period_start_date", "observation_period_end_date")],
+        op_new[, c("person_id", "observation_period_start_date", "observation_period_end_date")]
+      )
+    }
+    op_collapsed <- .collapse_observation_period(op_combined)
+    try(DBI::dbExecute(con, "DELETE FROM observation_period;"), silent = TRUE)
+    DBI::dbWriteTable(con, "observation_period", op_collapsed, append = TRUE)
 
     if (death_fraction > 0 && length(person_ids) > 0) {
       n_death <- max(1L, round(length(person_ids) * death_fraction))
@@ -1483,12 +1499,12 @@ cdmFromJson <- function(jsonPath = NULL,
     # We build from already inserted occurrences/exposures.
     if (needs_condition_era) {
       co <- DBI::dbGetQuery(con, "SELECT person_id, condition_concept_id, condition_start_date, condition_end_date FROM condition_occurrence;")
-      ce <- build_condition_era_df(co, era_pad_days = era_pad_json, start_id = 1L)
+      ce <- .build_condition_era_df(co, era_pad_days = era_pad_json, start_id = 1L)
       if (nrow(ce) > 0) DBI::dbWriteTable(con, "condition_era", ce, append = TRUE)
     }
     if (needs_drug_era) {
       de <- DBI::dbGetQuery(con, "SELECT person_id, drug_concept_id, drug_exposure_start_date, drug_exposure_end_date FROM drug_exposure;")
-      dre <- build_drug_era_df(de, era_pad_days = era_pad_json, start_id = 1L)
+      dre <- .build_drug_era_df(de, era_pad_days = era_pad_json, start_id = 1L)
       if (nrow(dre) > 0) DBI::dbWriteTable(con, "drug_era", dre, append = TRUE)
     }
 
@@ -1540,6 +1556,252 @@ cdmFromJson <- function(jsonPath = NULL,
     cohort_sql = cohort_sql,
     cohort_json = cohort
   )
+}
+
+# Collapse overlapping observation_period rows by person_id: one row per person with min(start), max(end). Cap dates to Sys.Date().
+.collapse_observation_period <- function(df) {
+  if (is.null(df) || nrow(df) == 0) return(df)
+  today <- Sys.Date()
+  df$observation_period_start_date <- pmin(as.Date(df$observation_period_start_date), today)
+  df$observation_period_end_date <- pmin(as.Date(df$observation_period_end_date), today)
+  agg_min <- stats::aggregate(observation_period_start_date ~ person_id, data = df, FUN = min)
+  agg_max <- stats::aggregate(observation_period_end_date ~ person_id, data = df, FUN = max)
+  agg <- merge(agg_min, agg_max, by = "person_id", all = TRUE)
+  agg$observation_period_id <- seq_len(nrow(agg))
+  agg$period_type_concept_id <- 0L
+  agg[, c("observation_period_id", "person_id", "observation_period_start_date", "observation_period_end_date", "period_type_concept_id")]
+}
+
+# Build condition_era from condition_occurrence using persistence window (30d gap).
+# condition_occurrence_df must have person_id, condition_concept_id, condition_start_date, condition_end_date.
+.build_condition_era_df <- function(condition_occurrence_df, era_pad_days = 30L, start_id = 1L) {
+  if (is.null(condition_occurrence_df) || nrow(condition_occurrence_df) == 0) {
+    return(data.frame(
+      condition_era_id = integer(0),
+      person_id = integer(0),
+      condition_concept_id = integer(0),
+      condition_era_start_date = as.Date(character(0)),
+      condition_era_end_date = as.Date(character(0)),
+      condition_occurrence_count = integer(0)
+    ))
+  }
+  df <- condition_occurrence_df[, c("person_id", "condition_concept_id", "condition_start_date", "condition_end_date")]
+  df$condition_end_date[is.na(df$condition_end_date)] <- df$condition_start_date[is.na(df$condition_end_date)]
+  df <- df[order(df$person_id, df$condition_concept_id, df$condition_start_date), , drop = FALSE]
+
+  out <- list()
+  cur_id <- start_id
+  split_keys <- paste(df$person_id, df$condition_concept_id, sep = "|")
+  idx <- split(seq_len(nrow(df)), split_keys)
+
+  for (k in names(idx)) {
+    rows <- df[idx[[k]], , drop = FALSE]
+    start <- rows$condition_start_date[1]
+    end <- rows$condition_end_date[1]
+    count <- 1L
+
+    if (nrow(rows) > 1) {
+      for (i in 2:nrow(rows)) {
+        s <- rows$condition_start_date[i]
+        e <- rows$condition_end_date[i]
+        if (as.integer(s - end) <= era_pad_days) {
+          if (e > end) end <- e
+          count <- count + 1L
+        } else {
+          out[[length(out) + 1L]] <- data.frame(
+            condition_era_id = cur_id,
+            person_id = rows$person_id[1],
+            condition_concept_id = rows$condition_concept_id[1],
+            condition_era_start_date = start,
+            condition_era_end_date = end,
+            condition_occurrence_count = count
+          )
+          cur_id <- cur_id + 1L
+          start <- s
+          end <- e
+          count <- 1L
+        }
+      }
+    }
+
+    out[[length(out) + 1L]] <- data.frame(
+      condition_era_id = cur_id,
+      person_id = rows$person_id[1],
+      condition_concept_id = rows$condition_concept_id[1],
+      condition_era_start_date = start,
+      condition_era_end_date = end,
+      condition_occurrence_count = count
+    )
+    cur_id <- cur_id + 1L
+  }
+
+  do.call(rbind, out)
+}
+
+# Build drug_era from drug_exposure using persistence window (30d gap).
+# gap_days = (era_end - era_start) - sum(days exposed) per era.
+.build_drug_era_df <- function(drug_exposure_df, era_pad_days = 30L, start_id = 1L) {
+  if (is.null(drug_exposure_df) || nrow(drug_exposure_df) == 0) {
+    return(data.frame(
+      drug_era_id = integer(0),
+      person_id = integer(0),
+      drug_concept_id = integer(0),
+      drug_era_start_date = as.Date(character(0)),
+      drug_era_end_date = as.Date(character(0)),
+      drug_exposure_count = integer(0),
+      gap_days = integer(0)
+    ))
+  }
+  df <- drug_exposure_df[, c("person_id", "drug_concept_id", "drug_exposure_start_date", "drug_exposure_end_date")]
+  df$drug_exposure_end_date[is.na(df$drug_exposure_end_date)] <- df$drug_exposure_start_date[is.na(df$drug_exposure_end_date)]
+  df <- df[order(df$person_id, df$drug_concept_id, df$drug_exposure_start_date), , drop = FALSE]
+
+  out <- list()
+  cur_id <- start_id
+  split_keys <- paste(df$person_id, df$drug_concept_id, sep = "|")
+  idx <- split(seq_len(nrow(df)), split_keys)
+
+  for (k in names(idx)) {
+    rows <- df[idx[[k]], , drop = FALSE]
+    start <- rows$drug_exposure_start_date[1]
+    end <- rows$drug_exposure_end_date[1]
+    count <- 1L
+    days_exposed <- as.integer(end - start)
+
+    if (nrow(rows) > 1) {
+      for (i in 2:nrow(rows)) {
+        s <- rows$drug_exposure_start_date[i]
+        e <- rows$drug_exposure_end_date[i]
+        g <- as.integer(s - end)
+        if (g <= era_pad_days) {
+          if (e > end) end <- e
+          count <- count + 1L
+          days_exposed <- days_exposed + as.integer(e - s)
+        } else {
+          era_days <- as.integer(end - start)
+          gap_days <- max(0L, era_days - days_exposed)
+          out[[length(out) + 1L]] <- data.frame(
+            drug_era_id = cur_id,
+            person_id = rows$person_id[1],
+            drug_concept_id = rows$drug_concept_id[1],
+            drug_era_start_date = start,
+            drug_era_end_date = end,
+            drug_exposure_count = count,
+            gap_days = gap_days
+          )
+          cur_id <- cur_id + 1L
+          start <- s
+          end <- e
+          count <- 1L
+          days_exposed <- as.integer(e - s)
+        }
+      }
+    }
+
+    era_days <- as.integer(end - start)
+    gap_days <- max(0L, era_days - days_exposed)
+    out[[length(out) + 1L]] <- data.frame(
+      drug_era_id = cur_id,
+      person_id = rows$person_id[1],
+      drug_concept_id = rows$drug_concept_id[1],
+      drug_era_start_date = start,
+      drug_era_end_date = end,
+      drug_exposure_count = count,
+      gap_days = gap_days
+    )
+    cur_id <- cur_id + 1L
+  }
+
+  do.call(rbind, out)
+}
+
+# Build dose_era from drug_exposure + drug_strength. Returns empty if no drug_strength or no matching rows.
+# dose_era groups by person_id, drug_concept_id (ingredient), unit_concept_id, dose_value with 30d gap.
+.build_dose_era_df <- function(drug_exposure_df, drug_strength_df = NULL, era_pad_days = 30L, start_id = 1L) {
+  empty <- data.frame(
+    dose_era_id = integer(0),
+    person_id = integer(0),
+    drug_concept_id = integer(0),
+    unit_concept_id = integer(0),
+    dose_value = numeric(0),
+    dose_era_start_date = as.Date(character(0)),
+    dose_era_end_date = as.Date(character(0))
+  )
+  if (is.null(drug_exposure_df) || nrow(drug_exposure_df) == 0) return(empty)
+  if (is.null(drug_strength_df) || nrow(drug_strength_df) == 0) return(empty)
+
+  # Resolve dose: use amount_value/amount_unit_concept_id if present, else numerator/denominator
+  ds <- drug_strength_df
+  ds$dose_value <- NA_real_
+  ds$unit_concept_id <- NA_integer_
+  if ("amount_value" %in% names(ds) && "amount_unit_concept_id" %in% names(ds)) {
+    ok <- !is.na(ds$amount_value) & ds$amount_value > 0
+    ds$dose_value[ok] <- ds$amount_value[ok]
+    ds$unit_concept_id[ok] <- ds$amount_unit_concept_id[ok]
+  }
+  if (any(is.na(ds$dose_value)) && "numerator_value" %in% names(ds) && "numerator_unit_concept_id" %in% names(ds)) {
+    ok <- is.na(ds$dose_value) & !is.na(ds$numerator_value) & ds$numerator_value > 0
+    ds$dose_value[ok] <- ds$numerator_value[ok]
+    ds$unit_concept_id[ok] <- ds$numerator_unit_concept_id[ok]
+  }
+  ds <- ds[!is.na(ds$dose_value) & !is.na(ds$unit_concept_id) & ds$dose_value > 0, , drop = FALSE]
+  if (nrow(ds) == 0) return(empty)
+
+  de <- drug_exposure_df[, c("person_id", "drug_concept_id", "drug_exposure_start_date", "drug_exposure_end_date")]
+  de$drug_exposure_end_date[is.na(de$drug_exposure_end_date)] <- de$drug_exposure_start_date[is.na(de$drug_exposure_end_date)]
+  merged <- merge(de, ds[, c("drug_concept_id", "ingredient_concept_id", "dose_value", "unit_concept_id")],
+                  by = "drug_concept_id", all.x = FALSE)
+  if (nrow(merged) == 0) return(empty)
+  merged$drug_concept_id <- merged$ingredient_concept_id
+  merged$ingredient_concept_id <- NULL
+  merged <- merged[order(merged$person_id, merged$drug_concept_id, merged$dose_value, merged$unit_concept_id, merged$drug_exposure_start_date), , drop = FALSE]
+
+  out <- list()
+  cur_id <- start_id
+  split_keys <- paste(merged$person_id, merged$drug_concept_id, merged$dose_value, merged$unit_concept_id, sep = "|")
+  idx <- split(seq_len(nrow(merged)), split_keys)
+
+  for (k in names(idx)) {
+    rows <- merged[idx[[k]], , drop = FALSE]
+    start <- rows$drug_exposure_start_date[1]
+    end <- rows$drug_exposure_end_date[1]
+
+    if (nrow(rows) > 1) {
+      for (i in 2:nrow(rows)) {
+        s <- rows$drug_exposure_start_date[i]
+        e <- rows$drug_exposure_end_date[i]
+        if (as.integer(s - end) <= era_pad_days) {
+          if (e > end) end <- e
+        } else {
+          out[[length(out) + 1L]] <- data.frame(
+            dose_era_id = cur_id,
+            person_id = rows$person_id[1],
+            drug_concept_id = rows$drug_concept_id[1],
+            unit_concept_id = rows$unit_concept_id[1],
+            dose_value = rows$dose_value[1],
+            dose_era_start_date = start,
+            dose_era_end_date = end
+          )
+          cur_id <- cur_id + 1L
+          start <- s
+          end <- e
+        }
+      }
+    }
+
+    out[[length(out) + 1L]] <- data.frame(
+      dose_era_id = cur_id,
+      person_id = rows$person_id[1],
+      drug_concept_id = rows$drug_concept_id[1],
+      unit_concept_id = rows$unit_concept_id[1],
+      dose_value = rows$dose_value[1],
+      dose_era_start_date = start,
+      dose_era_end_date = end
+    )
+    cur_id <- cur_id + 1L
+  }
+
+  do.call(rbind, out)
 }
 
 # ------------------------------------------------------------------------------

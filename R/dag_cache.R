@@ -45,18 +45,46 @@ cache_registry_qname <- function(schema) {
 #' @param schema Character schema name.
 #' @return Character vector of SQL statements.
 #' @noRd
-cache_registry_ddl <- function(schema) {
+cache_registry_ddl <- function(schema, con = NULL) {
   tbl <- cache_registry_qname(schema)
-  c(
-    sprintf("CREATE TABLE IF NOT EXISTS %s (", tbl),
-    "  node_hash VARCHAR(16) NOT NULL,",
-    "  node_type VARCHAR(32) NOT NULL,",
-    "  table_name VARCHAR(255) NOT NULL,",
-    "  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,",
-    "  last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,",
-    "  cohort_ids VARCHAR(1000) DEFAULT '',",
-    sprintf("  PRIMARY KEY (node_hash));")
-  )
+  db <- if (!is.null(con)) dbms(con) else ""
+  is_sqlserver <- db %in% c("sql server", "sqlserver")
+  is_spark <- db %in% c("spark", "databricks")
+
+  if (is_sqlserver) {
+    # SQL Server doesn't support CREATE TABLE IF NOT EXISTS.
+    # Use IF NOT EXISTS ... (object_id check) syntax.
+    c(
+      sprintf("IF OBJECT_ID('%s', 'U') IS NULL CREATE TABLE %s (", tbl, tbl),
+      "  node_hash VARCHAR(16) NOT NULL,",
+      "  node_type VARCHAR(32) NOT NULL,",
+      "  table_name VARCHAR(255) NOT NULL,",
+      "  created_at DATETIME DEFAULT GETDATE(),",
+      "  last_used_at DATETIME DEFAULT GETDATE(),",
+      "  cohort_ids VARCHAR(1000) DEFAULT '',",
+      sprintf("  PRIMARY KEY (node_hash));")
+    )
+  } else if (is_spark) {
+    c(
+      sprintf("CREATE TABLE IF NOT EXISTS %s (", tbl),
+      "  node_hash STRING NOT NULL,",
+      "  node_type STRING NOT NULL,",
+      "  table_name STRING NOT NULL,",
+      "  created_at TIMESTAMP,",
+      "  last_used_at TIMESTAMP,",
+      "  cohort_ids STRING);")
+  } else {
+    c(
+      sprintf("CREATE TABLE IF NOT EXISTS %s (", tbl),
+      "  node_hash VARCHAR(16) NOT NULL,",
+      "  node_type VARCHAR(32) NOT NULL,",
+      "  table_name VARCHAR(255) NOT NULL,",
+      "  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,",
+      "  last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,",
+      "  cohort_ids VARCHAR(1000) DEFAULT '',",
+      sprintf("  PRIMARY KEY (node_hash));")
+    )
+  }
 }
 
 #' Ensure the cache registry table exists.
@@ -64,7 +92,7 @@ cache_registry_ddl <- function(schema) {
 #' @param schema Character schema name (resolved, not a placeholder).
 #' @noRd
 ensure_cache_registry <- function(con, schema) {
-  ddl <- paste(cache_registry_ddl(schema), collapse = "\n")
+  ddl <- paste(cache_registry_ddl(schema, con = con), collapse = "\n")
   tryCatch(
     DBI::dbExecute(con, ddl),
     error = function(e) {
