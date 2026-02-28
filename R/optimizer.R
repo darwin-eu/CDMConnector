@@ -1022,6 +1022,7 @@ computeAttritionTable2 <- function(cdm, name, cohortSet) {
 #' @return The input \code{cdm} with the new cohort table added (as local
 #'   dataframes).
 #' @keywords internal
+#' @noRd
 generateCohortSetLocal2 <- function(cdm,
                                     cohortSet,
                                     name,
@@ -1241,6 +1242,8 @@ CRITERIA_TYPE_TO_CDM_TABLE <- c(
 #' @param group List - criteria group with CriteriaList / Groups
 #' @param acc List accumulator (internal, for recursive calls)
 #' @return Character vector of criteria type names
+#' @keywords internal
+#' @noRd
 collect_criteria_types_from_group <- function(group, acc = NULL) {
   is_top <- is.null(acc)
   if (is_top) acc <- new.env(parent = emptyenv())
@@ -1284,6 +1287,7 @@ collect_criteria_types_from_group <- function(group, acc = NULL) {
 #' @param cohort_list List of cohort expression lists.
 #' @return Character vector of CDM table names (e.g. "DRUG_EXPOSURE").
 #' @keywords internal
+#' @noRd
 collect_batch_used_domains_from_cohorts <- function(cohort_list) {
   # Use shared environment accumulator across all cohorts to avoid O(n^2) growth
   acc <- new.env(parent = emptyenv())
@@ -1338,6 +1342,7 @@ collect_batch_used_domains_from_cohorts <- function(cohort_list) {
 #' @return When \code{cache = FALSE}: single SQL string.
 #'   When \code{cache = TRUE}: list with \code{sql}, \code{dag}, \code{cache_hits}, \code{cache_misses}.
 #' @keywords internal
+#' @noRd
 buildBatchCohortQuery <- function(cohort_list, cohort_ids, options = list(),
                                   cache = FALSE, con = NULL, schema = NULL) {
   if (length(cohort_list) == 0) stop("cohort_list must not be empty")

@@ -37,4 +37,8 @@ reference:
   desc: Run benchmarking of simple queries against your CDM reference
 - contents:
   - matches("benchmarkCDMConnector")
+- subtitle: Concept discovery
+  desc: Find concepts that co-occur with given OMOP concepts using the Columbia Open Health Data (COHD) API.
+- contents:
+  - cohdSimilarConcepts
 

@@ -213,6 +213,7 @@ replace_with_concat <- function(val) {
 #'
 #' @name package_utilities_section
 #' @keywords internal
+#' @noRd
 NULL
 
 #' Null coalescing operator
@@ -221,6 +222,7 @@ NULL
 #' @param y Right value (used when x is NULL)
 #' @return x or y
 #' @keywords internal
+#' @noRd
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
 }
@@ -231,6 +233,7 @@ NULL
 #' @param default Default value if not found
 #' @return Value or default
 #' @keywords internal
+#' @noRd
 get_key <- function(obj, keys, default = NULL) {
   nms <- names(obj)
   for (k in keys) {
@@ -1111,6 +1114,7 @@ listSupportedDialects <- function() {
 #' @param warnOnMissingParameters Whether to warn on missing parameters.
 #' @param ... Named parameters for substitution.
 #' @keywords internal
+#' @noRd
 render_r <- function(sql, warnOnMissingParameters = TRUE, ...) {
   checkmate::assertCharacter(sql, len = 1)
   checkmate::assertLogical(warnOnMissingParameters, len = 1)
@@ -1133,6 +1137,7 @@ render_r <- function(sql, warnOnMissingParameters = TRUE, ...) {
 #' @param tempEmulationSchema Temp schema for emulation.
 #' @param oracleTempSchema Oracle temp schema.
 #' @keywords internal
+#' @noRd
 translate_r <- function(sql,
                       targetDialect,
                       tempEmulationSchema = getOption("sqlRenderTempEmulationSchema"),

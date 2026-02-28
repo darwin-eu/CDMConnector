@@ -1,0 +1,163 @@
+# Multi-Database Benchmarking: Old vs New Cohort Generation
+
+## Overview
+
+This vignette describes how to benchmark
+**CDMConnector::generateCohortSet** (old, CIRCE-based) against
+**atlasCohortGenerator::generateCohortSet2** (new, DAG-optimized batch)
+across multiple database platforms. The benchmarking script:
+
+1.  Runs both methods on each database with the same cohort set.
+2.  Records **overall time** for each method and writes results to a
+    CSV.
+3.  **Confirms that the two cohort tables have identical rows** (order
+    ignored) and writes per-database and per-cohort equivalence results
+    to a second CSV.
+
+Supported platforms include **PostgreSQL**, **Redshift**, **Snowflake**,
+**Spark**, and **SQL Server**. You provide a named list of CDM reference
+objects; the script handles timing, comparison, and CSV output.
+
+## Performance improvements with the new approach
+
+The new approach (`generateCohortSet2`) uses a **DAG-based batch
+optimizer** that:
+
+- **Shares vocabulary expansion**: Concept set expansion and codeset
+  building are done once and reused across all cohorts, instead of once
+  per cohort.
+- **Shares domain scans**: Filtered domain tables (e.g. drug exposure,
+  condition occurrence) are built once and read by every cohort that
+  needs them.
+- **Reduces I/O**: A single batch script writes to shared staging tables
+  and finalizes in one pass, instead of N separate DELETE/INSERT cycles.
+
+As a result, **wall-clock time typically decreases** as the number of
+cohorts and the overlap in concept sets increase. The ratio (new time /
+old time) is often **below 1.0**, with larger batches showing greater
+speedups. The exact improvement depends on:
+
+- Number of cohorts and size of each definition
+- Overlap in concept sets and domains across cohorts
+- Database engine and hardware
+
+The benchmarking script records `time_old_sec`, `time_new_sec`, and
+`ratio_new_over_old` per database so you can measure the speedup on your
+own data and platforms.
+
+## How to run the benchmark
+
+### Prerequisites
+
+- **CDMConnector** and **atlasCohortGenerator** installed (or
+  [`devtools::load_all()`](https://devtools.r-lib.org/reference/load_all.html)
+  for the latter).
+- One or more **live CDM connections** (e.g. Postgres, Redshift,
+  Snowflake, Spark, SQL Server) as CDM reference objects.
+- A **cohort set** (e.g. from
+  `CDMConnector::readCohortSet("path/to/cohorts")`).
+
+### Single database
+
+For one CDM, use the single-database benchmark and optional equivalence
+check:
+
+``` r
+source("extras/benchmark_cohort_generation.R")
+
+cohort_set <- CDMConnector::readCohortSet("path/to/cohorts")
+result <- benchmark_cohort_generation(cdm, cohort_set, cohort_path = "path/to/cohorts")
+
+# Compare old vs new cohort tables (identical rows, order ignored)
+cmp <- compare_cohort_tables(result$cdm, name_old = "cohort_bench_old", name_new = "cohort_bench_new")
+cmp$identical   # TRUE if same set of rows
+cmp$per_cohort  # Per-cohort row counts and match status
+```
+
+### Multiple databases
+
+Pass a **named list of CDM objects**; names are used as the `database`
+identifier in the output CSVs (e.g. `postgres`, `redshift`, `snowflake`,
+`spark`, `sql_server`):
+
+``` r
+source("extras/benchmark_cohort_generation.R")
+source("extras/benchmark_multi_database.R")
+
+cohort_set <- CDMConnector::readCohortSet("path/to/cohorts")
+cdms <- list(
+  postgres   = cdm_postgres,
+  redshift   = cdm_redshift,
+  snowflake  = cdm_snowflake,
+  spark      = cdm_spark,
+  sql_server = cdm_sqlserver
+)
+
+run_benchmark_multi_database(
+  cdms = cdms,
+  cohort_set = cohort_set,
+  cohort_path = "path/to/cohorts",
+  results_csv = "benchmark_results.csv",
+  equivalence_csv = "benchmark_equivalence.csv"
+)
+```
+
+- **benchmark_results.csv**: one row per database with `database`,
+  `time_old_sec`, `time_new_sec`, `ratio_new_over_old`, `n_cohorts`,
+  `files_included`, `status`.
+- **benchmark_equivalence.csv**: one row per database (overall) plus one
+  row per (database, cohort_definition_id) with `n_old`, `n_new`,
+  `rows_identical`, `status`.
+
+## Benchmark results CSV (timing)
+
+The timing CSV has one row per database. Example structure:
+
+| database | time_old_sec | time_new_sec | ratio_new_over_old | n_cohorts | files_included | status |
+|:---|---:|---:|---:|---:|:---|:---|
+| postgres | 120.5 | 45.2 | 0.38 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
+| redshift | 95.2 | 38.0 | 0.40 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
+| snowflake | 88.1 | 32.5 | 0.37 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
+| sql_server | 110.3 | 42.1 | 0.38 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
+
+- **ratio_new_over_old** \< 1 means the new method was faster.
+- **files_included** lists the cohort definition files (or names) in the
+  cohort set.
+
+## Equivalence CSV (same results)
+
+The equivalence CSV confirms that the **old and new cohort tables
+contain the same rows** (order ignored). Each database has:
+
+1.  An **overall** row (with `cohort_definition_id` NA): total row
+    counts and whether the full tables match.
+2.  **Per-cohort** rows: row counts from the old table (`n_old`), from
+    the new table (`n_new`), and whether the set of rows for that cohort
+    is identical (`rows_identical`).
+
+Example:
+
+| database | cohort_definition_id | n_old | n_new | rows_identical | status |
+|:---------|---------------------:|------:|------:|:---------------|:-------|
+| postgres |                   NA | 15000 | 15000 | TRUE           | ok     |
+| postgres |                    1 |  5000 |  5000 | TRUE           | ok     |
+| postgres |                    2 |  6000 |  6000 | TRUE           | ok     |
+| postgres |                    3 |  4000 |  4000 | TRUE           | ok     |
+| redshift |                   NA | 15000 | 15000 | TRUE           | ok     |
+| redshift |                    1 |  5000 |  5000 | TRUE           | ok     |
+
+When **rows_identical** is TRUE for all cohorts (and the overall row),
+the new approach produces **exactly the same cohort membership and
+dates** as the old CIRCE-based method; only execution strategy and
+performance differ.
+
+## Summary
+
+| Aspect | Description |
+|----|----|
+| **Performance** | The new batch optimizer typically reduces wall-clock time (ratio \< 1) by sharing vocabulary and domain work across cohorts. |
+| **Correctness** | The benchmarking pipeline compares old and new cohort tables row-by-row (order ignored) and writes equivalence results to CSV. |
+| **Platforms** | Run the same cohort set on Postgres, Redshift, Snowflake, Spark, and SQL Server by passing a named list of CDMs to `run_benchmark_multi_database()`. |
+
+Use the generated CSVs to document speedups and to confirm identical
+results across databases and between the two cohort generation methods.

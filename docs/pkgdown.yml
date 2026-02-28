@@ -7,4 +7,7 @@ articles:
   a03_dbplyr: a03_dbplyr.html
   a04_DBI_connection_examples: a04_DBI_connection_examples.html
   a06_using_cdm_attributes: a06_using_cdm_attributes.html
-last_built: 2026-02-14T15:45Z
+  a07_batch-optimization: a07_batch-optimization.html
+  a08_dag-caching: a08_dag-caching.html
+  a09_benchmarking: a09_benchmarking.html
+last_built: 2026-02-28T17:57Z

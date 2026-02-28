@@ -1,6 +1,10 @@
 # CDMConnector 2.5.0
 
 - Add Delphi-100k example dataset
+- Improvements to `cdmFromCohortSet` synthetic data generation
+- Add `cohdSimilarConcepts` function to query Columbia Open Health Data API for concept co-occurrence
+- Add `generateCohortSet2` for DAG-based cohort generation without Java dependency
+- Add cohort generation and benchmarking vignettes
 
 # CDMConnector 2.4.0
 

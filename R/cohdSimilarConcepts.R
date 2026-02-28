@@ -25,8 +25,6 @@
 #' @param conceptId Integer or character vector. One or more OMOP concept IDs to find
 #'   similar concepts for (e.g. conditions, drugs, or procedures).
 #' @param datasetId Integer. COHD dataset ID (1 = 5-year, 2 = lifetime; default 1).
-#' @param baseUrl Character. Base URL of the COHD API (default points to public
-#'   tranSMART Foundation instance).
 #' @param topN Integer. Maximum number of similar concepts to return (default 50).
 #'   For a single concept, this limits rows by strength; for multiple concepts, this
 #'   limits the aggregated result.
@@ -68,9 +66,11 @@
 #' @export
 cohdSimilarConcepts <- function(conceptId,
                                datasetId = 1,
-                               baseUrl = "https://cohd-api.ci.transltr.io/api",
                                topN = 50,
                                timeoutSec = 30) {
+
+  # Base URL of the COHD API (public tranSMART Foundation instance)
+  baseUrl = "https://cohd-api.ci.transltr.io/api"
 
   conceptId <- as.integer(conceptId)
   stopifnot(length(conceptId) >= 1L, all(!is.na(conceptId)))

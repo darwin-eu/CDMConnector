@@ -40,8 +40,10 @@ A cohort is a set of person-days representing the time during which
 people in a CDM exhibited some observable characteristics. Cohorts are
 often the foundation of downstream analyses.
 
-- [`generateCohortSet()`](generateCohortSet.md) **\[experimental\]** :
-  Generate a cohort set on a cdm object
+- [`generateCohortSet()`](generateCohortSet.md) : Generate a cohort set
+  on a cdm object
+- [`generateCohortSet2()`](generateCohortSet2.md) : Generate a cohort
+  set on a CDM object (optimized, no Java dependency)
 - [`generateConceptCohortSet()`](generateConceptCohortSet.md) : Create a
   new generated cohort set from a list of concept sets
 - [`readCohortSet()`](readCohortSet.md) : Read a set of cohort
@@ -105,3 +107,11 @@ Run benchmarking of simple queries against your CDM reference
 
 - [`benchmarkCDMConnector()`](benchmarkCDMConnector.md) : Run benchmark
   of tasks using CDMConnector
+
+### Concept discovery
+
+Find concepts that co-occur with given OMOP concepts using the Columbia
+Open Health Data (COHD) API.
+
+- [`cohdSimilarConcepts()`](cohdSimilarConcepts.md) : Get similar
+  concepts from Columbia Open Health Data (COHD) API

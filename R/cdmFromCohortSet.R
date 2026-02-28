@@ -2059,6 +2059,101 @@ cdmFromJson <- function(jsonPath = NULL,
       }
     }
 
+    # Pass 4: Enrich with similar concepts from COHD API (optional)
+    # Adds realistic noise by inserting events for clinically co-occurring concepts.
+    tryCatch({
+      cohd_concepts <- all_concept_ids
+      if (length(cohd_concepts) > 20) cohd_concepts <- sample(cohd_concepts, 20)
+      similar <- cohdSimilarConcepts(cohd_concepts, datasetId = 1, topN = 30)
+      if (!is.null(similar) && is.data.frame(similar) && nrow(similar) > 0) {
+        sim_ids <- as.integer(similar$other_concept_id)
+        sim_ids <- sim_ids[!is.na(sim_ids) & sim_ids > 0]
+        sim_ids <- setdiff(sim_ids, all_concept_ids)
+        if (length(sim_ids) > 50) sim_ids <- sim_ids[seq_len(50)]
+        if (length(sim_ids) > 0) {
+          # Look up domains from existing concept table, else default to Condition
+          sim_domains <- tryCatch({
+            res <- DBI::dbGetQuery(con, sprintf(
+              "SELECT concept_id, domain_id FROM concept WHERE concept_id IN (%s)",
+              paste(sim_ids, collapse = ",")))
+            setNames(res$domain_id, as.character(res$concept_id))
+          }, error = function(e) character(0))
+
+          .domain_to_type <- c(
+            Condition = "ConditionOccurrence", Drug = "DrugExposure",
+            Procedure = "ProcedureOccurrence", Measurement = "Measurement",
+            Observation = "Observation", Device = "DeviceExposure"
+          )
+          .domain_to_class <- c(
+            Condition = "Clinical Finding", Drug = "Ingredient",
+            Procedure = "Procedure", Measurement = "Lab Test",
+            Observation = "Observation", Device = "Device"
+          )
+
+          # Insert concept rows for any similar concepts not already in concept table
+          known <- as.integer(names(sim_domains))
+          new_sim <- setdiff(sim_ids, known)
+          if (length(new_sim) > 0) {
+            new_df <- data.frame(
+              concept_id = new_sim,
+              concept_name = paste0("Concept ", new_sim),
+              domain_id = "Condition",
+              vocabulary_id = "Synthetic",
+              concept_class_id = "Clinical Finding",
+              standard_concept = "S",
+              concept_code = as.character(new_sim),
+              valid_start_date = as.Date("1970-01-01"),
+              valid_end_date = as.Date("2099-12-31"),
+              invalid_reason = NA_character_,
+              stringsAsFactors = FALSE
+            )
+            try(DBI::dbWriteTable(con, "concept", new_df, append = TRUE), silent = TRUE)
+            for (cid in new_sim) sim_domains[as.character(cid)] <- "Condition"
+          }
+
+          # Group similar concepts by domain/type
+          sim_by_type <- list()
+          for (cid in sim_ids) {
+            dom <- sim_domains[as.character(cid)]
+            if (is.na(dom) || !nzchar(dom)) dom <- "Condition"
+            ev_type <- .domain_to_type[[dom]]
+            if (is.null(ev_type)) ev_type <- "ConditionOccurrence"
+            sim_by_type[[ev_type]] <- c(sim_by_type[[ev_type]], as.integer(cid))
+          }
+
+          # For each person, add 3-8 random similar events within their date range
+          n_sim_per_person <- sample(3:8, length(qualifying_ids), replace = TRUE)
+          for (ev_type in names(sim_by_type)) {
+            ev_concepts <- sim_by_type[[ev_type]]
+            table <- map_type_to_table(ev_type)
+            # Select persons who get this type (proportional to concept count)
+            type_frac <- length(ev_concepts) / length(sim_ids)
+            n_per <- pmax(1L, round(n_sim_per_person * type_frac))
+            sim_pids <- rep(qualifying_ids, n_per)
+            sim_dates <- q_idx_dates[rep(seq_along(qualifying_ids), n_per)] +
+              sample(-180:180, length(sim_pids), replace = TRUE)
+            sim_dates <- pmin(pmax(sim_dates, start_date), Sys.Date())
+            visit_ids <- person_to_visit$visit_occurrence_id[match(sim_pids, person_to_visit$person_id)]
+            res <- add_events(
+              type = ev_type,
+              person_ids = sim_pids,
+              dates = sim_dates,
+              concept_ids = ev_concepts,
+              id_offset = offsets[[table]],
+              visit_occurrence_id = visit_ids
+            )
+            if (!is.null(res$df)) {
+              DBI::dbWriteTable(con, table, res$df, append = TRUE)
+              offsets[[table]] <- res$next_id
+            }
+          }
+          if (verbose) message("  Enriched with ", length(sim_ids), " similar concepts from COHD API")
+        }
+      }
+    }, error = function(e) {
+      message("COHD similar concepts API not available (optional enrichment skipped): ", conditionMessage(e))
+    })
+
     # Per-person observation periods: flatten (person_id, date) from requests and aggregate min/max
     # Also include visit END dates so obs periods cover full visit durations
     event_rows <- c(visit_end_dates, list())

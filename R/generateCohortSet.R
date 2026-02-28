@@ -849,6 +849,7 @@ computeAttritionTable <- function(cdm,
 #' @return The input \code{cdm} with the new cohort table added (as local
 #'   dataframes).
 #' @keywords internal
+#' @noRd
 generateCohortSetLocal <- function(cdm,
                                   cohortSet,
                                   name,

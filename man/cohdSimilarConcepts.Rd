@@ -4,50 +4,48 @@
 \alias{cohdSimilarConcepts}
 \title{Get similar concepts from Columbia Open Health Data (COHD) API}
 \usage{
-cohdSimilarConcepts(
-  conceptId,
-  datasetId = 1,
-  baseUrl = "https://cohd-api.ci.transltr.io/api",
-  topN = 50,
-  timeoutSec = 30
-)
+cohdSimilarConcepts(conceptId, datasetId = 1, topN = 50, timeoutSec = 30)
 }
 \arguments{
-\item{conceptId}{Integer or coercible string. The OMOP concept ID to find similar
-concepts for (e.g. a condition, drug, or procedure).}
+\item{conceptId}{Integer or character vector. One or more OMOP concept IDs to find
+similar concepts for (e.g. conditions, drugs, or procedures).}
 
 \item{datasetId}{Integer. COHD dataset ID (1 = 5-year, 2 = lifetime; default 1).}
 
-\item{baseUrl}{Character. Base URL of the COHD API (default points to public
-tranSMART Foundation instance).}
-
-\item{topN}{Integer. Maximum number of similar concepts to return (default 50).}
+\item{topN}{Integer. Maximum number of similar concepts to return (default 50).
+For a single concept, this limits rows by strength; for multiple concepts, this
+limits the aggregated result.}
 
 \item{timeoutSec}{Numeric. Request timeout in seconds (default 30).}
 }
 \value{
 A data frame with one row per similar concept, or \code{NULL} if the API is
-unavailable or the request fails. When successful, the data frame contains:
+unavailable or the request fails. When successful:
 \itemize{
-\item \code{concept_id_1}, \code{concept_id_2}: the two concept IDs in the pair
-\item \code{concept_count_1}, \code{concept_count_2}: counts for each concept in the dataset
-\item \code{concept_count}: count of patients with both concepts
-\item \code{relative_frequency}: strength of association (higher = more related)
-\item \code{other_concept_id}: the ID of the "other" concept (the similar concept,
-i.e. not the one you queried)
-Rows are sorted by \code{relative_frequency} descending and limited to \code{topN}.
+\item \strong{Single concept}: data frame contains \code{concept_id_1}, \code{concept_id_2},
+\code{concept_count_1}, \code{concept_count_2}, \code{concept_count}, \code{relative_frequency},
+and \code{other_concept_id}; rows sorted by \code{relative_frequency} descending.
+\item \strong{Multiple concepts}: data frame contains \code{other_concept_id}, \code{n_concepts}
+(how many input concepts co-occur with this one), and \code{mean_rf} (mean
+relative frequency); rows sorted by \code{n_concepts} descending then \code{mean_rf}
+descending.
 If no results or an error occurs, returns \code{NULL} and a message is printed.
 }
 }
 \description{
 Queries the COHD API association/relativeFrequency endpoint to return concepts
-that co-occur with the given concept, ranked by relative frequency. Useful for
+that co-occur with the given concept(s), ranked by relative frequency. Useful for
 finding clinically related conditions, drugs, or procedures based on EHR prevalence.
+When given multiple concept IDs, returns concepts that co-occur with the input set,
+ranked by how many input concepts they co-occur with and by mean relative frequency.
 }
 \examples{
 \dontrun{
-# Get top 25 concepts similar to concept 201826 (Type 2 diabetes)
+# Single concept: top 25 similar to concept 201826 (Type 2 diabetes)
 cohdSimilarConcepts(201826, datasetId = 1, topN = 25)
+
+# Multiple concepts: concepts likely to co-occur with this set
+cohdSimilarConcepts(c(201826, 316866, 255573), datasetId = 1, topN = 50)
 }
 
 }
