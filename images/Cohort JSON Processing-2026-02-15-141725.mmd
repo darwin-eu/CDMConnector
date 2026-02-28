@@ -1,0 +1,87 @@
+graph TD
+
+%% =========================
+%% Global preprocessing
+%% =========================
+CS[#CODESETS_GLOBAL\nsingle vocabulary expansion for all cohorts]
+AC[#ALL_CONCEPTS\nunion of all concept IDs]
+
+CS --> AC
+
+%% =========================
+%% Filtered domain tables
+%% =========================
+subgraph FILTERED_DOMAIN_TABLES
+direction LR
+  AC --> DF_DE[DRUG_EXPOSURE_FILTERED]
+  AC --> DF_CO[CONDITION_OCCURRENCE_FILTERED]
+  AC --> DF_PO[PROCEDURE_OCCURRENCE_FILTERED]
+  AC --> DF_OBS[OBSERVATION_FILTERED]
+  AC --> DF_OP[ATLAS_OBSERVATION_PERIOD]
+end
+
+%% =========================
+%% Phase 1: primary events
+%% =========================
+subgraph PHASE1_PRIMARY_EVENTS
+direction LR
+  P1A[Phase 1 Cohort A primary events]
+  P1B[Phase 1 Cohort B primary events]
+  P1C[Phase 1 Cohort C primary events]
+end
+
+CS --> P1A
+CS --> P1B
+CS --> P1C
+
+DF_DE --> P1A
+DF_DE --> P1B
+DF_CO --> P1C
+
+%% =========================
+%% Qualified events merge
+%% =========================
+QEA[#QUALIFIED_EVENTS_ALL]
+
+P1A --> QEA
+P1B --> QEA
+P1C --> QEA
+
+%% =========================
+%% Phase 2: inclusion rules
+%% =========================
+subgraph PHASE2_INCLUSION
+direction LR
+  P2A[Phase 2 Cohort A final]
+  P2B[Phase 2 Cohort B final]
+  P2C[Phase 2 Cohort C final]
+end
+
+QEA --> P2A
+QEA --> P2B
+QEA --> P2C
+
+CS --> P2A
+CS --> P2B
+CS --> P2C
+
+%% =========================
+%% Staging + finalize
+%% =========================
+STG[#COHORT_STAGE\n#INCLUSION_EVENTS_STAGE\n#INCLUSION_STATS_STAGE]
+FIN[Finalize\nDELETE batch IDs\nINSERT FROM staging]
+
+P2A --> STG
+P2B --> STG
+P2C --> STG
+
+STG --> FIN
+
+%% =========================
+%% Styling
+%% =========================
+style CS fill:#e1f5fe
+style AC fill:#e1f5fe
+style QEA fill:#fff3e0
+style STG fill:#e8f5e9
+style FIN fill:#e8f5e9

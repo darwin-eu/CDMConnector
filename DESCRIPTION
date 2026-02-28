@@ -1,6 +1,9 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
 Version: 2.5.0
+Author: Adam Black [aut, cre], Artem Gorbachev [aut], Edward Burn [aut],
+    Marti Catala Sabate [aut], Ioanna Nika [aut]
+Maintainer: Adam Black <ablack3@gmail.com>
 Authors@R: c(
     person("Adam", "Black", , "ablack3@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),

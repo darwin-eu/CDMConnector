@@ -1,0 +1,91 @@
+graph TD
+
+%% =========================
+%% Global preprocessing
+%% =========================
+CS[#CODESETS_GLOBAL\nAspirin cohorts 1,3; Metformin cohort 2; Diabetes cohort 3\nOne CONCEPT_ANCESTOR join]
+AC[#ALL_CONCEPTS\nUnion of all concept IDs]
+CS --> AC
+
+%% =========================
+%% One-time filtered scans
+%% =========================
+subgraph FILTERED_SCANS
+    direction LR
+    FDE[DRUG_EXPOSURE_FILTERED\nOne scan DRUG_EXPOSURE]
+    FCO[CONDITION_OCCURRENCE_FILTERED\nOne scan CONDITION_OCCURRENCE]
+    FOP[ATLAS_OBSERVATION_PERIOD\nOne scan OBSERVATION_PERIOD]
+end
+
+AC --> FDE
+AC --> FCO
+AC --> FOP
+
+%% =========================
+%% Phase 1: primary events
+%% =========================
+subgraph PHASE1
+    direction LR
+    P1_A[Phase 1 Cohort 1\nPrimary events aspirin\nfrom DE_FILTERED]
+    P1_B[Phase 1 Cohort 2\nPrimary events metformin\nfrom DE_FILTERED]
+    P1_C[Phase 1 Cohort 3\nPrimary events aspirin\nfrom DE_FILTERED]
+end
+
+CS --> P1_A
+CS --> P1_B
+CS --> P1_C
+FDE --> P1_A
+FDE --> P1_B
+FDE --> P1_C
+FOP --> P1_A
+FOP --> P1_B
+FOP --> P1_C
+
+%% =========================
+%% Merge all primary events
+%% =========================
+QEA[#QUALIFIED_EVENTS_ALL\nAll cohorts primary events]
+P1_A --> QEA
+P1_B --> QEA
+P1_C --> QEA
+
+%% =========================
+%% Phase 2: inclusion + end strategy
+%% =========================
+subgraph PHASE2
+    direction LR
+    P2_A[Phase 2 Cohort 1\nSlice inclusion: none\nEnd strategy: final]
+    P2_B[Phase 2 Cohort 2\nSlice inclusion: none\nEnd strategy: final]
+    P2_C[Phase 2 Cohort 3\nSlice inclusion: diabetes\nEnd strategy: final]
+end
+
+QEA --> P2_A
+QEA --> P2_B
+QEA --> P2_C
+CS --> P2_A
+CS --> P2_B
+CS --> P2_C
+FCO --> P2_C
+
+%% =========================
+%% Staging + finalize
+%% =========================
+STG[Staging tables]
+FIN[Finalize\nSingle DELETE ids 1,2,3\nSingle INSERT from staging]
+
+P2_A --> STG
+P2_B --> STG
+P2_C --> STG
+STG --> FIN
+
+%% =========================
+%% Styling
+%% =========================
+style CS fill:#e1f5fe
+style AC fill:#e1f5fe
+style FDE fill:#e1f5fe
+style FCO fill:#e1f5fe
+style FOP fill:#e1f5fe
+style QEA fill:#fff3e0
+style STG fill:#e8f5e9
+style FIN fill:#e8f5e9

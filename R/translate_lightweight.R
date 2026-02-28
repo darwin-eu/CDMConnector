@@ -419,17 +419,12 @@ translate_cohort_stmts <- function(stmts, target_dialect) {
     } else if (td %in% c("oracle")) {
       # Oracle: strip ANALYZE (DBMS_STATS is PL/SQL, too complex for inline)
       stmts[analyze_idx] <- ""
-    } else if (td %in% c("spark", "databricks")) {
-      # Spark/Databricks: ANALYZE -> ANALYZE TABLE ... COMPUTE STATISTICS
-      stmts[analyze_idx] <- sub("(?im)^ANALYZE\\s+",
-                                 "ANALYZE TABLE ",
-                                 stmts[analyze_idx], perl = TRUE)
-      stmts[analyze_idx] <- sub(";?\\s*$", " COMPUTE STATISTICS",
-                                 stmts[analyze_idx], perl = TRUE)
     }
     # PostgreSQL, Redshift: ANALYZE is native, keep as-is
-    # Snowflake, BigQuery: auto-analyze, strip
-    if (td %in% c("snowflake", "bigquery")) {
+    # Snowflake, BigQuery, Spark/Databricks: auto-analyze, strip
+    # (Delta Lake auto-optimizes; ANALYZE TABLE can fail on intermediate tables
+    #  created via CTE decomposition)
+    if (td %in% c("snowflake", "bigquery", "spark", "databricks")) {
       stmts[analyze_idx] <- ""
     }
   }

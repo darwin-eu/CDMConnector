@@ -123,7 +123,7 @@ for (dbtype in dbToTest) {
 # )))
 
 test_that('dateadd works without pipe', {
-  skip("failing test")
+  skip("dateadd requires magrittr pipe (%>%); direct mutate() and native pipe (|>) not supported")
   con <- DBI::dbConnect(duckdb::duckdb())
   DBI::dbWriteTable(con, "tbl", data.frame(date = as.Date("2020-01-01")))
 
