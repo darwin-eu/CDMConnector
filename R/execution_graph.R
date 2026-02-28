@@ -732,7 +732,7 @@ decompose_cohort <- function(cohort, cohort_id, cohort_idx, cs_map, nodes, optio
 # ---- Topological sort ----
 
 #' Topological sort of DAG nodes using Kahn's algorithm.
-#' Uses index-based queue to avoid O(n^2) from repeated c(queue, ...) / queue[-1].
+#' Uses index-based queue to avoid O(n^2) from repeated \code{c(queue, ...)} / \code{queue[-1]}.
 #' @param nodes Named list of nodes
 #' @return Character vector of node IDs in execution order
 #' @noRd
