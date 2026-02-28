@@ -272,7 +272,7 @@ cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbP
       DBI::dbWriteTable(con_final, "mockcdm_cohort_index", idx_row, append = TRUE)
     }, error = function(e) {
       msg <- conditionMessage(e)
-      message("Cohort ", cid, " (", cname, "): ", msg, " — skipping and continuing.")
+      message("Cohort ", cid, " (", cname, "): ", msg, " - skipping and continuing.")
       summ_err <- if (!is.null(res_i) && !is.null(res_i$summary)) res_i$summary else list()
       idx_row <- data.frame(
         cohort_definition_id = cid,

@@ -1,6 +1,12 @@
 ^CDMConnector\.Rproj$
 ^\.Rproj\.user$
 ^\.claude$
+^\.DS_Store$
+^\.git$
+^\.Rhistory$
+^\.vscode$
+^\.Rcheck$
+^images$
 ^coverage_results\.rds$
 ^LICENSE\.md$
 ^codecov\.yml$
@@ -11,7 +17,6 @@
 ^Meta$
 ^README.Rmd$
 scratch/*
-LICENSE
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
 ^testData$
