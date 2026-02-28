@@ -1012,18 +1012,28 @@ emit_domain_filtered <- function(used_tables, cdm_schema, options) {
     if (!dc$table %in% used_tables) next
     a <- dc$alias; ft <- qualify_table(dc$filtered, options); std <- dc$std_col; src <- dc$src_col
     # Use CDM subquery if available (e.g., cdmSubset filtered tables)
-    tbl_src <- if (!is.null(cdm_table_sql[[dc$table]])) {
+    use_subquery <- !is.null(cdm_table_sql[[dc$table]])
+    tbl_src <- if (use_subquery) {
       paste0("(", cdm_table_sql[[dc$table]], ") ", a)
     } else {
       paste0(cdm_schema, ".", dc$table, " ", a)
     }
+    # When using a subquery, column names may be lowercase (e.g. from dbplyr).
+    # Use double-quoted identifiers so Snowflake and others resolve case correctly.
+    if (use_subquery) {
+      std_ref <- sprintf("\"%s\".\"%s\"", a, std)
+      src_ref <- sprintf("\"%s\".\"%s\"", a, src)
+    } else {
+      std_ref <- paste0(a, ".", std)
+      src_ref <- paste0(a, ".", src)
+    }
     ci <- ci + 1L
     chunks[[ci]] <- c(
       sprintf("DROP TABLE IF EXISTS %s;", ft),
-      sprintf(paste0("SELECT * INTO %s FROM %s WHERE %s.%s IN ",
-                     "(SELECT concept_id FROM %s) OR %s.%s IN ",
+      sprintf(paste0("SELECT * INTO %s FROM %s WHERE %s IN ",
+                     "(SELECT concept_id FROM %s) OR %s IN ",
                      "(SELECT concept_id FROM %s);"),
-              ft, tbl_src, a, std, ac_tbl, a, src, ac_tbl),
+              ft, tbl_src, std_ref, ac_tbl, src_ref, ac_tbl),
       "")
   }
   if (ci == 0L) return(character(0))

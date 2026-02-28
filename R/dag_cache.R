@@ -152,8 +152,10 @@ cache_validate <- function(con, schema, hashes) {
   # Check each table exists
   all_tables <- tryCatch(tolower(DBI::dbListTables(con)), error = function(e) character(0))
   valid <- vapply(seq_len(nrow(registry)), function(i) {
+    tn <- as.character(registry$table_name[i])
+    if (length(tn) != 1L || is.na(tn) || !nzchar(trimws(tn))) return(FALSE)
     # Extract bare table name from qualified name (schema.table -> table)
-    parts <- strsplit(registry$table_name[i], ".", fixed = TRUE)[[1]]
+    parts <- strsplit(tn, ".", fixed = TRUE)[[1]]
     bare <- tolower(parts[length(parts)])
     bare %in% all_tables
   }, logical(1))
