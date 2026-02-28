@@ -509,13 +509,19 @@ translate_cohort_stmts <- function(stmts, target_dialect) {
   # Snowflake/Databricks: domain-filtered tables (condition_occurrence_filtered, etc.)
   # are created with lowercase column names. Quote alias.column refs so they resolve.
   # Domain aliases from DOMAIN_CONFIG: co, de, po, o, m, d, v.
+  # IMPORTANT: Skip the statements that CREATE the filtered tables — those read from
+  # the CDM (uppercase columns), so quoting as lowercase would break Snowflake.
   if (td %in% c("snowflake", "databricks")) {
     domain_aliases <- c("co", "de", "po", "o", "m", "d", "v")
-    for (al in domain_aliases) {
-      # Match alias.column (lowercase column name, not already quoted)
-      pattern <- paste0("\\b", al, "\\.([a-z_][a-z0-9_]*)\\b")
-      replacement <- paste0(al, ".\\\"\\1\\\"")
-      stmts <- gsub(pattern, replacement, stmts, perl = TRUE)
+    is_filtered_create <- grepl("_filtered\\s+(AS\\b|FROM\\b)", stmts, ignore.case = TRUE, perl = TRUE)
+    for (i in seq_along(stmts)) {
+      if (is_filtered_create[i]) next
+      for (al in domain_aliases) {
+        # Match alias.column (lowercase column name, not already quoted)
+        pattern <- paste0("\\b", al, "\\.([a-z_][a-z0-9_]*)\\b")
+        replacement <- paste0(al, ".\\\"\\1\\\"")
+        stmts[i] <- gsub(pattern, replacement, stmts[i], perl = TRUE)
+      }
     }
   }
 

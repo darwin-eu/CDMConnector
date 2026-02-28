@@ -29,6 +29,8 @@
 #'   For a single concept, this limits rows by strength; for multiple concepts, this
 #'   limits the aggregated result.
 #' @param timeoutSec Numeric. Request timeout in seconds (default 30).
+#' @param baseUrl Character. Base URL of the COHD API (default
+#'   \code{"https://cohd-api.ci.transltr.io/api"}).
 #'
 #' @return
 #'   A data frame with one row per similar concept, or `NULL` if the API is
@@ -67,10 +69,8 @@
 cohdSimilarConcepts <- function(conceptId,
                                datasetId = 1,
                                topN = 50,
-                               timeoutSec = 30) {
-
-  # Base URL of the COHD API (public tranSMART Foundation instance)
-  baseUrl = "https://cohd-api.ci.transltr.io/api"
+                               timeoutSec = 30,
+                               baseUrl = "https://cohd-api.ci.transltr.io/api") {
 
   conceptId <- as.integer(conceptId)
   stopifnot(length(conceptId) >= 1L, all(!is.na(conceptId)))
