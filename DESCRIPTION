@@ -25,6 +25,7 @@ RoxygenNote: 7.3.3
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    httr,
     dplyr,
     dbplyr (>= 2.5.0),
     DBI (>= 0.3.0),

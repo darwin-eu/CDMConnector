@@ -23,4 +23,5 @@ a = cohortCount(cdm$cohort)
 cdm <- generateCohortSet2(cdm, cohortSet, name = "cohort2")
 
 
+DBI::dbDisconnect(con)
 

@@ -27,3 +27,4 @@ scratch/*
 ^work/*
 ^revdep/*
 errorReportSql.txt
+^LICENSE$

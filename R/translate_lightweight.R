@@ -506,5 +506,18 @@ translate_cohort_stmts <- function(stmts, target_dialect) {
     stmts <- gsub("--[^\n]*", "", stmts, perl = TRUE)
   }
 
+  # Snowflake/Databricks: domain-filtered tables (condition_occurrence_filtered, etc.)
+  # are created with lowercase column names. Quote alias.column refs so they resolve.
+  # Domain aliases from DOMAIN_CONFIG: co, de, po, o, m, d, v.
+  if (td %in% c("snowflake", "databricks")) {
+    domain_aliases <- c("co", "de", "po", "o", "m", "d", "v")
+    for (al in domain_aliases) {
+      # Match alias.column (lowercase column name, not already quoted)
+      pattern <- paste0("\\b", al, "\\.([a-z_][a-z0-9_]*)\\b")
+      replacement <- paste0(al, ".\\\"\\1\\\"")
+      stmts <- gsub(pattern, replacement, stmts, perl = TRUE)
+    }
+  }
+
   stmts
 }
