@@ -15,7 +15,7 @@ Authors@R: c(
 Description: Provides tools for working with observational health data in the 
   Observational Medical Outcomes Partnership (OMOP) Common Data Model format with a pipe friendly syntax.
   Common data model database table references are stored in a single compound object along with metadata.
-License: Apache License (>= 2) + file LICENSE
+License: Apache License (>= 2)
 URL: https://darwin-eu.github.io/CDMConnector/, https://github.com/darwin-eu/CDMConnector
 BugReports: https://github.com/darwin-eu/CDMConnector/issues
 Encoding: UTF-8
