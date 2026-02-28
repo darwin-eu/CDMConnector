@@ -162,7 +162,9 @@ cache_validate <- function(con, schema, hashes) {
 
   result <- setNames(rep(FALSE, length(hashes)), hashes)
   for (i in seq_len(nrow(registry))) {
-    result[[registry$node_hash[i]]] <- valid[i]
+    nh <- as.character(registry$node_hash[i])
+    if (length(nh) == 1L && nzchar(trimws(nh)) && !is.na(nh) && nh %in% names(result))
+      result[[nh]] <- valid[i]
   }
   result
 }

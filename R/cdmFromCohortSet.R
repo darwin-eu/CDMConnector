@@ -580,21 +580,36 @@ cdmFromJson <- function(jsonPath = NULL,
     for (s in sets) {
       csid <- as.character(s$id)
       items <- s$expression$items %||% list()
-      ids <- vapply(items, function(it) it$concept$CONCEPT_ID, numeric(1))
+      # Only include non-excluded items; excluded concepts are removed by CIRCE SQL
+      included_items <- Filter(function(it) !isTRUE(it$isExcluded), items)
+      ids <- vapply(included_items, function(it) it$concept$CONCEPT_ID, numeric(1))
       out[[csid]] <- unique(as.integer(ids))
     }
     out
   }
 
+  .criterion_keys <- c(
+    "VisitOccurrence", "ConditionOccurrence", "ProcedureOccurrence",
+    "DrugExposure", "Measurement", "Observation",
+    "ConditionEra", "DrugEra", "DeviceExposure", "ObservationPeriod",
+    "Death"
+  )
+
   criterion_type <- function(x) {
-    # returns one of supported keys if present
-    keys <- c(
-      "VisitOccurrence", "ConditionOccurrence", "ProcedureOccurrence",
-      "DrugExposure", "Measurement", "Observation",
-      "ConditionEra", "DrugEra", "DeviceExposure", "ObservationPeriod"
-    )
-    for (k in keys) if (!is.null(x[[k]])) return(k)
+    # Check direct keys (PrimaryCriteria items)
+    for (k in .criterion_keys) if (!is.null(x[[k]])) return(k)
+    # Check Criteria wrapper (InclusionRule/AdditionalCriteria items)
+    if (!is.null(x$Criteria)) {
+      for (k in .criterion_keys) if (!is.null(x$Criteria[[k]])) return(k)
+    }
     NA_character_
+  }
+
+  # Get the criterion-type-specific data, handling both direct and Criteria-wrapped formats
+  get_criterion_data <- function(criterion_obj, type) {
+    if (!is.null(criterion_obj[[type]])) criterion_obj[[type]]
+    else if (!is.null(criterion_obj$Criteria) && !is.null(criterion_obj$Criteria[[type]])) criterion_obj$Criteria[[type]]
+    else NULL
   }
 
   parse_criteria_list <- function(lst) {
@@ -602,7 +617,8 @@ cdmFromJson <- function(jsonPath = NULL,
     for (c in lst %||% list()) {
       t <- criterion_type(c)
       if (is.na(t)) next
-      codeset_id <- c[[t]]$CodesetId %||% NA_integer_
+      cdata <- get_criterion_data(c, t)
+      codeset_id <- cdata$CodesetId %||% NA_integer_
       out <- append(out, list(list(type = t, codesetId = as.integer(codeset_id))))
     }
     out
@@ -671,6 +687,12 @@ cdmFromJson <- function(jsonPath = NULL,
       collect_demog(expr$DemographicCriteriaList %||% list())
       for (g in (expr$Groups %||% list())) collect_demog(g$DemographicCriteriaList %||% list())
     }
+    # AdditionalCriteria demographic constraints
+    if (!is.null(cohort$AdditionalCriteria)) {
+      ac <- cohort$AdditionalCriteria
+      collect_demog(ac$DemographicCriteriaList %||% list())
+      for (g in (ac$Groups %||% list())) collect_demog(g$DemographicCriteriaList %||% list())
+    }
 
     list(
       gender_concept_ids = if (length(gender_concept_ids) > 0) gender_concept_ids else NULL,
@@ -682,6 +704,7 @@ cdmFromJson <- function(jsonPath = NULL,
   codesets   <- extract_codesets(cohort)
   primary    <- parse_criteria_list(cohort$PrimaryCriteria$CriteriaList %||% list())
   inc_rules  <- parse_inclusion_rules(cohort)
+  add_crit   <- if (!is.null(cohort$AdditionalCriteria)) parse_group(cohort$AdditionalCriteria) else NULL
   demog_crit <- extract_demographic_criteria(cohort)
 
   obs_window  <- cohort$PrimaryCriteria$ObservationWindow %||% list()
@@ -724,6 +747,8 @@ cdmFromJson <- function(jsonPath = NULL,
     expr <- r$expression %||% r
     scan_group(expr)
   }
+  # AdditionalCriteria era scanning
+  if (!is.null(cohort$AdditionalCriteria)) scan_group(cohort$AdditionalCriteria)
 
   if (!is.null(cohort$EndStrategy$CustomEra)) {
     # CustomEra often implies condition_era/drug_era usage in practice
@@ -744,6 +769,7 @@ cdmFromJson <- function(jsonPath = NULL,
            ConditionEra        = "condition_era",
            DrugEra             = "drug_era",
            ObservationPeriod   = "observation_period",
+           Death               = "death",
            stop("Unsupported type: ", type)
     )
   }
@@ -838,7 +864,7 @@ cdmFromJson <- function(jsonPath = NULL,
     )
   }
 
-  add_events <- function(type, person_ids, dates, concept_ids, id_offset = 0L, visit_occurrence_id = NA_integer_) {
+  add_events <- function(type, person_ids, dates, concept_ids, id_offset = 0L, visit_occurrence_id = NA_integer_, value_constraint = NULL) {
     # concept_ids: vector of concept ids to sample from
     # visit_occurrence_id: scalar or vector of length(person_ids) for linking events to visits
     if (length(person_ids) == 0) return(list(df = NULL, next_id = id_offset))
@@ -853,12 +879,20 @@ cdmFromJson <- function(jsonPath = NULL,
     concept <- concept_ids[sample(length(concept_ids), nn, replace = TRUE)]
 
     if (type == "VisitOccurrence") {
+      # Inpatient/ER visits (concepts 9201, 262, 9203) should have multi-day duration
+      # to ensure they contain the index event date for correlated criteria
+      is_inpatient <- concept %in% c(9201L, 262L, 9203L)
       end_dates <- dates
-      multi_day <- stats::runif(nn) < 0.3
+      if (any(is_inpatient)) {
+        # Minimum duration covers 2x event_date_jitter so visits contain jittered events
+        min_dur <- max(3L, 2L * event_date_jitter + 2L)
+        end_dates[is_inpatient] <- dates[is_inpatient] + sample(min_dur:(min_dur + 7L), sum(is_inpatient), replace = TRUE)
+      }
+      multi_day <- !is_inpatient & stats::runif(nn) < 0.3
       if (any(multi_day)) {
         end_dates[multi_day] <- dates[multi_day] + sample(0:3, sum(multi_day), replace = TRUE)
-        end_dates <- pmin(pmax(end_dates, dates), Sys.Date())
       }
+      end_dates <- pmin(pmax(end_dates, dates), Sys.Date())
       df <- data.frame(
         visit_occurrence_id = ids,
         person_id = person_ids,
@@ -957,6 +991,28 @@ cdmFromJson <- function(jsonPath = NULL,
       src_val <- if (source_and_type_variety) sample(c("LOINC", "EHR", "Claim", "Lab"), nn, replace = TRUE) else rep(NA_character_, nn)
       value_num <- if (value_variety) round(stats::runif(nn, 50, 200), 2) else rep(NA_real_, nn)
       value_concept <- if (value_variety) sample(c(0L, 45878584L, 45878583L, 45878585L), nn, replace = TRUE) else rep(0L, nn)
+      # Apply value constraints from cohort criteria
+      if (!is.null(value_constraint)) {
+        if (identical(value_constraint$type, "number")) {
+          val <- as.numeric(value_constraint$value)
+          op <- as.character(value_constraint$op %||% "")
+          ext <- as.numeric(value_constraint$extent)
+          if (!is.na(val)) {
+            if (op %in% c("gte", ">=", "gte")) value_num <- round(val + stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("gt", ">")) value_num <- round(val + 0.1 + stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("lte", "<=")) value_num <- round(val - stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("lt", "<")) value_num <- round(val - 0.1 - stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("bt", "between") && !is.na(ext)) value_num <- round(stats::runif(nn, val, ext), 2)
+            else if (op %in% c("eq", "=", "==")) value_num <- rep(val, nn)
+            else if (op %in% c("!bt", "not between") && !is.na(ext)) value_num <- round(ext + stats::runif(nn, 0.1, max(abs(ext) * 0.3, 5)), 2)
+            else value_num <- round(val + stats::runif(nn, -abs(val) * 0.1, abs(val) * 0.3), 2)
+          }
+        }
+        if (identical(value_constraint$type, "concept")) {
+          vc_ids <- value_constraint$concept_ids
+          if (length(vc_ids) > 0) value_concept <- vc_ids[sample(length(vc_ids), nn, replace = TRUE)]
+        }
+      }
       df <- data.frame(
         measurement_id = ids,
         person_id = person_ids,
@@ -986,6 +1042,28 @@ cdmFromJson <- function(jsonPath = NULL,
       src_val <- if (source_and_type_variety) sample(c("LOINC", "SNOMED", "EHR", "Claim"), nn, replace = TRUE) else rep(NA_character_, nn)
       value_num <- if (value_variety) round(stats::runif(nn, 0, 100), 2) else rep(NA_real_, nn)
       value_concept <- if (value_variety) sample(c(0L, 45878584L, 45878583L, 45878585L), nn, replace = TRUE) else rep(0L, nn)
+      # Apply value constraints from cohort criteria
+      if (!is.null(value_constraint)) {
+        if (identical(value_constraint$type, "number")) {
+          val <- as.numeric(value_constraint$value)
+          op <- as.character(value_constraint$op %||% "")
+          ext <- as.numeric(value_constraint$extent)
+          if (!is.na(val)) {
+            if (op %in% c("gte", ">=")) value_num <- round(val + stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("gt", ">")) value_num <- round(val + 0.1 + stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("lte", "<=")) value_num <- round(val - stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("lt", "<")) value_num <- round(val - 0.1 - stats::runif(nn, 0, max(abs(val) * 0.3, 5)), 2)
+            else if (op %in% c("bt", "between") && !is.na(ext)) value_num <- round(stats::runif(nn, val, ext), 2)
+            else if (op %in% c("eq", "=", "==")) value_num <- rep(val, nn)
+            else if (op %in% c("!bt", "not between") && !is.na(ext)) value_num <- round(ext + stats::runif(nn, 0.1, max(abs(ext) * 0.3, 5)), 2)
+            else value_num <- round(val + stats::runif(nn, -abs(val) * 0.1, abs(val) * 0.3), 2)
+          }
+        }
+        if (identical(value_constraint$type, "concept")) {
+          vc_ids <- value_constraint$concept_ids
+          if (length(vc_ids) > 0) value_concept <- vc_ids[sample(length(vc_ids), nn, replace = TRUE)]
+        }
+      }
       df <- data.frame(
         observation_id = ids,
         person_id = person_ids,
@@ -1030,6 +1108,19 @@ cdmFromJson <- function(jsonPath = NULL,
       return(list(df = df, next_id = max(ids)))
     }
 
+    if (type == "Death") {
+      df <- data.frame(
+        person_id = person_ids,
+        death_date = dates,
+        death_datetime = as.POSIXct(NA),
+        death_type_concept_id = 0L,
+        cause_concept_id = concept,
+        cause_source_value = NA_character_,
+        cause_source_concept_id = 0L
+      )
+      return(list(df = df, next_id = id_offset))
+    }
+
     stop("Unsupported event type: ", type)
   }
 
@@ -1038,8 +1129,16 @@ cdmFromJson <- function(jsonPath = NULL,
   window_offset_days <- function(x) {
     if (is.null(x)) return(0L)
     if (is.list(x)) {
-      days <- as.integer(x$Days %||% 0)
       coeff <- as.integer(x$Coeff %||% 1)
+      if (is.null(x$Days)) {
+        # No Days = unbounded in this direction.
+        # For synthetic data we keep events near the index date so temporal
+        # constraints (visit containment, etc.) are naturally satisfied.
+        # Cap accounts for event_date_jitter so temporal constraints hold
+        cap <- max(1L, event_date_jitter + 2L)
+        return(as.integer(coeff * cap))
+      }
+      days <- as.integer(x$Days)
       return(days * coeff)
     }
     as.integer(x)
@@ -1067,13 +1166,56 @@ cdmFromJson <- function(jsonPath = NULL,
     d
   }
 
+  # Parse value constraints from a criterion for Measurement/Observation
+  parse_value_constraint <- function(crit_data) {
+    vc <- NULL
+    if (!is.null(crit_data$ValueAsNumber)) {
+      van <- crit_data$ValueAsNumber
+      val <- as.numeric(van$Value %||% NA)
+      op <- as.character(van$Op %||% "")
+      ext <- as.numeric(van$Extent %||% NA)
+      if (!is.na(val)) vc <- list(type = "number", value = val, op = op, extent = ext)
+    }
+    if (is.null(vc) && !is.null(crit_data$ValueAsConcept)) {
+      vac <- crit_data$ValueAsConcept
+      vac_ids <- vapply(vac, function(x) as.integer(x$CONCEPT_ID %||% 0), integer(1))
+      vac_ids <- vac_ids[vac_ids > 0]
+      if (length(vac_ids) > 0) vc <- list(type = "concept", concept_ids = vac_ids)
+    }
+    vc
+  }
+
   criterion_to_event_requests <- function(criterion_obj, person_ids, index_dates) {
     t <- criterion_type(criterion_obj)
     if (is.na(t)) return(list())
     if (t == "ObservationPeriod") return(list())
 
+    # Occurrence.Type == 0 means "does NOT occur" — skip event generation
+    # so persons can satisfy the negation criterion by NOT having these events.
+    occ <- criterion_obj$Occurrence %||% NULL
+    if (!is.null(occ) && as.integer(occ$Type %||% 2) == 0L) return(list())
+
+    # Death criteria: may or may not have a CodesetId
+    if (t == "Death") {
+      cdata <- get_criterion_data(criterion_obj, "Death")
+      csid <- as.character(cdata$CodesetId %||% NA_integer_)
+      concepts <- if (!is.na(csid) && !is.na(as.integer(csid)) && as.character(csid) %in% names(codesets)) {
+        codesets[[as.character(csid)]]
+      } else {
+        0L
+      }
+      w <- get_window_days(criterion_obj)
+      start_off <- w$start; end_off <- w$end
+      if (start_off == 0L && end_off == 0L) { start_off <- -30L; end_off <- 30L }
+      range_vals <- start_off:end_off
+      d <- pmin(index_dates + range_vals[sample(length(range_vals), length(person_ids), replace = TRUE)], Sys.Date())
+      d <- apply_event_date_jitter(d)
+      return(list(list(type = "Death", person_ids = person_ids, dates = d, concepts = concepts)))
+    }
+
     if (t == "ConditionEra") {
-      csid <- as.character(criterion_obj$ConditionEra$CodesetId %||% NA_integer_)
+      cdata <- get_criterion_data(criterion_obj, "ConditionEra")
+      csid <- as.character(cdata$CodesetId %||% NA_integer_)
       concepts <- codesets[[csid]] %||% integer(0)
       if (length(concepts) == 0) return(list())
       w <- get_window_days(criterion_obj)
@@ -1089,7 +1231,8 @@ cdmFromJson <- function(jsonPath = NULL,
     }
 
     if (t == "DrugEra") {
-      csid <- as.character(criterion_obj$DrugEra$CodesetId %||% NA_integer_)
+      cdata <- get_criterion_data(criterion_obj, "DrugEra")
+      csid <- as.character(cdata$CodesetId %||% NA_integer_)
       concepts <- codesets[[csid]] %||% integer(0)
       if (length(concepts) == 0) return(list())
       w <- get_window_days(criterion_obj)
@@ -1104,9 +1247,22 @@ cdmFromJson <- function(jsonPath = NULL,
       return(reqs)
     }
 
-    csid <- as.character(criterion_obj[[t]]$CodesetId %||% NA_integer_)
+    cdata <- get_criterion_data(criterion_obj, t)
+    csid <- as.character(cdata$CodesetId %||% NA_integer_)
     concepts <- codesets[[csid]] %||% integer(0)
-    if (length(concepts) == 0) return(list())
+    # If no CodesetId specified, CIRCE SQL matches ANY record in the table; use placeholder concept
+    if (length(concepts) == 0) {
+      if (is.na(csid) || csid == "NA") {
+        concepts <- 0L
+      } else {
+        return(list())
+      }
+    }
+    # Parse value constraints for Measurement/Observation
+    vc <- NULL
+    if (t %in% c("Measurement", "Observation")) {
+      vc <- parse_value_constraint(cdata)
+    }
     w <- get_window_days(criterion_obj)
     occ_n <- get_occurrence_count(criterion_obj)
     reqs <- list()
@@ -1114,7 +1270,7 @@ cdmFromJson <- function(jsonPath = NULL,
       occ_offset <- (k - 1L) * 7 + sample(-2:2, length(person_ids), replace = TRUE)
       d <- pmin(index_dates + sample(w$start:w$end, length(person_ids), replace = TRUE) + occ_offset, Sys.Date())
       d <- apply_event_date_jitter(d)
-      reqs <- append(reqs, list(list(type = t, person_ids = person_ids, dates = d, concepts = concepts)))
+      reqs <- append(reqs, list(list(type = t, person_ids = person_ids, dates = d, concepts = concepts, value_constraint = vc)))
     }
     reqs
   }
@@ -1196,6 +1352,158 @@ cdmFromJson <- function(jsonPath = NULL,
   }
 
   cohort_sql <- compile_cohort_sql(cohort)
+
+  # ---------------------------------------------------------------------------
+  # Proactively ensure all concept IDs exist in concept, concept_ancestor, and
+
+  # concept_relationship so CIRCE SQL can resolve concept sets.
+  # 99% of cohort definitions use includeDescendants which requires
+  # concept_ancestor; without self-referential rows the SQL finds 0 matches.
+  # ---------------------------------------------------------------------------
+  {
+    all_concept_ids <- unique(as.integer(unlist(codesets)))
+    all_concept_ids <- all_concept_ids[!is.na(all_concept_ids) & all_concept_ids > 0]
+
+    if (length(all_concept_ids) > 0) {
+      # Map concept → domain based on criteria type usage
+      .type_to_domain <- c(
+        VisitOccurrence = "Visit", ConditionOccurrence = "Condition",
+        ProcedureOccurrence = "Procedure", DrugExposure = "Drug",
+        Measurement = "Measurement", Observation = "Observation",
+        DeviceExposure = "Device", ConditionEra = "Condition",
+        DrugEra = "Drug", Death = "Condition"
+      )
+      concept_domain_map <- character(0)
+
+      .scan_domains <- function(criteria_list) {
+        for (cr in criteria_list %||% list()) {
+          ct <- criterion_type(cr)
+          if (is.na(ct)) next
+          cdata <- get_criterion_data(cr, ct)
+          csid <- as.character(cdata$CodesetId %||% NA_integer_)
+          if (!is.na(csid) && csid %in% names(codesets)) {
+            domain <- .type_to_domain[[ct]] %||% "Condition"
+            for (cid in codesets[[csid]]) concept_domain_map[as.character(cid)] <<- domain
+          }
+        }
+      }
+      .scan_group_dom <- function(g) {
+        .scan_domains(g$CriteriaList)
+        for (gg in (g$Groups %||% list())) .scan_group_dom(gg)
+      }
+      .scan_domains(cohort$PrimaryCriteria$CriteriaList)
+      for (r in (cohort$InclusionRules %||% list())) {
+        expr <- r$expression %||% r
+        .scan_group_dom(expr)
+      }
+      .scan_domains(cohort$CensoringCriteria)
+      # AdditionalCriteria domain scanning
+      if (!is.null(cohort$AdditionalCriteria)) .scan_group_dom(cohort$AdditionalCriteria)
+      # EndStrategy CustomEra drug codeset
+      if (!is.null(cohort$EndStrategy$CustomEra$DrugCodesetId)) {
+        csid <- as.character(cohort$EndStrategy$CustomEra$DrugCodesetId)
+        if (csid %in% names(codesets)) {
+          for (cid in codesets[[csid]]) concept_domain_map[as.character(cid)] <- "Drug"
+        }
+      }
+
+      # Batch concept IDs for SQL (chunk if very large)
+      .chunk_ids <- function(ids, chunk_size = 500) {
+        split(ids, ceiling(seq_along(ids) / chunk_size))
+      }
+
+      # Insert missing concepts with correct domain_id
+      existing_ids <- integer(0)
+      for (chunk in .chunk_ids(all_concept_ids)) {
+        res <- tryCatch(
+          DBI::dbGetQuery(con, sprintf("SELECT concept_id FROM concept WHERE concept_id IN (%s)", paste(chunk, collapse = ","))),
+          error = function(e) data.frame(concept_id = integer(0))
+        )
+        existing_ids <- c(existing_ids, res$concept_id)
+      }
+      missing_ids <- setdiff(all_concept_ids, existing_ids)
+
+      if (length(missing_ids) > 0) {
+        domains <- vapply(missing_ids, function(cid) {
+          d <- concept_domain_map[as.character(cid)]
+          if (is.na(d) || !nzchar(d)) "Condition" else d
+        }, character(1), USE.NAMES = FALSE)
+        # Map domain to concept_class_id
+        .domain_to_class <- c(
+          Condition = "Clinical Finding", Drug = "Ingredient",
+          Procedure = "Procedure", Measurement = "Lab Test",
+          Observation = "Observation", Device = "Device", Visit = "Visit"
+        )
+        classes <- vapply(domains, function(d) .domain_to_class[[d]] %||% "Clinical Finding", character(1), USE.NAMES = FALSE)
+        concept_df <- data.frame(
+          concept_id = missing_ids,
+          concept_name = paste0("Concept ", missing_ids),
+          domain_id = domains,
+          vocabulary_id = "Synthetic",
+          concept_class_id = classes,
+          standard_concept = "S",
+          concept_code = as.character(missing_ids),
+          valid_start_date = as.Date("1970-01-01"),
+          valid_end_date = as.Date("2099-12-31"),
+          invalid_reason = NA_character_,
+          stringsAsFactors = FALSE
+        )
+        DBI::dbWriteTable(con, "concept", concept_df, append = TRUE)
+      }
+
+      # Insert self-referential concept_ancestor rows (ancestor = descendant, level 0)
+      existing_ancestor_ids <- integer(0)
+      for (chunk in .chunk_ids(all_concept_ids)) {
+        res <- tryCatch(
+          DBI::dbGetQuery(con, sprintf(
+            "SELECT ancestor_concept_id FROM concept_ancestor WHERE ancestor_concept_id = descendant_concept_id AND ancestor_concept_id IN (%s)",
+            paste(chunk, collapse = ",")
+          )),
+          error = function(e) data.frame(ancestor_concept_id = integer(0))
+        )
+        existing_ancestor_ids <- c(existing_ancestor_ids, res$ancestor_concept_id)
+      }
+      missing_anc <- setdiff(all_concept_ids, existing_ancestor_ids)
+
+      if (length(missing_anc) > 0) {
+        ca_df <- data.frame(
+          ancestor_concept_id = missing_anc,
+          descendant_concept_id = missing_anc,
+          min_levels_of_separation = 0L,
+          max_levels_of_separation = 0L,
+          stringsAsFactors = FALSE
+        )
+        DBI::dbWriteTable(con, "concept_ancestor", ca_df, append = TRUE)
+      }
+
+      # Insert self-referential "Maps to" concept_relationship rows
+      existing_map_ids <- integer(0)
+      for (chunk in .chunk_ids(all_concept_ids)) {
+        res <- tryCatch(
+          DBI::dbGetQuery(con, sprintf(
+            "SELECT concept_id_1 FROM concept_relationship WHERE concept_id_1 = concept_id_2 AND relationship_id = 'Maps to' AND concept_id_1 IN (%s)",
+            paste(chunk, collapse = ",")
+          )),
+          error = function(e) data.frame(concept_id_1 = integer(0))
+        )
+        existing_map_ids <- c(existing_map_ids, res$concept_id_1)
+      }
+      missing_maps <- setdiff(all_concept_ids, existing_map_ids)
+
+      if (length(missing_maps) > 0) {
+        cr_df <- data.frame(
+          concept_id_1 = missing_maps,
+          concept_id_2 = missing_maps,
+          relationship_id = "Maps to",
+          valid_start_date = as.Date("1970-01-01"),
+          valid_end_date = as.Date("2099-12-31"),
+          invalid_reason = NA_character_,
+          stringsAsFactors = FALSE
+        )
+        DBI::dbWriteTable(con, "concept_relationship", cr_df, append = TRUE)
+      }
+    }
+  }
 
   run_and_score <- function(con, cohort_sql, cohort_table, cohort_id, n_generated) {
     used_vocab_fallback <- FALSE
@@ -1305,16 +1613,38 @@ cdmFromJson <- function(jsonPath = NULL,
     # To maximize match stability, we generate evidence for ALL primary criteria entries for qualifiers.
     # (This avoids "OR" / "All" ambiguity and reduces under-match due to SQL particulars.)
     if (length(primary) > 0) {
-      for (pc in primary) {
+      pc_list <- cohort$PrimaryCriteria$CriteriaList %||% list()
+      for (pi in seq_along(primary)) {
+        pc <- primary[[pi]]
         csid <- as.character(pc$codesetId)
         concepts <- codesets[[csid]] %||% integer(0)
-        if (length(concepts) == 0) next
+        # If no CodesetId, CIRCE SQL matches any record; use placeholder
+        if (length(concepts) == 0) {
+          if (is.na(csid) || csid == "NA") {
+            concepts <- 0L
+          } else {
+            next
+          }
+        }
+        # Parse value constraints from original criteria for Measurement/Observation
+        vc <- NULL
+        if (pc$type %in% c("Measurement", "Observation") && pi <= length(pc_list)) {
+          crit_data <- pc_list[[pi]][[pc$type]]
+          if (!is.null(crit_data)) vc <- parse_value_constraint(crit_data)
+        }
+        # Death primary criteria: handle specially
+        if (pc$type == "Death") {
+          d <- apply_event_date_jitter(q_idx_dates)
+          requests <- append(requests, list(list(type = "Death", person_ids = qualifying_ids, dates = d, concepts = concepts)))
+          next
+        }
         # add one event per qualifier for this primary criterion (with optional jitter)
         requests <- append(requests, list(list(
           type = pc$type,
           person_ids = qualifying_ids,
           dates = apply_event_date_jitter(q_idx_dates),
-          concepts = concepts
+          concepts = concepts,
+          value_constraint = vc
         )))
       }
     }
@@ -1326,12 +1656,19 @@ cdmFromJson <- function(jsonPath = NULL,
       }
     }
 
+    # AdditionalCriteria: same structure as inclusion rule expressions
+    if (!is.null(add_crit)) {
+      requests <- append(requests, satisfy_group_for_people(add_crit, qualifying_ids, q_idx_dates))
+    }
+
     # If we failed previously, increase redundancy: add extra copies of primary evidence with slight date jitter.
     if (attempt > 1 && length(primary) > 0) {
       jitter_range <- if (event_date_jitter > 0) -event_date_jitter:event_date_jitter else -7:7
       for (pc in primary) {
+        if (pc$type == "Death") next
         csid <- as.character(pc$codesetId)
         concepts <- codesets[[csid]] %||% integer(0)
+        if (length(concepts) == 0 && (is.na(csid) || csid == "NA")) concepts <- 0L
         if (length(concepts) == 0) next
         jitter <- sample(jitter_range, length(qualifying_ids), replace = TRUE)
         requests <- append(requests, list(list(
@@ -1388,6 +1725,7 @@ cdmFromJson <- function(jsonPath = NULL,
 
     # Pass 1: materialize VisitOccurrence and build person -> visit_occurrence_id map (first visit per person)
     visit_rows <- list()
+    visit_end_dates <- list()  # track visit end dates for obs period computation
     for (req in requests) {
       t <- req$type
       if (is.null(t) || t != "VisitOccurrence") next
@@ -1404,6 +1742,8 @@ cdmFromJson <- function(jsonPath = NULL,
         DBI::dbWriteTable(con, table, res$df, append = TRUE)
         offsets[[table]] <- res$next_id
         visit_rows[[length(visit_rows) + 1L]] <- res$df[, c("person_id", "visit_occurrence_id")]
+        visit_end_dates[[length(visit_end_dates) + 1L]] <- data.frame(
+          person_id = res$df$person_id, date = as.Date(res$df$visit_end_date))
       }
     }
     if (length(visit_rows) > 0) {
@@ -1416,7 +1756,7 @@ cdmFromJson <- function(jsonPath = NULL,
     for (req in requests) {
       t <- req$type
       if (is.null(t) || is.na(t)) next
-      if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod")) next
+      if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod", "Death")) next
       if (!t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
       if (t == "VisitOccurrence") next
       table <- map_type_to_table(t)
@@ -1427,7 +1767,8 @@ cdmFromJson <- function(jsonPath = NULL,
         dates = req$dates,
         concept_ids = req$concepts,
         id_offset = offsets[[table]],
-        visit_occurrence_id = visit_ids
+        visit_occurrence_id = visit_ids,
+        value_constraint = req$value_constraint
       )
       if (!is.null(res$df)) {
         DBI::dbWriteTable(con, table, res$df, append = TRUE)
@@ -1435,12 +1776,41 @@ cdmFromJson <- function(jsonPath = NULL,
       }
     }
 
+    # Pass 3: materialize Death events (deduplicated: one death per person)
+    {
+      death_pids <- integer(0)
+      death_dates <- as.Date(character(0))
+      death_concepts <- integer(0)
+      for (req in requests) {
+        if (!is.null(req$type) && req$type == "Death") {
+          death_pids <- c(death_pids, req$person_ids)
+          death_dates <- c(death_dates, req$dates)
+          cc <- req$concepts
+          death_concepts <- c(death_concepts, cc[sample(length(cc), length(req$person_ids), replace = TRUE)])
+        }
+      }
+      if (length(death_pids) > 0) {
+        dedup <- !duplicated(death_pids)
+        death_df <- data.frame(
+          person_id = death_pids[dedup],
+          death_date = death_dates[dedup],
+          death_datetime = as.POSIXct(NA),
+          death_type_concept_id = 0L,
+          cause_concept_id = death_concepts[dedup],
+          cause_source_value = NA_character_,
+          cause_source_concept_id = 0L
+        )
+        try(DBI::dbWriteTable(con, "death", death_df, append = TRUE), silent = TRUE)
+      }
+    }
+
     # Per-person observation periods: flatten (person_id, date) from requests and aggregate min/max
-    event_rows <- list()
+    # Also include visit END dates so obs periods cover full visit durations
+    event_rows <- c(visit_end_dates, list())
     for (req in requests) {
       t <- req$type
       if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod")) next
-      if (is.null(t) || !t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
+      if (is.null(t) || !t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure","Death")) next
       event_rows[[length(event_rows) + 1L]] <- data.frame(person_id = req$person_ids, date = as.Date(req$dates))
     }
     person_date_min <- stats::setNames(rep(as.Date(NA), n), person_ids)
@@ -1452,8 +1822,10 @@ cdmFromJson <- function(jsonPath = NULL,
       person_date_min[as.character(agg_min$person_id)] <- agg_min$date
       person_date_max[as.character(agg_max$person_id)] <- agg_max$date
     }
-    prior_pad <- pmax(0, prior_days + sample(-5:5, n, replace = TRUE))
-    post_pad <- pmax(0, post_days + sample(-5:5, n, replace = TRUE))
+    # Ensure padding is always >= required days (positive jitter only).
+    # Old ±5 jitter could make padding < prior_days, failing CIRCE's observation window check.
+    prior_pad <- prior_days + sample(5:15, n, replace = TRUE)
+    post_pad <- post_days + sample(5:15, n, replace = TRUE)
     today <- Sys.Date()
     op_start <- person_date_min - prior_pad[match(as.character(person_ids), names(person_date_min))]
     op_end <- pmin(person_date_max + post_pad[match(as.character(person_ids), names(person_date_max))], today)
@@ -1495,17 +1867,24 @@ cdmFromJson <- function(jsonPath = NULL,
       try(DBI::dbWriteTable(con, "death", death_df, append = TRUE), silent = TRUE)
     }
 
-    # Build era tables if needed (or always, cheap enough at this scale)
-    # We build from already inserted occurrences/exposures.
-    if (needs_condition_era) {
+    # Always build era tables: 65% of cohorts use CustomEra EndStrategy which
+    # references era tables, and detection via needs_condition_era/needs_drug_era
+    # can miss indirect usage. Cheap enough at synthetic scale.
+    {
       co <- DBI::dbGetQuery(con, "SELECT person_id, condition_concept_id, condition_start_date, condition_end_date FROM condition_occurrence;")
-      ce <- .build_condition_era_df(co, era_pad_days = era_pad_json, start_id = 1L)
-      if (nrow(ce) > 0) DBI::dbWriteTable(con, "condition_era", ce, append = TRUE)
+      if (nrow(co) > 0) {
+        try(DBI::dbExecute(con, "DELETE FROM condition_era;"), silent = TRUE)
+        ce <- .build_condition_era_df(co, era_pad_days = era_pad_json, start_id = 1L)
+        if (nrow(ce) > 0) DBI::dbWriteTable(con, "condition_era", ce, append = TRUE)
+      }
     }
-    if (needs_drug_era) {
+    {
       de <- DBI::dbGetQuery(con, "SELECT person_id, drug_concept_id, drug_exposure_start_date, drug_exposure_end_date FROM drug_exposure;")
-      dre <- .build_drug_era_df(de, era_pad_days = era_pad_json, start_id = 1L)
-      if (nrow(dre) > 0) DBI::dbWriteTable(con, "drug_era", dre, append = TRUE)
+      if (nrow(de) > 0) {
+        try(DBI::dbExecute(con, "DELETE FROM drug_era;"), silent = TRUE)
+        dre <- .build_drug_era_df(de, era_pad_days = era_pad_json, start_id = 1L)
+        if (nrow(dre) > 0) DBI::dbWriteTable(con, "drug_era", dre, append = TRUE)
+      }
     }
 
     run_res <- run_and_score(con, cohort_sql, cohort_table, cohort_id, n_generated = n)

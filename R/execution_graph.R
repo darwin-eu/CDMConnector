@@ -885,12 +885,17 @@ emit_dag_sql <- function(dag, options) {
   stringi::stri_join(unlist(chunks[seq_len(ci)]), collapse = "\n")
 }
 
-#' Emit preamble: staging tables.
+#' Emit preamble: staging tables and output tables for finalize.
+#' Creates staging tables (prefixed) and inclusion_events/inclusion_stats output
+#' tables so they exist before the finalize step runs.
 #' @noRd
 emit_preamble <- function(options) {
+  rs <- options$results_schema %||% "@results_schema"
   cs <- qualify_table("cohort_stage", options)
   ies <- qualify_table("inclusion_events_stage", options)
   iss <- qualify_table("inclusion_stats_stage", options)
+  out_ie <- paste0(rs, ".inclusion_events")
+  out_is <- paste0(rs, ".inclusion_stats")
   c(
     "/*",
     "  Execution Graph Batch Script",
@@ -906,6 +911,13 @@ emit_preamble <- function(options) {
     "",
     paste0("DROP TABLE IF EXISTS ", iss, ";"),
     paste0("CREATE TABLE ", iss, " (cohort_definition_id INT NOT NULL, inclusion_rule_id INT NOT NULL, person_count BIGINT NULL, gain_count BIGINT NULL, person_total BIGINT NULL);"),
+    "",
+    "-- Output tables for finalize (must exist before DELETE/INSERT)",
+    paste0("DROP TABLE IF EXISTS ", out_ie, ";"),
+    paste0("CREATE TABLE ", out_ie, " (cohort_definition_id INT NOT NULL, inclusion_rule_id INT NOT NULL, person_id BIGINT NOT NULL, event_id BIGINT NOT NULL);"),
+    "",
+    paste0("DROP TABLE IF EXISTS ", out_is, ";"),
+    paste0("CREATE TABLE ", out_is, " (cohort_definition_id INT NOT NULL, inclusion_rule_id INT NOT NULL, person_count BIGINT NULL, gain_count BIGINT NULL, person_total BIGINT NULL);"),
     ""
   )
 }
@@ -1019,10 +1031,11 @@ emit_domain_filtered <- function(used_tables, cdm_schema, options) {
       paste0(cdm_schema, ".", dc$table, " ", a)
     }
     # When using a subquery, column names may be lowercase (e.g. from dbplyr).
-    # Use double-quoted identifiers so Snowflake and others resolve case correctly.
+    # Quote only the column name (not the alias) so dialect resolves case correctly:
+    # e.g. co."condition_concept_id" works in Snowflake; "co"."condition_concept_id" can fail.
     if (use_subquery) {
-      std_ref <- sprintf("\"%s\".\"%s\"", a, std)
-      src_ref <- sprintf("\"%s\".\"%s\"", a, src)
+      std_ref <- paste0(a, ".", "\"", std, "\"")
+      src_ref <- paste0(a, ".", "\"", src, "\"")
     } else {
       std_ref <- paste0(a, ".", std)
       src_ref <- paste0(a, ".", src)
