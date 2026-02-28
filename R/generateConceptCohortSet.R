@@ -63,7 +63,7 @@ cohortCollapse <- function(x) {
       } else {
         dplyr::arrange(., .data$cohort_start_date, .data$dur, .data$cohort_end_date) %>%
         dplyr::mutate(
-          running_end = as.Date(cummax(as.integer(.data$cohort_end_date))),
+          running_end = as.Date(cummax(as.integer(.data$cohort_end_date)), origin = "1970-01-01"),
           prev_end    = dplyr::lag(.data$running_end),
           new_group   = dplyr::if_else(
             is.na(.data$prev_end),

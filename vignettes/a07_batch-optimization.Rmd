@@ -41,7 +41,7 @@ The traditional CIRCE approach generates a fully self-contained SQL script for
 each cohort. Every script independently performs five phases:
 
 <div style="text-align:center;">
-  <img src="../images/Cohort JSON Processing-2026-02-15-141031.png" style="width:35%;" />
+  <img src="fig/cohort-json-141031.png" style="width:35%;" />
 </div>
 
 
@@ -68,7 +68,7 @@ share the results.
 
 <div style="text-align: center;">
   <img 
-    src="../images/Cohort JSON Processing-2026-02-15-141722.png"
+    src="fig/cohort-json-141722.png"
     style="max-width: 100%; height: auto; transition: transform 0.25s cubic-bezier(.4,2,.6,1); cursor: zoom-in;"
     id="zoomable-img" 
     onclick="
@@ -115,7 +115,7 @@ Consider three cohorts that identify users of different drugs:
 Each cohort operates in complete isolation:
 
 <div style="text-align: center; width: 50%; margin-left: auto; margin-right: auto;">
-  <img src="../images/Cohort JSON Processing-2026-02-15-142734.png" style="max-width: 100%; height: auto;" />
+  <img src="fig/cohort-json-141722.png" style="max-width: 100%; height: auto;" />
 </div>
 
 Notice: `CONCEPT_ANCESTOR` is joined 3 times; `DRUG_EXPOSURE` is scanned 3
@@ -128,7 +128,7 @@ The optimizer merges the shared work:
 
 <div style="text-align: center;">
   <img 
-    src="../images/Cohort JSON Processing-2026-02-15-142825.png"
+    src="fig/cohort-json-142825.png"
     style="max-width: 100%; height: auto; transition: transform 0.25s cubic-bezier(.4,2,.6,1); cursor: zoom-in;"
     id="zoomable-optimized-dag-img" 
     onclick="

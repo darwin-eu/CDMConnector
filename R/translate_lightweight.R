@@ -421,10 +421,15 @@ translate_cohort_stmts <- function(stmts, target_dialect) {
       stmts[analyze_idx] <- ""
     }
     # PostgreSQL, Redshift: ANALYZE is native, keep as-is
-    # Snowflake, BigQuery, Spark/Databricks: auto-analyze, strip
-    # (Delta Lake auto-optimizes; ANALYZE TABLE can fail on intermediate tables
-    #  created via CTE decomposition)
-    if (td %in% c("snowflake", "bigquery", "spark", "databricks")) {
+    # Spark/Databricks: ANALYZE tbl -> ANALYZE TABLE tbl COMPUTE STATISTICS
+    if (td %in% c("spark", "databricks")) {
+      stmts[analyze_idx] <- paste0(
+        sub("(?i)\\bANALYZE\\s+", "ANALYZE TABLE ", stmts[analyze_idx], perl = TRUE),
+        " COMPUTE STATISTICS"
+      )
+    }
+    # Snowflake, BigQuery: auto-analyze, strip
+    if (td %in% c("snowflake", "bigquery")) {
       stmts[analyze_idx] <- ""
     }
   }

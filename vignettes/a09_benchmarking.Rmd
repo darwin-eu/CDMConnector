@@ -2,7 +2,7 @@
 title: "Multi-Database Benchmarking: Old vs New Cohort Generation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Multi-Database Benchmarking}
+  %\VignetteIndexEntry{Multi-Database Benchmarking: Old vs New Cohort Generation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
