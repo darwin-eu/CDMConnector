@@ -1030,23 +1030,29 @@ emit_domain_filtered <- function(used_tables, cdm_schema, options) {
     } else {
       paste0(cdm_schema, ".", dc$table, " ", a)
     }
-    # When using a subquery, column names may be lowercase (e.g. from dbplyr).
-    # Quote only the column name (not the alias) so dialect resolves case correctly:
-    # e.g. co."condition_concept_id" works in Snowflake; "co"."condition_concept_id" can fail.
+    # When using a subquery (cdmSubset), column names may be lowercase (from dbplyr).
+    # Use explicit column list with uppercase aliases so the filtered table always has
+    # uppercase columns, matching the unquoted refs in CIRCE-generated cohort SQL
+    # (Snowflake auto-uppercases unquoted identifiers).
     if (use_subquery) {
-      std_ref <- paste0(a, ".", "\"", std, "\"")
-      src_ref <- paste0(a, ".", "\"", src, "\"")
+      std_ref <- paste0(a, ".\"", std, "\"")
+      src_ref <- paste0(a, ".\"", src, "\"")
+      col_list <- paste(vapply(dc$columns, function(col) {
+        paste0(a, ".\"", col, "\" AS ", toupper(col))
+      }, character(1)), collapse = ", ")
+      select_clause <- col_list
     } else {
       std_ref <- paste0(a, ".", std)
       src_ref <- paste0(a, ".", src)
+      select_clause <- "*"
     }
     ci <- ci + 1L
     chunks[[ci]] <- c(
       sprintf("DROP TABLE IF EXISTS %s;", ft),
-      sprintf(paste0("SELECT * INTO %s FROM %s WHERE %s IN ",
+      sprintf(paste0("SELECT %s INTO %s FROM %s WHERE %s IN ",
                      "(SELECT concept_id FROM %s) OR %s IN ",
                      "(SELECT concept_id FROM %s);"),
-              ft, tbl_src, std_ref, ac_tbl, src_ref, ac_tbl),
+              select_clause, ft, tbl_src, std_ref, ac_tbl, src_ref, ac_tbl),
       "")
   }
   if (ci == 0L) return(character(0))
