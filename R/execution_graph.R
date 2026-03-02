@@ -1009,15 +1009,29 @@ emit_domain_filtered <- function(used_tables, cdm_schema, options) {
   if ("OBSERVATION_PERIOD" %in% used_tables) {
     op_tbl <- qualify_table("atlas_observation_period", options)
     # Use CDM subquery if available (e.g., cdmSubset filtered observation_period)
-    op_src <- if (!is.null(cdm_table_sql[["OBSERVATION_PERIOD"]])) {
+    op_use_subquery <- !is.null(cdm_table_sql[["OBSERVATION_PERIOD"]])
+    op_src <- if (op_use_subquery) {
       paste0("(", cdm_table_sql[["OBSERVATION_PERIOD"]], ") _op")
     } else {
       paste0(cdm_schema, ".OBSERVATION_PERIOD")
     }
+    # When using a subquery (cdmSubset), column names may be lowercase (from dbplyr).
+    # Use explicit column list with uppercase aliases so CIRCE SQL's unquoted
+    # OP.OBSERVATION_PERIOD_START_DATE references resolve correctly on Snowflake.
+    op_select <- if (op_use_subquery) {
+      op_cols <- c("observation_period_id", "person_id",
+                   "observation_period_start_date", "observation_period_end_date",
+                   "period_type_concept_id")
+      paste(vapply(op_cols, function(col) {
+        paste0("_op.\"", col, "\" AS ", toupper(col))
+      }, character(1)), collapse = ", ")
+    } else {
+      "*"
+    }
     ci <- ci + 1L
     chunks[[ci]] <- c(
       paste0("DROP TABLE IF EXISTS ", op_tbl, ";"),
-      sprintf("SELECT * INTO %s FROM %s;", op_tbl, op_src), "")
+      sprintf("SELECT %s INTO %s FROM %s;", op_select, op_tbl, op_src), "")
   }
 
   for (dc in DOMAIN_CONFIG) {
