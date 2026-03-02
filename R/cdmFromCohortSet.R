@@ -327,8 +327,7 @@ cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbP
     cohortTable, today_str, today_str, today_str, today_str
   )), silent = TRUE)
 
-  # Build derived tables from final condition_occurrence and drug_exposure (30-day persistence window)
-  era_pad_days <- 30L
+  # Build derived era tables using official OHDSI SQL (30-day persistence window)
   try(DBI::dbExecute(con_final, "DROP TABLE IF EXISTS condition_era;"), silent = TRUE)
   try(DBI::dbExecute(con_final, "CREATE TABLE condition_era (
     condition_era_id INTEGER, person_id INTEGER, condition_concept_id INTEGER,
@@ -337,25 +336,18 @@ cdmFromCohortSet <- function(cohortSet, n = 100, cohortTable = "cohort", duckdbP
   try(DBI::dbExecute(con_final, "CREATE TABLE drug_era (
     drug_era_id INTEGER, person_id INTEGER, drug_concept_id INTEGER,
     drug_era_start_date DATE, drug_era_end_date DATE, drug_exposure_count INTEGER, gap_days INTEGER);"), silent = TRUE)
-  co_df <- try(DBI::dbGetQuery(con_final, "SELECT person_id, condition_concept_id, condition_start_date, condition_end_date FROM condition_occurrence;"), silent = TRUE)
-  if (!inherits(co_df, "try-error") && !is.null(co_df) && nrow(co_df) > 0) {
-    ce <- .build_condition_era_df(co_df, era_pad_days = era_pad_days, start_id = 1L)
-    if (nrow(ce) > 0) DBI::dbWriteTable(con_final, "condition_era", ce, append = TRUE)
-  }
-  de_df <- try(DBI::dbGetQuery(con_final, "SELECT person_id, drug_concept_id, drug_exposure_start_date, drug_exposure_end_date FROM drug_exposure;"), silent = TRUE)
-  if (!inherits(de_df, "try-error") && !is.null(de_df) && nrow(de_df) > 0) {
-    dre <- .build_drug_era_df(de_df, era_pad_days = era_pad_days, start_id = 1L)
-    if (nrow(dre) > 0) DBI::dbWriteTable(con_final, "drug_era", dre, append = TRUE)
-  }
+  try(.build_condition_era_sql(con_final), silent = TRUE)
+  try(.build_drug_era_sql(con_final), silent = TRUE)
   # Dose era: requires drug_strength; create table if missing, then build when drug_strength present
   try(DBI::dbExecute(con_final, "DROP TABLE IF EXISTS dose_era;"), silent = TRUE)
   try(DBI::dbExecute(con_final, "CREATE TABLE dose_era (
     dose_era_id INTEGER, person_id INTEGER, drug_concept_id INTEGER, unit_concept_id INTEGER,
     dose_value DOUBLE, dose_era_start_date DATE, dose_era_end_date DATE);"), silent = TRUE)
+  de_df_dose <- try(DBI::dbGetQuery(con_final, "SELECT person_id, drug_concept_id, drug_exposure_start_date, drug_exposure_end_date FROM drug_exposure;"), silent = TRUE)
   ds_df <- try(DBI::dbGetQuery(con_final, "SELECT drug_concept_id, ingredient_concept_id, amount_value, amount_unit_concept_id, numerator_value, numerator_unit_concept_id FROM drug_strength;"), silent = TRUE)
-  if (!inherits(de_df, "try-error") && !is.null(de_df) && nrow(de_df) > 0 &&
+  if (!inherits(de_df_dose, "try-error") && !is.null(de_df_dose) && nrow(de_df_dose) > 0 &&
       !inherits(ds_df, "try-error") && !is.null(ds_df) && nrow(ds_df) > 0) {
-    dose_era_df <- .build_dose_era_df(de_df, ds_df, era_pad_days = era_pad_days, start_id = 1L)
+    dose_era_df <- .build_dose_era_df(de_df_dose, ds_df, era_pad_days = 30L, start_id = 1L)
     if (nrow(dose_era_df) > 0) {
       DBI::dbWriteTable(con_final, "dose_era", dose_era_df, append = TRUE)
     }
@@ -585,6 +577,15 @@ cdmFromJson <- function(jsonPath = NULL,
       ids <- vapply(included_items, function(it) it$concept$CONCEPT_ID, numeric(1))
       out[[csid]] <- unique(as.integer(ids))
     }
+    empty_ids <- names(out)[vapply(out, function(x) length(x) == 0L, logical(1))]
+    if (length(empty_ids) > 0) {
+      empty_names <- vapply(empty_ids, function(eid) {
+        for (s in sets) if (as.character(s$id) == eid) return(s$name %||% eid)
+        eid
+      }, character(1))
+      message("Concept sets with no concepts: ", paste(sprintf("%s (id=%s)", empty_names, empty_ids), collapse = ", "),
+              ". Criteria using these concept sets will match no records.")
+    }
     out
   }
 
@@ -688,8 +689,20 @@ cdmFromJson <- function(jsonPath = NULL,
     }
 
     pc <- cohort$PrimaryCriteria %||% list()
-    if (!is.null(pc$CriteriaList))
-      for (c in pc$CriteriaList) if (!is.null(c$Age)) collect_demog(list(list(Age = c$Age)))
+    if (!is.null(pc$CriteriaList)) {
+      for (c in pc$CriteriaList) {
+        if (!is.null(c$Age)) collect_demog(list(list(Age = c$Age)))
+        # Gender can live inside criterion-type data (e.g. DrugEra.Gender, ConditionOccurrence.Gender)
+        for (k in .criterion_keys) {
+          if (!is.null(c[[k]]) && !is.null(c[[k]]$Gender) && is.list(c[[k]]$Gender)) {
+            for (g in c[[k]]$Gender) {
+              cid <- as.integer(g$CONCEPT_ID %||% g$ValueAsConceptId)
+              if (!is.na(cid)) gender_concept_ids <<- unique(c(gender_concept_ids, cid))
+            }
+          }
+        }
+      }
+    }
     for (r in (cohort$InclusionRules %||% list())) {
       expr <- r$expression %||% r
       collect_demog(expr$DemographicCriteriaList %||% list())
@@ -2011,7 +2024,10 @@ cdmFromJson <- function(jsonPath = NULL,
     for (req in requests) {
       t <- req$type
       if (is.null(t) || is.na(t)) next
-      if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod", "Death")) next
+      # Era criteria: convert to underlying exposure/occurrence records so era-building step picks them up
+      if (t == "DrugEra") { t <- "DrugExposure"; req$type <- t }
+      if (t == "ConditionEra") { t <- "ConditionOccurrence"; req$type <- t }
+      if (t %in% c("ObservationPeriod", "Death")) next
       if (!t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure")) next
       if (t == "VisitOccurrence") next
       table <- map_type_to_table(t)
@@ -2159,7 +2175,9 @@ cdmFromJson <- function(jsonPath = NULL,
     event_rows <- c(visit_end_dates, list())
     for (req in requests) {
       t <- req$type
-      if (t %in% c("ConditionEra", "DrugEra", "ObservationPeriod")) next
+      if (t == "DrugEra") t <- "DrugExposure"
+      if (t == "ConditionEra") t <- "ConditionOccurrence"
+      if (t == "ObservationPeriod") next
       if (is.null(t) || !t %in% c("VisitOccurrence","ConditionOccurrence","ProcedureOccurrence","DrugExposure","Measurement","Observation","DeviceExposure","Death")) next
       event_rows[[length(event_rows) + 1L]] <- data.frame(person_id = req$person_ids, date = as.Date(req$dates))
     }
@@ -2217,25 +2235,11 @@ cdmFromJson <- function(jsonPath = NULL,
       try(DBI::dbWriteTable(con, "death", death_df, append = TRUE), silent = TRUE)
     }
 
-    # Always build era tables: 65% of cohorts use CustomEra EndStrategy which
-    # references era tables, and detection via needs_condition_era/needs_drug_era
-    # can miss indirect usage. Cheap enough at synthetic scale.
-    {
-      co <- DBI::dbGetQuery(con, "SELECT person_id, condition_concept_id, condition_start_date, condition_end_date FROM condition_occurrence;")
-      if (nrow(co) > 0) {
-        try(DBI::dbExecute(con, "DELETE FROM condition_era;"), silent = TRUE)
-        ce <- .build_condition_era_df(co, era_pad_days = era_pad_json, start_id = 1L)
-        if (nrow(ce) > 0) DBI::dbWriteTable(con, "condition_era", ce, append = TRUE)
-      }
-    }
-    {
-      de <- DBI::dbGetQuery(con, "SELECT person_id, drug_concept_id, drug_exposure_start_date, drug_exposure_end_date FROM drug_exposure;")
-      if (nrow(de) > 0) {
-        try(DBI::dbExecute(con, "DELETE FROM drug_era;"), silent = TRUE)
-        dre <- .build_drug_era_df(de, era_pad_days = era_pad_json, start_id = 1L)
-        if (nrow(dre) > 0) DBI::dbWriteTable(con, "drug_era", dre, append = TRUE)
-      }
-    }
+    # Always build era tables using official OHDSI SQL: 65% of cohorts use CustomEra
+    # EndStrategy which references era tables. Drug era uses ingredient rollup via
+    # concept_ancestor when available (falls back to drug_concept_id directly).
+    try(.build_condition_era_sql(con), silent = TRUE)
+    try(.build_drug_era_sql(con), silent = TRUE)
 
     # Extend observation periods to cover event end dates (drug_exposure, condition, visit)
     # Without this, CIRCE SQL drops persons whose event end dates overflow the obs period.
@@ -2328,147 +2332,407 @@ cdmFromJson <- function(jsonPath = NULL,
   agg[, c("observation_period_id", "person_id", "observation_period_start_date", "observation_period_end_date", "period_type_concept_id")]
 }
 
-# Build condition_era from condition_occurrence using persistence window (30d gap).
-# condition_occurrence_df must have person_id, condition_concept_id, condition_start_date, condition_end_date.
-.build_condition_era_df <- function(condition_occurrence_df, era_pad_days = 30L, start_id = 1L) {
-  if (is.null(condition_occurrence_df) || nrow(condition_occurrence_df) == 0) {
-    return(data.frame(
-      condition_era_id = integer(0),
-      person_id = integer(0),
-      condition_concept_id = integer(0),
-      condition_era_start_date = as.Date(character(0)),
-      condition_era_end_date = as.Date(character(0)),
-      condition_occurrence_count = integer(0)
-    ))
+# Build condition_era from condition_occurrence using the official OHDSI SQL (30d gap).
+# Executes the OHDSI era-collapsing algorithm directly in DuckDB.
+# Reference: https://ohdsi.github.io/CommonDataModel/sqlScripts.html
+.build_condition_era_sql <- function(con) {
+  n_rows <- DBI::dbGetQuery(con, "SELECT COUNT(*) AS n FROM condition_occurrence")$n
+  if (is.null(n_rows) || n_rows == 0) return(invisible(NULL))
+
+  sql <- "
+  DELETE FROM condition_era;
+
+  INSERT INTO condition_era (
+    condition_era_id, person_id, condition_concept_id,
+    condition_era_start_date, condition_era_end_date, condition_occurrence_count
+  )
+  WITH cteConditionTarget AS (
+    SELECT co.person_id,
+           co.condition_concept_id,
+           co.condition_start_date,
+           COALESCE(co.condition_end_date, co.condition_start_date + INTERVAL '1 day') AS condition_end_date
+    FROM condition_occurrence co
+  ),
+  cteCondEndDates AS (
+    SELECT person_id, condition_concept_id,
+           event_date - INTERVAL '30 days' AS end_date
+    FROM (
+      SELECT E1.person_id, E1.condition_concept_id, E1.event_date,
+             COALESCE(E1.start_ordinal, MAX(E2.start_ordinal)) AS start_ordinal,
+             E1.overall_ord
+      FROM (
+        SELECT person_id, condition_concept_id, event_date, event_type, start_ordinal,
+               ROW_NUMBER() OVER (
+                 PARTITION BY person_id, condition_concept_id
+                 ORDER BY event_date, event_type
+               ) AS overall_ord
+        FROM (
+          SELECT person_id, condition_concept_id,
+                 condition_start_date AS event_date,
+                 -1 AS event_type,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY person_id, condition_concept_id
+                   ORDER BY condition_start_date
+                 ) AS start_ordinal
+          FROM cteConditionTarget
+          UNION ALL
+          SELECT person_id, condition_concept_id,
+                 condition_end_date + INTERVAL '30 days' AS event_date,
+                 1 AS event_type,
+                 NULL AS start_ordinal
+          FROM cteConditionTarget
+        ) RAWDATA
+      ) E1
+      INNER JOIN (
+        SELECT person_id, condition_concept_id,
+               condition_start_date AS event_date,
+               ROW_NUMBER() OVER (
+                 PARTITION BY person_id, condition_concept_id
+                 ORDER BY condition_start_date
+               ) AS start_ordinal
+        FROM cteConditionTarget
+      ) E2
+        ON E1.person_id = E2.person_id
+       AND E1.condition_concept_id = E2.condition_concept_id
+       AND E2.event_date <= E1.event_date
+      GROUP BY E1.person_id, E1.condition_concept_id, E1.event_date,
+               E1.start_ordinal, E1.overall_ord
+    ) E
+    WHERE (2 * E.start_ordinal) - E.overall_ord = 0
+  ),
+  cteConditionEnds AS (
+    SELECT c.person_id, c.condition_concept_id, c.condition_start_date,
+           MIN(e.end_date) AS era_end_date
+    FROM cteConditionTarget c
+    INNER JOIN cteCondEndDates e
+      ON c.person_id = e.person_id
+     AND c.condition_concept_id = e.condition_concept_id
+     AND e.end_date >= c.condition_start_date
+    GROUP BY c.person_id, c.condition_concept_id, c.condition_start_date
+  )
+  SELECT ROW_NUMBER() OVER (ORDER BY person_id) AS condition_era_id,
+         person_id,
+         condition_concept_id,
+         MIN(condition_start_date) AS condition_era_start_date,
+         era_end_date AS condition_era_end_date,
+         COUNT(*) AS condition_occurrence_count
+  FROM cteConditionEnds
+  GROUP BY person_id, condition_concept_id, era_end_date;
+  "
+  for (stmt in strsplit(sql, ";")[[1]]) {
+    stmt <- trimws(stmt)
+    if (nchar(stmt) > 0) DBI::dbExecute(con, stmt)
   }
-  df <- condition_occurrence_df[, c("person_id", "condition_concept_id", "condition_start_date", "condition_end_date")]
-  df$condition_end_date[is.na(df$condition_end_date)] <- df$condition_start_date[is.na(df$condition_end_date)]
-  df <- df[order(df$person_id, df$condition_concept_id, df$condition_start_date), , drop = FALSE]
-
-  out <- list()
-  cur_id <- start_id
-  split_keys <- paste(df$person_id, df$condition_concept_id, sep = "|")
-  idx <- split(seq_len(nrow(df)), split_keys)
-
-  for (k in names(idx)) {
-    rows <- df[idx[[k]], , drop = FALSE]
-    start <- rows$condition_start_date[1]
-    end <- rows$condition_end_date[1]
-    count <- 1L
-
-    if (nrow(rows) > 1) {
-      for (i in 2:nrow(rows)) {
-        s <- rows$condition_start_date[i]
-        e <- rows$condition_end_date[i]
-        if (as.integer(s - end) <= era_pad_days) {
-          if (e > end) end <- e
-          count <- count + 1L
-        } else {
-          out[[length(out) + 1L]] <- data.frame(
-            condition_era_id = cur_id,
-            person_id = rows$person_id[1],
-            condition_concept_id = rows$condition_concept_id[1],
-            condition_era_start_date = start,
-            condition_era_end_date = end,
-            condition_occurrence_count = count
-          )
-          cur_id <- cur_id + 1L
-          start <- s
-          end <- e
-          count <- 1L
-        }
-      }
-    }
-
-    out[[length(out) + 1L]] <- data.frame(
-      condition_era_id = cur_id,
-      person_id = rows$person_id[1],
-      condition_concept_id = rows$condition_concept_id[1],
-      condition_era_start_date = start,
-      condition_era_end_date = end,
-      condition_occurrence_count = count
-    )
-    cur_id <- cur_id + 1L
-  }
-
-  do.call(rbind, out)
+  invisible(NULL)
 }
 
-# Build drug_era from drug_exposure using persistence window (30d gap).
-# gap_days = (era_end - era_start) - sum(days exposed) per era.
-.build_drug_era_df <- function(drug_exposure_df, era_pad_days = 30L, start_id = 1L) {
-  if (is.null(drug_exposure_df) || nrow(drug_exposure_df) == 0) {
-    return(data.frame(
-      drug_era_id = integer(0),
-      person_id = integer(0),
-      drug_concept_id = integer(0),
-      drug_era_start_date = as.Date(character(0)),
-      drug_era_end_date = as.Date(character(0)),
-      drug_exposure_count = integer(0),
-      gap_days = integer(0)
-    ))
-  }
-  df <- drug_exposure_df[, c("person_id", "drug_concept_id", "drug_exposure_start_date", "drug_exposure_end_date")]
-  df$drug_exposure_end_date[is.na(df$drug_exposure_end_date)] <- df$drug_exposure_start_date[is.na(df$drug_exposure_end_date)]
-  df <- df[order(df$person_id, df$drug_concept_id, df$drug_exposure_start_date), , drop = FALSE]
+# Build drug_era from drug_exposure using the official OHDSI SQL (non-stockpile, 30d gap).
+# Maps drug_exposure up to RxNorm Ingredient via concept_ancestor, then collapses into eras.
+# Reference: https://ohdsi.github.io/CommonDataModel/sqlScripts.html
+# Source: https://github.com/OHDSI/ETL-CMS/blob/master/SQL/create_CDMv5_drug_era_non_stockpile.sql
+.build_drug_era_sql <- function(con) {
+  n_rows <- DBI::dbGetQuery(con, "SELECT COUNT(*) AS n FROM drug_exposure WHERE drug_concept_id != 0")$n
+  if (is.null(n_rows) || n_rows == 0) return(invisible(NULL))
 
-  out <- list()
-  cur_id <- start_id
-  split_keys <- paste(df$person_id, df$drug_concept_id, sep = "|")
-  idx <- split(seq_len(nrow(df)), split_keys)
+  # Check if concept_ancestor table exists and has data for the ingredient rollup
+  has_ca <- tryCatch({
+    n <- DBI::dbGetQuery(con, "SELECT COUNT(*) AS n FROM concept_ancestor LIMIT 1")$n
+    !is.null(n) && n > 0
+  }, error = function(e) FALSE)
 
-  for (k in names(idx)) {
-    rows <- df[idx[[k]], , drop = FALSE]
-    start <- rows$drug_exposure_start_date[1]
-    end <- rows$drug_exposure_end_date[1]
-    count <- 1L
-    days_exposed <- as.integer(end - start)
+  if (has_ca) {
+    # Full OHDSI drug_era SQL with ingredient rollup via concept_ancestor
+    sql <- "
+    DELETE FROM drug_era;
 
-    if (nrow(rows) > 1) {
-      for (i in 2:nrow(rows)) {
-        s <- rows$drug_exposure_start_date[i]
-        e <- rows$drug_exposure_end_date[i]
-        g <- as.integer(s - end)
-        if (g <= era_pad_days) {
-          if (e > end) end <- e
-          count <- count + 1L
-          days_exposed <- days_exposed + as.integer(e - s)
-        } else {
-          era_days <- as.integer(end - start)
-          gap_days <- max(0L, era_days - days_exposed)
-          out[[length(out) + 1L]] <- data.frame(
-            drug_era_id = cur_id,
-            person_id = rows$person_id[1],
-            drug_concept_id = rows$drug_concept_id[1],
-            drug_era_start_date = start,
-            drug_era_end_date = end,
-            drug_exposure_count = count,
-            gap_days = gap_days
-          )
-          cur_id <- cur_id + 1L
-          start <- s
-          end <- e
-          count <- 1L
-          days_exposed <- as.integer(e - s)
-        }
-      }
-    }
-
-    era_days <- as.integer(end - start)
-    gap_days <- max(0L, era_days - days_exposed)
-    out[[length(out) + 1L]] <- data.frame(
-      drug_era_id = cur_id,
-      person_id = rows$person_id[1],
-      drug_concept_id = rows$drug_concept_id[1],
-      drug_era_start_date = start,
-      drug_era_end_date = end,
-      drug_exposure_count = count,
-      gap_days = gap_days
+    INSERT INTO drug_era (
+      drug_era_id, person_id, drug_concept_id,
+      drug_era_start_date, drug_era_end_date, drug_exposure_count, gap_days
     )
-    cur_id <- cur_id + 1L
+    WITH ctePreDrugTarget AS (
+      SELECT d.drug_exposure_id,
+             d.person_id,
+             c.concept_id AS ingredient_concept_id,
+             d.drug_exposure_start_date,
+             d.days_supply,
+             COALESCE(
+               NULLIF(d.drug_exposure_end_date, NULL),
+               NULLIF(d.drug_exposure_start_date + CAST(d.days_supply AS INTEGER) * INTERVAL '1 day',
+                      d.drug_exposure_start_date),
+               d.drug_exposure_start_date + INTERVAL '1 day'
+             ) AS drug_exposure_end_date
+      FROM drug_exposure d
+      JOIN concept_ancestor ca ON ca.descendant_concept_id = d.drug_concept_id
+      JOIN concept c ON ca.ancestor_concept_id = c.concept_id
+      WHERE c.vocabulary_id = 'RxNorm'
+        AND c.concept_class_id = 'Ingredient'
+        AND d.drug_concept_id != 0
+        AND COALESCE(d.days_supply, 0) >= 0
+    ),
+    cteSubExposureEndDates AS (
+      SELECT person_id, ingredient_concept_id, event_date AS end_date
+      FROM (
+        SELECT person_id, ingredient_concept_id, event_date, event_type,
+               MAX(start_ordinal) OVER (
+                 PARTITION BY person_id, ingredient_concept_id
+                 ORDER BY event_date, event_type ROWS UNBOUNDED PRECEDING
+               ) AS start_ordinal,
+               ROW_NUMBER() OVER (
+                 PARTITION BY person_id, ingredient_concept_id
+                 ORDER BY event_date, event_type
+               ) AS overall_ord
+        FROM (
+          SELECT person_id, ingredient_concept_id,
+                 drug_exposure_start_date AS event_date,
+                 -1 AS event_type,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY person_id, ingredient_concept_id
+                   ORDER BY drug_exposure_start_date
+                 ) AS start_ordinal
+          FROM ctePreDrugTarget
+          UNION ALL
+          SELECT person_id, ingredient_concept_id,
+                 drug_exposure_end_date AS event_date,
+                 1 AS event_type,
+                 NULL AS start_ordinal
+          FROM ctePreDrugTarget
+        ) RAWDATA
+      ) e
+      WHERE (2 * e.start_ordinal) - e.overall_ord = 0
+    ),
+    cteDrugExposureEnds AS (
+      SELECT dt.person_id,
+             dt.ingredient_concept_id,
+             dt.drug_exposure_start_date,
+             MIN(e.end_date) AS drug_sub_exposure_end_date
+      FROM ctePreDrugTarget dt
+      JOIN cteSubExposureEndDates e
+        ON dt.person_id = e.person_id
+       AND dt.ingredient_concept_id = e.ingredient_concept_id
+       AND e.end_date >= dt.drug_exposure_start_date
+      GROUP BY dt.drug_exposure_id, dt.person_id,
+               dt.ingredient_concept_id, dt.drug_exposure_start_date
+    ),
+    cteSubExposures AS (
+      SELECT ROW_NUMBER() OVER (
+               PARTITION BY person_id, ingredient_concept_id, drug_sub_exposure_end_date
+               ORDER BY person_id
+             ) AS row_number,
+             person_id,
+             ingredient_concept_id AS drug_concept_id,
+             MIN(drug_exposure_start_date) AS drug_sub_exposure_start_date,
+             drug_sub_exposure_end_date,
+             COUNT(*) AS drug_exposure_count
+      FROM cteDrugExposureEnds
+      GROUP BY person_id, ingredient_concept_id, drug_sub_exposure_end_date
+    ),
+    cteFinalTarget AS (
+      SELECT row_number, person_id, drug_concept_id,
+             drug_sub_exposure_start_date, drug_sub_exposure_end_date,
+             drug_exposure_count,
+             DATEDIFF('day', drug_sub_exposure_start_date, drug_sub_exposure_end_date) AS days_exposed
+      FROM cteSubExposures
+    ),
+    cteEndDates AS (
+      SELECT person_id, drug_concept_id AS ingredient_concept_id,
+             event_date - INTERVAL '30 days' AS end_date
+      FROM (
+        SELECT person_id, drug_concept_id, event_date, event_type,
+               MAX(start_ordinal) OVER (
+                 PARTITION BY person_id, drug_concept_id
+                 ORDER BY event_date, event_type ROWS UNBOUNDED PRECEDING
+               ) AS start_ordinal,
+               ROW_NUMBER() OVER (
+                 PARTITION BY person_id, drug_concept_id
+                 ORDER BY event_date, event_type
+               ) AS overall_ord
+        FROM (
+          SELECT person_id, drug_concept_id,
+                 drug_sub_exposure_start_date AS event_date,
+                 -1 AS event_type,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY person_id, drug_concept_id
+                   ORDER BY drug_sub_exposure_start_date
+                 ) AS start_ordinal
+          FROM cteFinalTarget
+          UNION ALL
+          SELECT person_id, drug_concept_id,
+                 drug_sub_exposure_end_date + INTERVAL '30 days' AS event_date,
+                 1 AS event_type,
+                 NULL AS start_ordinal
+          FROM cteFinalTarget
+        ) RAWDATA
+      ) e
+      WHERE (2 * e.start_ordinal) - e.overall_ord = 0
+    ),
+    cteDrugEraEnds AS (
+      SELECT ft.person_id,
+             ft.drug_concept_id AS ingredient_concept_id,
+             ft.drug_sub_exposure_start_date,
+             MIN(e.end_date) AS era_end_date,
+             ft.drug_exposure_count,
+             ft.days_exposed
+      FROM cteFinalTarget ft
+      JOIN cteEndDates e
+        ON ft.person_id = e.person_id
+       AND ft.drug_concept_id = e.ingredient_concept_id
+       AND e.end_date >= ft.drug_sub_exposure_start_date
+      GROUP BY ft.person_id, ft.drug_concept_id,
+               ft.drug_sub_exposure_start_date, ft.drug_exposure_count, ft.days_exposed
+    )
+    SELECT ROW_NUMBER() OVER (ORDER BY person_id) AS drug_era_id,
+           person_id,
+           ingredient_concept_id AS drug_concept_id,
+           MIN(drug_sub_exposure_start_date) AS drug_era_start_date,
+           era_end_date AS drug_era_end_date,
+           SUM(drug_exposure_count) AS drug_exposure_count,
+           DATEDIFF('day', MIN(drug_sub_exposure_start_date), era_end_date) - SUM(days_exposed) AS gap_days
+    FROM cteDrugEraEnds
+    GROUP BY person_id, ingredient_concept_id, era_end_date;
+    "
+  } else {
+    # Fallback: no concept_ancestor available — use drug_concept_id directly (no ingredient rollup)
+    sql <- "
+    DELETE FROM drug_era;
+
+    INSERT INTO drug_era (
+      drug_era_id, person_id, drug_concept_id,
+      drug_era_start_date, drug_era_end_date, drug_exposure_count, gap_days
+    )
+    WITH ctePreDrugTarget AS (
+      SELECT d.drug_exposure_id,
+             d.person_id,
+             d.drug_concept_id AS ingredient_concept_id,
+             d.drug_exposure_start_date,
+             COALESCE(d.drug_exposure_end_date,
+                      d.drug_exposure_start_date + INTERVAL '1 day') AS drug_exposure_end_date
+      FROM drug_exposure d
+      WHERE d.drug_concept_id != 0
+    ),
+    cteSubExposureEndDates AS (
+      SELECT person_id, ingredient_concept_id, event_date AS end_date
+      FROM (
+        SELECT person_id, ingredient_concept_id, event_date, event_type,
+               MAX(start_ordinal) OVER (
+                 PARTITION BY person_id, ingredient_concept_id
+                 ORDER BY event_date, event_type ROWS UNBOUNDED PRECEDING
+               ) AS start_ordinal,
+               ROW_NUMBER() OVER (
+                 PARTITION BY person_id, ingredient_concept_id
+                 ORDER BY event_date, event_type
+               ) AS overall_ord
+        FROM (
+          SELECT person_id, ingredient_concept_id,
+                 drug_exposure_start_date AS event_date,
+                 -1 AS event_type,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY person_id, ingredient_concept_id
+                   ORDER BY drug_exposure_start_date
+                 ) AS start_ordinal
+          FROM ctePreDrugTarget
+          UNION ALL
+          SELECT person_id, ingredient_concept_id,
+                 drug_exposure_end_date AS event_date,
+                 1 AS event_type,
+                 NULL AS start_ordinal
+          FROM ctePreDrugTarget
+        ) RAWDATA
+      ) e
+      WHERE (2 * e.start_ordinal) - e.overall_ord = 0
+    ),
+    cteDrugExposureEnds AS (
+      SELECT dt.person_id, dt.ingredient_concept_id,
+             dt.drug_exposure_start_date,
+             MIN(e.end_date) AS drug_sub_exposure_end_date
+      FROM ctePreDrugTarget dt
+      JOIN cteSubExposureEndDates e
+        ON dt.person_id = e.person_id
+       AND dt.ingredient_concept_id = e.ingredient_concept_id
+       AND e.end_date >= dt.drug_exposure_start_date
+      GROUP BY dt.drug_exposure_id, dt.person_id,
+               dt.ingredient_concept_id, dt.drug_exposure_start_date
+    ),
+    cteSubExposures AS (
+      SELECT ROW_NUMBER() OVER (
+               PARTITION BY person_id, ingredient_concept_id, drug_sub_exposure_end_date
+               ORDER BY person_id
+             ) AS row_number,
+             person_id, ingredient_concept_id AS drug_concept_id,
+             MIN(drug_exposure_start_date) AS drug_sub_exposure_start_date,
+             drug_sub_exposure_end_date,
+             COUNT(*) AS drug_exposure_count
+      FROM cteDrugExposureEnds
+      GROUP BY person_id, ingredient_concept_id, drug_sub_exposure_end_date
+    ),
+    cteFinalTarget AS (
+      SELECT row_number, person_id, drug_concept_id,
+             drug_sub_exposure_start_date, drug_sub_exposure_end_date,
+             drug_exposure_count,
+             DATEDIFF('day', drug_sub_exposure_start_date, drug_sub_exposure_end_date) AS days_exposed
+      FROM cteSubExposures
+    ),
+    cteEndDates AS (
+      SELECT person_id, drug_concept_id AS ingredient_concept_id,
+             event_date - INTERVAL '30 days' AS end_date
+      FROM (
+        SELECT person_id, drug_concept_id, event_date, event_type,
+               MAX(start_ordinal) OVER (
+                 PARTITION BY person_id, drug_concept_id
+                 ORDER BY event_date, event_type ROWS UNBOUNDED PRECEDING
+               ) AS start_ordinal,
+               ROW_NUMBER() OVER (
+                 PARTITION BY person_id, drug_concept_id
+                 ORDER BY event_date, event_type
+               ) AS overall_ord
+        FROM (
+          SELECT person_id, drug_concept_id,
+                 drug_sub_exposure_start_date AS event_date,
+                 -1 AS event_type,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY person_id, drug_concept_id
+                   ORDER BY drug_sub_exposure_start_date
+                 ) AS start_ordinal
+          FROM cteFinalTarget
+          UNION ALL
+          SELECT person_id, drug_concept_id,
+                 drug_sub_exposure_end_date + INTERVAL '30 days' AS event_date,
+                 1 AS event_type,
+                 NULL AS start_ordinal
+          FROM cteFinalTarget
+        ) RAWDATA
+      ) e
+      WHERE (2 * e.start_ordinal) - e.overall_ord = 0
+    ),
+    cteDrugEraEnds AS (
+      SELECT ft.person_id, ft.drug_concept_id AS ingredient_concept_id,
+             ft.drug_sub_exposure_start_date,
+             MIN(e.end_date) AS era_end_date,
+             ft.drug_exposure_count, ft.days_exposed
+      FROM cteFinalTarget ft
+      JOIN cteEndDates e
+        ON ft.person_id = e.person_id
+       AND ft.drug_concept_id = e.ingredient_concept_id
+       AND e.end_date >= ft.drug_sub_exposure_start_date
+      GROUP BY ft.person_id, ft.drug_concept_id,
+               ft.drug_sub_exposure_start_date, ft.drug_exposure_count, ft.days_exposed
+    )
+    SELECT ROW_NUMBER() OVER (ORDER BY person_id) AS drug_era_id,
+           person_id,
+           ingredient_concept_id AS drug_concept_id,
+           MIN(drug_sub_exposure_start_date) AS drug_era_start_date,
+           era_end_date AS drug_era_end_date,
+           SUM(drug_exposure_count) AS drug_exposure_count,
+           DATEDIFF('day', MIN(drug_sub_exposure_start_date), era_end_date) - SUM(days_exposed) AS gap_days
+    FROM cteDrugEraEnds
+    GROUP BY person_id, ingredient_concept_id, era_end_date;
+    "
   }
 
-  do.call(rbind, out)
+  for (stmt in strsplit(sql, ";")[[1]]) {
+    stmt <- trimws(stmt)
+    if (nchar(stmt) > 0) DBI::dbExecute(con, stmt)
+  }
+  invisible(NULL)
 }
 
 # Build dose_era from drug_exposure + drug_strength. Returns empty if no drug_strength or no matching rows.
