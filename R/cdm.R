@@ -196,12 +196,28 @@ cdmFromCon <- function(con,
         cdm_tables_in_db != tolower(cdm_tables_in_db)
     ]
 
+    uppercase_msg <- if (length(uppercase_tables) > 0) {
+      paste(uppercase_tables, collapse = ", ")
+    } else {
+      "none"
+    }
+    lowercase_msg <- if (length(lowercase_tables) > 0) {
+      paste(lowercase_tables, collapse = ", ")
+    } else {
+      "none"
+    }
+    mixed_msg <- if (length(mixed_tables) > 0) {
+      paste(mixed_tables, collapse = ", ")
+    } else {
+      "none"
+    }
+
     rlang::abort(c(
       "CDM database tables should be either all upppercase or all lowercase!",
       "x" = "Mixed casing detected for CDM tables.",
-      "i" = "Uppercase tables: {paste(uppercase_tables, collapse = ', ')}",
-      "i" = "Lowercase tables: {paste(lowercase_tables, collapse = ', ')}",
-      "i" = "Mixed-case tables: {paste(mixed_tables, collapse = ', ')}"
+      "i" = paste0("Uppercase tables: ", uppercase_msg),
+      "i" = paste0("Lowercase tables: ", lowercase_msg),
+      "i" = paste0("Mixed-case tables: ", mixed_msg)
     ))
   }
 
