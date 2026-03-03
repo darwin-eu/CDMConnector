@@ -1,0 +1,42 @@
+on:
+  push:
+    branches: [main, master, test, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+name: spark-odbc-test
+
+jobs:
+  Spark-test:
+    runs-on: ubuntu-latest
+    container:
+      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        DATABRICKS_HTTPPATH: ${{ secrets.DATABRICKS_HTTPPATH }}
+        DATABRICKS_CDM_SCHEMA: ${{ secrets.DATABRICKS_CDM_SCHEMA }}
+        DATABRICKS_SCRATCH_SCHEMA: ${{ secrets.DATABRICKS_SCRATCH_SCHEMA }}
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        TESTTHAT_CPUS : 1
+
+    name: Spark test (odbc driver)
+
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install R packages
+        run: |
+          print(getwd())
+          print(list.files())
+          install.packages("devtools", repos = "https://cloud.r-project.org/")
+          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
+          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+
+        shell: Rscript {0}
+
+      - name: Run tests on Spark with odbc driver
+        run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "spark", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
