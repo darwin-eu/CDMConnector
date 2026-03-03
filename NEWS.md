@@ -1,12 +1,7 @@
 # CDMConnector 2.5.0
 
 - Add Delphi-100k example dataset
-- Major improvements to `cdmFromCohortSet`/`cdmFromJson` synthetic data generation
-  - CorrelatedCriteria support (including nested) in PrimaryCriteria and InclusionRules
-  - SourceConcept codeset resolution and source_concept_id population
-  - OccurrenceStartDate constraints and at_most Occurrence type handling
-  - Fix unbounded temporal window calculations
-  - Enrich synthetic data with clinically co-occurring concepts via COHD API
+- Improvements to `cdmFromCohortSet`/`cdmFromJson` synthetic data generation
 - Add `cohdSimilarConcepts` function to query Columbia Open Health Data API for concept co-occurrence
 - Add `generateCohortSet2` for DAG-based cohort generation without Java dependency
 - Add R-native CIRCE SQL builder (`buildCohortQuery`, `buildBatchCohortQuery`)
