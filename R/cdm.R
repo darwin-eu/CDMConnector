@@ -189,7 +189,20 @@ cdmFromCon <- function(con,
   if (all(cdm_tables_in_db == toupper(cdm_tables_in_db))) {
     omop_tables <- toupper(omop_tables)
   } else if (!all(cdm_tables_in_db == tolower(cdm_tables_in_db))) {
-    rlang::abort("CDM database tables should be either all upppercase or all lowercase!")
+    uppercase_tables <- cdm_tables_in_db[cdm_tables_in_db == toupper(cdm_tables_in_db)]
+    lowercase_tables <- cdm_tables_in_db[cdm_tables_in_db == tolower(cdm_tables_in_db)]
+    mixed_tables <- cdm_tables_in_db[
+      cdm_tables_in_db != toupper(cdm_tables_in_db) &
+        cdm_tables_in_db != tolower(cdm_tables_in_db)
+    ]
+
+    rlang::abort(c(
+      "CDM database tables should be either all upppercase or all lowercase!",
+      "x" = "Mixed casing detected for CDM tables.",
+      "i" = "Uppercase tables: {paste(uppercase_tables, collapse = ', ')}",
+      "i" = "Lowercase tables: {paste(lowercase_tables, collapse = ', ')}",
+      "i" = "Mixed-case tables: {paste(mixed_tables, collapse = ', ')}"
+    ))
   }
 
   cdmTables <- purrr::map(
