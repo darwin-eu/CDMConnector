@@ -466,9 +466,6 @@ computeDataHashByTable <- function(cdm) {
   overallStartTime <- Sys.time()
   ensureInstalled("digest")
 
-  library(CDMConnector)
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  cdm <- cdmFromCon(con, "main", "main")
   con <- cdmCon(cdm)
 
   cdmSchema <- attr(cdm, "cdm_schema")
