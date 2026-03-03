@@ -37,16 +37,12 @@ jobs:
         run: |
           print(getwd())
           print(list.files())
-          install.packages("devtools", repos = "https://cloud.r-project.org/")
-          install.packages("remotes", repos = "https://cloud.r-project.org/")
-          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
-          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages(c("devtools", "remotes", "omopgenerics", "palmerpenguins"))
           remotes::install_github("tidyverse/dbplyr")
-
 
         shell: Rscript {0}
 
       - name: Run tests on Redshift with RPostgres driver
-        run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "redshift", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "redshift", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
 
 

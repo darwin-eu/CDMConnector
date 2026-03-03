@@ -38,13 +38,11 @@ jobs:
         run: |
           print(getwd())
           print(list.files())
-          install.packages("devtools", repos = "https://cloud.r-project.org/")
-          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
-          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages(c("devtools", "omopgenerics", "palmerpenguins"))
 
         shell: Rscript {0}
 
       - name: Run tests on SQL Server with odbc driver
-        run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
 
 
