@@ -41,6 +41,9 @@ vignettes/*.pdf
 inst/doc
 /doc/
 /Meta/
+.vscode/
+.claude/
+coverage_results.rds
 
 # Local work files
 /scratch/
