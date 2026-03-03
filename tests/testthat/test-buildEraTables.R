@@ -2,15 +2,31 @@
 
 setup_era_test_db <- function() {
   skip_if_not_installed("duckdb")
-  empty_path <- CDMConnector::eunomiaDir("empty_cdm", cdmVersion = "5.4")
-  tmp_path <- tempfile(fileext = ".duckdb")
-  file.copy(empty_path, tmp_path)
-  con <- DBI::dbConnect(duckdb::duckdb(), tmp_path, read_only = FALSE)
+  # Create a lightweight in-memory DuckDB with just the tables needed for era building,
+
+  # instead of copying the ~265MB empty CDM file (which can cause IO errors on CI runners).
+  con <- DBI::dbConnect(duckdb::duckdb(), ":memory:", read_only = FALSE)
+
+  # Minimal CDM tables needed by era builders
+  DBI::dbExecute(con, "CREATE TABLE person (person_id INTEGER, gender_concept_id INTEGER, year_of_birth INTEGER, month_of_birth INTEGER, day_of_birth INTEGER, race_concept_id INTEGER, ethnicity_concept_id INTEGER)")
+  DBI::dbExecute(con, "CREATE TABLE observation_period (observation_period_id INTEGER, person_id INTEGER, observation_period_start_date DATE, observation_period_end_date DATE, period_type_concept_id INTEGER)")
+  DBI::dbExecute(con, "CREATE TABLE condition_occurrence (condition_occurrence_id INTEGER, person_id INTEGER, condition_concept_id INTEGER, condition_start_date DATE, condition_end_date DATE, condition_type_concept_id INTEGER)")
+  DBI::dbExecute(con, "CREATE TABLE condition_era (condition_era_id INTEGER, person_id INTEGER, condition_concept_id INTEGER, condition_era_start_date DATE, condition_era_end_date DATE, condition_occurrence_count INTEGER)")
+  DBI::dbExecute(con, "CREATE TABLE drug_exposure (drug_exposure_id INTEGER, person_id INTEGER, drug_concept_id INTEGER, drug_exposure_start_date DATE, drug_exposure_end_date DATE, drug_type_concept_id INTEGER, days_supply INTEGER)")
+  DBI::dbExecute(con, "CREATE TABLE drug_era (drug_era_id INTEGER, person_id INTEGER, drug_concept_id INTEGER, drug_era_start_date DATE, drug_era_end_date DATE, drug_exposure_count INTEGER, gap_days INTEGER)")
+  DBI::dbExecute(con, "CREATE TABLE concept (concept_id INTEGER, concept_name VARCHAR, domain_id VARCHAR, vocabulary_id VARCHAR, concept_class_id VARCHAR, standard_concept VARCHAR, concept_code VARCHAR, valid_start_date DATE, valid_end_date DATE, invalid_reason VARCHAR)")
+  DBI::dbExecute(con, "CREATE TABLE concept_ancestor (ancestor_concept_id INTEGER, descendant_concept_id INTEGER, min_levels_of_separation INTEGER, max_levels_of_separation INTEGER)")
+
   # Add test persons
-  DBI::dbExecute(con, "INSERT INTO person (person_id, gender_concept_id, year_of_birth, month_of_birth, day_of_birth, race_concept_id, ethnicity_concept_id) VALUES (1, 8532, 1985, 6, 15, 8527, 0)")
-  DBI::dbExecute(con, "INSERT INTO person (person_id, gender_concept_id, year_of_birth, month_of_birth, day_of_birth, race_concept_id, ethnicity_concept_id) VALUES (2, 8507, 1990, 3, 20, 8527, 0)")
-  DBI::dbExecute(con, "INSERT INTO observation_period (observation_period_id, person_id, observation_period_start_date, observation_period_end_date, period_type_concept_id) VALUES (1, 1, '2020-01-01', '2024-12-31', 0)")
-  DBI::dbExecute(con, "INSERT INTO observation_period (observation_period_id, person_id, observation_period_start_date, observation_period_end_date, period_type_concept_id) VALUES (2, 2, '2020-01-01', '2024-12-31', 0)")
+  DBI::dbExecute(con, "INSERT INTO person VALUES (1, 8532, 1985, 6, 15, 8527, 0)")
+  DBI::dbExecute(con, "INSERT INTO person VALUES (2, 8507, 1990, 3, 20, 8527, 0)")
+  DBI::dbExecute(con, "INSERT INTO observation_period VALUES (1, 1, '2020-01-01', '2024-12-31', 0)")
+  DBI::dbExecute(con, "INSERT INTO observation_period VALUES (2, 2, '2020-01-01', '2024-12-31', 0)")
+
+  # Add metformin concept (Ingredient) and self-referencing concept_ancestor entry
+  DBI::dbExecute(con, "INSERT INTO concept VALUES (1503297, 'metformin', 'Drug', 'RxNorm', 'Ingredient', 'S', '6809', '1970-01-01', '2099-12-31', NULL)")
+  DBI::dbExecute(con, "INSERT INTO concept_ancestor VALUES (1503297, 1503297, 0, 0)")
+
   con
 }
 
