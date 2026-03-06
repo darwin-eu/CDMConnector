@@ -2,6 +2,9 @@
 # Covers: translate_cohort_stmts, .translate_stmts_r, .translate_duckdb,
 #         .translate_postgresql, .transform_select_into, Spark post-processing
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- translate_cohort_stmts dispatch ---
 
 test_that("translate_cohort_stmts returns unchanged for sql server", {

@@ -1,3 +1,6 @@
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # Minimal ATLAS-style cohort JSON (single drug exposure primary criterion).
 # Omit EndStrategy so CirceR accepts it (empty {} requires a type id).
 minimal_cohort_json <- function() {

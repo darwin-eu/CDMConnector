@@ -1,3 +1,6 @@
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 test_that("cohdSimilarConcepts rejects invalid conceptId", {
   expect_error(cohdSimilarConcepts("not_a_number"), "not TRUE")
   expect_error(cohdSimilarConcepts(NA), "not TRUE")

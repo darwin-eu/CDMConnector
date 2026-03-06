@@ -1,6 +1,9 @@
 # Additional tests for R/cdm.R — coverage for cdmFromCon, verify_write_access,
 # snapshot, tblGroup, dbms, cdmWriteSchema, cdmCon, version
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- cdmFromCon ---
 
 test_that("cdmFromCon creates a valid cdm object with duckdb/eunomia", {

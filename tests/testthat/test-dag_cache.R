@@ -1,6 +1,9 @@
 # Tests for R/dag_cache.R — DAG caching layer
 # Uses in-memory DuckDB to test registry operations without external dependencies.
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 test_that("cache_registry_qname returns qualified name", {
   result <- CDMConnector:::cache_registry_qname("results")
   expect_equal(result, "results.dag_cache_registry")

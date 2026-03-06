@@ -1,5 +1,8 @@
 # Additional tests for R/circe.R — coverage for utility functions
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- get_concept_ids ---
 
 test_that("get_concept_ids extracts IDs from concept list", {

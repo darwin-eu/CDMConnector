@@ -1,5 +1,8 @@
 # Tests for R/copyCdmTo.R
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 test_that("copyCdmTo copies cdm to another duckdb connection", {
   skip_if_not_installed("duckdb")
   con1 <- local_eunomia_con()

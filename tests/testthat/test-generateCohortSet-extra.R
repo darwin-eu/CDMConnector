@@ -1,6 +1,9 @@
 # Additional tests for R/generateCohortSet.R — coverage for readCohortSet,
 # extractCodesetIds, createCodelistDataframe, getInclusionMaskId, etc.
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- readCohortSet ---
 
 test_that("readCohortSet reads a directory of JSON files", {

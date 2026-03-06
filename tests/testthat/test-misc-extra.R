@@ -1,5 +1,8 @@
 # Miscellaneous tests for various files — table_refs, cohortCollapse, Eunomia, cdmSubset, etc.
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- table_refs (generateConceptCohortSet.R) ---
 
 test_that("table_refs returns correct columns for condition domain", {

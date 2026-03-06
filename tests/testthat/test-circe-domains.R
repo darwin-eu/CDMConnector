@@ -1,6 +1,9 @@
 # Tests for R/circe.R — Domain-specific criterion builders
 # Covers uncovered domain builders and filter branches
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # Helper to create a minimal cohort JSON with a given primary criterion domain
 make_cohort_json <- function(domain, codeset_id = 1L, concept_id = 123L, extra_fields = list()) {
   criterion <- list()

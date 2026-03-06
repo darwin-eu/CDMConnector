@@ -1,6 +1,9 @@
 # Additional tests for R/translate_lightweight.R — PostgreSQL translation,
 # helper functions, rewrite functions
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- PostgreSQL function transformers ---
 
 test_that(".dateadd_postgresql generates interval arithmetic for day", {

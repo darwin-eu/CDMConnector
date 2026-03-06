@@ -1,5 +1,8 @@
 # Additional tests for R/optimizer.R — coverage for uncovered functions
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- rewrite_to_domain_caches ---
 
 test_that("rewrite_to_domain_caches replaces CDM domain table references", {

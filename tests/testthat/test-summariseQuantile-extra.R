@@ -1,5 +1,8 @@
 # Tests for R/summariseQuantile.R
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- summariseQuantile ---
 
 test_that("summariseQuantile computes quantiles on duckdb", {

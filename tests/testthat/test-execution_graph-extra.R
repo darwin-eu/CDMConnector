@@ -1,5 +1,8 @@
 # Additional tests for R/execution_graph.R — normalize, emit, remap, DAG functions
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- qualify_table ---
 
 test_that("qualify_table builds qualified table name", {

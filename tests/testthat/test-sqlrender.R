@@ -2,6 +2,9 @@
 # Covers: tokenize_sql, parse_search_pattern, translate_search, translate_sql_with_path,
 #         render_r, split_sql_core, evaluate_condition, replace_with_concat, etc.
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 test_that("tokenize_sql handles basic SQL tokens", {
   tokens <- CDMConnector:::tokenize_sql("SELECT a FROM b WHERE c = 1")
   expect_true(length(tokens) > 0)

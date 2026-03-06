@@ -1,5 +1,8 @@
 # Additional tests for R/sqlrender.R — tokenize, split, render, translate pure functions
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- tokenize_sql ---
 
 test_that("tokenize_sql tokenizes simple SELECT", {

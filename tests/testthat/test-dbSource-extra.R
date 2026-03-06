@@ -1,5 +1,8 @@
 # Additional tests for R/dbSource.R — coverage for dbSource and S3 methods
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- dbSource ---
 
 test_that("dbSource creates a db_cdm source object with duckdb", {

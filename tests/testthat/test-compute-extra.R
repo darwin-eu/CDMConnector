@@ -1,5 +1,8 @@
 # Additional tests for R/compute.R — coverage for computeQuery, .computePermanent, appendPermanent
 
+# Extra tests only run in test-coverage and local; skip on container CI
+skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
+
 # --- getFullTableNameQuoted ---
 
 test_that("getFullTableNameQuoted handles NULL schema", {
