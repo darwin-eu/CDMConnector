@@ -29,6 +29,7 @@ jobs:
           print(getwd())
           print(list.files())
           install.packages(c("devtools", "omopgenerics", "palmerpenguins", "duckdb"))
+          devtools::install(quick = TRUE, dependencies = FALSE)
 
         shell: Rscript {0}
 
@@ -44,6 +45,6 @@ jobs:
         shell: bash
 
       - name: Run tests on duckdb
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "duckdb", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "duckdb", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
 
 

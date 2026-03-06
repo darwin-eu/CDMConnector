@@ -39,6 +39,7 @@ jobs:
           print(getwd())
           print(list.files())
           install.packages(c("devtools", "omopgenerics", "palmerpenguins"))
+          devtools::install(quick = TRUE, dependencies = FALSE)
 
         shell: Rscript {0}
 
@@ -54,6 +55,6 @@ jobs:
         shell: bash
 
       - name: Run tests on SQL Server with odbc driver
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'
 
 
