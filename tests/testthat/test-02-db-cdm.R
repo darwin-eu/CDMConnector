@@ -323,4 +323,40 @@ test_that("DatabaseConnector DBI connections work with RPostgres", {
 })
 
 
+test_that("DatabaseConnector DBI connections work with odbc SQL Server", {
+
+  skip_if_not_installed("DatabaseConnector")
+  skip_if_not_installed("odbc")
+  skip_if_not("sqlserver" %in% dbToTest)
+  skip_on_cran()
+
+  connectionDetails <- DatabaseConnector::createDbiConnectionDetails(
+    dbms = "sql server",
+    drv = odbc::odbc(),
+    Driver   = Sys.getenv("SQL_SERVER_DRIVER", "ODBC Driver 18 for SQL Server"),
+    Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+    Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
+    UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
+    PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+    TrustServerCertificate = "yes",
+    Port     = as.integer(Sys.getenv("CDM5_SQL_SERVER_PORT", "1433"))
+  )
+
+  writeSchema <- strsplit(Sys.getenv("CDM5_SQL_SERVER_SCRATCH_SCHEMA"), "\\.")[[1]]
+  cdmSchema   <- strsplit(Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), "\\.")[[1]]
+
+  con <- DatabaseConnector::connect(connectionDetails)
+
+  cdm <- CDMConnector::cdmFromCon(
+    con = con,
+    cdmSchema = cdmSchema,
+    writeSchema = writeSchema
+  )
+
+  df <- dplyr::collect(head(cdm$person))
+  expect_true(is.data.frame(df))
+  expect_true(nrow(df) > 0)
+  cdmDisconnect(cdm)
+})
+
 
