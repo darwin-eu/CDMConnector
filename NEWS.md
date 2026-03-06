@@ -8,6 +8,7 @@
 - Add DAG-based query optimizer and caching
 - Add batch optimization and benchmarking vignettes
 - Fix Snowflake column quoting for domain-filtered tables
+- Fix SQL Server LIMIT syntax error in `cdmFromCon` when using DatabaseConnector
 
 # CDMConnector 2.4.0
 

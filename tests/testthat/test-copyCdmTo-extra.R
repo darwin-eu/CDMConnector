@@ -6,7 +6,7 @@ test_that("copyCdmTo copies cdm to another duckdb connection", {
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
 
-  cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
+  cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main", cdmName = "eunomia")
 
   newCdm <- copyCdmTo(con2, cdm, schema = c(schema = "main"), overwrite = TRUE)
 
@@ -37,7 +37,7 @@ test_that("copyCdmTo errors on invalid connection", {
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   DBI::dbDisconnect(con2, shutdown = TRUE)
 
-  cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
+  cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main", cdmName = "eunomia")
   expect_error(copyCdmTo(con2, cdm, schema = c(schema = "main")))
 })
 
@@ -47,7 +47,7 @@ test_that("copyCdmTo copies cohort tables", {
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
 
-  cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
+  cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main", cdmName = "eunomia")
   cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
   cdm <- generateCohortSet(cdm, cohort_set, name = "my_cohort", overwrite = TRUE)
 

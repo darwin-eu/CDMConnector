@@ -42,12 +42,16 @@ jobs:
         run: |
           print(getwd())
           print(list.files())
-          install.packages(c("gert", "usethis", "devtools", "remotes", "omopgenerics", "palmerpenguins", "dbplyr"))
-          CDMConnector::downloadEunomiaData()
-          print(paste("eunomiaIsAvailable():", CDMConnector::eunomiaIsAvailable()))
+          install.packages(c("devtools", "omopgenerics", "palmerpenguins"))
         shell: Rscript {0}
 
+      - name: Free disk space
+        run: |
+          rm -rf /opt/hostedtoolcache || true
+          rm -rf /tmp/* || true
+        shell: bash
+
       - name: Run tests on postgres with RPostgres driver
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'
 
 

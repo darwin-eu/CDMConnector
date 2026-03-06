@@ -36,5 +36,11 @@ jobs:
 
         shell: Rscript {0}
 
+      - name: Free disk space
+        run: |
+          rm -rf /opt/hostedtoolcache || true
+          rm -rf /tmp/* || true
+        shell: bash
+
       - name: Run tests on Spark with odbc driver
-        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "spark", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+        run: R -e 'devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "spark", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'

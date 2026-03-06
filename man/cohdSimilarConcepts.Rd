@@ -4,7 +4,13 @@
 \alias{cohdSimilarConcepts}
 \title{Get similar concepts from Columbia Open Health Data (COHD) API}
 \usage{
-cohdSimilarConcepts(conceptId, datasetId = 1, topN = 50, timeoutSec = 30)
+cohdSimilarConcepts(
+  conceptId,
+  datasetId = 1,
+  topN = 50,
+  timeoutSec = 30,
+  baseUrl = "https://cohd-api.ci.transltr.io/api"
+)
 }
 \arguments{
 \item{conceptId}{Integer or character vector. One or more OMOP concept IDs to find
@@ -17,6 +23,9 @@ For a single concept, this limits rows by strength; for multiple concepts, this
 limits the aggregated result.}
 
 \item{timeoutSec}{Numeric. Request timeout in seconds (default 30).}
+
+\item{baseUrl}{Character. Base URL of the COHD API (default
+\code{"https://cohd-api.ci.transltr.io/api"}).}
 }
 \value{
 A data frame with one row per similar concept, or \code{NULL} if the API is
@@ -53,7 +62,7 @@ cohdSimilarConcepts(c(201826, 316866, 255573), datasetId = 1, topN = 50)
 Ta, Casey N.; Dumontier, Michel; Hripcsak, George; P. Tatonetti, Nicholas;
 Weng, Chunhua (2018). Columbia Open Health Data, a database of EHR prevalence
 and co-occurrence of conditions, drugs, and procedures. figshare. Collection.
-\url{https://doi.org/10.6084/m9.figshare.c.4151252.v1}
+\doi{10.6084/m9.figshare.c.4151252.v1}
 
 COHD collection: \url{https://figshare.com/collections/Columbia_Open_Health_Data_a_database_of_EHR_prevalence_and_co-occurrence_of_conditions_drugs_and_procedures/4151252}
 }

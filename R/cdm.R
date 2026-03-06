@@ -194,8 +194,8 @@ cdmFromCon <- function(con,
 
   if (is.null(cdmName) && ("cdm_source" %in% names(cdmTables))) {
     cdmSourceTable <- cdmTables$cdm_source %>%
-    utils::head(1) %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    utils::head(1)
 
     cdmName <- cdmSourceTable$cdm_source_abbreviation
 
