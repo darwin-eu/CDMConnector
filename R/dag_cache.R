@@ -25,10 +25,11 @@ CACHE_REGISTRY_TABLE <- "dag_cache_registry"
 
 #' Build the fully qualified registry table name.
 #' @param schema Character schema name (e.g. "results" or a resolved schema string).
+#' @param write_prefix Character write prefix for user isolation (default "").
 #' @return Qualified name like "results.dag_cache_registry".
 #' @noRd
-cache_registry_qname <- function(schema) {
-  paste0(schema, ".", CACHE_REGISTRY_TABLE)
+cache_registry_qname <- function(schema, write_prefix = "") {
+  paste0(schema, ".", write_prefix, CACHE_REGISTRY_TABLE)
 }
 
 #' SQL to create the cache registry table if it does not exist.
@@ -45,8 +46,8 @@ cache_registry_qname <- function(schema) {
 #' @param schema Character schema name.
 #' @return Character vector of SQL statements.
 #' @noRd
-cache_registry_ddl <- function(schema, con = NULL) {
-  tbl <- cache_registry_qname(schema)
+cache_registry_ddl <- function(schema, con = NULL, write_prefix = "") {
+  tbl <- cache_registry_qname(schema, write_prefix)
   db <- if (!is.null(con)) dbms(con) else ""
   is_sqlserver <- db %in% c("sql server", "sqlserver")
   is_spark <- db %in% c("spark", "databricks")
@@ -91,8 +92,8 @@ cache_registry_ddl <- function(schema, con = NULL) {
 #' @param con DBI connection.
 #' @param schema Character schema name (resolved, not a placeholder).
 #' @noRd
-ensure_cache_registry <- function(con, schema) {
-  ddl <- paste(cache_registry_ddl(schema, con = con), collapse = "\n")
+ensure_cache_registry <- function(con, schema, write_prefix = "") {
+  ddl <- paste(cache_registry_ddl(schema, con = con, write_prefix = write_prefix), collapse = "\n")
   tryCatch(
     DBI::dbExecute(con, ddl),
     error = function(e) {
@@ -114,9 +115,9 @@ ensure_cache_registry <- function(con, schema) {
 #' @param hashes Character vector of node hashes to check.
 #' @return Named logical vector: TRUE if hash exists in registry.
 #' @noRd
-cache_lookup <- function(con, schema, hashes) {
+cache_lookup <- function(con, schema, hashes, write_prefix = "") {
   if (length(hashes) == 0L) return(logical(0))
-  tbl <- cache_registry_qname(schema)
+  tbl <- cache_registry_qname(schema, write_prefix)
   # Query in batches to avoid SQL IN-clause limits
   found <- character(0)
   batch_size <- 500L
@@ -138,9 +139,9 @@ cache_lookup <- function(con, schema, hashes) {
 #' @param hashes Character vector of node hashes to validate.
 #' @return Named logical vector: TRUE if hash is in registry AND table exists.
 #' @noRd
-cache_validate <- function(con, schema, hashes) {
+cache_validate <- function(con, schema, hashes, write_prefix = "") {
   if (length(hashes) == 0L) return(logical(0))
-  tbl <- cache_registry_qname(schema)
+  tbl <- cache_registry_qname(schema, write_prefix)
   # Get table names for these hashes
   quoted <- paste0("'", hashes, "'", collapse = ",")
   sql <- sprintf("SELECT node_hash, table_name FROM %s WHERE node_hash IN (%s)", tbl, quoted)
@@ -178,8 +179,8 @@ cache_validate <- function(con, schema, hashes) {
 #' @param table_name Character fully qualified table name.
 #' @param cohort_ids Integer vector of cohort IDs.
 #' @noRd
-cache_register <- function(con, schema, node_hash, node_type, table_name, cohort_ids = integer(0)) {
-  reg_tbl <- cache_registry_qname(schema)
+cache_register <- function(con, schema, node_hash, node_type, table_name, cohort_ids = integer(0), write_prefix = "") {
+  reg_tbl <- cache_registry_qname(schema, write_prefix)
   cids <- paste(as.integer(cohort_ids), collapse = ",")
   sql <- sprintf(
     "INSERT INTO %s (node_hash, node_type, table_name, created_at, last_used_at, cohort_ids) VALUES ('%s', '%s', '%s', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '%s')",
@@ -206,9 +207,9 @@ cache_register <- function(con, schema, node_hash, node_type, table_name, cohort
 #' @param schema Character schema name.
 #' @param hashes Character vector of node hashes that were cache hits.
 #' @noRd
-cache_touch <- function(con, schema, hashes) {
+cache_touch <- function(con, schema, hashes, write_prefix = "") {
   if (length(hashes) == 0L) return(invisible(NULL))
-  reg_tbl <- cache_registry_qname(schema)
+  reg_tbl <- cache_registry_qname(schema, write_prefix)
   quoted <- paste0("'", hashes, "'", collapse = ",")
   sql <- sprintf("UPDATE %s SET last_used_at = CURRENT_TIMESTAMP WHERE node_hash IN (%s)",
                  reg_tbl, quoted)
@@ -219,14 +220,16 @@ cache_touch <- function(con, schema, hashes) {
 # ---- Cache-aware SQL emission ----
 
 #' Build the stable cached table name for a node.
-#' Uses the fixed CACHE_TABLE_PREFIX so the same hash always yields the same name.
+#' Uses the cache prefix (optionally including write_prefix) so the same hash
+#' always yields the same name within a given prefix scope.
 #'
 #' @param node A DAG node (list with type, id, temp_table fields).
 #' @param schema Character schema name.
-#' @return Fully qualified table name like "results.dagcache_pe_a1b2c3d4".
+#' @param write_prefix Character write prefix for user isolation (default "").
+#' @return Fully qualified table name like "results.prefix_dagcache_pe_a1b2c3d4".
 #' @noRd
-cache_table_name <- function(node, schema) {
-  paste0(schema, ".", CACHE_TABLE_PREFIX, node$temp_table)
+cache_table_name <- function(node, schema, write_prefix = "") {
+  paste0(schema, ".", write_prefix, CACHE_TABLE_PREFIX, node$temp_table)
 }
 
 #' Emit DAG SQL with caching support.
@@ -248,8 +251,9 @@ cache_table_name <- function(node, schema) {
 #'   \code{cache_misses} - character vector of node hashes that need computation.
 #' @noRd
 emit_dag_sql_cached <- function(dag, options, con, schema) {
-  # Override table_prefix to the stable cache prefix
-  options$table_prefix <- CACHE_TABLE_PREFIX
+  # Extract write_prefix from table_prefix (remove CACHE_TABLE_PREFIX suffix).
+  # The caller sets table_prefix = paste0(write_prefix, CACHE_TABLE_PREFIX).
+  write_prefix <- sub(paste0(CACHE_TABLE_PREFIX, "$"), "", options$table_prefix %||% CACHE_TABLE_PREFIX)
 
   cdm_schema <- options$cdm_schema %||% "@cdm_database_schema"
   results_schema <- options$results_schema %||% "@results_schema"
@@ -263,12 +267,12 @@ emit_dag_sql_cached <- function(dag, options, con, schema) {
   computable_hashes <- vapply(all_hashes, function(h) dag$nodes[[h]]$type != "concept_set", logical(1))
   computable_hashes <- all_hashes[computable_hashes]
 
-  cached <- cache_validate(con, schema, computable_hashes)
+  cached <- cache_validate(con, schema, computable_hashes, write_prefix = write_prefix)
   cache_hits <- names(cached[cached])
   cache_misses <- names(cached[!cached])
 
   # Touch cache hits so GC knows they are active
-  if (length(cache_hits) > 0) cache_touch(con, schema, cache_hits)
+  if (length(cache_hits) > 0) cache_touch(con, schema, cache_hits, write_prefix = write_prefix)
 
   # Pre-allocate list accumulator to avoid O(n^2) vector growth
   n_sorted <- length(sorted)
@@ -338,6 +342,9 @@ emit_dag_sql_cached <- function(dag, options, con, schema) {
 #' @param cache_misses Character vector of node hashes that were computed.
 #' @noRd
 cache_register_new_nodes <- function(dag, options, con, schema, cache_misses) {
+  # Extract write_prefix from table_prefix (remove CACHE_TABLE_PREFIX suffix).
+  write_prefix <- sub(paste0(CACHE_TABLE_PREFIX, "$"), "", options$table_prefix %||% CACHE_TABLE_PREFIX)
+
   # Skip concept_set (stored globally) and final_cohort (dropped in cleanup
   # because its data is INSERT'd into cohort_stage; not worth caching since
   # recomputing from cached cohort_exit is cheap).
@@ -345,8 +352,8 @@ cache_register_new_nodes <- function(dag, options, con, schema, cache_misses) {
   for (h in cache_misses) {
     node <- dag$nodes[[h]]
     if (is.null(node) || node$type %in% skip_types) next
-    tbl_name <- cache_table_name(node, schema)
-    cache_register(con, schema, h, node$type, tbl_name, node$cohort_ids)
+    tbl_name <- cache_table_name(node, schema, write_prefix = write_prefix)
+    cache_register(con, schema, h, node$type, tbl_name, node$cohort_ids, write_prefix = write_prefix)
   }
   invisible(TRUE)
 }
@@ -425,9 +432,9 @@ emit_cleanup_cached <- function(dag, options, cache_hits, cache_misses) {
 #' @return Data frame with columns: node_hash, node_type, table_name,
 #'   created_at, last_used_at, cohort_ids.
 #' @noRd
-dag_cache_list <- function(con, schema) {
-  ensure_cache_registry(con, schema)
-  tbl <- cache_registry_qname(schema)
+dag_cache_list <- function(con, schema, write_prefix = "") {
+  ensure_cache_registry(con, schema, write_prefix = write_prefix)
+  tbl <- cache_registry_qname(schema, write_prefix)
   tryCatch(
     DBI::dbGetQuery(con, sprintf("SELECT * FROM %s ORDER BY last_used_at DESC", tbl)),
     error = function(e) {
@@ -452,9 +459,9 @@ dag_cache_list <- function(con, schema) {
 #'   actually dropping anything. Default FALSE.
 #' @return Data frame of removed (or would-be-removed) entries, invisibly.
 #' @noRd
-dag_cache_gc <- function(con, schema, max_age_days = 30, dry_run = FALSE) {
-  ensure_cache_registry(con, schema)
-  registry <- dag_cache_list(con, schema)
+dag_cache_gc <- function(con, schema, max_age_days = 30, dry_run = FALSE, write_prefix = "") {
+  ensure_cache_registry(con, schema, write_prefix = write_prefix)
+  registry <- dag_cache_list(con, schema, write_prefix = write_prefix)
   if (nrow(registry) == 0L) {
     message("Cache is empty, nothing to collect.")
     return(invisible(registry))
@@ -497,7 +504,7 @@ dag_cache_gc <- function(con, schema, max_age_days = 30, dry_run = FALSE) {
   }
 
   # Drop tables and remove registry entries
-  reg_tbl <- cache_registry_qname(schema)
+  reg_tbl <- cache_registry_qname(schema, write_prefix)
   for (i in seq_len(nrow(removable))) {
     tbl_name <- removable$table_name[i]
     tryCatch(DBI::dbExecute(con, paste0("DROP TABLE IF EXISTS ", tbl_name, ";")),
@@ -520,15 +527,15 @@ dag_cache_gc <- function(con, schema, max_age_days = 30, dry_run = FALSE) {
 #' @param schema Character schema name (resolved, not a placeholder).
 #' @return Invisible TRUE.
 #' @noRd
-dag_cache_clear <- function(con, schema) {
-  registry <- dag_cache_list(con, schema)
+dag_cache_clear <- function(con, schema, write_prefix = "") {
+  registry <- dag_cache_list(con, schema, write_prefix = write_prefix)
   if (nrow(registry) > 0L) {
     for (i in seq_len(nrow(registry))) {
       tryCatch(DBI::dbExecute(con, paste0("DROP TABLE IF EXISTS ", registry$table_name[i], ";")),
                error = function(e) NULL)
     }
   }
-  reg_tbl <- cache_registry_qname(schema)
+  reg_tbl <- cache_registry_qname(schema, write_prefix)
   tryCatch(DBI::dbExecute(con, sprintf("DELETE FROM %s", reg_tbl)),
            error = function(e) NULL)
   message(sprintf("Cleared %d cache entries.", nrow(registry)))
@@ -542,8 +549,8 @@ dag_cache_clear <- function(con, schema) {
 #' @return List with total_entries, by_type (named integer vector), and
 #'   oldest/newest timestamps.
 #' @noRd
-dag_cache_stats <- function(con, schema) {
-  registry <- dag_cache_list(con, schema)
+dag_cache_stats <- function(con, schema, write_prefix = "") {
+  registry <- dag_cache_list(con, schema, write_prefix = write_prefix)
   if (nrow(registry) == 0L) {
     return(list(total_entries = 0L, by_type = integer(0),
                 oldest = NA, newest = NA))

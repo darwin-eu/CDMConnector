@@ -425,23 +425,32 @@ for (dbtype in dbToTest) {
     expect_equal(nrow(first_result), nrow(second_result))
 
     # Verify cache tables exist in the write schema.
-    # Cache tables are named dagcache_* (without write prefix).
+    # Cache tables are named <write_prefix>dagcache_*.
     all_tbls <- tryCatch(DBI::dbListTables(con), error = function(e) character(0))
-    cache_tbls <- all_tbls[grepl("^dagcache_", all_tbls, ignore.case = TRUE)]
+    cache_pattern <- paste0("^", prefix, "dagcache_")
+    cache_tbls <- all_tbls[grepl(cache_pattern, all_tbls, ignore.case = TRUE)]
+    # Fall back to non-prefixed pattern (backward compat)
+    if (length(cache_tbls) == 0) {
+      cache_tbls <- all_tbls[grepl("dagcache_", all_tbls, ignore.case = TRUE)]
+    }
     expect_true(length(cache_tbls) > 0)
 
-    # Third run with cache=FALSE should also produce results
+    # Third run with cache=FALSE should also produce results and clean up cache
     cdm <- generateCohortSet2(cdm, cohortSet = cs, name = "cohort3",
                                overwrite = TRUE, cache = FALSE)
     third_result <- dplyr::collect(cdm$cohort3)
     expect_true(nrow(third_result) > 0)
 
-    # Cleanup: cached tables + output tables
+    # Verify cache tables were cleaned up by cache=FALSE run
+    all_tbls_after <- tryCatch(DBI::dbListTables(con), error = function(e) character(0))
+    cache_tbls_after <- all_tbls_after[grepl(cache_pattern, all_tbls_after, ignore.case = TRUE)]
+
+    # Cleanup: output tables (cache already cleaned by cache=FALSE)
     for (nm in c("cohort", "cohort2", "cohort3")) {
       cleanup_cohort_tables(con, write_schema, nm)
     }
-    # Drop cache tables
-    for (ct in cache_tbls) {
+    # Drop any remaining cache tables
+    for (ct in cache_tbls_after) {
       tryCatch(
         DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = ct, dbms = dbms(con))),
         error = function(e) NULL
@@ -509,13 +518,20 @@ for (dbtype in dbToTest) {
         cleanup_cohort_tables(con, write_schema, nm)
       }
       all_tbls <- tryCatch(DBI::dbListTables(con), error = function(e) character(0))
-      cache_tbls <- all_tbls[grepl("^dagcache_", all_tbls, ignore.case = TRUE)]
+      cache_pattern <- paste0("^", prefix, "dagcache_|^dagcache_")
+      cache_tbls <- all_tbls[grepl(cache_pattern, all_tbls, ignore.case = TRUE)]
       for (ct in cache_tbls) {
         tryCatch(
           DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = ct, dbms = dbms(con))),
           error = function(e) NULL
         )
       }
+      # Also drop registry table
+      reg_name <- paste0(prefix, "dag_cache_registry")
+      tryCatch(
+        DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = reg_name, dbms = dbms(con))),
+        error = function(e) NULL
+      )
     }
   })
 }

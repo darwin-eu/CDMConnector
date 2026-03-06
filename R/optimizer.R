@@ -785,6 +785,12 @@ generateCohortSet2 <- function(cdm,
     } else {
       # Non-cached: drop all working tables
       drop_prefixed_tables(con, results_schema_str, prefix)
+      # Also clean up any leftover cache tables from previous cached runs
+      cache_prefix <- paste0(write_prefix, CACHE_TABLE_PREFIX)
+      tryCatch(drop_prefixed_tables(con, results_schema_str, cache_prefix), error = function(e) NULL)
+      # Drop cache registry table
+      reg_tbl <- cache_registry_qname(results_schema_str, write_prefix)
+      tryCatch(DBI::dbExecute(con, paste0("DROP TABLE IF EXISTS ", reg_tbl)), error = function(e) NULL)
     }
   }, error = function(e) {
     if (!isTRUE(cache)) {
@@ -1361,7 +1367,9 @@ buildBatchCohortQuery <- function(cohort_list, cohort_ids, options = list(),
   if (isTRUE(cache)) {
     if (is.null(con)) stop("DBI connection 'con' is required when cache = TRUE")
     if (is.null(schema)) stop("Resolved schema name 'schema' is required when cache = TRUE")
-    table_prefix <- CACHE_TABLE_PREFIX
+    # Use the caller's table_prefix (includes write_prefix + CACHE_TABLE_PREFIX)
+    # for isolation between concurrent users on the same database.
+    table_prefix <- options$table_prefix %||% CACHE_TABLE_PREFIX
   } else {
     table_prefix <- options$table_prefix %||% atlas_unique_prefix()
   }
@@ -1377,7 +1385,9 @@ buildBatchCohortQuery <- function(cohort_list, cohort_ids, options = list(),
   dag <- build_execution_dag(cohort_list, cohort_ids, dag_options)
 
   if (isTRUE(cache)) {
-    ensure_cache_registry(con, schema)
+    # Extract write_prefix from table_prefix for cache registry isolation
+    wp <- sub(paste0(CACHE_TABLE_PREFIX, "$"), "", table_prefix)
+    ensure_cache_registry(con, schema, write_prefix = wp)
     result <- emit_dag_sql_cached(dag, dag_options, con, schema)
     result$dag <- dag
     result$options <- dag_options
