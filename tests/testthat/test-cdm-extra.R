@@ -5,8 +5,7 @@
 
 test_that("cdmFromCon creates a valid cdm object with duckdb/eunomia", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_s3_class(cdm, "cdm_reference")
@@ -16,8 +15,7 @@ test_that("cdmFromCon creates a valid cdm object with duckdb/eunomia", {
 
 test_that("cdmFromCon works with unnamed writeSchema vector", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_s3_class(cdm, "cdm_reference")
@@ -25,8 +23,7 @@ test_that("cdmFromCon works with unnamed writeSchema vector", {
 
 test_that("cdmFromCon works with writePrefix argument", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", writePrefix = "tmp_")
   ws <- cdmWriteSchema(cdm)
@@ -35,8 +32,7 @@ test_that("cdmFromCon works with writePrefix argument", {
 
 test_that("cdmFromCon works with empty string writePrefix", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", writePrefix = "")
   expect_s3_class(cdm, "cdm_reference")
@@ -44,8 +40,7 @@ test_that("cdmFromCon works with empty string writePrefix", {
 
 test_that("cdmFromCon extracts cdm name from cdm_source table", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   nm <- omopgenerics::cdmName(cdm)
@@ -55,8 +50,7 @@ test_that("cdmFromCon extracts cdm name from cdm_source table", {
 
 test_that("cdmFromCon works with explicit cdmName", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmName = "TestCDM")
   expect_equal(omopgenerics::cdmName(cdm), "TestCDM")
@@ -71,8 +65,7 @@ test_that("cdmFromCon errors on closed connection", {
 
 test_that("cdmFromCon works with named writeSchema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main",
                      writeSchema = c(schema = "main", prefix = "pre_"))
@@ -82,8 +75,7 @@ test_that("cdmFromCon works with named writeSchema", {
 
 test_that("cdmFromCon writePrefix overrides prefix in writeSchema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main",
                      writeSchema = c(schema = "main", prefix = "old_"),
@@ -94,8 +86,7 @@ test_that("cdmFromCon writePrefix overrides prefix in writeSchema", {
 
 test_that("cdmFromCon deprecated cdmVersion auto triggers warning", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   expect_warning(
     cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmVersion = "auto"),
@@ -131,8 +122,7 @@ test_that("dbms returns 'local' for NULL connection", {
 
 test_that("dbms extracts from cdm_reference object", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_equal(dbms(cdm), "duckdb")
@@ -151,8 +141,7 @@ test_that("dbms uses dbms attribute if present", {
 
 test_that("cdmWriteSchema returns write schema from cdm", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   ws <- cdmWriteSchema(cdm)
@@ -162,8 +151,7 @@ test_that("cdmWriteSchema returns write schema from cdm", {
 
 test_that("cdmCon returns connection from cdm", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   retrieved_con <- cdmCon(cdm)
@@ -210,8 +198,7 @@ test_that("tblGroup errors on invalid group", {
 
 test_that("snapshot returns expected metadata", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   s <- snapshot(cdm)
@@ -227,8 +214,7 @@ test_that("snapshot returns expected metadata", {
 
 test_that("tbl.db_cdm reads a table from source", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   src <- attr(cdm, "cdm_source")
@@ -264,8 +250,7 @@ test_that("cdmFromCon parses dot-separated writeSchema", {
 
 test_that("cdmFromCon parses dot-separated cdmSchema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   # "memory.main" gets parsed but catalog "memory" may not have tables
   expect_error(
@@ -276,24 +261,21 @@ test_that("cdmFromCon parses dot-separated cdmSchema", {
 
 test_that("cdmFromCon errors on writeSchema with more than one dot", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   expect_error(cdmFromCon(con, cdmSchema = "main", writeSchema = "a.b.c"), "one \\.")
 })
 
 test_that("cdmFromCon errors on cdmSchema with more than one dot", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   expect_error(cdmFromCon(con, cdmSchema = "a.b.c", writeSchema = "main"), "one \\.")
 })
 
 test_that("cdmFromCon names unnamed 2-element writeSchema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   # 2-element unnamed writeSchema gets catalog/schema names but may fail on query
   # Just test the naming logic succeeds for the first part
@@ -305,8 +287,7 @@ test_that("cdmFromCon names unnamed 2-element writeSchema", {
 
 test_that("cdmFromCon with writePrefix overrides prefix in writeSchema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main",
                      writeSchema = c(schema = "main", prefix = "old_"),
@@ -317,8 +298,7 @@ test_that("cdmFromCon with writePrefix overrides prefix in writeSchema", {
 
 test_that("cdmFromCon with empty writePrefix is treated as NULL", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", writePrefix = "")
   ws <- cdmWriteSchema(cdm)
@@ -327,8 +307,7 @@ test_that("cdmFromCon with empty writePrefix is treated as NULL", {
 
 test_that("cdmFromCon with cdmVersion auto gives deprecation warning", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   expect_warning(
     cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmVersion = "auto"),
@@ -338,8 +317,7 @@ test_that("cdmFromCon with cdmVersion auto gives deprecation warning", {
 
 test_that("cdmFromCon with explicit cdmName", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmName = "MyCDM")
   expect_equal(omopgenerics::cdmName(cdm), "MyCDM")
@@ -347,8 +325,7 @@ test_that("cdmFromCon with explicit cdmName", {
 
 test_that("cdmFromCon with cohortTables reads existing cohort tables", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   # First create a CDM and generate a cohort so the tables exist
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
@@ -363,8 +340,7 @@ test_that("cdmFromCon with cohortTables reads existing cohort tables", {
 
 test_that("cdmFromCon errors on non-existent cohortTable", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   expect_error(
     cdmFromCon(con, cdmSchema = "main", writeSchema = "main",
@@ -376,8 +352,7 @@ test_that("cdmFromCon errors on non-existent cohortTable", {
 
 test_that("version returns cdm version with deprecation warning", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -391,8 +366,7 @@ test_that("version returns cdm version with deprecation warning", {
 
 test_that("snapshot returns expected columns", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   snap <- snapshot(cdm)
@@ -407,8 +381,7 @@ test_that("snapshot returns expected columns", {
 
 test_that("snapshot all columns are character", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   snap <- snapshot(cdm)
@@ -420,8 +393,7 @@ test_that("snapshot all columns are character", {
 
 test_that("snapshot has correct date format", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   snap <- snapshot(cdm)
@@ -469,8 +441,7 @@ test_that("inSchema with dbms argument", {
 
 test_that("version errors when cdm_version is not 5.3 or 5.4", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -486,8 +457,7 @@ test_that("version errors when cdm_version is not 5.3 or 5.4", {
 
 test_that("snapshot handles missing vocab_version", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -503,8 +473,7 @@ test_that("snapshot handles missing vocab_version", {
 
 test_that("snapshot handles empty cdm_source table", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -521,8 +490,7 @@ test_that("snapshot handles empty cdm_source table", {
 
 test_that("cdmFromCon falls back to cdm_source_name when abbreviation is empty", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   # Set cdm_source_abbreviation to empty string but leave cdm_source_name
   DBI::dbExecute(con, "UPDATE main.cdm_source SET cdm_source_abbreviation = ''")
@@ -535,8 +503,7 @@ test_that("cdmFromCon falls back to cdm_source_name when abbreviation is empty",
 
 test_that("cdmFromCon uses default name when cdm_source is empty", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   # Delete all cdm_source rows
   DBI::dbExecute(con, "DELETE FROM main.cdm_source")
@@ -570,8 +537,7 @@ test_that("dbms returns 'local' for NULL connection", {
 
 test_that("dbms works on cdm_reference", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_equal(dbms(cdm), "duckdb")
@@ -614,8 +580,7 @@ test_that("cdmFromCon dot-separated schema parsing works", {
   skip_if_not_installed("duckdb")
   # Can't test memory.main on file-based duckdb, just verify cdmFromCon
   # handles the parsing without error when schema is valid
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   # Verify that dot-separated cdmSchema raises an error (tables not found in catalog.schema form)
   expect_error(
@@ -626,8 +591,7 @@ test_that("cdmFromCon dot-separated schema parsing works", {
 
 test_that("cdmFromCon accepts writePrefix argument", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", writePrefix = "test_")
   ws <- attr(cdm, "write_schema")
@@ -637,8 +601,7 @@ test_that("cdmFromCon accepts writePrefix argument", {
 
 test_that("cdmFromCon accepts empty string writePrefix (treated as NULL)", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", writePrefix = "")
   expect_true(methods::is(cdm, "cdm_reference"))
@@ -646,8 +609,7 @@ test_that("cdmFromCon accepts empty string writePrefix (treated as NULL)", {
 
 test_that("cdmFromCon warns on deprecated auto version", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   expect_warning(
     cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmVersion = "auto"),
@@ -657,8 +619,7 @@ test_that("cdmFromCon warns on deprecated auto version", {
 
 test_that("cdmFromCon accepts named writeSchema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = c(schema = "main"))
   expect_true(methods::is(cdm, "cdm_reference"))
@@ -666,8 +627,7 @@ test_that("cdmFromCon accepts named writeSchema", {
 
 test_that("cdmFromCon errors on 3-element unnamed writeSchema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   expect_error(
     cdmFromCon(con, cdmSchema = "main", writeSchema = c("a", "b", "c")),
@@ -677,8 +637,7 @@ test_that("cdmFromCon errors on 3-element unnamed writeSchema", {
 
 test_that("cdmFromCon accepts cdmName parameter", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmName = "TestDB")
   expect_equal(omopgenerics::cdmName(cdm), "TestDB")
@@ -686,8 +645,7 @@ test_that("cdmFromCon accepts cdmName parameter", {
 
 test_that("cdmFromCon with .softValidation works", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", .softValidation = TRUE)
   expect_true(methods::is(cdm, "cdm_reference"))
@@ -697,8 +655,7 @@ test_that("cdmFromCon with .softValidation works", {
 
 test_that("tbl.db_cdm creates tbl reference", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   src <- attr(cdm, "cdm_source")
@@ -714,8 +671,7 @@ test_that("tbl.db_cdm creates tbl reference", {
 
 test_that("snapshot returns named list", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   snap <- snapshot(cdm)
@@ -729,8 +685,7 @@ test_that("snapshot returns named list", {
 
 test_that("cdmVersion returns version string", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   v <- omopgenerics::cdmVersion(cdm)
@@ -741,8 +696,7 @@ test_that("cdmVersion returns version string", {
 
 test_that("insertTable.db_cdm writes data", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   src <- attr(cdm, "cdm_source")
@@ -757,8 +711,7 @@ test_that("insertTable.db_cdm writes data", {
 
 test_that("dropTable removes table from database", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 

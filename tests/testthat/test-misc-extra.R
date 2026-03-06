@@ -170,8 +170,7 @@ test_that("split_sql_core splits statements", {
 
 test_that("cdmSubset works", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -189,8 +188,7 @@ test_that("cdmSubset works", {
 
 test_that("cdmSample works", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -205,8 +203,7 @@ test_that("cdmSample works", {
 
 test_that("cdmFlatten works on condition domain", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 

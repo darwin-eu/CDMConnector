@@ -136,7 +136,7 @@ test_that("record_cohort_attrition works", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
@@ -168,7 +168,5 @@ test_that("record_cohort_attrition works", {
   expect_equal(attrition(cdm$gibleed2) %>%
     dplyr::filter(reason == "zero count") %>%
     dplyr::pull("number_subjects"), 0)
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 

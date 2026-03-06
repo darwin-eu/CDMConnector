@@ -446,8 +446,7 @@ test_that(".cdm_comment_collect collects a data frame", {
 
 test_that(".cdm_comment_flatten works on CDM", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   result <- CDMConnector:::.cdm_comment_flatten(cdm)

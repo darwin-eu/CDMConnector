@@ -205,8 +205,7 @@ test_that("cdmTableFromSource.db_cdm errors on different connection", {
 
 test_that("compute.db_cdm computes a table in the write schema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -222,8 +221,7 @@ test_that("compute.db_cdm computes a table in the write schema", {
 
 test_that("compute.db_cdm handles intermediate table when overwriting same name", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -245,8 +243,7 @@ test_that("compute.db_cdm handles intermediate table when overwriting same name"
 
 test_that("insertFromSource.db_cdm works for tbl_lazy from same connection", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -260,8 +257,7 @@ test_that("insertFromSource.db_cdm works for tbl_lazy from same connection", {
 
 test_that("insertFromSource.db_cdm errors on data.frame", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_error(
@@ -272,8 +268,7 @@ test_that("insertFromSource.db_cdm errors on data.frame", {
 
 test_that("insertFromSource.db_cdm errors on non-tbl_lazy", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_error(
@@ -283,12 +278,9 @@ test_that("insertFromSource.db_cdm errors on non-tbl_lazy", {
 
 test_that("insertFromSource.db_cdm errors on different connection", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con1 <- local_eunomia_con()
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  on.exit({
-    DBI::dbDisconnect(con1, shutdown = TRUE)
-    DBI::dbDisconnect(con2, shutdown = TRUE)
-  }, add = TRUE)
+  on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
   DBI::dbWriteTable(con2, "other_tbl", data.frame(x = 1))
@@ -302,8 +294,7 @@ test_that("insertFromSource.db_cdm errors on different connection", {
 
 test_that("insertFromSource.db_cdm strips prefix from remote name", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main",
                      writeSchema = c(schema = "main", prefix = "pre_"))
@@ -356,7 +347,7 @@ test_that("cdmDisconnect with dropPrefixTables drops prefixed tables", {
 
 test_that("cdmDisconnect with dropPrefixTables informs when no prefix set", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -550,8 +541,7 @@ test_that("dropTable.db_cdm with matching table via dropTable method", {
 
 test_that("insertCdmTo.db_cdm copies CDM to new target", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -579,8 +569,7 @@ test_that("insertCdmTo.db_cdm copies CDM to new target", {
 
 test_that("compute.db_cdm computes a table in the write schema", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -596,8 +585,7 @@ test_that("compute.db_cdm computes a table in the write schema", {
 
 test_that("compute.db_cdm handles intermediate table when overwriting same name", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -619,8 +607,7 @@ test_that("compute.db_cdm handles intermediate table when overwriting same name"
 
 test_that("insertFromSource.db_cdm works for tbl_lazy from same connection", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -634,8 +621,7 @@ test_that("insertFromSource.db_cdm works for tbl_lazy from same connection", {
 
 test_that("insertFromSource.db_cdm errors on data.frame", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_error(
@@ -646,8 +632,7 @@ test_that("insertFromSource.db_cdm errors on data.frame", {
 
 test_that("insertFromSource.db_cdm errors on non-tbl_lazy", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_error(
@@ -657,12 +642,9 @@ test_that("insertFromSource.db_cdm errors on non-tbl_lazy", {
 
 test_that("insertFromSource.db_cdm errors on different connection", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con1 <- local_eunomia_con()
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  on.exit({
-    DBI::dbDisconnect(con1, shutdown = TRUE)
-    DBI::dbDisconnect(con2, shutdown = TRUE)
-  }, add = TRUE)
+  on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
   DBI::dbWriteTable(con2, "other_tbl", data.frame(x = 1))
@@ -676,8 +658,7 @@ test_that("insertFromSource.db_cdm errors on different connection", {
 
 test_that("insertFromSource.db_cdm strips prefix from remote name", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main",
                      writeSchema = c(schema = "main", prefix = "pre_"))
@@ -730,7 +711,7 @@ test_that("cdmDisconnect with dropPrefixTables drops prefixed tables", {
 
 test_that("cdmDisconnect with dropPrefixTables informs when no prefix set", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
@@ -924,8 +905,7 @@ test_that("dropTable.db_cdm with matching table via dropTable method", {
 
 test_that("insertCdmTo.db_cdm copies CDM to new target", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 

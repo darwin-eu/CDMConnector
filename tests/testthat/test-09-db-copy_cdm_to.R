@@ -4,14 +4,11 @@ test_copy_cdm_to <- function(con, write_schema) {
   if (dbms(con) == "bigquery") return(testthat::skip("failing test"))
 
   # copy a duckdb cdm to another database
-  con1 <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
-
+  con1 <- local_eunomia_con()
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", cdmName = "test", writeSchema = "main") %>%
       cdmSubset(personId = 6) %>%
       cdmSelect("person", "observation_period", "vocabulary")
-
-  on.exit(cdmDisconnect(cdm), add = T)
 
   # create another cdm
   cdm2 <- copyCdmTo(con = con, cdm = cdm, schema = write_schema)
@@ -41,30 +38,28 @@ for (dbtype in dbToTest) {
 
 test_that("duckdb - copy_cdm_to without prefix", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  con1 <- local_eunomia_con()
   cdm1 <- cdmFromCon(con1, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
 
   con2 <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
   cdm2 <- copyCdmTo(con2, cdm1, schema = "main")
 
   expect_setequal(names(cdm1), names(cdm2))
   expect_s3_class(cdm2, "cdm_reference")
 
   con3 <- DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con3, shutdown = TRUE), add = TRUE)
   cdm3 <- copyCdmTo(con3, dplyr::collect(cdm1), schema = "main")
 
   expect_setequal(names(cdm1), names(cdm3))
   expect_s3_class(cdm3, "cdm_reference")
-
-  DBI::dbDisconnect(con1, shutdown = T)
-  DBI::dbDisconnect(con2, shutdown = T)
-  DBI::dbDisconnect(con3, shutdown = T)
 })
 
 test_that("copy_to works locally", {
   skip("manual test")
 
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("synthea-covid19-200k"))
+  con <- local_eunomia_con("synthea-covid19-200k")
   cdm <- cdmFromCon(con, "main")
 
   con2 <- DBI::dbConnect(RPostgres::Postgres(),
@@ -91,6 +86,5 @@ test_that("copy_to works locally", {
     listTables(con2, cdm_schema),
     ~DBI::dbRemoveTable(con2, inSchema(cdm_schema, ., dbms = dbms(con))))
 
-  DBI::dbDisconnect(con, shutdown = TRUE)
   DBI::dbDisconnect(con2)
 })

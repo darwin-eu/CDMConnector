@@ -84,7 +84,7 @@ test_that("cdmFromCon works without a write schema", {
   skip_if_not_installed("duckdb")
   skip_on_cran()
   skip_if_not("duckdb" %in% dbToTest)
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
 
   expect_no_error({
     cdm <- cdmFromCon(con, "main")

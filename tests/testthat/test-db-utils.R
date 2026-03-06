@@ -85,7 +85,7 @@ test_that("getFullTableNameQuoted", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
@@ -103,20 +103,16 @@ test_that("getFullTableNameQuoted", {
   expect_error(getFullTableNameQuoted(x = NULL, name = "myTable", schema = c("mySchema", "dbo")))
   expect_error(getFullTableNameQuoted(x = cdm$person, name = NULL, schema = c("mySchema", "dbo")))
   expect_error(getFullTableNameQuoted(x = cdm$person, name = "myTable", schema = -1))
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 test_that(".dbIsValid", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomiaIsAvailable())
 
-  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  con <- local_eunomia_con()
 
   result <- .dbIsValid(con)
   expect_true(result)
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 test_that("inSchema", {

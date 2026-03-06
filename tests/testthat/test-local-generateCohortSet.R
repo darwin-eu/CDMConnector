@@ -10,7 +10,7 @@ test_that("generateCohortSet works on local CDM (gibleed from Eunomia, collected
   skip_if_not(eunomiaIsAvailable())
 
   # Create CDM from Eunomia (contains gibleed-relevant data, concept 192671)
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(
     con = con,
     cdmName = "gibleed",
@@ -20,7 +20,6 @@ test_that("generateCohortSet works on local CDM (gibleed from Eunomia, collected
 
   # Collect CDM into R (local in-memory CDM)
   cdm_local <- dplyr::collect(cdm)
-  DBI::dbDisconnect(con, shutdown = TRUE)
 
   # Use example cohorts from the package (gibleed cohorts)
   cohort_set <- readCohortSet(

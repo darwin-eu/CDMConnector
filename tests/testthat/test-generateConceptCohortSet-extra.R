@@ -56,8 +56,7 @@ test_that("cohortCollapse errors on non-table input", {
 
 test_that("generateConceptCohortSet generates cohort from concept list", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   conceptSet <- list(condition_1 = c(192671))
@@ -71,8 +70,7 @@ test_that("generateConceptCohortSet generates cohort from concept list", {
 
 test_that("generateConceptCohortSet with limit = first", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   conceptSet <- list(gi_bleed = c(192671))
@@ -90,8 +88,7 @@ test_that("generateConceptCohortSet with limit = first", {
 
 test_that("generateConceptCohortSet with end = event_end_date", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   conceptSet <- list(gi_bleed = c(192671))
@@ -102,8 +99,7 @@ test_that("generateConceptCohortSet with end = event_end_date", {
 
 test_that("generateConceptCohortSet with end = numeric days", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   conceptSet <- list(gi_bleed = c(192671))
@@ -114,8 +110,7 @@ test_that("generateConceptCohortSet with end = numeric days", {
 
 test_that("generateConceptCohortSet with requiredObservation", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   conceptSet <- list(gi_bleed = c(192671))
@@ -126,8 +121,7 @@ test_that("generateConceptCohortSet with requiredObservation", {
 
 test_that("generateConceptCohortSet errors when overwrite is FALSE and table exists", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   conceptSet <- list(gi_bleed = c(192671))
@@ -141,8 +135,7 @@ test_that("generateConceptCohortSet errors when overwrite is FALSE and table exi
 
 test_that("generateConceptCohortSet with multiple concept sets", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   conceptSet <- list(

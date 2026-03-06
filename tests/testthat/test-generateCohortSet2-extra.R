@@ -6,8 +6,7 @@
 
 test_that("generateCohortSet2 generates cohorts from cohort set", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
@@ -29,8 +28,7 @@ test_that("generateCohortSet2 generates cohorts from cohort set", {
 
 test_that("generateCohortSet2 results match generateCohortSet", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
@@ -57,8 +55,7 @@ test_that("generateCohortSet2 results match generateCohortSet", {
 
 test_that("generateCohortSet2 with single cohort", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
@@ -73,8 +70,7 @@ test_that("generateCohortSet2 with single cohort", {
 
 test_that("generateCohortSet2 with writePrefix", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = c(schema = "main", prefix = "test_"),
                      writePrefix = "test_")
@@ -87,8 +83,7 @@ test_that("generateCohortSet2 with writePrefix", {
 
 test_that("generateCohortSet2 with cohorts3 (conditions with descendants)", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cohort_set <- readCohortSet(system.file("cohorts3", package = "CDMConnector"))
@@ -217,8 +212,7 @@ test_that("buildBatchCohortQuery errors on mismatched lengths", {
 
 test_that("generateCohortSet2 validates name argument", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
 
@@ -229,8 +223,7 @@ test_that("generateCohortSet2 validates name argument", {
 
 test_that("generateCohortSet2 validates cohortSet argument", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
   expect_error(generateCohortSet2(cdm, "not_a_df", name = "test"), "dataframe")
@@ -241,8 +234,7 @@ test_that("generateCohortSet2 validates cohortSet argument", {
 
 test_that("generateCohortSet2 overwrite=TRUE allows re-run", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
 
@@ -256,8 +248,7 @@ test_that("generateCohortSet2 overwrite=TRUE allows re-run", {
 
 test_that("generateCohortSet2 overwrite=FALSE errors if table exists", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cs <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))
 
@@ -272,8 +263,7 @@ test_that("generateCohortSet2 overwrite=FALSE errors if table exists", {
 
 test_that("generateCohortSet2 computeAttrition=TRUE with inclusion rules", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
 
@@ -303,8 +293,7 @@ test_that("generateCohortSet2 computeAttrition=TRUE with inclusion rules", {
 test_that("generateCohortSet2 attrition matches v1 counts", {
   skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
 
@@ -341,8 +330,7 @@ test_that("generateCohortSet2 attrition matches v1 counts", {
 
 test_that("generateCohortSet2 computeAttrition=FALSE skips attrition", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
 
@@ -360,8 +348,7 @@ test_that("generateCohortSet2 computeAttrition=FALSE skips attrition", {
 
 test_that("generateCohortSet2 includes cohort codelist", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   cs <- readCohortSet(system.file("cohorts2", package = "CDMConnector"))
 
@@ -376,8 +363,7 @@ test_that("generateCohortSet2 includes cohort codelist", {
 
 test_that("generateCohortSet2 works with cdmSubset (single person)", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
   # Subset to person 6 only
@@ -410,8 +396,7 @@ test_that("generateCohortSet2 works with cdmSubset (single person)", {
 
 test_that("generateCohortSet2 works with cdmSample (small subset)", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
   # Sample 5 persons
@@ -434,8 +419,7 @@ test_that("generateCohortSet2 works with cdmSample (small subset)", {
 
 test_that("generateCohortSet2 errors on missing required CDM table", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
   # cohorts1 uses condition_occurrence; remove it from the CDM
@@ -451,8 +435,7 @@ test_that("generateCohortSet2 errors on missing required CDM table", {
 
 test_that("generateCohortSet2 works with dplyr-filtered CDM table", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
 
   # Get baseline count with unfiltered CDM

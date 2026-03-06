@@ -101,7 +101,7 @@ for (dbtype in dbToTest) {
 
 test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
@@ -118,15 +118,13 @@ test_that("error in newGeneratedCohortSet if cohort_ref has not been computed", 
                   "cohort_end_date" = "condition_end_date")
 
   expect_error(suppressWarnings(omopgenerics::newCohortTable(cohort_ref)))
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 test_that("no error if cohort is empty", {
   skip_if_not_installed("CirceR")
   skip_if_not_installed("duckdb")
   # if an empty cohort is passed return an empty GeneratedCohortSet object
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
@@ -170,8 +168,6 @@ test_that("no error if cohort is empty", {
   expect_true("cohort_table" %in% class(cdm$cohort_3b))
   expect_false(nrow(settings(cdm$cohort_3b)) == 0)
   expect_false(nrow(cohortCount(cdm$cohort_3b)) == 0)
-
-  cdmDisconnect(cdm)
 })
 
 
@@ -180,7 +176,7 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
   skip_if_not_installed("duckdb")
   skip_if_not_installed("CirceR")
 
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
@@ -202,6 +198,5 @@ test_that("newGeneratedCohortSet handles empty cohort tables", {
   })
 
   expect_equal(nrow(dplyr::collect(cdm$cohort_3)), 0)
-  DBI::dbDisconnect(con, shutdown = T)
 })
 

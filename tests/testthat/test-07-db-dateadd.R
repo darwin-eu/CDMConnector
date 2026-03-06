@@ -329,7 +329,7 @@ test_that("date functions work with local cdms", {
   skip_if_not_installed("duckdb")
   library(dplyr)
 
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, "main", "main")
 
   cdm <- dplyr::collect(cdm)
@@ -345,5 +345,4 @@ test_that("date functions work with local cdms", {
     mutate(reconstructed = !!asDate(txt))
 
   expect_s3_class(df, "data.frame")
-  cdmDisconnect(cdm)
 })

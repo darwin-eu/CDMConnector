@@ -254,6 +254,18 @@ disconnect <- function(con) {
   DBI::dbDisconnect(con)
 }
 
+# Helper: create a duckdb connection to an eunomia copy and auto-cleanup the
+# temp file when the calling scope exits (uses withr::defer).
+local_eunomia_con <- function(..., env = parent.frame()) {
+  dbpath <- eunomiaDir(...)
+  con <- DBI::dbConnect(duckdb::duckdb(), dbpath)
+  withr::defer({
+    try(DBI::dbDisconnect(con, shutdown = TRUE), silent = TRUE)
+    unlink(dbpath)
+  }, envir = env)
+  con
+}
+
 # databases supported on github actions
 ciTestDbs <- c("duckdb", "postgres", "redshift", "sqlserver", "snowflake", "bigquery", "spark")
 

@@ -2,12 +2,9 @@
 
 test_that("copyCdmTo copies cdm to another duckdb connection", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con1 <- local_eunomia_con()
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  on.exit({
-    DBI::dbDisconnect(con1, shutdown = TRUE)
-    DBI::dbDisconnect(con2, shutdown = TRUE)
-  }, add = TRUE)
+  on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
 
@@ -24,12 +21,9 @@ test_that("copyCdmTo copies cdm to another duckdb connection", {
 
 test_that("copyCdmTo preserves cdm name", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con1 <- local_eunomia_con()
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  on.exit({
-    DBI::dbDisconnect(con1, shutdown = TRUE)
-    DBI::dbDisconnect(con2, shutdown = TRUE)
-  }, add = TRUE)
+  on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main", cdmName = "TestCDM")
 
@@ -39,10 +33,9 @@ test_that("copyCdmTo preserves cdm name", {
 
 test_that("copyCdmTo errors on invalid connection", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con1 <- local_eunomia_con()
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   DBI::dbDisconnect(con2, shutdown = TRUE)
-  on.exit(DBI::dbDisconnect(con1, shutdown = TRUE), add = TRUE)
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
   expect_error(copyCdmTo(con2, cdm, schema = c(schema = "main")))
@@ -50,12 +43,9 @@ test_that("copyCdmTo errors on invalid connection", {
 
 test_that("copyCdmTo copies cohort tables", {
   skip_if_not_installed("duckdb")
-  con1 <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con1 <- local_eunomia_con()
   con2 <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  on.exit({
-    DBI::dbDisconnect(con1, shutdown = TRUE)
-    DBI::dbDisconnect(con2, shutdown = TRUE)
-  }, add = TRUE)
+  on.exit(DBI::dbDisconnect(con2, shutdown = TRUE), add = TRUE)
 
   cdm <- cdmFromCon(con1, cdmSchema = "main", writeSchema = "main")
   cohort_set <- readCohortSet(system.file("cohorts1", package = "CDMConnector"))

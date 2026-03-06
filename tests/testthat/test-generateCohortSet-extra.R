@@ -155,8 +155,7 @@ test_that("getInclusionMaskId returns correct mask for 3 inclusion rules", {
 
 test_that("generateCohortSet errors if cohortSet is not a dataframe", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
-  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+  con <- local_eunomia_con()
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   expect_error(
