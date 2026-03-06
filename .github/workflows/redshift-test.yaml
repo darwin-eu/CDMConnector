@@ -6,6 +6,10 @@ on:
 
 name: redshift-test
 
+concurrency:
+  group: redshift-db-tests
+  cancel-in-progress: false
+
 jobs:
   Postgres-test:
     # if: github.repository == 'darwin-eu/CDMConnector'

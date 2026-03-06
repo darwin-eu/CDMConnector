@@ -4,6 +4,9 @@
 
 test_dbi <- function(con, cdm_schema, write_schema) {
 
+  # Use a unique table name to avoid collisions between concurrent CI runs
+  tbl_name <- paste0("dbitest_", format(as.hexmode(sample.int(.Machine$integer.max, 1)), width = 8))
+
   df <- dplyr::tibble(
     alogical = TRUE,
     achar = "a",
@@ -11,38 +14,24 @@ test_dbi <- function(con, cdm_schema, write_schema) {
     afloat = 1.5
   )
 
-  # TODO make sure that overwrite works
-  if ("temp_test" %in% listTables(con, write_schema)) {
-    DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
-    # DBI::dbRemoveTable(con, DBI::Id(write_schema, "temp_test"))
+  # Cleanup any stale table from a previous run
+  if (tolower(tbl_name) %in% tolower(listTables(con, write_schema))) {
+    DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = tbl_name, dbms = dbms(con)))
   }
 
-  # if (methods::is(con, "DatabaseConnectorConnection")) {
-    # database connector turns logical types to integers and gives a warning
-    # expect_warning(
-    #   DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df),
-    #   "logical"
-    # )
-  # } else {
-    DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df)
-    # DBI::dbWriteTable(con, DBI::Id(write_schema, "temp_test"), df)
-  # }
+  DBI::dbWriteTable(con, inSchema(schema = write_schema, table = tbl_name, dbms = dbms(con)), df)
 
   expect_no_error({
-    DBI::dbWriteTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)), df, overwrite = T)
-    # DBI::dbWriteTable(con, DBI::Id(write_schema, "temp_test"), df, overwrite = T)
+    DBI::dbWriteTable(con, inSchema(schema = write_schema, table = tbl_name, dbms = dbms(con)), df, overwrite = T)
   })
 
-  expect_true("temp_test" %in% listTables(con, schema = write_schema))
-  # nm <- paste(c(write_schema, "temp_test"), collapse = ".")
+  # Case-insensitive check for Snowflake (unquoted identifiers become uppercase)
+  expect_true(tolower(tbl_name) %in% tolower(listTables(con, schema = write_schema)))
 
-  # duckdb and snowflake do not support the I() syntax
-  # db <- {if (dbms(con) != "duckdb") dplyr::tbl(con, I(nm)) else dplyr::tbl(con, nm)} %>%
-  db <- dplyr::tbl(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con))) %>%
+  db <- dplyr::tbl(con, inSchema(schema = write_schema, table = tbl_name, dbms = dbms(con))) %>%
     dplyr::collect() %>%
     dplyr::tibble() %>%
     dplyr::select("alogical", "achar", "aint", "afloat") # bigquery can return columns in any order apparently
-  # TODO open issue on bigrquery about columns being returned in any order.
 
   # TODO: There is an issue with oracle's odbc type conversion
   if (CDMConnector::dbms(con) == "oracle") {
@@ -64,15 +53,13 @@ test_dbi <- function(con, cdm_schema, write_schema) {
 
   nm <- paste(c(cdm_schema, person_table_name), collapse = ".")
 
-  # person <- {if (dbms(con) != "duckdb") dplyr::tbl(con, I(nm)) else dplyr::tbl(con, nm)} %>%
-  person <- dplyr::tbl(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con))) %>%
+  person <- dplyr::tbl(con, inSchema(schema = write_schema, table = tbl_name, dbms = dbms(con))) %>%
     head(1) %>%
     dplyr::collect()
 
   expect_true(nrow(person) == 1)
 
-  # DBI::dbRemoveTable(con, DBI::Id(write_schema, "temp_test"))
-  DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = "temp_test", dbms = dbms(con)))
+  DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = tbl_name, dbms = dbms(con)))
   # TODO add this test
   # DBI::dbRemoveTable(con, DBI::Id(schema = write_schema, table = "temp_test"))
   # expect_false("temp_test" %in% listTables(con, schema = write_schema))
