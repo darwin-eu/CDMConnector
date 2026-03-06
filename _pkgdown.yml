@@ -1,3 +1,5 @@
+url: https://darwin-eu.github.io/CDMConnector/
+
 template:
   bootstrap: 5
   bootswatch: flatly

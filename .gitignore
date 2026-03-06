@@ -42,6 +42,9 @@ inst/doc
 /doc/
 /Meta/
 
+# pkgdown
+docs/
+
 # Local work files
 /scratch/
 /work/
