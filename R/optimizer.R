@@ -511,17 +511,21 @@ generateCohortSet2 <- function(cdm,
   checkmate::assertLogical(overwrite, len = 1)
 
   cli::cli_alert_info("Generating {nrow(cohortSet)} cohort{?s}")
+  time_start <- Sys.time()
 
   # ---- Local CDM dispatch ----
   con <- cdmCon(cdm)
   if (is.null(con)) {
-    return(generateCohortSetLocal2(
+    cdm <- generateCohortSetLocal2(
       cdm = cdm,
       cohortSet = cohortSet,
       name = name,
       computeAttrition = computeAttrition,
       overwrite = overwrite
-    ))
+    )
+    elapsed_mins <- as.numeric(difftime(Sys.time(), time_start, units = "mins"))
+    message(sprintf("Generated %d cohort%s in %.2f minutes", nrow(cohortSet), if (nrow(cohortSet) == 1L) "" else "s", elapsed_mins))
+    return(cdm)
   }
 
   checkmate::assertTRUE(DBI::dbIsValid(con))
@@ -838,6 +842,8 @@ generateCohortSet2 <- function(cdm,
     cohortCodelistRef = cohortCodelistRef
   )
 
+  elapsed_mins <- as.numeric(difftime(Sys.time(), time_start, units = "mins"))
+  message(sprintf("Generated %d cohort%s in %.2f minutes", nrow(cohortSet), if (nrow(cohortSet) == 1L) "" else "s", elapsed_mins))
   cdm
 }
 

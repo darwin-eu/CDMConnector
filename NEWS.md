@@ -5,7 +5,6 @@
 - Add `cohdSimilarConcepts` function to query Columbia Open Health Data API for concept co-occurrence
 - Add `generateCohortSet2` for DAG-based cohort generation without Java dependency
 - Add R-native CIRCE SQL builder (`buildCohortQuery`, `buildBatchCohortQuery`)
-- Add lightweight SQL translator (`translate_r`, `render_r`) as R-native alternative to SqlRender
 - Add DAG-based query optimizer and caching
 - Add batch optimization and benchmarking vignettes
 - Fix Snowflake column quoting for domain-filtered tables
