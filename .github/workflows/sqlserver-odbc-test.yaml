@@ -6,10 +6,6 @@ on:
 
 name: sqlserver-odbc-test
 
-concurrency:
-  group: sqlserver-db-tests
-  cancel-in-progress: false
-
 jobs:
   Postgres-test:
     # if: github.repository == 'darwin-eu/CDMConnector'

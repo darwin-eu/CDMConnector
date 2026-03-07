@@ -6,10 +6,6 @@ on:
 
 name: spark-odbc-test
 
-concurrency:
-  group: spark-db-tests
-  cancel-in-progress: false
-
 jobs:
   Spark-test:
     runs-on: ubuntu-latest

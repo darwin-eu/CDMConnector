@@ -6,10 +6,6 @@ on:
 
 name: rpostgres-postgres-test
 
-concurrency:
-  group: postgres-db-tests
-  cancel-in-progress: false
-
 jobs:
   Postgres-test:
     # if: github.repository == 'darwin-eu/CDMConnector'
