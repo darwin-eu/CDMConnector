@@ -63,6 +63,4 @@ Ta, Casey N.; Dumontier, Michel; Hripcsak, George; P. Tatonetti, Nicholas;
 Weng, Chunhua (2018). Columbia Open Health Data, a database of EHR prevalence
 and co-occurrence of conditions, drugs, and procedures. figshare. Collection.
 \doi{10.6084/m9.figshare.c.4151252.v1}
-
-COHD collection: \url{https://figshare.com/collections/Columbia_Open_Health_Data_a_database_of_EHR_prevalence_and_co-occurrence_of_conditions_drugs_and_procedures/4151252}
 }

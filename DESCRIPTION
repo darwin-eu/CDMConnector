@@ -1,9 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
 Version: 2.5.0
-Author: Adam Black [aut, cre], Artem Gorbachev [aut], Edward Burn [aut],
-    Marti Catala Sabate [aut], Ioanna Nika [aut]
-Maintainer: Adam Black <ablack3@gmail.com>
 Authors@R: c(
     person("Adam", "Black", , "ablack3@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5576-8701")),
@@ -16,7 +13,6 @@ Description: Provides tools for working with observational health data in the
   Observational Medical Outcomes Partnership (OMOP) Common Data Model format with a pipe friendly syntax.
   Common data model database table references are stored in a single compound object along with metadata.
 License: Apache License (>= 2)
-License_file: LICENSE
 URL: https://darwin-eu.github.io/CDMConnector/, https://github.com/darwin-eu/CDMConnector
 BugReports: https://github.com/darwin-eu/CDMConnector/issues
 Encoding: UTF-8
