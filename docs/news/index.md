@@ -1,6 +1,12 @@
 # Changelog
 
+## CDMConnector 2.5.0
+
+- Add Delphi-100k example dataset
+
 ## CDMConnector 2.4.0
+
+CRAN release: 2026-02-16
 
 - Implement `generateCohortSet` for local cdms (e.g. with omock)
 - Allow catalogs in duckdb connections

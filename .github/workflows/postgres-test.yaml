@@ -42,18 +42,22 @@ jobs:
         run: |
           print(getwd())
           print(list.files())
-          install.packages("gert", repos = "https://cloud.r-project.org/")
-          install.packages("usethis", repos = "https://cloud.r-project.org/")
-          install.packages("devtools", repos = "https://cloud.r-project.org/")
-          install.packages("remotes", repos = "https://cloud.r-project.org/")
-          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
-          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
-          install.packages("dbplyr", repos = "https://cloud.r-project.org/")
-          CDMConnector::downloadEunomiaData()
-          print(paste("eunomiaIsAvailable():", CDMConnector::eunomiaIsAvailable()))
+          install.packages(c("devtools", "omopgenerics", "palmerpenguins"))
+          devtools::install(quick = TRUE, dependencies = FALSE)
         shell: Rscript {0}
 
+      - name: Free disk space
+        run: |
+          rm -rf /opt/hostedtoolcache || true
+          rm -rf /tmp/* || true
+          rm -rf /var/cache/apt/archives || true
+          rm -rf /usr/share/doc || true
+          rm -rf /usr/share/man || true
+          rm -rf /usr/share/locale || true
+          df -h / || true
+        shell: bash
+
       - name: Run tests on postgres with RPostgres driver
-        run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "postgres", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "postgres", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'
 
 

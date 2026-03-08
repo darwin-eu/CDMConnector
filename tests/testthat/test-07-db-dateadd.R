@@ -123,7 +123,7 @@ for (dbtype in dbToTest) {
 # )))
 
 test_that('dateadd works without pipe', {
-  skip("failing test")
+  skip("dateadd requires magrittr pipe (%>%); direct mutate() and native pipe (|>) not supported")
   con <- DBI::dbConnect(duckdb::duckdb())
   DBI::dbWriteTable(con, "tbl", data.frame(date = as.Date("2020-01-01")))
 
@@ -329,7 +329,7 @@ test_that("date functions work with local cdms", {
   skip_if_not_installed("duckdb")
   library(dplyr)
 
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, "main", "main")
 
   cdm <- dplyr::collect(cdm)
@@ -345,5 +345,4 @@ test_that("date functions work with local cdms", {
     mutate(reconstructed = !!asDate(txt))
 
   expect_s3_class(df, "data.frame")
-  cdmDisconnect(cdm)
 })

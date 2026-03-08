@@ -31,7 +31,7 @@ eunomiaDir(
   "synthea-snf-10k", "synthea-surgery-10k",
   "synthea-total_joint_replacement-10k",
   "synthea-veteran_prostate_cancer-10k", "synthea-veterans-10k",
-  "synthea-weight_loss-10k", "empty_cdm", "synpuf-1k"
+  "synthea-weight_loss-10k", "empty_cdm", "synpuf-1k", "delphi-100k
 
 - cdmVersion:
 

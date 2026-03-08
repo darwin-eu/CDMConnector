@@ -185,12 +185,7 @@ cdmFromCon <- function(con,
   if (length(omop_tables) == 0) {
     rlang::abort("There were no cdm tables found in the cdm_schema!")
   }
-  cdm_tables_in_db <- dbTables[which(tolower(dbTables) %in% omop_tables)]
-  if (all(cdm_tables_in_db == toupper(cdm_tables_in_db))) {
-    omop_tables <- toupper(omop_tables)
-  } else if (!all(cdm_tables_in_db == tolower(cdm_tables_in_db))) {
-    rlang::abort("CDM database tables should be either all upppercase or all lowercase!")
-  }
+  omop_tables <- validateCdmTableCase(dbTables = dbTables, omopTables = omop_tables)
 
   cdmTables <- purrr::map(
     omop_tables, ~ dplyr::tbl(src = src, schema = cdmSchema, name = .)
@@ -199,8 +194,8 @@ cdmFromCon <- function(con,
 
   if (is.null(cdmName) && ("cdm_source" %in% names(cdmTables))) {
     cdmSourceTable <- cdmTables$cdm_source %>%
-    utils::head(1) %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    utils::head(1)
 
     cdmName <- cdmSourceTable$cdm_source_abbreviation
 
@@ -299,6 +294,49 @@ cdmFromCon <- function(con,
   attr(cdm, "dbcon") <- attr(attr(cdm, "cdm_source"), "dbcon")
 
   return(cdm)
+}
+
+validateCdmTableCase <- function(dbTables, omopTables) {
+  cdm_tables_in_db <- dbTables[which(tolower(dbTables) %in% omopTables)]
+
+  if (all(cdm_tables_in_db == toupper(cdm_tables_in_db))) {
+    return(toupper(omopTables))
+  }
+
+  if (!all(cdm_tables_in_db == tolower(cdm_tables_in_db))) {
+    uppercase_tables <- cdm_tables_in_db[cdm_tables_in_db == toupper(cdm_tables_in_db)]
+    lowercase_tables <- cdm_tables_in_db[cdm_tables_in_db == tolower(cdm_tables_in_db)]
+    mixed_tables <- cdm_tables_in_db[
+      cdm_tables_in_db != toupper(cdm_tables_in_db) &
+        cdm_tables_in_db != tolower(cdm_tables_in_db)
+    ]
+
+    uppercase_msg <- if (length(uppercase_tables) > 0) {
+      paste(uppercase_tables, collapse = ", ")
+    } else {
+      "none"
+    }
+    lowercase_msg <- if (length(lowercase_tables) > 0) {
+      paste(lowercase_tables, collapse = ", ")
+    } else {
+      "none"
+    }
+    mixed_msg <- if (length(mixed_tables) > 0) {
+      paste(mixed_tables, collapse = ", ")
+    } else {
+      "none"
+    }
+
+    rlang::abort(c(
+      "CDM database tables should be either all upppercase or all lowercase!",
+      "x" = "Mixed casing detected for CDM tables.",
+      "i" = paste0("Uppercase tables: ", uppercase_msg),
+      "i" = paste0("Lowercase tables: ", lowercase_msg),
+      "i" = paste0("Mixed-case tables: ", mixed_msg)
+    ))
+  }
+
+  return(omopTables)
 }
 
 #' @importFrom dplyr tbl

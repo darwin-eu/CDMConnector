@@ -64,7 +64,7 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
   skip_if_not_installed("duckdb")
   skip_if_not(eunomiaIsAvailable())
   # create a test cdm with upppercase table names
-  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  con <- local_eunomia_con()
 
   for (name in listTables(con, "main")) {
     DBI::dbExecute(con,
@@ -79,8 +79,6 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
   # check that names in cdm are lowercase
   cdm <- cdmFromCon(con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
   expect_true(all(names(cdm) == tolower(names(cdm))))
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 # TODO add this test back when we have an example cdm with achilles tables
@@ -192,7 +190,7 @@ test_that("adding cohort tables to the cdm", {
   skip_if_not(eunomiaIsAvailable())
   skip_if_not_installed("duckdb")
 
-  con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
+  con <- local_eunomia_con()
 
   cohorts <- data.frame(
     cohortId = c(1, 2, 3),
@@ -225,18 +223,14 @@ test_that("adding cohort tables to the cdm", {
                              writeSchema = c(schema = "main"),
                              cohortTables = "test_cohort_table",
                              .softValidation = TRUE)) # passes without validation
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 test_that("writeSchema argument specification and cdmDisconnect works", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, "main", "main", writePrefix = "tmp_")
 
   expect_equal(attr(cdm, "write_schema"), c(schema = "main", prefix = "tmp_"))
-
-  cdmDisconnect(cdm)
 })
 
 test_that("schema specification with . works", {
@@ -328,5 +322,41 @@ test_that("DatabaseConnector DBI connections work with RPostgres", {
   cdmDisconnect(cdm)
 })
 
+
+test_that("DatabaseConnector DBI connections work with odbc SQL Server", {
+
+  skip_if_not_installed("DatabaseConnector")
+  skip_if_not_installed("odbc")
+  skip_if_not("sqlserver" %in% dbToTest)
+  skip_on_cran()
+
+  connectionDetails <- DatabaseConnector::createDbiConnectionDetails(
+    dbms = "sql server",
+    drv = odbc::odbc(),
+    Driver   = Sys.getenv("SQL_SERVER_DRIVER", "ODBC Driver 18 for SQL Server"),
+    Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+    Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
+    UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
+    PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+    TrustServerCertificate = "yes",
+    Port     = as.integer(Sys.getenv("CDM5_SQL_SERVER_PORT", "1433"))
+  )
+
+  writeSchema <- strsplit(Sys.getenv("CDM5_SQL_SERVER_SCRATCH_SCHEMA"), "\\.")[[1]]
+  cdmSchema   <- strsplit(Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), "\\.")[[1]]
+
+  con <- DatabaseConnector::connect(connectionDetails)
+
+  cdm <- CDMConnector::cdmFromCon(
+    con = con,
+    cdmSchema = cdmSchema,
+    writeSchema = writeSchema
+  )
+
+  df <- dplyr::collect(head(cdm$person))
+  expect_true(is.data.frame(df))
+  expect_true(nrow(df) > 0)
+  cdmDisconnect(cdm)
+})
 
 

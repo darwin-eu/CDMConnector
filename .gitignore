@@ -45,9 +45,15 @@ inst/doc
 .claude/
 coverage_results.rds
 
+# pkgdown
+docs/
+
 # Local work files
 /scratch/
 /work/
 errorReportSql.txt
 *.DS_Store*
 /revdep/
+.claude/
+.vscode/
+coverage_results.rds

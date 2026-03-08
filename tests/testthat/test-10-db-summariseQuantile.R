@@ -2,7 +2,7 @@
 
 test_summarise_quantile <- function(con, write_schema) {
 
-  eunomia_con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  eunomia_con <- local_eunomia_con()
 
   eunomia_cdm <- cdmFromCon(
     con = eunomia_con, cdmName = "eunomia", cdmSchema = "main",
@@ -11,7 +11,6 @@ test_summarise_quantile <- function(con, write_schema) {
     cdmSelect("person")
 
   person <- dplyr::collect(eunomia_cdm$person)
-  DBI::dbDisconnect(eunomia_con, shutdown = TRUE)
 
   tempname <- paste0("temp", floor(10*as.numeric(Sys.Date()) %% 1e6), "_person")
 

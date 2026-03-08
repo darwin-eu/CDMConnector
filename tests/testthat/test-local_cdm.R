@@ -1,7 +1,7 @@
 
 test_that("softValidation is passed correctly", {
   skip_if_not_installed("duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
 
   # create overlapping observation periods
   op <- dplyr::tbl(con, "observation_period") |> dplyr::collect()
@@ -12,6 +12,4 @@ test_that("softValidation is passed correctly", {
 
   # soft validation ignores this
   expect_no_error(cdmFromCon(con, "main", "main", .softValidation = T))
-
-  DBI::dbDisconnect(con, shutdown = T)
 })

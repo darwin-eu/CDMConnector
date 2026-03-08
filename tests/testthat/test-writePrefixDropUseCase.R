@@ -3,7 +3,7 @@ test_that("drop table works in opposition to insert table", {
   skip_if_not("duckdb" %in% dbToTest)
   skip_if_not_installed("duckdb")
 
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  con <- local_eunomia_con()
 
   writePrefix <- 'study01_'
   writeSchema <- c(schema = "main", prefix = writePrefix)
@@ -36,7 +36,6 @@ test_that("drop table works in opposition to insert table", {
 
   expect_equal(listTables(con, schema = writeSchema), character(0L))
 
-  DBI::dbDisconnect(con)
 })
 
 
@@ -45,7 +44,7 @@ test_that("dropping all tables with write_prefix works as exepected", {
   skip_if_not("duckdb" %in% dbToTest)
   skip_if_not_installed("duckdb")
 
-  con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
+  con <- local_eunomia_con()
 
   writePrefix <- "study01_"
   writeSchema <- c(schema = "main", prefix = writePrefix)
@@ -90,7 +89,6 @@ test_that("dropping all tables with write_prefix works as exepected", {
   # DBI::dbListTables gives us full names including the prefix while
   # CDMConnector::listTables strips off the prefix since it is treated as a sub-schema.
 
-  DBI::dbDisconnect(con)
 })
 
 

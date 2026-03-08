@@ -23,7 +23,7 @@ jobs:
         CDM5_SQL_SERVER_OHDSI_SCHEMA:   ${{ secrets.CDM5_SQL_SERVER_OHDSI_SCHEMA }}
         CDM5_SQL_SERVER_SCRATCH_SCHEMA: ${{ secrets.CDM5_SQL_SERVER_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        SQL_SERVER_DRIVER: "ODBC Driver 17 for SQL Server" # used in the docker image
+        SQL_SERVER_DRIVER: "ODBC Driver 18 for SQL Server" # used in the docker image
         TESTTHAT_CPUS : 1
 
     name: SQL Server test (ODBC driver)
@@ -38,13 +38,23 @@ jobs:
         run: |
           print(getwd())
           print(list.files())
-          install.packages("devtools", repos = "https://cloud.r-project.org/")
-          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
-          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages(c("devtools", "omopgenerics", "palmerpenguins"))
+          devtools::install(quick = TRUE, dependencies = FALSE)
 
         shell: Rscript {0}
 
+      - name: Free disk space
+        run: |
+          rm -rf /opt/hostedtoolcache || true
+          rm -rf /tmp/* || true
+          rm -rf /var/cache/apt/archives || true
+          rm -rf /usr/share/doc || true
+          rm -rf /usr/share/man || true
+          rm -rf /usr/share/locale || true
+          df -h / || true
+        shell: bash
+
       - name: Run tests on SQL Server with odbc driver
-        run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'
 
 

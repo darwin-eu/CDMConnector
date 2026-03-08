@@ -6,7 +6,7 @@ test_that("memory leak does not happen", {
   skip_on_cran()
   skip_if_not_installed("duckdb")
   testthat::skip_if_not("duckdb" %in% dbToTest)
-  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(
     con = con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main"
   )
@@ -58,7 +58,5 @@ test_that("memory leak does not happen", {
   for (nm in names(cdm2)) {
     expect_false("cdm_reference" %in% names(attributes(cdm2[[nm]])))
   }
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 

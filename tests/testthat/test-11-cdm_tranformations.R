@@ -1,9 +1,7 @@
 test_that("cdmSample works", {
   skip_if_not_installed("duckdb")
 
-  # note that this form of connecting causes the db to be garbage collected when called
-  # using the "run tests" button in RStudio IDE `con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())`
-  con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir()))
+  con <- local_eunomia_con()
 
   expect_true(DBI::dbIsValid(con))
 
@@ -16,8 +14,6 @@ test_that("cdmSample works", {
     dplyr::collect()
 
   expect_equal(as.double(df$n), 10)
-
-  DBI::dbDisconnect(con, shutdown = TRUE)
 
 })
 

@@ -28,6 +28,15 @@ jobs:
           extra-packages: any::covr, any::xml2
           needs: coverage
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /opt/hostedtoolcache || true
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /usr/share/dotnet || true
+          sudo rm -rf /usr/share/swift || true
+          df -h / || true
+        shell: bash
+
       - name: Test coverage
         run: |
           eunomia_data_folder <- file.path(tempdir(), "eunomia_data")

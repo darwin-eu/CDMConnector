@@ -1,0 +1,49 @@
+on:
+  push:
+    branches: [main, master, test, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+name: spark-odbc-test
+
+jobs:
+  Spark-test:
+    runs-on: ubuntu-latest
+    container:
+      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        DATABRICKS_HTTPPATH: ${{ secrets.DATABRICKS_HTTPPATH }}
+        DATABRICKS_CDM_SCHEMA: ${{ secrets.DATABRICKS_CDM_SCHEMA }}
+        DATABRICKS_SCRATCH_SCHEMA: ${{ secrets.DATABRICKS_SCRATCH_SCHEMA }}
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        TESTTHAT_CPUS : 1
+
+    name: Spark test (odbc driver)
+
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install R packages and CDMConnector
+        run: |
+          install.packages(c("devtools", "omopgenerics", "palmerpenguins"))
+          devtools::install(quick = TRUE, dependencies = FALSE)
+        shell: Rscript {0}
+
+      - name: Free disk space
+        run: |
+          rm -rf /opt/hostedtoolcache || true
+          rm -rf /tmp/* || true
+          rm -rf /var/cache/apt/archives || true
+          rm -rf /usr/share/doc || true
+          rm -rf /usr/share/man || true
+          rm -rf /usr/share/locale || true
+          df -h / || true
+        shell: bash
+
+      - name: Run tests on Spark with odbc driver
+        run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "spark", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'

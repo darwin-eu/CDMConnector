@@ -2,7 +2,7 @@
 test_that("omopgenerics::bind works for combining cohort tables", {
   skip_if_not_installed("duckdb")
   skip_if_not("duckdb" %in% dbToTest)
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
+  con <- local_eunomia_con()
   cdm <- cdmFromCon(con, "main", "main", cdmName = "gibleed")
 
   cohortSet <- CDMConnector::readCohortSet(system.file("cohorts2", package = "CDMConnector")) %>%
@@ -31,8 +31,6 @@ test_that("omopgenerics::bind works for combining cohort tables", {
   expect_equal(nrow(settings(cdm$cohort3)), 2)
 
   expect_equal(nrow(cohortCount(cdm$cohort3)), 2)
-
-  cdmDisconnect(cdm)
 
 })
 

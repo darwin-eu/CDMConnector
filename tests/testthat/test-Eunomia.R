@@ -38,6 +38,8 @@ test_that("downloadEunomiaData", {
 
 test_that("empty cdm works", {
   # skip("manual test")
+  skip_on_cran()
+  skip_if_offline()
   skip_if_not_installed("duckdb")
   skip_if_not(eunomiaIsAvailable("empty_cdm"))
 

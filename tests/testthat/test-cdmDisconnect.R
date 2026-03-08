@@ -59,7 +59,7 @@ test_that("temporary duckdb files are cleaned up on disconnect", {
   skip_on_cran()
   skip_if_not("duckdb" %in% dbToTest)
   tempDuckdbFile <- tempfile(fileext = ".duckdb")
-  con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir(databaseFile = tempDuckdbFile))
+  con <- local_eunomia_con(databaseFile = tempDuckdbFile)
   cdm <- cdmFromCon(con, "main", "main")
   expect_true(file.exists(tempDuckdbFile))
   cdmDisconnect(cdm)

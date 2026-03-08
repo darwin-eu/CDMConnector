@@ -1,6 +1,14 @@
 # CDMConnector 2.5.0
 
 - Add Delphi-100k example dataset
+- Improvements to `cdmFromCohortSet`/`cdmFromJson` synthetic data generation
+- Add `cohdSimilarConcepts` function to query Columbia Open Health Data API for concept co-occurrence
+- Add `generateCohortSet2` for DAG-based cohort generation without Java dependency
+- Add R-native CIRCE SQL builder (`buildCohortQuery`, `buildBatchCohortQuery`)
+- Add DAG-based query optimizer and caching
+- Add batch optimization and benchmarking vignettes
+- Fix Snowflake column quoting for domain-filtered tables
+- Fix SQL Server LIMIT syntax error in `cdmFromCon` when using DatabaseConnector
 
 # CDMConnector 2.4.0
 

@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,9 @@
     <li><a class="dropdown-item" href="articles/a03_dbplyr.html">CDMConnector and dbplyr</a></li>
     <li><a class="dropdown-item" href="articles/a04_DBI_connection_examples.html">DBI connection examples</a></li>
     <li><a class="dropdown-item" href="articles/a06_using_cdm_attributes.html">Using CDM attributes</a></li>
+    <li><a class="dropdown-item" href="articles/a07_batch-optimization.html">DAG-Based Batch Optimization for Cohort SQL Generation</a></li>
+    <li><a class="dropdown-item" href="articles/a08_dag-caching.html">Incremental DAG Caching for Cohort Generation</a></li>
+    <li><a class="dropdown-item" href="articles/a09_benchmarking.html">Multi-Database Benchmarking: Old vs New Cohort Generation</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -141,7 +144,7 @@
 <code class="sourceCode R"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">tally</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## # Source:   SQL [?? x 1]</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">## # Database: DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnaikmI/file7e465691e16.duckdb]</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">## # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpoqKZzI/fileeb501f4fa30.duckdb]</span></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="do">##       n</span></span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">##   &lt;dbl&gt;</span></span>
 <span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">## 1  2694</span></span></code></pre></div>
@@ -151,7 +154,7 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">$</span><span class="va">concept</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"condition_concept_id"</span> <span class="op">=</span> <span class="st">"concept_id"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span>top_conditions <span class="op">=</span> <span class="va">concept_name</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## # Source:     SQL [?? x 2]</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="do">## # Database:   DuckDB 1.4.3 [root@Darwin 23.1.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpnaikmI/file7e465691e16.duckdb]</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="do">## # Database:   DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpoqKZzI/fileeb501f4fa30.duckdb]</span></span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="do">## # Ordered by: desc(n)</span></span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="do">##    top_conditions                               n</span></span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="do">##    &lt;chr&gt;                                    &lt;dbl&gt;</span></span>
@@ -178,18 +181,20 @@
 </h2>
 <div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="do">## To cite package 'CDMConnector' in publications use:</span></span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="do">##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (????).</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="do">##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (2026).</span></span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="do">##   _CDMConnector: Connect to an OMOP Common Data Model_. R package</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="do">##   version 2.3.0, &lt;https://darwin-eu.github.io/CDMConnector/&gt;.</span></span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
-<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="do">## </span></span>
-<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="do">##   @Manual{,</span></span>
-<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="do">##     title = {CDMConnector: Connect to an OMOP Common Data Model},</span></span>
-<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="do">##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},</span></span>
-<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="do">##     note = {R package version 2.3.0},</span></span>
-<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="do">##     url = {https://darwin-eu.github.io/CDMConnector/},</span></span>
-<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="do">##   version 2.4.0, commit b56e5ea99a830da0054f2542dd763e45363b9104,</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="do">##   &lt;https://github.com/darwin-eu/CDMConnector&gt;.</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="do">##   @Manual{,</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="do">##     title = {CDMConnector: Connect to an OMOP Common Data Model},</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="do">##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="do">##     year = {2026},</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="do">##     note = {R package version 2.4.0, commit b56e5ea99a830da0054f2542dd763e45363b9104},</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="do">##     url = {https://github.com/darwin-eu/CDMConnector},</span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div>
 <hr>
 <p>License: Apache 2.0</p>
 </div>
@@ -244,7 +249,7 @@
 <li><a href="https://app.codecov.io/gh/darwin-eu/CDMConnector?branch=main" class="external-link"><img src="https://codecov.io/gh/darwin-eu/CDMConnector/coverage.svg?branch=main" alt="codecov.io"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3AR-CMD-check" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/R-CMD-check/badge.svg" alt="Build Status"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aduckdb-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/duckdb-test/badge.svg" alt="duckdb status"></a></li>
-<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Apostgres-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/postgres-test/badge.svg" alt="Postgres status"></a></li>
+<li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Arpostgres-postgres-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/rpostgres-postgres-test/badge.svg" alt="Postgres status"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asqlserver-odbc-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/sqlserver-odbc-test/badge.svg" alt="SQL Server odbc status"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Aredshift-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/redshift-test/badge.svg" alt="Redshift status"></a></li>
 <li><a href="https://github.com/darwin-eu/CDMConnector/actions?query=workflow%3Asnowflake-odbc-test" class="external-link"><img src="https://github.com/darwin-eu/CDMConnector/workflows/snowflake-odbc-test/badge.svg" alt="Snowflake status"></a></li>

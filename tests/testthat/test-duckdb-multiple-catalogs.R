@@ -11,9 +11,11 @@ test_that("DuckDB multiple catalogs: listTables and cdmFromCon with catalog.sche
   on.exit(unlink(results_db, force = TRUE), add = TRUE)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = results_db)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
   # Attach Eunomia CDM as read-only catalog "cdm"
   cdm_path <- eunomiaDir()
+  on.exit(unlink(cdm_path), add = TRUE)
   DBI::dbExecute(con, paste0("ATTACH '", cdm_path, "' AS cdm (READ_ONLY)"))
 
   # Multiple catalogs: main (default) and cdm
@@ -52,7 +54,6 @@ test_that("DuckDB multiple catalogs: listTables and cdmFromCon with catalog.sche
   expect_true("test_multi_catalog" %in% listTables(con, schema = "main"))
 
   DBI::dbRemoveTable(con, "test_multi_catalog")
-  DBI::dbDisconnect(con, shutdown = TRUE)
 })
 
 test_that("DuckDB multiple catalogs: cdmFromCon with named c(catalog=, schema=)", {
@@ -61,10 +62,13 @@ test_that("DuckDB multiple catalogs: cdmFromCon with named c(catalog=, schema=)"
   skip_if_not("duckdb" %in% dbToTest)
 
   results_db <- tempfile(fileext = ".duckdb")
+  on.exit(unlink(results_db, force = TRUE), add = TRUE)
 
   con <- DBI::dbConnect(duckdb::duckdb(), dbdir = results_db)
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
   cdm_path <- eunomiaDir()
+  on.exit(unlink(cdm_path), add = TRUE)
   DBI::dbExecute(con, paste0("ATTACH '", cdm_path, "' AS cdm (READ_ONLY)"))
 
   # Write schema: single "main" for default catalog's main schema (primary connection)
@@ -80,6 +84,4 @@ test_that("DuckDB multiple catalogs: cdmFromCon with named c(catalog=, schema=)"
 
   df <- dplyr::collect(head(cdm$concept, 3))
   expect_s3_class(df, "data.frame")
-  DBI::dbDisconnect(con, shutdown = TRUE)
-  unlink(results_db, force = TRUE)
 })

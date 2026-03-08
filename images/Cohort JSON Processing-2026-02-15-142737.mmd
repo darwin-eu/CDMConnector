@@ -1,0 +1,75 @@
+graph TD
+
+%% =======================
+%% Cohort A
+%% =======================
+subgraph A["Aspirin Users"]
+direction TD
+  A_CS[CREATE Codesets INSERT aspirin concepts JOIN CONCEPT_ANCESTOR]
+  A_DE[Scan DRUG_EXPOSURE join codesets]
+  A_OP[Scan OBSERVATION_PERIOD]
+  A_QE[Build qualified_events]
+  A_IE[included_events - no inclusion rules]
+  A_CR[cohort_rows final_cohort]
+  A_OUT[DELETE + INSERT results.cohort id=1]
+
+  A_CS --> A_DE
+  A_DE --> A_OP
+  A_OP --> A_QE
+  A_QE --> A_IE
+  A_IE --> A_CR
+  A_CR --> A_OUT
+end
+
+%% =======================
+%% Cohort B
+%% =======================
+subgraph B["Metformin Users"]
+direction TD
+  B_CS[CREATE Codesets INSERT metformin concepts JOIN CONCEPT_ANCESTOR]
+  B_DE[Scan DRUG_EXPOSURE join codesets]
+  B_OP[Scan OBSERVATION_PERIOD]
+  B_QE[Build qualified_events]
+  B_IE[included_events - no inclusion rules]
+  B_CR[cohort_rows final_cohort]
+  B_OUT[DELETE + INSERT results.cohort id=2]
+
+  B_CS --> B_DE
+  B_DE --> B_OP
+  B_OP --> B_QE
+  B_QE --> B_IE
+  B_IE --> B_CR
+  B_CR --> B_OUT
+end
+
+%% =======================
+%% Cohort C
+%% =======================
+subgraph C["Aspirin + Diabetes"]
+direction TD
+  C_CS[CREATE Codesets INSERT aspirin + diabetes JOIN CONCEPT_ANCESTOR]
+  C_DE[Scan DRUG_EXPOSURE join codesets]
+  C_OP[Scan OBSERVATION_PERIOD]
+  C_CO[Scan CONDITION_OCCURRENCE join codesets]
+  C_QE[Build qualified_events]
+  C_IE[included_events - has diabetes]
+  C_CR[cohort_rows final_cohort]
+  C_OUT[DELETE + INSERT results.cohort id=3]
+
+  C_CS --> C_DE
+  C_DE --> C_OP
+  C_OP --> C_QE
+  C_CO --> C_QE
+  C_QE --> C_IE
+  C_CO --> C_IE
+  C_IE --> C_CR
+  C_CR --> C_OUT
+end
+
+%% =======================
+%% Layout: stack cohorts vertically but keep square
+%% =======================
+A_OUT -.-> B_CS
+B_OUT -.-> C_CS
+linkStyle 0 stroke-width:0px
+linkStyle 1 stroke-width:0px
