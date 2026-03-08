@@ -1,6 +1,7 @@
 # Additional tests for R/cdmFromCohortSet.R — integration tests for cdmFromCohortSet and cdmFromJson
 
-# Extra tests only run in test-coverage and local; skip on container CI
+# Extra tests only run in test-coverage and local; skip on container CI and CRAN
+skip_on_cran()
 skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
 
 # --- cdmFromCohortSet ---

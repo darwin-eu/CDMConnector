@@ -5,6 +5,7 @@
 # Local CDMs use the internal generateCohortSetLocal (in-memory DuckDB).
 
 test_that("generateCohortSet works on local CDM (gibleed from Eunomia, collected)", {
+  skip_on_cran()
   skip_if_not_installed("CirceR")
   skip_if_not_installed("duckdb")
   skip_if_not(eunomiaIsAvailable())

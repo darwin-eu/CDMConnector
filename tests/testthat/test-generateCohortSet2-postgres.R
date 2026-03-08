@@ -4,6 +4,7 @@
 # ---- Test 1: DatabaseConnector ----
 
 test_that("generateCohortSet2 works with DatabaseConnector (PostgreSQL)", {
+  skip_on_cran()
   skip_if_not_installed("DatabaseConnector")
   skip_if_not_installed("PhenotypeLibrary")
   skip_if_not_installed("snakecase")
@@ -58,6 +59,7 @@ test_that("generateCohortSet2 works with DatabaseConnector (PostgreSQL)", {
 # ---- Test 2: RPostgres ----
 
 test_that("generateCohortSet2 works with RPostgres (PostgreSQL)", {
+  skip_on_cran()
   skip_if_not_installed("RPostgres")
   skip_if_not_installed("PhenotypeLibrary")
   skip_if_not_installed("snakecase")
