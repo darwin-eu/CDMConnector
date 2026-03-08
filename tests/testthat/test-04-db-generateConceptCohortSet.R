@@ -504,6 +504,7 @@ test_that("Eunomia", {
 })
 
 test_that("invalid cdm records are ignored in generateConceptCohortSet", {
+  skip_on_cran()
   skip_if_not_installed("duckdb")
   cdm <- cdmFromTables(
     tables = list(
@@ -564,6 +565,7 @@ test_that("invalid cdm records are ignored in generateConceptCohortSet", {
 
 
 test_that("attrition columns are correct", {
+  skip_on_cran()
   skip_if_not("duckdb" %in% dbToTest)
   con <- local_eunomia_con()
   cdm <- cdmFromCon(con, "main", "main")

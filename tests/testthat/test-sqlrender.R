@@ -3,6 +3,7 @@
 #         render_r, split_sql_core, evaluate_condition, replace_with_concat, etc.
 
 # Extra tests only run in test-coverage and local; skip on container CI
+skip_on_cran()
 skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
 
 test_that("tokenize_sql handles basic SQL tokens", {

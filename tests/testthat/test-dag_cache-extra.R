@@ -1,6 +1,7 @@
 # Additional tests for R/dag_cache.R — cache registry, cache operations, emit_cleanup_cached
 
 # Extra tests only run in test-coverage and local; skip on container CI
+skip_on_cran()
 skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
 
 # --- Constants ---

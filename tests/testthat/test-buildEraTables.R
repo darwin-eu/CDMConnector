@@ -1,6 +1,7 @@
 # Tests for OHDSI SQL-based era table builders (.build_condition_era_sql, .build_drug_era_sql)
 
 # Extra tests only run in test-coverage and local; skip on container CI
+skip_on_cran()
 skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
 
 setup_era_test_db <- function() {

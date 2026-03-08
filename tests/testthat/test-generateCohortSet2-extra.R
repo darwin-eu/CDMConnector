@@ -5,6 +5,7 @@
 # translate_cohort_stmts, collect_batch_used_domains_from_cohorts, etc.
 
 # Extra tests only run in test-coverage and local; skip on container CI
+skip_on_cran()
 skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
 
 test_that("generateCohortSet2 generates cohorts from cohort set", {

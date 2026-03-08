@@ -1,3 +1,4 @@
+skip_on_cran()
 # Live database tests for generateCohortSet2 (optimizer.R pipeline)
 #
 # Tests against real database backends: PostgreSQL, SQL Server, Redshift,

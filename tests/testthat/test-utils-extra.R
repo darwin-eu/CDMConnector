@@ -1,6 +1,7 @@
 # Additional tests for R/utils.R — coverage for utility functions
 
 # Extra tests only run in test-coverage and local; skip on container CI
+skip_on_cran()
 skip_if(nzchar(Sys.getenv("CI_TEST_DB")), "Skipping extra tests on container CI")
 
 # --- .inSchema ---
