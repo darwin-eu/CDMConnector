@@ -16,7 +16,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/darwin-eu/CDMConnector/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/darwin-eu/CDMConnector/blob/v2.5.0/DESCRIPTION)
 
 Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (2026).
 *CDMConnector: Connect to an OMOP Common Data Model*. R package version

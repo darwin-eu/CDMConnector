@@ -19,7 +19,7 @@ Now let´s connect to a duckdb database with the Eunomia data
 
 ``` r
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
-#> Creating CDM database /tmp/Rtmp3xV6Jh/eunomia/GiBleed_5.3.zip
+#> Creating CDM database /tmp/RtmpwljvFZ/eunomia/GiBleed_5.3.zip
 cdm <- cdmFromCon(con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
 cdm
 #> 
