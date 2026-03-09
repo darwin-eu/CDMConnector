@@ -32,9 +32,9 @@ expectations in documentation or test suites.
 
 Requires an interactive RStudio session with the `rstudioapi` package
 available. The function utilizes
-[`CDMConnector::cdmFlatten()`](cdmFlatten.md) to extract a longitudinal
-view, and writes the commented results directly below the cursor in the
-active RStudio document.
+[`CDMConnector::cdmFlatten()`](https://darwin-eu.github.io/CDMConnector/reference/cdmFlatten.md)
+to extract a longitudinal view, and writes the commented results
+directly below the cursor in the active RStudio document.
 
 This workflow is especially helpful when documenting expected patient
 timelines for use in testthat or other test scripts, or when sharing
@@ -42,7 +42,7 @@ reproducible CDM content for instructional examples.
 
 ## See also
 
-[`cdmFlatten`](cdmFlatten.md)
+[`cdmFlatten`](https://darwin-eu.github.io/CDMConnector/reference/cdmFlatten.md)
 
 ## Examples
 

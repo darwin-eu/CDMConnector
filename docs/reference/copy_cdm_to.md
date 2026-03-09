@@ -24,8 +24,9 @@ copyCdmTo(con, cdm, schema, overwrite = FALSE)
 - cdm:
 
   A cdm reference object created by
-  [`CDMConnector::cdmFromCon`](cdm_from_con.md) or
-  [`CDMConnector::cdm_from_con`](cdm_from_con.md)
+  [`CDMConnector::cdmFromCon`](https://darwin-eu.github.io/CDMConnector/reference/cdm_from_con.md)
+  or
+  [`CDMConnector::cdm_from_con`](https://darwin-eu.github.io/CDMConnector/reference/cdm_from_con.md)
 
 - schema:
 

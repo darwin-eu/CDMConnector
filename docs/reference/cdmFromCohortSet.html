@@ -5,7 +5,7 @@ synthetic data and returns a cdm reference object backed by a DuckDB database,
 containing synthetic CDM tables and generated cohort table rows."><meta property="og:description" content="Constructs a synthetic OMOP Common Data Model (CDM) using a set of cohort definitions,
 created using CDMConnector::readCohortSet(). The function generates
 synthetic data and returns a cdm reference object backed by a DuckDB database,
-containing synthetic CDM tables and generated cohort table rows."><meta property="og:image" content="/logo.png"></head><body>
+containing synthetic CDM tables and generated cohort table rows."><meta property="og:image" content="https://darwin-eu.github.io/CDMConnector/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -129,7 +129,7 @@ The data are random but reproducible.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/">CDMConnector</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cohortSet</span> <span class="op">&lt;-</span> <span class="fu"><a href="readCohortSet.html">readCohortSet</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"cohorts"</span>, package <span class="op">=</span> <span class="st">"CDMConnector"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">cdmFromCohortSet</span><span class="op">(</span><span class="va">cohortSet</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cdm</span><span class="op">$</span><span class="va">person</span></span></span>

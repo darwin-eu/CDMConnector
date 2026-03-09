@@ -2,7 +2,22 @@
 
 ## CDMConnector 2.5.0
 
+CRAN release: 2026-03-08
+
 - Add Delphi-100k example dataset
+- Improvements to `cdmFromCohortSet`/`cdmFromJson` synthetic data
+  generation
+- Add `cohdSimilarConcepts` function to query Columbia Open Health Data
+  API for concept co-occurrence
+- Add `generateCohortSet2` for DAG-based cohort generation without Java
+  dependency
+- Add R-native CIRCE SQL builder (`buildCohortQuery`,
+  `buildBatchCohortQuery`)
+- Add DAG-based query optimizer and caching
+- Add batch optimization and benchmarking vignettes
+- Fix Snowflake column quoting for domain-filtered tables
+- Fix SQL Server LIMIT syntax error in `cdmFromCon` when using
+  DatabaseConnector
 
 ## CDMConnector 2.4.0
 
@@ -42,7 +57,7 @@ CRAN release: 2025-09-16
 - Change summariseQuantile2 output columns to match
   DrugExposureDiagnostics (e.g. q05, q10)
 - Add `computeDataHash` argument to
-  [`snapshot()`](../reference/snapshot.md)
+  [`snapshot()`](https://darwin-eu.github.io/CDMConnector/reference/snapshot.md)
 - Add `computeDataHashByTable` function to compute a hash for each CDM
   table
 - Update connection examples documentation

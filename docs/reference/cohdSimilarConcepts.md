@@ -10,7 +10,13 @@ input concepts they co-occur with and by mean relative frequency.
 ## Usage
 
 ``` r
-cohdSimilarConcepts(conceptId, datasetId = 1, topN = 50, timeoutSec = 30)
+cohdSimilarConcepts(
+  conceptId,
+  datasetId = 1,
+  topN = 50,
+  timeoutSec = 30,
+  baseUrl = "https://cohd-api.ci.transltr.io/api"
+)
 ```
 
 ## Arguments
@@ -34,6 +40,11 @@ cohdSimilarConcepts(conceptId, datasetId = 1, topN = 50, timeoutSec = 30)
 
   Numeric. Request timeout in seconds (default 30).
 
+- baseUrl:
+
+  Character. Base URL of the COHD API (default
+  `"https://cohd-api.ci.transltr.io/api"`).
+
 ## Value
 
 A data frame with one row per similar concept, or `NULL` if the API is
@@ -55,10 +66,8 @@ unavailable or the request fails. When successful:
 Ta, Casey N.; Dumontier, Michel; Hripcsak, George; P. Tatonetti,
 Nicholas; Weng, Chunhua (2018). Columbia Open Health Data, a database of
 EHR prevalence and co-occurrence of conditions, drugs, and procedures.
-figshare. Collection. <https://doi.org/10.6084/m9.figshare.c.4151252.v1>
-
-COHD collection:
-<https://figshare.com/collections/Columbia_Open_Health_Data_a_database_of_EHR_prevalence_and_co-occurrence_of_conditions_drugs_and_procedures/4151252>
+figshare. Collection.
+[doi:10.6084/m9.figshare.c.4151252.v1](https://doi.org/10.6084/m9.figshare.c.4151252.v1)
 
 ## Examples
 

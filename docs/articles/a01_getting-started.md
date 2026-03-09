@@ -45,7 +45,7 @@ mapped to the OMOP CDM format. We’ll use the
 [duckdb](https://duckdb.org/) database which is a file based database
 similar to SQLite but with better date type support. To see all the
 example datasets available run
-[`exampleDatasets()`](../reference/exampleDatasets.md).
+[`exampleDatasets()`](https://darwin-eu.github.io/CDMConnector/reference/exampleDatasets.md).
 
 ``` r
 library(CDMConnector)
@@ -119,7 +119,7 @@ cdm
 #> • other tables: -
 cdm$observation_period
 #> # Source:   table<observation_period> [?? x 5]
-#> # Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmppvzNd2/file124237750f5ac.duckdb]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp0BA4n9/file7d116d4ab672.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -145,7 +145,7 @@ cdm$person %>%
   dplyr::glimpse()
 #> Rows: ??
 #> Columns: 18
-#> Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmppvzNd2/file124237750f5ac.duckdb]
+#> Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp0BA4n9/file7d116d4ab672.duckdb]
 #> $ person_id                   <int> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…
 #> $ gender_concept_id           <int> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …
 #> $ year_of_birth               <int> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …
@@ -254,18 +254,18 @@ cdm$condition_occurrence %>%
   collect() %>% 
   select("concept_name", "n") 
 #> # A tibble: 113 × 2
-#>    concept_name                                                          n
-#>    <chr>                                                             <dbl>
-#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet    305
-#>  2 Penicillin V Potassium 250 MG Oral Tablet                          1666
-#>  3 Methylphenidate Hydrochloride 20 MG Oral Tablet                      63
-#>  4 Amoxicillin 500 MG Oral Tablet                                      246
-#>  5 Warfarin Sodium 5 MG Oral Tablet                                    135
-#>  6 remifentanil                                                         16
-#>  7 Piperacillin 4000 MG / tazobactam 500 MG Injection                   35
-#>  8 {28 (Norethindrone 0.35 MG Oral Tablet) } Pack [Jolivette 28 Day]    12
-#>  9 Lorazepam 2 MG/ML Injectable Solution                                 1
-#> 10 Cefuroxime 250 MG Oral Tablet                                       119
+#>    concept_name                                                                n
+#>    <chr>                                                                   <dbl>
+#>  1 Penicillin V Potassium 500 MG Oral Tablet                                1060
+#>  2 tetanus and diphtheria toxoids, adsorbed, preservative free, for adult…  7203
+#>  3 Amoxicillin 250 MG Oral Capsule                                           188
+#>  4 Nitrofurantoin 5 MG/ML Oral Suspension                                    779
+#>  5 Amlodipine 5 MG Oral Tablet                                               179
+#>  6 rocuronium bromide 10 MG/ML Injectable Solution                            35
+#>  7 24 HR Donepezil hydrochloride 10 MG / Memantine hydrochloride 28 MG Ex…    26
+#>  8 Tacrine 10 MG Oral Capsule                                                 10
+#>  9 poliovirus vaccine, inactivated                                          7654
+#> 10 clopidogrel 75 MG Oral Tablet                                             356
 #> # ℹ 103 more rows
 ```
 
@@ -380,19 +380,19 @@ drugs %>% show_query()
 
 drugs
 #> # Source:   table<scratch.test> [?? x 11]
-#> # Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmppvzNd2/file124237750f5ac.duckdb]
+#> # Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/Rtmp0BA4n9/file7d116d4ab672.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
-#>  1        19128065   997 {7 (Inert Ing… Drug      RxNorm        Branded Pack    
-#>  2        40213314  1295 Haemophilus i… Drug      CVX           CVX             
-#>  3        19019979   360 Ibuprofen 100… Drug      RxNorm        Clinical Drug   
-#>  4        19019273    18 Naproxen 500 … Drug      RxNorm        Clinical Drug   
-#>  5        19127904     6 {24 (drospire… Drug      RxNorm        Branded Pack    
-#>  6        40224805    53 1 ML medroxyp… Drug      RxNorm        Quant Clinical …
-#>  7        19128009     6 {7 (Ethinyl E… Drug      RxNorm        Branded Pack    
-#>  8        19074843    82 Cefaclor 250 … Drug      RxNorm        Clinical Drug   
-#>  9         1539411   182 Simvastatin 2… Drug      RxNorm        Clinical Drug   
-#> 10        40222846    41 Memantine hyd… Drug      RxNorm        Clinical Drug   
+#>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
+#>  2        19133873  1666 Penicillin V … Drug      RxNorm        Clinical Drug   
+#>  3        40236446    63 Methylphenida… Drug      RxNorm        Clinical Drug   
+#>  4        19073188   246 Amoxicillin 5… Drug      RxNorm        Clinical Drug   
+#>  5        40163554   135 Warfarin Sodi… Drug      RxNorm        Clinical Drug   
+#>  6        19016749    16 remifentanil   Drug      RxNorm        Ingredient      
+#>  7        46275444    35 Piperacillin … Drug      RxNorm        Clinical Drug   
+#>  8        19129144    12 {28 (Norethin… Drug      RxNorm        Branded Pack    
+#>  9        19057271     1 Lorazepam 2 M… Drug      RxNorm        Clinical Drug   
+#> 10        40213260  2082 zoster vaccin… Drug      CVX           CVX             
 #> # ℹ more rows
 #> # ℹ 5 more variables: standard_concept <chr>, concept_code <chr>,
 #> #   valid_start_date <date>, valid_end_date <date>, invalid_reason <chr>
@@ -545,16 +545,16 @@ cdmFlatten(cdm_pneumonia,
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1      1162               40766240 1963-02-18 1963-02-18            5001 measu…
-#>  2      1954                3006322 1982-12-22 1982-12-22            5001 measu…
-#>  3      1273                4052083 1947-11-29 1947-11-29            5001 measu…
-#>  4      3618               40481087 1991-02-20 1991-03-13           32020 condi…
-#>  5      1516                 260139 1984-04-18 1984-05-02           32020 condi…
-#>  6       864                 260139 1960-03-18 1960-03-25           32020 condi…
-#>  7       419                 381316 1994-07-31 NA                   32020 condi…
-#>  8      1923                 257012 1940-07-16 NA                   32020 condi…
-#>  9      4532                  80180 1945-08-26 NA                   32020 condi…
-#> 10      2333                 257012 1926-11-18 NA                   32020 condi…
+#>  1      3811                3049273 2000-08-24 2000-08-24            5001 measu…
+#>  2         2                3011505 2006-08-29 2006-08-29            5001 measu…
+#>  3         2                4133840 2003-08-12 2003-08-12            5001 measu…
+#>  4      2801                3006322 1939-05-11 1939-05-11            5001 measu…
+#>  5      2739                 260139 1969-07-24 1969-07-31           32020 condi…
+#>  6       596                4278672 1953-09-18 1953-11-17           32020 condi…
+#>  7      5078                4051466 1914-05-07 1930-08-14           32020 condi…
+#>  8      5185               40481087 2014-07-27 2014-08-03           32020 condi…
+#>  9      5185                4283893 1969-04-23 1969-07-30           32020 condi…
+#> 10       419                 260139 1922-10-31 1922-11-07           32020 condi…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```

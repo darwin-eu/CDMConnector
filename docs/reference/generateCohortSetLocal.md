@@ -1,9 +1,9 @@
 # Generate a cohort set on a local CDM (list of dataframes)
 
 Copies the local CDM to an in-memory DuckDB database, runs
-[`generateCohortSet`](generateCohortSet.md), then collects the generated
-cohort table and its attributes back into R and adds them to the input
-CDM.
+[`generateCohortSet`](https://darwin-eu.github.io/CDMConnector/reference/generateCohortSet.md),
+then collects the generated cohort table and its attributes back into R
+and adds them to the input CDM.
 
 ## Usage
 
@@ -26,7 +26,8 @@ generateCohortSetLocal(
 
 - cohortSet:
 
-  A cohort set from [`readCohortSet`](readCohortSet.md).
+  A cohort set from
+  [`readCohortSet`](https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.md).
 
 - name:
 

@@ -45,9 +45,6 @@ inst/doc
 .claude/
 coverage_results.rds
 
-# pkgdown
-docs/
-
 # Local work files
 /scratch/
 /work/

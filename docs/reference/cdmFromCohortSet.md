@@ -2,10 +2,10 @@
 
 Constructs a synthetic OMOP Common Data Model (CDM) using a set of
 cohort definitions, created using
-[`CDMConnector::readCohortSet()`](readCohortSet.md). The function
-generates synthetic data and returns a cdm reference object backed by a
-DuckDB database, containing synthetic CDM tables and generated cohort
-table rows.
+[`CDMConnector::readCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.md).
+The function generates synthetic data and returns a cdm reference object
+backed by a DuckDB database, containing synthetic CDM tables and
+generated cohort table rows.
 
 ## Usage
 
@@ -26,9 +26,9 @@ cdmFromCohortSet(
 - cohortSet:
 
   A data frame (usually from
-  [`CDMConnector::readCohortSet()`](readCohortSet.md)) with columns
-  `cohort_definition_id`, `cohort_name`, and `cohort` (cohort definition
-  as a list or JSON string).
+  [`CDMConnector::readCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.md))
+  with columns `cohort_definition_id`, `cohort_name`, and `cohort`
+  (cohort definition as a list or JSON string).
 
 - n:
 
@@ -65,12 +65,12 @@ cdmFromCohortSet(
 ## Value
 
 A cdm reference object (as returned by
-[`CDMConnector::cdmFromCon()`](cdmFromCon.md)) backed by a DuckDB
-database. The returned object contains synthetic CDM tables and cohort
-table rows generated from the specified cohort definitions. The returned
-`cdm` has an attribute `synthetic_summary` (a list with
-`cohort_summaries`, `cohort_index`, `n_cohorts`, `summary` (one-line
-text), `any_low_match`) for diagnostics and match rates.
+[`CDMConnector::cdmFromCon()`](https://darwin-eu.github.io/CDMConnector/reference/cdmFromCon.md))
+backed by a DuckDB database. The returned object contains synthetic CDM
+tables and cohort table rows generated from the specified cohort
+definitions. The returned `cdm` has an attribute `synthetic_summary` (a
+list with `cohort_summaries`, `cohort_index`, `n_cohorts`, `summary`
+(one-line text), `any_low_match`) for diagnostics and match rates.
 
 ## Reproducibility
 

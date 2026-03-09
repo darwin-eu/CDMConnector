@@ -2,8 +2,8 @@
 
 Generates cohort sets using an optimized DAG-based SQL pipeline that
 does not require Java or CirceR. This is a faster alternative to
-[`generateCohortSet`](generateCohortSet.md) that produces equivalent
-results.
+[`generateCohortSet`](https://darwin-eu.github.io/CDMConnector/reference/generateCohortSet.md)
+that produces equivalent results.
 
 A "cohort_table" object consists of four components:
 
@@ -42,7 +42,7 @@ generateCohortSet2(
 - cohortSet:
 
   A cohortSet dataframe created with
-  [`readCohortSet`](readCohortSet.md).
+  [`readCohortSet`](https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.md).
 
 - name:
 

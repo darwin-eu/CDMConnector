@@ -41,7 +41,7 @@ generateCohortSet(
 - cohortSet:
 
   A cohortSet dataframe created with
-  [`readCohortSet()`](readCohortSet.md)
+  [`readCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.md)
 
 - name:
 

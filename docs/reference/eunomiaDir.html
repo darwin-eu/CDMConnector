@@ -5,7 +5,7 @@ the path to the new database file. If the dataset does not yet exist on the user
 will attempt to download the source data to the the path defined by the EUNOMIA_DATA_FOLDER environment variable."><meta property="og:description" content="Eunomia is an OHDSI project that provides several example OMOP CDM datasets for testing and development.
 This function creates a copy of a Eunomia database in duckdb and returns
 the path to the new database file. If the dataset does not yet exist on the user's computer it
-will attempt to download the source data to the the path defined by the EUNOMIA_DATA_FOLDER environment variable."><meta property="og:image" content="/logo.png"></head><body>
+will attempt to download the source data to the the path defined by the EUNOMIA_DATA_FOLDER environment variable."><meta property="og:image" content="https://darwin-eu.github.io/CDMConnector/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -139,7 +139,7 @@ be opened by calling <code><a href="https://usethis.r-lib.org/reference/edit.htm
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span> <span class="co"># The defaults GiBleed dataset is a small dataset that is useful for testing</span></span></span>
-<span class="r-in"><span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/" class="external-link">CDMConnector</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span> <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://darwin-eu.github.io/CDMConnector/">CDMConnector</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span> <span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu">eunomiaDir</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span> <span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="cdmFromCon.html">cdmFromCon</a></span><span class="op">(</span><span class="va">con</span>, <span class="st">"main"</span>, <span class="st">"main"</span><span class="op">)</span></span></span>
 <span class="r-in"><span> <span class="fu"><a href="https://darwin-eu.github.io/omopgenerics/reference/cdmDisconnect.html" class="external-link">cdmDisconnect</a></span><span class="op">(</span><span class="va">cdm</span><span class="op">)</span></span></span>

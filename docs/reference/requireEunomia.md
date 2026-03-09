@@ -1,7 +1,8 @@
 # Require eunomia to be available. The function makes sure that you can later create a eunomia database with `eunomiaDir()`.
 
 Require eunomia to be available. The function makes sure that you can
-later create a eunomia database with [`eunomiaDir()`](eunomiaDir.md).
+later create a eunomia database with
+[`eunomiaDir()`](https://darwin-eu.github.io/CDMConnector/reference/eunomiaDir.md).
 
 ## Usage
 
