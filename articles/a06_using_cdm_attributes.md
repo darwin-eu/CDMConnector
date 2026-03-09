@@ -57,7 +57,7 @@ the cdm reference.
 
 ``` r
 cdmCon(cdm)
-#> <duckdb_connection 24a00 driver=<duckdb_driver dbdir='/tmp/RtmpMuC1Jc/file254662873b6f.duckdb' read_only=FALSE bigint=numeric>>
+#> <duckdb_connection dade0 driver=<duckdb_driver dbdir='/tmp/Rtmp5bxZZ9/file23ff2bf9a0d5.duckdb' read_only=FALSE bigint=numeric>>
 ```
 
 This can be useful, for example, if we want to make use of DBI functions
@@ -185,7 +185,7 @@ cdm$gi_bleed %>%
   glimpse()
 #> Rows: ??
 #> Columns: 4
-#> Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpMuC1Jc/file254662873b6f.duckdb]
+#> Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/Rtmp5bxZZ9/file23ff2bf9a0d5.duckdb]
 #> $ cohort_definition_id <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
 #> $ subject_id           <int> 273, 61, 351, 579, 549, 116, 163, 304, 326, 285, …
 #> $ cohort_start_date    <date> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …

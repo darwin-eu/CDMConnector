@@ -70,7 +70,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Getting Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/v2.5.0/vignettes/a01_getting-started.Rmd" class="external-link"><code>vignettes/a01_getting-started.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/main/vignettes/a01_getting-started.Rmd" class="external-link"><code>vignettes/a01_getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>a01_getting-started.Rmd</code></div>
     </div>
 
@@ -132,7 +132,7 @@ the example datasets available run <code><a href="../reference/exampleDatasets.h
 <span><span class="co">#&gt; [25] "Synthea27NjParquet"                  "delphi-100k"</span></span>
 <span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Creating CDM database /tmp/RtmpjjYiI6/GiBleed_5.3.zip</span></span>
+<span><span class="co">#&gt; Creating CDM database /tmp/RtmpD1FVIF/GiBleed_5.3.zip</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbListTables.html" class="external-link">dbListTables</a></span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "care_site"             "cdm_source"            "concept"              </span></span>
 <span><span class="co">#&gt;  [4] "concept_ancestor"      "concept_class"         "concept_relationship" </span></span>
@@ -181,7 +181,7 @@ identify the CDM in output files.</p>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;observation_period&gt; [?? x 5]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpjjYiI6/file24252e784d7a.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpD1FVIF/file22dd54a3a750.duckdb]</span></span></span>
 <span><span class="co">#&gt;    observation_period_id person_id observation_period_s…¹ observation_period_e…²</span></span>
 <span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31             2007-02-06            </span></span>
@@ -204,7 +204,7 @@ identify the CDM in output files.</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: ??</span></span>
 <span><span class="co">#&gt; Columns: 18</span></span>
-<span><span class="co">#&gt; Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpjjYiI6/file24252e784d7a.duckdb]</span></span>
+<span><span class="co">#&gt; Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpD1FVIF/file22dd54a3a750.duckdb]</span></span>
 <span><span class="co">#&gt; $ person_id                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 6<span style="color: #949494;">, </span>123<span style="color: #949494;">, </span>129<span style="color: #949494;">, </span>16<span style="color: #949494;">, </span>65<span style="color: #949494;">, </span>74<span style="color: #949494;">, </span>42<span style="color: #949494;">, </span>187<span style="color: #949494;">, </span>18<span style="color: #949494;">, </span>111<span style="color: #949494;">,</span>…</span></span>
 <span><span class="co">#&gt; $ gender_concept_id           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 8532<span style="color: #949494;">, </span>8507<span style="color: #949494;">, </span>8507<span style="color: #949494;">, </span>8532<span style="color: #949494;">, </span>8532<span style="color: #949494;">, </span>8532<span style="color: #949494;">, </span>8532<span style="color: #949494;">, </span>…</span></span>
 <span><span class="co">#&gt; $ year_of_birth               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1963<span style="color: #949494;">, </span>1950<span style="color: #949494;">, </span>1974<span style="color: #949494;">, </span>1971<span style="color: #949494;">, </span>1967<span style="color: #949494;">, </span>1972<span style="color: #949494;">, </span>1909<span style="color: #949494;">, </span>…</span></span>
@@ -305,18 +305,18 @@ viral pharyngitis”.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="st">"concept_name"</span>, <span class="st">"n"</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 113 × 2</span></span></span>
-<span><span class="co">#&gt;    concept_name                                                        n</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> poliovirus vaccine, inactivated                                  <span style="text-decoration: underline;">7</span>654</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> zoster vaccine, live                                             <span style="text-decoration: underline;">2</span>082</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Prednisone 5 MG Oral Tablet                                       152</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Penicillin G 375 MG/ML Injectable Solution                       <span style="text-decoration: underline;">1</span>119</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Acetaminophen 325 MG / Oxycodone Hydrochloride 5 MG Oral Tablet   301</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> pneumococcal polysaccharide vaccine, 23 valent                    708</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> clopidogrel 75 MG Oral Tablet                                     356</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> NITROFURANTOIN, MACROCRYSTALS 50 MG Oral Capsule                  118</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Chlorpheniramine Maleate 2 MG/ML Oral Solution                     70</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Cefaclor 250 MG Oral Capsule                                       82</span></span>
+<span><span class="co">#&gt;    concept_name                                                                n</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> hepatitis B vaccine, adult dosage                                        <span style="text-decoration: underline;">1</span>826</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Penicillin V Potassium 500 MG Oral Tablet                                <span style="text-decoration: underline;">1</span>060</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> tetanus and diphtheria toxoids, adsorbed, preservative free, for adult…  <span style="text-decoration: underline;">7</span>203</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Alendronic acid 10 MG Oral Tablet                                         129</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Penicillin V Potassium 250 MG Oral Tablet                                <span style="text-decoration: underline;">1</span>666</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> alteplase 100 MG Injection                                                210</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Amoxicillin 250 MG Oral Capsule                                           188</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Methylphenidate Hydrochloride 20 MG Oral Tablet                            63</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 103 more rows</span></span></span></code></pre></div>
 <p>To inspect the generated SQL use <code>show_query</code> from
 dplyr.</p>
@@ -423,19 +423,19 @@ Typically this should be a separate schema from the “cdm_schema”.</p>
 <span></span>
 <span><span class="va">drugs</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Source:   table&lt;scratch.test&gt; [?? x 11]</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpjjYiI6/file24252e784d7a.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpD1FVIF/file22dd54a3a750.duckdb]</span></span></span>
 <span><span class="co">#&gt;    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id</span></span>
 <span><span class="co">#&gt;              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">213</span>160  <span style="text-decoration: underline;">7</span>654 poliovirus va… Drug      CVX           CVX             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        40<span style="text-decoration: underline;">213</span>260  <span style="text-decoration: underline;">2</span>082 zoster vaccin… Drug      CVX           CVX             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>         1<span style="text-decoration: underline;">551</span>192   152 Prednisone 5 … Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        19<span style="text-decoration: underline;">006</span>318  <span style="text-decoration: underline;">1</span>119 Penicillin G … Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        40<span style="text-decoration: underline;">231</span>925   301 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        40<span style="text-decoration: underline;">213</span>201   708 pneumococcal … Drug      CVX           CVX             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        19<span style="text-decoration: underline;">075</span>601   356 clopidogrel 7… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>          <span style="text-decoration: underline;">920</span>334   118 NITROFURANTOI… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        19<span style="text-decoration: underline;">112</span>599    70 Chlorpheniram… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        19<span style="text-decoration: underline;">074</span>843    82 Cefaclor 250 … Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">162</span>522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        40<span style="text-decoration: underline;">213</span>306  <span style="text-decoration: underline;">1</span>826 hepatitis B v… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>        19<span style="text-decoration: underline;">133</span>905  <span style="text-decoration: underline;">1</span>060 Penicillin V … Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        40<span style="text-decoration: underline;">213</span>227  <span style="text-decoration: underline;">7</span>203 tetanus and d… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        40<span style="text-decoration: underline;">173</span>590   129 Alendronic ac… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        19<span style="text-decoration: underline;">128</span>065   997 {7 (Inert Ing… Drug      RxNorm        Branded Pack    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        19<span style="text-decoration: underline;">133</span>873  <span style="text-decoration: underline;">1</span>666 Penicillin V … Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>        40<span style="text-decoration: underline;">220</span>960   210 alteplase 100… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        19<span style="text-decoration: underline;">073</span>183   188 Amoxicillin 2… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        40<span style="text-decoration: underline;">236</span>446    63 Methylphenida… Drug      RxNorm        Clinical Drug   </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: standard_concept &lt;chr&gt;, concept_code &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   valid_start_date &lt;date&gt;, valid_end_date &lt;date&gt;, invalid_reason &lt;chr&gt;</span></span></span></code></pre></div>
@@ -576,16 +576,16 @@ number of persons and events.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3,892 × 8</span></span></span>
 <span><span class="co">#&gt;    person_id observation_concept_id start_date end_date   type_concept_id domain</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">3</span>553                3<span style="text-decoration: underline;">000</span>963 1982-10-26 1982-10-26            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>         2               40<span style="text-decoration: underline;">766</span>240 1934-08-27 1934-08-27            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">2</span>739                3<span style="text-decoration: underline;">006</span>322 1960-03-25 1960-03-25            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">5</span>185                3<span style="text-decoration: underline;">006</span>322 1999-10-06 1999-10-06            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">2</span>333                4<span style="text-decoration: underline;">052</span>083 1997-10-03 1997-10-03            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>         2                4<span style="text-decoration: underline;">133</span>840 2004-08-17 2004-08-17            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">3</span>179                4<span style="text-decoration: underline;">052</span>083 1987-06-13 1987-06-13            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">4</span>976                3<span style="text-decoration: underline;">020</span>655 1993-07-06 1993-07-06            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       419               40<span style="text-decoration: underline;">766</span>240 1913-08-23 1913-08-23            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">2</span>739                4<span style="text-decoration: underline;">024</span>958 1995-08-14 1995-08-14            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>       190                3<span style="text-decoration: underline;">006</span>322 1999-10-29 1999-10-29            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">5</span>185                3<span style="text-decoration: underline;">006</span>322 1950-07-09 1950-07-09            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>         2                3<span style="text-decoration: underline;">051</span>031 1935-06-23 1935-06-23            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">5</span>081                3<span style="text-decoration: underline;">006</span>322 1974-04-27 1974-04-27            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>       507               40<span style="text-decoration: underline;">766</span>240 1958-01-11 1958-01-11            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      <span style="text-decoration: underline;">2</span>821                3<span style="text-decoration: underline;">051</span>031 1921-07-01 1921-07-01            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">2</span>821               40<span style="text-decoration: underline;">766</span>240 1921-07-01 1921-07-01            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">1</span>162                3<span style="text-decoration: underline;">006</span>322 1958-07-03 1958-07-03            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">1</span>162                3<span style="text-decoration: underline;">049</span>273 1993-03-07 1993-03-07            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">1</span>162               40<span style="text-decoration: underline;">766</span>240 1963-04-19 1963-04-19            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3,882 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: observation_concept_name &lt;chr&gt;, type_concept_name &lt;chr&gt;</span></span></span></code></pre></div>
 <div class="section level3">

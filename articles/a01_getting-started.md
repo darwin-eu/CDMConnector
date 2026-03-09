@@ -65,7 +65,7 @@ exampleDatasets()
 #> [25] "Synthea27NjParquet"                  "delphi-100k"
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
-#> Creating CDM database /tmp/RtmpjjYiI6/GiBleed_5.3.zip
+#> Creating CDM database /tmp/RtmpD1FVIF/GiBleed_5.3.zip
 DBI::dbListTables(con)
 #>  [1] "care_site"             "cdm_source"            "concept"              
 #>  [4] "concept_ancestor"      "concept_class"         "concept_relationship" 
@@ -119,7 +119,7 @@ cdm
 #> • other tables: -
 cdm$observation_period
 #> # Source:   table<observation_period> [?? x 5]
-#> # Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpjjYiI6/file24252e784d7a.duckdb]
+#> # Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpD1FVIF/file22dd54a3a750.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -145,7 +145,7 @@ cdm$person %>%
   dplyr::glimpse()
 #> Rows: ??
 #> Columns: 18
-#> Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpjjYiI6/file24252e784d7a.duckdb]
+#> Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpD1FVIF/file22dd54a3a750.duckdb]
 #> $ person_id                   <int> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…
 #> $ gender_concept_id           <int> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …
 #> $ year_of_birth               <int> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …
@@ -254,18 +254,18 @@ cdm$condition_occurrence %>%
   collect() %>% 
   select("concept_name", "n") 
 #> # A tibble: 113 × 2
-#>    concept_name                                                        n
-#>    <chr>                                                           <dbl>
-#>  1 poliovirus vaccine, inactivated                                  7654
-#>  2 zoster vaccine, live                                             2082
-#>  3 Prednisone 5 MG Oral Tablet                                       152
-#>  4 Penicillin G 375 MG/ML Injectable Solution                       1119
-#>  5 Acetaminophen 325 MG / Oxycodone Hydrochloride 5 MG Oral Tablet   301
-#>  6 pneumococcal polysaccharide vaccine, 23 valent                    708
-#>  7 clopidogrel 75 MG Oral Tablet                                     356
-#>  8 NITROFURANTOIN, MACROCRYSTALS 50 MG Oral Capsule                  118
-#>  9 Chlorpheniramine Maleate 2 MG/ML Oral Solution                     70
-#> 10 Cefaclor 250 MG Oral Capsule                                       82
+#>    concept_name                                                                n
+#>    <chr>                                                                   <dbl>
+#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305
+#>  2 hepatitis B vaccine, adult dosage                                        1826
+#>  3 Penicillin V Potassium 500 MG Oral Tablet                                1060
+#>  4 tetanus and diphtheria toxoids, adsorbed, preservative free, for adult…  7203
+#>  5 Alendronic acid 10 MG Oral Tablet                                         129
+#>  6 {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997
+#>  7 Penicillin V Potassium 250 MG Oral Tablet                                1666
+#>  8 alteplase 100 MG Injection                                                210
+#>  9 Amoxicillin 250 MG Oral Capsule                                           188
+#> 10 Methylphenidate Hydrochloride 20 MG Oral Tablet                            63
 #> # ℹ 103 more rows
 ```
 
@@ -380,19 +380,19 @@ drugs %>% show_query()
 
 drugs
 #> # Source:   table<scratch.test> [?? x 11]
-#> # Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpjjYiI6/file24252e784d7a.duckdb]
+#> # Database: DuckDB 1.4.4 [unknown@Linux 6.14.0-1017-azure:R 4.5.2//tmp/RtmpD1FVIF/file22dd54a3a750.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
-#>  1        40213160  7654 poliovirus va… Drug      CVX           CVX             
-#>  2        40213260  2082 zoster vaccin… Drug      CVX           CVX             
-#>  3         1551192   152 Prednisone 5 … Drug      RxNorm        Clinical Drug   
-#>  4        19006318  1119 Penicillin G … Drug      RxNorm        Clinical Drug   
-#>  5        40231925   301 Acetaminophen… Drug      RxNorm        Clinical Drug   
-#>  6        40213201   708 pneumococcal … Drug      CVX           CVX             
-#>  7        19075601   356 clopidogrel 7… Drug      RxNorm        Clinical Drug   
-#>  8          920334   118 NITROFURANTOI… Drug      RxNorm        Clinical Drug   
-#>  9        19112599    70 Chlorpheniram… Drug      RxNorm        Clinical Drug   
-#> 10        19074843    82 Cefaclor 250 … Drug      RxNorm        Clinical Drug   
+#>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
+#>  2        40213306  1826 hepatitis B v… Drug      CVX           CVX             
+#>  3        19133905  1060 Penicillin V … Drug      RxNorm        Clinical Drug   
+#>  4        40213227  7203 tetanus and d… Drug      CVX           CVX             
+#>  5        40173590   129 Alendronic ac… Drug      RxNorm        Clinical Drug   
+#>  6        19128065   997 {7 (Inert Ing… Drug      RxNorm        Branded Pack    
+#>  7        19133873  1666 Penicillin V … Drug      RxNorm        Clinical Drug   
+#>  8        40220960   210 alteplase 100… Drug      RxNorm        Clinical Drug   
+#>  9        19073183   188 Amoxicillin 2… Drug      RxNorm        Clinical Drug   
+#> 10        40236446    63 Methylphenida… Drug      RxNorm        Clinical Drug   
 #> # ℹ more rows
 #> # ℹ 5 more variables: standard_concept <chr>, concept_code <chr>,
 #> #   valid_start_date <date>, valid_end_date <date>, invalid_reason <chr>
@@ -545,16 +545,16 @@ cdmFlatten(cdm_pneumonia,
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1      3553                3000963 1982-10-26 1982-10-26            5001 measu…
-#>  2         2               40766240 1934-08-27 1934-08-27            5001 measu…
-#>  3      2739                3006322 1960-03-25 1960-03-25            5001 measu…
-#>  4      5185                3006322 1999-10-06 1999-10-06            5001 measu…
-#>  5      2333                4052083 1997-10-03 1997-10-03            5001 measu…
-#>  6         2                4133840 2004-08-17 2004-08-17            5001 measu…
-#>  7      3179                4052083 1987-06-13 1987-06-13            5001 measu…
-#>  8      4976                3020655 1993-07-06 1993-07-06            5001 measu…
-#>  9       419               40766240 1913-08-23 1913-08-23            5001 measu…
-#> 10      2739                4024958 1995-08-14 1995-08-14            5001 measu…
+#>  1       190                3006322 1999-10-29 1999-10-29            5001 measu…
+#>  2      5185                3006322 1950-07-09 1950-07-09            5001 measu…
+#>  3         2                3051031 1935-06-23 1935-06-23            5001 measu…
+#>  4      5081                3006322 1974-04-27 1974-04-27            5001 measu…
+#>  5       507               40766240 1958-01-11 1958-01-11            5001 measu…
+#>  6      2821                3051031 1921-07-01 1921-07-01            5001 measu…
+#>  7      2821               40766240 1921-07-01 1921-07-01            5001 measu…
+#>  8      1162                3006322 1958-07-03 1958-07-03            5001 measu…
+#>  9      1162                3049273 1993-03-07 1993-03-07            5001 measu…
+#> 10      1162               40766240 1963-04-19 1963-04-19            5001 measu…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```

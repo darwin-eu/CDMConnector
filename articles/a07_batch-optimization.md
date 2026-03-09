@@ -2,7 +2,7 @@
 
 ## Overview
 
-When generating SQL for multiple ATLAS cohort definitions, the naive
+When generating SQL for multiple ATLAS cohort definitions, the usual
 approach treats each cohort independently – parsing its JSON, expanding
 its concept sets against the vocabulary, scanning CDM domain tables,
 building qualified events, and writing results. This works, but it

@@ -10,7 +10,7 @@ articles:
   a07_batch-optimization: a07_batch-optimization.html
   a08_dag-caching: a08_dag-caching.html
   a09_benchmarking: a09_benchmarking.html
-last_built: 2026-03-09T15:22Z
+last_built: 2026-03-09T15:31Z
 urls:
   reference: https://darwin-eu.github.io/CDMConnector/reference
   article: https://darwin-eu.github.io/CDMConnector/articles
