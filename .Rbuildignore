@@ -28,3 +28,4 @@ scratch/*
 ^revdep/*
 errorReportSql.txt
 ^LICENSE$
+^\.positai$

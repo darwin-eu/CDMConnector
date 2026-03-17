@@ -225,12 +225,28 @@ cdmFromCon <- function(con,
     achillesTables <- list()
   }
 
+  # Check for genomic extension tables
+  genomicNames <- c("target_gene", "variant_annotation", "variant_occurrence", "genomic_test")
+  genomicInDb <- genomicNames[genomicNames %in% tolower(dbTables)]
+  genomicTables <- list()
+  if (length(genomicInDb) > 0) {
+    for (nm in genomicInDb) {
+      dbNm <- dbTables[tolower(dbTables) == nm]
+      genomicTables[[nm]] <- dplyr::tbl(src = src, schema = cdmSchema, name = dbNm)
+    }
+  }
+
   cdm <- omopgenerics::newCdmReference(
     tables = c(cdmTables, achillesTables),
     cdmName = cdmName,
     cdmVersion = cdmVersion,
     .softValidation = .softValidation
   )
+
+  # Add genomic tables to cdm after creation (not part of OMOP spec validation)
+  for (nm in names(genomicTables)) {
+    cdm[[nm]] <- genomicTables[[nm]]
+  }
 
   # on spark we use permanent tables prefixed with this whenever the user asks for temp tables
   attr(cdm, "temp_emulation_prefix") <- paste0(

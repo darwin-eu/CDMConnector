@@ -54,3 +54,4 @@ errorReportSql.txt
 .claude/
 .vscode/
 coverage_results.rds
+.positai
