@@ -418,7 +418,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
   # Note: ROracle does not support integer round trip
   suppressMessages(
-    DBI::dbWriteTable(con,
+    .dbWriteTableSafe(con,
                       name = .inSchema(schema = write_schema, table = tablename, dbms = dbms(con)),
                       value = df1,
                       overwrite = TRUE)

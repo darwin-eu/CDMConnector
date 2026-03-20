@@ -415,6 +415,34 @@ dcCreateTable <- function(conn, name, fields) {
   )
 }
 
+# Spark-safe replacement for DBI::dbWriteTable().
+# On Spark/Databricks, parameterized INSERTs (VALUES (?, ?, ...)) fail with
+# ODBC error 42P02 "unbound parameter". This helper creates the table then
+# inserts rows with inlined literal values. On all other databases it
+# delegates to DBI::dbWriteTable().
+.dbWriteTableSafe <- function(con, name, value, overwrite = FALSE, temporary = FALSE) {
+  if (dbms(con) == "spark") {
+    if (overwrite) try(DBI::dbRemoveTable(con, name), silent = TRUE)
+    value <- .formatDatesForSparkInsert(value)
+    .dbCreateTable(con, name, value)
+    if (nrow(value) > 0) {
+      qualifiedName <- .qualifiedNameForSql(con, name)
+      cols <- paste(DBI::dbQuoteIdentifier(con, names(value)), collapse = ", ")
+      for (i in seq_len(nrow(value))) {
+        row <- value[i, , drop = FALSE]
+        vals <- vapply(seq_len(ncol(value)), function(j) {
+          DBI::dbQuoteLiteral(con, row[[j]][[1]])
+        }, character(1))
+        sql <- paste0("INSERT INTO ", qualifiedName, " (", cols, ") VALUES (", paste(vals, collapse = ", "), ")")
+        DBI::dbExecute(con, sql)
+      }
+    }
+  } else {
+    DBI::dbWriteTable(conn = con, name = name, value = value,
+                      overwrite = overwrite, temporary = temporary)
+  }
+}
+
 # build and execute the SQL query to insert data into the table
 # .dbInsertData <- function(conn, name, table) {
 #   columns <- colnames(table)

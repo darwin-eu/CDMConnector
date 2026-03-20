@@ -292,7 +292,7 @@ generateConceptCohortSet <- function(cdm,
   tempName <- paste0("tmp", as.integer(Sys.time()), "_")
 
   if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
-    DBI::dbWriteTable(cdmCon(cdm),
+    .dbWriteTableSafe(cdmCon(cdm),
                       name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)),
                       value = df,
                       overwrite = TRUE)
