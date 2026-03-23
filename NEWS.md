@@ -1,3 +1,8 @@
+# CDMConnector 2.5.1
+
+- Remove `generateCohortSet2` and put it in a new experimental package instead
+- Add workaround for `dbWriteTable` on Spark
+
 # CDMConnector 2.5.0
 
 - Add Delphi-100k example dataset
