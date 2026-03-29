@@ -462,3 +462,36 @@ summary.db_cdm <- function(object, ...) {
   }
   return(result)
 }
+
+# Fallback bind method for cdm_table objects that have lost their cohort_table
+# class, which can happen on Spark backends. If the inputs have cohort
+# attributes (set, attrition) and the required cohort columns, restore the
+# cohort_table class and delegate to bind.cohort_table.
+#' @method bind cdm_table
+#' @export
+bind.cdm_table <- function(..., name) {
+  cohorts <- list(...)
+  isCohort <- vapply(cohorts, function(x) {
+    all(c("cohort_definition_id", "subject_id",
+          "cohort_start_date", "cohort_end_date") %in% colnames(x)) &&
+      !is.null(attr(x, "cohort_set")) &&
+      !is.null(attr(x, "cohort_attrition"))
+  }, logical(1))
+
+  if (all(isCohort)) {
+    cli::cli_warn(c(
+      "!" = "Input tables have class {.cls cdm_table} but not {.cls cohort_table}.",
+      "i" = "Restoring {.cls cohort_table} class and retrying {.fn bind}."
+    ))
+    cohorts <- lapply(cohorts, function(x) {
+      class(x) <- c("cohort_table", class(x))
+      x
+    })
+    do.call(omopgenerics::bind, c(cohorts, list(name = name)))
+  } else {
+    cli::cli_abort(c(
+      "x" = "{.fn bind} requires {.cls cohort_table} or {.cls summarised_result} objects.",
+      "i" = "Input objects have class: {.cls {class(cohorts[[1]])}}"
+    ))
+  }
+}
