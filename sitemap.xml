@@ -28,6 +28,7 @@
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/cdmSample.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/cdmSubset.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/cdmSubsetCohort.html</loc></url>
+<url><loc>https://darwin-eu.github.io/CDMConnector/reference/cdmTrimVocabulary.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/cdmWriteSchema.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/cohdSimilarConcepts.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/computeDataHashByTable.html</loc></url>
@@ -48,6 +49,7 @@
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/generateConceptCohortSet.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/inSchema.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/index.html</loc></url>
+<url><loc>https://darwin-eu.github.io/CDMConnector/reference/insertTableSpark.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/listTables.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/pipe.html</loc></url>
 <url><loc>https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.html</loc></url>

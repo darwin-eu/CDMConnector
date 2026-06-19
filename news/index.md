@@ -1,5 +1,34 @@
 # Changelog
 
+## CDMConnector 2.6.0
+
+CRAN release: 2026-06-16
+
+- Add `vocabularySchema` argument to `cdmFromCon` for databases with a
+  dedicated vocabulary schema
+  ([\#619](https://github.com/darwin-eu/CDMConnector/issues/619))
+  [@ginberg](https://github.com/ginberg)
+- Fix empty cohort table date columns being inserted as character on
+  Spark ([\#618](https://github.com/darwin-eu/CDMConnector/issues/618))
+- Fix `cdmFromCon` SQL dialect error with `DatabaseConnector` DBI
+  connections (e.g. `LIMIT` on SQL Server) by unwrapping to the
+  underlying connection
+  ([\#613](https://github.com/darwin-eu/CDMConnector/issues/613))
+- Use fast multi-row `VALUES` inserts by default on Spark/Databricks
+  (~50x faster than the previous approach); also exported as
+  `insertTableSpark`
+  ([\#617](https://github.com/darwin-eu/CDMConnector/issues/617))
+- Use `httr2` instead of `httr`
+  ([\#616](https://github.com/darwin-eu/CDMConnector/issues/616))
+
+## CDMConnector 2.5.1
+
+CRAN release: 2026-04-03
+
+- Remove `generateCohortSet2` and put it in a new experimental package
+  instead
+- Add workaround for `dbWriteTable` on Spark
+
 ## CDMConnector 2.5.0
 
 CRAN release: 2026-03-08

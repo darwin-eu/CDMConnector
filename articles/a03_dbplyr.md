@@ -7,6 +7,7 @@ you haven’t already installed them, all the other packages can be
 installed using ´install.packages()´
 
 ``` r
+
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
@@ -18,8 +19,9 @@ Now let´s connect to a duckdb database with the Eunomia data
 (<https://github.com/OHDSI/Eunomia>).
 
 ``` r
+
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
-#> Creating CDM database /tmp/RtmpOPl7nI/eunomia/GiBleed_5.3.zip
+#> Creating CDM database /tmp/RtmpTJf7Tq/eunomia/GiBleed_5.3.zip
 cdm <- cdmFromCon(con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
 cdm
 #> 
@@ -49,6 +51,7 @@ can select that variable, bring it into memory, and then use ggplot to
 make the histogram.
 
 ``` r
+
 cdm$person %>%
   select(year_of_birth) %>%
   collect() %>%
@@ -63,6 +66,7 @@ could do the computation on the database side, bring in the new variable
 into memory, and use ggplot to produce the boxplot
 
 ``` r
+
 cdm$observation_period %>%
   select(observation_period_start_date, observation_period_end_date) %>%
   mutate(observation_period = (observation_period_end_date - observation_period_start_date)/365, 25) %>%
@@ -79,6 +83,7 @@ cdm$observation_period %>%
 We use show_query to check the sql that is being run against duckdb
 
 ``` r
+
 cdm$person %>%
   tally() %>%
   show_query()
@@ -88,6 +93,7 @@ cdm$person %>%
 ```
 
 ``` r
+
 cdm$person %>%
   summarise(median(year_of_birth))%>%
   show_query()
@@ -100,6 +106,7 @@ cdm$person %>%
 ```
 
 ``` r
+
 cdm$person %>%
   mutate(gender = case_when(
     gender_concept_id == "8507" ~ "Male",
@@ -108,7 +115,7 @@ cdm$person %>%
   show_query()
 #> <SQL>
 #> SELECT
-#>   person.*,
+#>   *,
 #>   CASE
 #> WHEN (gender_concept_id = '8507') THEN 'Male'
 #> WHEN (gender_concept_id = '8532') THEN 'Female'
@@ -118,5 +125,6 @@ cdm$person %>%
 ```
 
 ``` r
+
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```

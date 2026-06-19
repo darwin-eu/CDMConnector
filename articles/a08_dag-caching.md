@@ -129,6 +129,7 @@ When you run with `cache = TRUE`, the execution proceeds as follows:
 ### Basic Usage
 
 ``` r
+
 # First run: all nodes computed from scratch
 cdm <- generateCohortSet2(cdm, cohortSet, name = "my_cohorts", cache = TRUE)
 #> DAG cache: 0 hits, 12 misses (12 nodes to compute)
@@ -147,6 +148,7 @@ changed are reused from the cache.
 You can also use caching at the SQL generation level:
 
 ``` r
+
 con <- DBI::dbConnect(...)
 
 result <- atlas_json_to_sql_batch(
@@ -172,27 +174,27 @@ result <- atlas_json_to_sql_batch(
 These are the intermediate computation tables that are expensive to
 compute and whose results depend only on their content hash:
 
-| Node Type          | Table Pattern        | Description                              |
-|--------------------|----------------------|------------------------------------------|
-| `primary_events`   | `dagcache_pe_<hash>` | Events matching primary criteria         |
+| Node Type | Table Pattern | Description |
+|----|----|----|
+| `primary_events` | `dagcache_pe_<hash>` | Events matching primary criteria |
 | `qualified_events` | `dagcache_qe_<hash>` | Events after additional criteria + limit |
-| `inclusion_rule`   | `dagcache_ir_<hash>` | Per-rule matching person/event pairs     |
-| `included_events`  | `dagcache_ie_<hash>` | Events surviving all inclusion rules     |
-| `cohort_exit`      | `dagcache_ce_<hash>` | Cohort end dates                         |
+| `inclusion_rule` | `dagcache_ir_<hash>` | Per-rule matching person/event pairs |
+| `included_events` | `dagcache_ie_<hash>` | Events surviving all inclusion rules |
+| `cohort_exit` | `dagcache_ce_<hash>` | Cohort end dates |
 
 ### Not Cached (rebuilt every run)
 
 These are either cheap to rebuild, specific to a single run, or
 inherently transient:
 
-| Table                                  | Why Not Cached                                             |
-|----------------------------------------|------------------------------------------------------------|
-| `dagcache_codesets`                    | Fast to rebuild; shared across all nodes                   |
-| `dagcache_all_concepts`                | Derived from codesets                                      |
-| Domain filtered tables                 | Depend on the full set of concepts in the current batch    |
-| Staging tables                         | Transient accumulation tables                              |
-| `dagcache_fc_<hash>`                   | Final cohort inserts into staging; table itself is dropped |
-| Auxiliary tables (`_ie`, `_se`, `_cr`) | Intermediate join tables within a node                     |
+| Table | Why Not Cached |
+|----|----|
+| `dagcache_codesets` | Fast to rebuild; shared across all nodes |
+| `dagcache_all_concepts` | Derived from codesets |
+| Domain filtered tables | Depend on the full set of concepts in the current batch |
+| Staging tables | Transient accumulation tables |
+| `dagcache_fc_<hash>` | Final cohort inserts into staging; table itself is dropped |
+| Auxiliary tables (`_ie`, `_se`, `_cr`) | Intermediate join tables within a node |
 
 ### Why Concept Sets Aren’t Individually Cached
 
@@ -213,6 +215,7 @@ affect downstream node hashes, ensuring correctness.
 ### Inspecting the Cache
 
 ``` r
+
 # List all cached entries
 dag_cache_list(con, schema = "results")
 
@@ -235,6 +238,7 @@ orphaned – they’re no longer referenced by any current cohort
 definition. The garbage collector removes these:
 
 ``` r
+
 # Remove entries not used in the last 30 days
 dag_cache_gc(con, schema = "results", max_age_days = 30)
 
@@ -254,6 +258,7 @@ age.
 To remove all cached tables and start fresh:
 
 ``` r
+
 dag_cache_clear(con, schema = "results")
 #> Cleared 15 cache entries.
 ```
@@ -271,6 +276,7 @@ The caching system provides these guarantees:
     different hash for every downstream node. This is tested directly:
 
     ``` r
+
     # Changing concept_id from 123 to 999 changes ALL downstream hashes
     dag_a <- build_execution_dag(cohort_a, ...)
     dag_b <- build_execution_dag(cohort_b, ...)
@@ -309,6 +315,7 @@ disabled at any time by omitting `cache = TRUE`.
 ## Example: Incremental Update
 
 ``` r
+
 # Day 1: Generate 3 cohorts
 cohortSet_v1 <- data.frame(
   cohort_definition_id = c(1, 2, 3),

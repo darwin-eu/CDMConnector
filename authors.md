@@ -2,8 +2,10 @@
 
 ## Authors
 
-- **Adam Black**. Author, maintainer.
-  [](https://orcid.org/0000-0001-5576-8701)
+- **Ger Inberg**. Author, maintainer.
+  [](https://orcid.org/0000-0001-8993-8748)
+
+- **Adam Black**. Author. [](https://orcid.org/0000-0001-5576-8701)
 
 - **Artem Gorbachev**. Author.
 
@@ -18,14 +20,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/darwin-eu/CDMConnector/blob/main/DESCRIPTION)
 
-Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (2026).
+Inberg G, Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (2026).
 *CDMConnector: Connect to an OMOP Common Data Model*. R package version
-2.5.0, <https://darwin-eu.github.io/CDMConnector/>.
+2.6.0, <https://darwin-eu.github.io/CDMConnector/>.
 
     @Manual{,
       title = {CDMConnector: Connect to an OMOP Common Data Model},
-      author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
+      author = {Ger Inberg and Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
       year = {2026},
-      note = {R package version 2.5.0},
+      note = {R package version 2.6.0},
       url = {https://darwin-eu.github.io/CDMConnector/},
     }

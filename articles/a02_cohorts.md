@@ -14,7 +14,7 @@ table with four columns.
 | 1                    | 2000       | 2020-03-01        | 2020-09-01      |
 | 2                    | 1000       | 2020-02-01        | 2020-03-01      |
 
-An example cohort table
+An example cohort table {.table}
 
 A cohort table can contain multiple cohorts and each cohort can have
 multiple persons. There can even be multiple records for the same person
@@ -26,7 +26,7 @@ OHDSI](https://ohdsi.github.io/TheBookOfOhdsi/Cohorts.html).
 
 ## Cohort Generation
 
-The $n*4$ cohort table is created through the process of cohort
+The $`n*4`$ cohort table is created through the process of cohort
 *generation*. To generate a cohort on a specific CDM dataset means that
 we combine a *cohort definition* with CDM to produce a cohort table. The
 standardization provided by the OMOP CDM allows researchers to generate
@@ -67,6 +67,7 @@ cohort IDs and names to use. If this file doesn’t exist IDs will be
 assigned automatically using alphabetical order of the filenames.
 
 ``` r
+
 pathToCohortJsonFiles <- system.file("cohorts1", package = "CDMConnector")
 list.files(pathToCohortJsonFiles)
 
@@ -81,6 +82,7 @@ specify a `write_schema` when creating the object. Cohort tables will go
 into the CDM’s `write_schema`.
 
 ``` r
+
 library(CDMConnector)
 pathToCohortJsonFiles <- system.file("example_cohorts", package = "CDMConnector")
 list.files(pathToCohortJsonFiles)
@@ -112,6 +114,7 @@ with utility functions.
   records dropped at each sequential inclusion rule)
 
 ``` r
+
 cohortCount(cdm$study_cohorts)
 settings(cdm$study_cohorts)
 attrition(cdm$study_cohorts)
@@ -122,6 +125,7 @@ large. We can also join it to other CDM table or subset the entire cdm
 to just the persons in the cohort.
 
 ``` r
+
 cdm_gibleed <- cdm %>% 
   cdmSubsetCohort(cohortTable = "study_cohorts")
 ```
@@ -135,6 +139,7 @@ First we will generate an example cohort set and then create a new
 cohort based on filtering the Atlas cohort.
 
 ``` r
+
 library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir())
 cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
@@ -154,6 +159,7 @@ duration that is longer than 4 weeks. Using dplyr we can write this
 query and save the result in a new table in the cdm.
 
 ``` r
+
 library(dplyr)
 
 cdm$cohort_subset <- cdm$cohort %>% 
@@ -172,6 +178,7 @@ Let’s confirm that everyone in cohorts 1 and 5 were in the cohort for
 less than 28 days.
 
 ``` r
+
 daysInCohort <- cdm$cohort %>% 
   filter(cohort_definition_id %in% c(1,5)) %>% 
   mutate(days_in_cohort = !!datediff("cohort_start_date", "cohort_end_date")) %>% 
@@ -191,6 +198,7 @@ can simply write some custom dplyr to create the table and then call
 `new_generated_cohort_set` just like in the previous example.
 
 ``` r
+
 
 cdm$cohort_subset <- cdm$cohort %>% 
   filter(!!datediff("cohort_start_date", "cohort_end_date") >= 14) %>% 
@@ -236,6 +244,7 @@ initial generation.
 
 ``` r
 
+
 library(dplyr, warn.conflicts = FALSE)
 
 cdm <- generateConceptCohortSet(
@@ -271,6 +280,7 @@ columns it can be added to the CDM object as a generated cohort set.
 Suppose for example our cohort table is
 
 ``` r
+
 cohort <- dplyr::tibble(
   cohort_definition_id = 1L,
   subject_id = 1L,
@@ -285,6 +295,7 @@ First make sure the table is in the database and create a dplyr table
 reference to it and add it to the CDM object.
 
 ``` r
+
 library(omopgenerics)
 cdm <- insertTable(cdm = cdm, name = "cohort", table = cohort, overwrite = TRUE)
 
@@ -294,6 +305,7 @@ cdm$cohort
 To make this a true generated cohort object use the `cohort_table`
 
 ``` r
+
 cdm$cohort <- newCohortTable(cdm$cohort)
 ```
 
@@ -301,6 +313,7 @@ We can see that this cohort is now has the class “cohort_table” as well
 as the various metadata tables.
 
 ``` r
+
 cohortCount(cdm$cohort)
 settings(cdm$cohort)
 attrition(cdm$cohort)
@@ -310,6 +323,7 @@ If you would like to override the attribute tables then pass additional
 dataframes to cohortTable
 
 ``` r
+
 cdm <- insertTable(cdm = cdm, name = "cohort2", table = cohort, overwrite = TRUE)
 cdm$cohort2 <- newCohortTable(cdm$cohort2)
 settings(cdm$cohort2)
@@ -322,6 +336,7 @@ settings(cdm$cohort2)
 ```
 
 ``` r
+
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```
 

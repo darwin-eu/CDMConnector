@@ -62,6 +62,7 @@ For one CDM, use the single-database benchmark and optional equivalence
 check:
 
 ``` r
+
 source("extras/benchmark_cohort_generation.R")
 
 cohort_set <- CDMConnector::readCohortSet("path/to/cohorts")
@@ -80,6 +81,7 @@ identifier in the output CSVs (e.g. `postgres`, `redshift`, `snowflake`,
 `spark`, `sql_server`):
 
 ``` r
+
 source("extras/benchmark_cohort_generation.R")
 source("extras/benchmark_multi_database.R")
 
@@ -112,12 +114,12 @@ run_benchmark_multi_database(
 
 The timing CSV has one row per database. Example structure:
 
-| database   | time_old_sec | time_new_sec | ratio_new_over_old | n_cohorts | files_included                                             | status |
-|:-----------|-------------:|-------------:|-------------------:|----------:|:-----------------------------------------------------------|:-------|
-| postgres   |        120.5 |         45.2 |               0.38 |         4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok     |
-| redshift   |         95.2 |         38.0 |               0.40 |         4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok     |
-| snowflake  |         88.1 |         32.5 |               0.37 |         4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok     |
-| sql_server |        110.3 |         42.1 |               0.38 |         4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok     |
+| database | time_old_sec | time_new_sec | ratio_new_over_old | n_cohorts | files_included | status |
+|:---|---:|---:|---:|---:|:---|:---|
+| postgres | 120.5 | 45.2 | 0.38 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
+| redshift | 95.2 | 38.0 | 0.40 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
+| snowflake | 88.1 | 32.5 | 0.37 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
+| sql_server | 110.3 | 42.1 | 0.38 | 4 | cohort_a.json; cohort_b.json; cohort_c.json; cohort_d.json | ok |
 
 - **ratio_new_over_old** \< 1 means the new method was faster.
 - **files_included** lists the cohort definition files (or names) in the
@@ -152,11 +154,11 @@ performance differ.
 
 ## Summary
 
-| Aspect          | Description                                                                                                                                          |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Performance** | The new batch optimizer typically reduces wall-clock time (ratio \< 1) by sharing vocabulary and domain work across cohorts.                         |
-| **Correctness** | The benchmarking pipeline compares old and new cohort tables row-by-row (order ignored) and writes equivalence results to CSV.                       |
-| **Platforms**   | Run the same cohort set on Postgres, Redshift, Snowflake, Spark, and SQL Server by passing a named list of CDMs to `run_benchmark_multi_database()`. |
+| Aspect | Description |
+|----|----|
+| **Performance** | The new batch optimizer typically reduces wall-clock time (ratio \< 1) by sharing vocabulary and domain work across cohorts. |
+| **Correctness** | The benchmarking pipeline compares old and new cohort tables row-by-row (order ignored) and writes equivalence results to CSV. |
+| **Platforms** | Run the same cohort set on Postgres, Redshift, Snowflake, Spark, and SQL Server by passing a named list of CDMs to `run_benchmark_multi_database()`. |
 
 Use the generated CSVs to document speedups and to confirm identical
 results across databases and between the two cohort generation methods.

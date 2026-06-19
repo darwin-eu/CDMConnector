@@ -40,12 +40,14 @@ See Getting started for more details.
 CDMConnector can be installed from CRAN:
 
 ``` r
+
 install.packages("CDMConnector")
 ```
 
 The development version can be installed from GitHub:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("darwin-eu/CDMConnector")
 ```
@@ -59,6 +61,7 @@ write_schema to specify the schema where results tables can be created,
 and use cdm_name to provide a name for the database.
 
 ``` r
+
 library(CDMConnector)
 
 con <- DBI::dbConnect(duckdb::duckdb(dbdir = eunomiaDir()))
@@ -72,6 +75,7 @@ cdm <- cdmFromCon(con = con,
 A `cdm_reference` is a named list of table references:
 
 ``` r
+
 library(dplyr)
 names(cdm)
 ```
@@ -94,6 +98,7 @@ names(cdm)
 Use dplyr verbs with the table references.
 
 ``` r
+
 cdm$person %>% 
   tally()
 ```
@@ -109,6 +114,7 @@ cdm$person %>%
 Compose operations with the pipe.
 
 ``` r
+
 cdm$condition_era %>%
   left_join(cdm$concept, by = c("condition_concept_id" = "concept_id")) %>% 
   count(top_conditions = concept_name, sort = TRUE)
@@ -193,6 +199,8 @@ objects.
   : Subset a cdm object to a set of persons
 - [`cdmSubsetCohort()`](https://darwin-eu.github.io/CDMConnector/reference/cdmSubsetCohort.md)
   : Subset a cdm to the individuals in one or more cohorts
+- [`cdmTrimVocabulary()`](https://darwin-eu.github.io/CDMConnector/reference/cdmTrimVocabulary.md)
+  : Trim vocabulary tables to the minimum needed for the CDM
 - [`cdmWriteSchema()`](https://darwin-eu.github.io/CDMConnector/reference/cdmWriteSchema.md)
   : Get cdm write schema
 - [`computeDataHashByTable()`](https://darwin-eu.github.io/CDMConnector/reference/computeDataHashByTable.md)
@@ -203,6 +211,8 @@ objects.
   : Create a source for a cdm in a database.
 - [`dropTable(`*`<db_cdm>`*`)`](https://darwin-eu.github.io/CDMConnector/reference/dropTable.db_cdm.md)
   : Drop table from a database backed cdm object
+- [`insertTableSpark()`](https://darwin-eu.github.io/CDMConnector/reference/insertTableSpark.md)
+  : Fast bulk insert of a local table on Spark / Databricks
 - [`snapshot()`](https://darwin-eu.github.io/CDMConnector/reference/snapshot.md)
   : Extract CDM metadata
 - [`tblGroup()`](https://darwin-eu.github.io/CDMConnector/reference/tblGroup.md)

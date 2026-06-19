@@ -53,14 +53,14 @@ them once and share the results.
 The batch script executes in a strict topological order with no
 back-edges or cross-cohort dependencies:
 
-| Phase                   | What happens                                                                                                                 | Shared?                   |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------------|---------------------------|
-| **1. Staging setup**    | Create `#COHORT_STAGE`, `#INCLUSION_EVENTS_STAGE`, `#INCLUSION_STATS_STAGE`                                                  | Once                      |
-| **2. Global codesets**  | Build `#CODESETS_GLOBAL` with all cohorts’ concept sets; extract `#ALL_CONCEPTS`                                             | Once                      |
-| **3. Domain filtering** | Create `##DRUG_EXPOSURE_FILTERED`, `##CONDITION_OCCURRENCE_FILTERED`, etc.                                                   | Once per domain           |
-| **4. Phase 1**          | For each cohort: slice local `#Codesets` from global, build primary events into `#QUALIFIED_EVENTS_ALL`                      | Per-cohort, shared output |
-| **5. Phase 2**          | For each cohort: slice `#qualified_events` from `#QUALIFIED_EVENTS_ALL`, run inclusion rules, end strategy, write to staging | Per-cohort                |
-| **6. Finalize**         | Single DELETE by batch IDs + INSERT from staging into result tables                                                          | Once                      |
+| Phase | What happens | Shared? |
+|----|----|----|
+| **1. Staging setup** | Create `#COHORT_STAGE`, `#INCLUSION_EVENTS_STAGE`, `#INCLUSION_STATS_STAGE` | Once |
+| **2. Global codesets** | Build `#CODESETS_GLOBAL` with all cohorts’ concept sets; extract `#ALL_CONCEPTS` | Once |
+| **3. Domain filtering** | Create `##DRUG_EXPOSURE_FILTERED`, `##CONDITION_OCCURRENCE_FILTERED`, etc. | Once per domain |
+| **4. Phase 1** | For each cohort: slice local `#Codesets` from global, build primary events into `#QUALIFIED_EVENTS_ALL` | Per-cohort, shared output |
+| **5. Phase 2** | For each cohort: slice `#qualified_events` from `#QUALIFIED_EVENTS_ALL`, run inclusion rules, end strategy, write to staging | Per-cohort |
+| **6. Finalize** | Single DELETE by batch IDs + INSERT from staging into result tables | Once |
 
 ## Worked Example: Three Drug Exposure Cohorts
 
@@ -112,6 +112,7 @@ generate per-cohort SQL. The batch path does not change the SQL logic;
 it only changes how the pieces are assembled:
 
 ``` r
+
 # Single-cohort path:
 result <- build_cohort_query_internal(cohort, opts)
 sql <- result$full_sql
@@ -151,6 +152,7 @@ event per person. The Phase 1 rewrite must preserve this filter. The
 assembler explicitly checks:
 
 ``` r
+
 # In assemble_batch_script():
 if (isTRUE(structured$has_qualified_limit) &&
     !grepl("ordinal\\s*=\\s*1", ins2, perl = TRUE)) {
@@ -289,6 +291,7 @@ and never produces slower results than the one-at-a-time approach.
 ### Single Cohort (No Optimization)
 
 ``` r
+
 library(atlasCohortGenerator)
 
 # Generate SQL for one cohort
@@ -304,6 +307,7 @@ sql <- atlas_json_to_sql(
 ### Batch (Optimized)
 
 ``` r
+
 # Generate optimized batch SQL for multiple cohorts
 batch_sql <- atlas_json_to_sql_batch(
   json_inputs = list(
@@ -332,6 +336,7 @@ batch_sql <- atlas_json_to_sql_batch(
 ### With CDMConnector
 
 ``` r
+
 library(CDMConnector)
 library(atlasCohortGenerator)
 
@@ -345,6 +350,7 @@ cdm <- generateCohortSet2(cdm, cohort_set, name = "my_cohorts")
 ### Validating Equivalence
 
 ``` r
+
 # Compare batch vs single-cohort results on your CDM
 ok <- validate_batch_equivalence(cdm, cohort_set, name = "equiv_test")
 # Prints per-cohort match status; returns TRUE if all match
@@ -353,6 +359,7 @@ ok <- validate_batch_equivalence(cdm, cohort_set, name = "equiv_test")
 ### Debugging
 
 ``` r
+
 # Dump the final batch SQL for inspection
 options(atlasCohortGenerator.debug_sql_file = "batch_debug.sql")
 cdm <- generateCohortSet2(cdm, cohort_set, name = "debug_run")
