@@ -2092,7 +2092,7 @@ cdmFromJson <- function(jsonPath = NULL,
             res <- DBI::dbGetQuery(con, sprintf(
               "SELECT concept_id, domain_id FROM concept WHERE concept_id IN (%s)",
               paste(sim_ids, collapse = ",")))
-            setNames(res$domain_id, as.character(res$concept_id))
+            stats::setNames(res$domain_id, as.character(res$concept_id))
           }, error = function(e) character(0))
 
           .domain_to_type <- c(
@@ -2835,4 +2835,3 @@ cdmFromJson <- function(jsonPath = NULL,
 # dbGetQuery(con, "select count(*) n_person from person;")
 # dbGetQuery(con, "select count(distinct subject_id) n_in_cohort from cohort where cohort_definition_id = 1;")
 # dbDisconnect(con, shutdown = TRUE)
-

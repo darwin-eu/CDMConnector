@@ -115,9 +115,15 @@ test_that("duckdb - phenotype library generation", {
   skip("manual test")
   skip_if_not_installed("PhenotypeLibrary")
 
-  cohortSet <- PhenotypeLibrary::listPhenotypes() %>%
+  listPhenotypes <- getExportedValue("PhenotypeLibrary", "listPhenotypes")
+  getPlCohortDefinitionSet <- getExportedValue(
+    "PhenotypeLibrary",
+    "getPlCohortDefinitionSet"
+  )
+
+  cohortSet <- listPhenotypes() %>%
     dplyr::pull("cohortId") %>%
-    PhenotypeLibrary::getPlCohortDefinitionSet()
+    getPlCohortDefinitionSet()
 
   con <- local_eunomia_con()
   cdm <- cdmFromCon(
@@ -312,7 +318,6 @@ test_that("cohort era collapse is recorded in attrition", {
 
   expect_true("Cohort records collapsed" %in% attrition(cdm$cohort)$reason)
 })
-
 
 
 

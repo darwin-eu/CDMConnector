@@ -8,6 +8,7 @@ cdmFromCon(
   con,
   cdmSchema,
   writeSchema = NULL,
+  vocabularySchema = NULL,
   cohortTables = NULL,
   cdmVersion = NULL,
   cdmName = NULL,
@@ -25,6 +26,9 @@ to NULL.}
 
 \item{writeSchema}{An optional schema in the CDM database that the user has
 write access to.}
+
+\item{vocabularySchema}{An optional schema where the OMOP vocabulary tables
+are located. If NULL, vocabulary tables are expected to be in \code{cdmSchema}.}
 
 \item{cohortTables}{A character vector listing the cohort table names to be
 included in the CDM object.}

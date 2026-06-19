@@ -111,65 +111,6 @@ test_that("eunomiaIsAvailable returns logical", {
   expect_type(result, "logical")
 })
 
-# --- normalize_schema_str (optimizer.R) ---
-
-test_that("normalize_schema_str returns string for character schema", {
-  result <- CDMConnector:::normalize_schema_str("main")
-  expect_equal(result, "main")
-})
-
-test_that("normalize_schema_str handles named vector schema", {
-  result <- CDMConnector:::normalize_schema_str(c(schema = "main", prefix = "pre_"))
-  expect_true(is.character(result))
-  expect_true(nchar(result) > 0)
-})
-
-# --- date_string_to_sql (circe.R or execution_graph.R helpers) ---
-
-test_that("date_string_to_sql converts date strings", {
-  result <- CDMConnector:::date_string_to_sql("2020-01-15")
-  expect_true(grepl("2020", result))
-  expect_true(grepl("15", result))
-})
-
-# --- translate (sqlrender wrapper) ---
-
-test_that("translate converts SQL to duckdb dialect", {
-  sql <- "SELECT TOP 10 * FROM person"
-  result <- translate(sql, targetDialect = "duckdb")
-  expect_true(is.character(result))
-  expect_true(nchar(result) > 0)
-})
-
-test_that("translate handles DATEADD", {
-  sql <- "SELECT DATEADD(day, 30, start_date) FROM t"
-  result <- translate(sql, targetDialect = "duckdb")
-  expect_true(is.character(result))
-})
-
-# --- render (sqlrender wrapper) ---
-
-test_that("render replaces parameters", {
-  sql <- "SELECT * FROM @schema.person WHERE person_id = @id"
-  result <- render(sql, schema = "main", id = 1)
-  expect_true(grepl("main", result))
-  expect_true(grepl("1", result))
-})
-
-test_that("render handles conditionals", {
-  sql <- "SELECT * FROM t {@include}?{WHERE x > 0}"
-  result <- render(sql, include = "true")
-  expect_true(grepl("WHERE x > 0", result))
-})
-
-# --- split_sql_core (internal) ---
-
-test_that("split_sql_core splits statements", {
-  sql <- "SELECT 1; SELECT 2; SELECT 3"
-  result <- CDMConnector:::split_sql_core(sql)
-  expect_equal(length(result), 3)
-})
-
 # --- cdmSubset / cdmSample ---
 
 test_that("cdmSubset works", {

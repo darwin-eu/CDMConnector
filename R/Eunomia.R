@@ -307,6 +307,14 @@ eunomiaDir <- function(datasetName = "GiBleed",
       DBI::dbExecute(con, sql)
     }
 
+    # Load any extra parquet files not in the OMOP spec (e.g. genomic extension tables)
+    extraFiles <- setdiff(files, tables)
+    for (ef in extraFiles) {
+      table_path <- file.path(unzipLocation, paste0(ef, ".parquet"))
+      sql <- glue::glue("CREATE TABLE main.{ef} AS SELECT * FROM '{table_path}'")
+      DBI::dbExecute(con, sql)
+    }
+
     DBI::dbDisconnect(con, shutdown = TRUE)
   }
 

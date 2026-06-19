@@ -7,6 +7,8 @@
 ^\.vscode$
 ^\.Rcheck$
 ^images$
+^coverage$
+^coverage\.xml$
 ^coverage_results\.rds$
 ^LICENSE\.md$
 ^codecov\.yml$
@@ -28,3 +30,4 @@ scratch/*
 ^revdep/*
 errorReportSql.txt
 ^LICENSE$
+^\.positai$

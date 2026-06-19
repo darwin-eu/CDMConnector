@@ -826,7 +826,7 @@ computeAttritionTable <- function(cdm,
     dplyr::arrange(.data$cohort_definition_id, .data$reason_id)
 
   # upload attrition table to database
-  DBI::dbWriteTable(con,
+  .dbWriteTableSafe(con,
                     name = .inSchema(schema, paste0(cohortStem, "_attrition"), dbms = dbms(con)),
                     value = attrition)
 

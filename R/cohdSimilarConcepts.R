@@ -51,7 +51,6 @@
 #'   \doi{10.6084/m9.figshare.c.4151252.v1}
 #'
 #'
-#' @importFrom httr GET content timeout http_error status_code
 #' @importFrom jsonlite fromJSON
 #' @importFrom stats aggregate
 #' @importFrom utils head
@@ -77,12 +76,17 @@ cohdSimilarConcepts <- function(conceptId,
 
   getJson <- function(path, query) {
     url <- paste0(sub("/+$", "", baseUrl), path)
-    resp <- httr::GET(url, query = query, httr::timeout(timeoutSec))
-    if (httr::http_error(resp)) {
+    resp <- httr2::request(url) |>
+      httr2::req_url_query(!!!query) |>
+      httr2::req_timeout(timeoutSec) |>
+      # do not throw on HTTP error status; handle it below
+      httr2::req_error(is_error = function(resp) FALSE) |>
+      httr2::req_perform()
+    if (httr2::resp_is_error(resp)) {
       return(NULL)
     }
     jsonlite::fromJSON(
-      httr::content(resp, as = "text", encoding = "UTF-8"),
+      httr2::resp_body_string(resp),
       flatten = TRUE
     )
   }

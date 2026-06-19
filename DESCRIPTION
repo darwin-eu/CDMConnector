@@ -1,8 +1,10 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 2.5.0
+Version: 2.6.0
 Authors@R: c(
-    person("Adam", "Black", , "ablack3@gmail.com", role = c("aut", "cre"),
+    person("Ger", "Inberg", email = "g.inberg@erasmusmc.nl", role = c("aut", "cre"), 
+            comment = c(ORCID = "0000-0001-8993-8748")),
+    person("Adam", "Black", , "ablack3@gmail.com", role = c("aut"),
            comment = c(ORCID = "0000-0001-5576-8701")),
     person("Artem", "Gorbachev", , "artem.gorbachev@odysseusinc.com", role = "aut"),
     person("Edward", "Burn", , "edward.burn@ndorms.ox.ac.uk", role = "aut"),
@@ -20,8 +22,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends: 
     R (>= 4.1.0)
-Imports: 
-    httr,
+Imports:
+    httr2,
     dplyr,
     dbplyr (>= 2.5.0),
     DBI (>= 0.3.0),

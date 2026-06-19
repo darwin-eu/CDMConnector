@@ -22,6 +22,8 @@
 #'   to NULL.
 #' @param writeSchema An optional schema in the CDM database that the user has
 #'   write access to.
+#' @param vocabularySchema An optional schema where the OMOP vocabulary tables
+#'   are located. If NULL, vocabulary tables are expected to be in `cdmSchema`.
 #' @param cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
 #' @param cdmVersion The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
@@ -101,12 +103,21 @@
 cdmFromCon <- function(con,
                        cdmSchema,
                        writeSchema = NULL,
+                       vocabularySchema = NULL,
                        cohortTables = NULL,
                        cdmVersion = NULL,
                        cdmName = NULL,
                        achillesSchema = NULL,
                        .softValidation = FALSE,
                        writePrefix = NULL) {
+
+  # DatabaseConnector DBI connections (from createDbiConnectionDetails) wrap the
+  # underlying DBI connection in an S4 object that dbplyr does not recognize.
+  # This produces the wrong SQL dialect (e.g. `LIMIT` on SQL Server). Unwrap to
+  # the underlying connection so the correct backend is used. (#613)
+  if (methods::is(con, "DatabaseConnectorDbiConnection")) {
+    con <- con@dbiConnection
+  }
 
   if (!DBI::dbIsValid(con)) {
     cli::cli_abort("The connection is not valid. Is the database connection open?")
@@ -127,6 +138,7 @@ cdmFromCon <- function(con,
   checkmate::assert_character(cdmName, any.missing = FALSE, len = 1, null.ok = TRUE)
   checkmate::assert_character(cdmSchema, min.len = 1, max.len = 3, any.missing = F)
   checkmate::assert_character(writeSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
+  checkmate::assert_character(vocabularySchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_character(cohortTables, null.ok = TRUE)
   checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_choice(cdmVersion, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
@@ -143,29 +155,14 @@ cdmFromCon <- function(con,
 
   checkmate::assert_character(writePrefix, min.chars = 1, any.missing = FALSE, len = 1, null.ok = TRUE)
 
-  # users can give writeSchema = "catalog.schema"
-  if (length(writeSchema) == 1 && stringr::str_detect(writeSchema, "\\.")) {
-    if (stringr::str_count(writeSchema, "\\.") != 1) cli::cli_abort("`writeSchema` can only have one .")
-    writeSchema <- stringr::str_split(writeSchema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
-  }
-
-  if (length(cdmSchema) == 1 && stringr::str_detect(cdmSchema, "\\.")) {
-    if (stringr::str_count(cdmSchema, "\\.") != 1) cli::cli_abort("`cdmSchema` can only have one .")
-    cdmSchema <- stringr::str_split(cdmSchema, "\\.")[[1]] %>% purrr::set_names(c("catalog", "schema"))
-  }
-
-  # make sure writeSchema is named
-  if (!rlang::is_named(writeSchema) && !is.null(writeSchema)) {
-    if (length(writeSchema) == 1) {
-      writeSchema <- c("schema" = writeSchema)
-    } else if (length(writeSchema) == 2) {
-      writeSchema <- c("catalog" = writeSchema[1], "schema" = writeSchema[2])
-    } else {
-      rlang::abort("If `writeSchema` is unnamed and not NULL then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
-    }
+  cdmSchema <- normalizeSchema(cdmSchema, "cdmSchema")
+  if (is.null(vocabularySchema)) {
+    vocabularySchema <- cdmSchema
   } else {
-    checkmate::assertTRUE(all(names(writeSchema) %in% c("catalog", "schema", "prefix")))
+    vocabularySchema <- normalizeSchema(vocabularySchema, "vocabularySchema")
   }
+  achillesSchema <- normalizeSchema(achillesSchema, "achillesSchema")
+  writeSchema <- normalizeSchema(writeSchema, "writeSchema")
 
   # if writePrefix argument is passed it will be override the prefix in writeSchema
   if (!is.null(writePrefix)) {
@@ -173,22 +170,56 @@ cdmFromCon <- function(con,
     writeSchema["prefix"] <- writePrefix
   }
 
-
   # create source object and validate connection
   src <- dbSource(con = con, writeSchema = writeSchema)
   con <- attr(src, "dbcon")
 
   # read omop tables
+  vocabularyTables <- tblGroup("vocab")
+  nonVocabularyTables <- setdiff(omopgenerics::omopTables(), vocabularyTables)
   dbTables <- listTables(con, schema = cdmSchema)
-  omop_tables <- omopgenerics::omopTables()
-  omop_tables <- omop_tables[which(omop_tables %in% tolower(dbTables))]
+  cdm_tables <- omopgenerics::omopTables()
+  cdm_tables <- cdm_tables[which(
+    cdm_tables %in% tolower(dbTables) &
+      cdm_tables %in% nonVocabularyTables
+  )]
+  cdm_tables <- validateCdmTableCase(dbTables = dbTables, omopTables = cdm_tables)
+  tableSchemas <- rep(list(cdmSchema), length(cdm_tables)) %>%
+    rlang::set_names(tolower(cdm_tables))
+
+  if (!identical(vocabularySchema, cdmSchema)) {
+    vocabularyDbTables <- listTables(con, schema = vocabularySchema)
+    vocabulary_tables <- vocabularyTables[which(vocabularyTables %in% tolower(vocabularyDbTables))]
+    vocabulary_tables <- validateCdmTableCase(
+      dbTables = vocabularyDbTables,
+      omopTables = vocabulary_tables
+    )
+    omop_tables <- c(cdm_tables, vocabulary_tables)
+    tableSchemas <- c(
+      tableSchemas,
+      rep(list(vocabularySchema), length(vocabulary_tables)) %>%
+        rlang::set_names(tolower(vocabulary_tables))
+    )
+  } else {
+    omop_tables <- validateCdmTableCase(
+      dbTables = dbTables,
+      omopTables = c(
+        tolower(cdm_tables),
+        vocabularyTables[which(vocabularyTables %in% tolower(dbTables))]
+      )
+    )
+    tableSchemas <- rep(list(cdmSchema), length(omop_tables)) %>%
+      rlang::set_names(tolower(omop_tables))
+  }
+
   if (length(omop_tables) == 0) {
     rlang::abort("There were no cdm tables found in the cdm_schema!")
   }
-  omop_tables <- validateCdmTableCase(dbTables = dbTables, omopTables = omop_tables)
+  tableSchemas <- tableSchemas[tolower(omop_tables)]
 
   cdmTables <- purrr::map(
-    omop_tables, ~ dplyr::tbl(src = src, schema = cdmSchema, name = .)
+    omop_tables,
+    ~ dplyr::tbl(src = src, schema = tableSchemas[[tolower(.)]], name = .)
   ) %>%
     rlang::set_names(tolower(omop_tables))
 
@@ -225,12 +256,28 @@ cdmFromCon <- function(con,
     achillesTables <- list()
   }
 
+  # Check for genomic extension tables
+  genomicNames <- c("target_gene", "variant_annotation", "variant_occurrence", "genomic_test")
+  genomicInDb <- genomicNames[genomicNames %in% tolower(dbTables)]
+  genomicTables <- list()
+  if (length(genomicInDb) > 0) {
+    for (nm in genomicInDb) {
+      dbNm <- dbTables[tolower(dbTables) == nm]
+      genomicTables[[nm]] <- dplyr::tbl(src = src, schema = cdmSchema, name = dbNm)
+    }
+  }
+
   cdm <- omopgenerics::newCdmReference(
     tables = c(cdmTables, achillesTables),
     cdmName = cdmName,
     cdmVersion = cdmVersion,
     .softValidation = .softValidation
   )
+
+  # Add genomic tables to cdm after creation (not part of OMOP spec validation)
+  for (nm in names(genomicTables)) {
+    cdm[[nm]] <- genomicTables[[nm]]
+  }
 
   # on spark we use permanent tables prefixed with this whenever the user asks for temp tables
   attr(cdm, "temp_emulation_prefix") <- paste0(
@@ -289,11 +336,53 @@ cdmFromCon <- function(con,
 
   # TO BE REMOVED WHEN CIRCER WORKS WITH CDM OBJECT
   attr(cdm, "cdm_schema") <- cdmSchema
+  attr(cdm, "vocabulary_schema") <- vocabularySchema
   # TO BE REMOVED WHEN DOWNSTREAM PACKAGES NO LONGER USE THESE ATTRIBUTES
   attr(cdm, "write_schema") <- writeSchema
   attr(cdm, "dbcon") <- attr(attr(cdm, "cdm_source"), "dbcon")
 
   return(cdm)
+}
+
+# Normalize schema arguments. Schemas can be supplied as "schema",
+# "catalog.schema", c("catalog", "schema"), or named vectors. Schemas can
+# also include a named `prefix`, which is applied to generated table names.
+normalizeSchema <- function(schema, argName) {
+  if (is.null(schema)) {
+    return(NULL)
+  }
+
+  if (length(schema) == 1 && stringr::str_detect(schema, "\\.")) {
+    if (stringr::str_count(schema, "\\.") != 1) {
+      cli::cli_abort("`{argName}` can only have one .")
+    }
+    schema <- stringr::str_split(schema, "\\.")[[1]] %>%
+      purrr::set_names(c("catalog", "schema"))
+  }
+
+  if (!rlang::is_named(schema)) {
+    if (length(schema) == 1) {
+      schema <- c("schema" = schema)
+    } else if (length(schema) == 2) {
+      schema <- c("catalog" = schema[1], "schema" = schema[2])
+    } else {
+      rlang::abort("If `{argName}` is unnamed and not NULL then it should be length 1 `c(schema)` or 2 `c(catalog, schema)`")
+    }
+  } else {
+    allowedNames <- c("catalog", "schema", "prefix")
+    checkmate::assertTRUE(all(names(schema) %in% allowedNames))
+
+    if ("catalog" %in% names(schema)) {
+      checkmate::assertTRUE("schema" %in% names(schema))
+    }
+
+    if (all(c("catalog", "schema") %in% names(schema))) {
+      checkmate::assertTRUE(all(c("catalog", "schema") %in% names(schema)))
+      schema <- schema[intersect(c("catalog", "schema", "prefix"), names(schema))]
+    }
+  }
+
+  schema
 }
 
 validateCdmTableCase <- function(dbTables, omopTables) {
@@ -402,7 +491,7 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 
   # Note: ROracle does not support integer round trip
   suppressMessages(
-    DBI::dbWriteTable(con,
+    .dbWriteTableSafe(con,
                       name = .inSchema(schema = write_schema, table = tablename, dbms = dbms(con)),
                       value = df1,
                       overwrite = TRUE)
@@ -730,4 +819,3 @@ cdmWriteSchema <- function(cdm) {
 cdmCon <- function(cdm) {
   attr(attr(cdm, "cdm_source"), "dbcon")
 }
-

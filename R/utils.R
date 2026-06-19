@@ -415,6 +415,62 @@ dcCreateTable <- function(conn, name, fields) {
   )
 }
 
+# Fast bulk load of a local data frame on Spark/Databricks.
+# Creates the table from the typed data frame (so column types such as DATE are
+# inferred correctly) and then inserts rows using multi-row
+# `INSERT INTO ... VALUES (...), (...), ...` batches. This is much faster than
+# the `INSERT ... SELECT ... UNION ALL` approach Spark's query planner struggles
+# with (benchmarked ~50x faster at 1000 rows), and avoids both the parameterized
+# INSERT failures (ODBC 42P02 "unbound parameter") and the row-by-row driver
+# reconnects (ODBC HY000) that plain dbWriteTable hits on Spark.
+# Assumes any pre-existing table has already been dropped by the caller.
+.dbWriteTableSpark <- function(con, name, value, batchSize = 5000L) {
+  # Create from the typed data frame first; format dates only for the INSERT
+  # statement. Formatting before create would create character columns. (#618)
+  .dbCreateTable(con, name, value)
+  if (nrow(value) == 0) {
+    return(invisible())
+  }
+  value <- .formatDatesForSparkInsert(value)
+  qualifiedName <- .qualifiedNameForSql(con, name)
+  cols <- paste(DBI::dbQuoteIdentifier(con, names(value)), collapse = ", ")
+  quotedCols <- lapply(seq_len(ncol(value)), function(j) DBI::dbQuoteLiteral(con, value[[j]]))
+
+  for (start in seq.int(1L, nrow(value), by = batchSize)) {
+    end <- min(start + batchSize - 1L, nrow(value))
+    rowSql <- character(end - start + 1L)
+    for (i in seq_along(rowSql)) {
+      idx <- start + i - 1L
+      rowSql[i] <- paste0(
+        "(",
+        paste(vapply(quotedCols, function(col) as.character(col[idx]), character(1)),
+              collapse = ", "),
+        ")"
+      )
+    }
+    sql <- paste0(
+      "INSERT INTO ", qualifiedName, " (", cols, ") VALUES ",
+      paste(rowSql, collapse = ", ")
+    )
+    DBI::dbExecute(con, sql)
+  }
+  invisible()
+}
+
+# Spark-safe replacement for DBI::dbWriteTable().
+# On Spark/Databricks plain dbWriteTable is slow and unreliable, so use the
+# fast multi-row VALUES loader. On all other databases delegate to
+# DBI::dbWriteTable().
+.dbWriteTableSafe <- function(con, name, value, overwrite = FALSE, temporary = FALSE) {
+  if (dbms(con) == "spark") {
+    if (overwrite) try(DBI::dbRemoveTable(con, name), silent = TRUE)
+    .dbWriteTableSpark(con, name, value)
+  } else {
+    DBI::dbWriteTable(conn = con, name = name, value = value,
+                      overwrite = overwrite, temporary = temporary)
+  }
+}
+
 # build and execute the SQL query to insert data into the table
 # .dbInsertData <- function(conn, name, table) {
 #   columns <- colnames(table)

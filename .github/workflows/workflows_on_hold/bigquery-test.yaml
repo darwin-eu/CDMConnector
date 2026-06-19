@@ -38,7 +38,7 @@ jobs:
           install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
           install.packages("bigrquery", repos = "https://cloud.r-project.org/")
-          remotes::install_github("tidyverse/dbplyr")
+          install.packages("dbplyr", repos = "https://cloud.r-project.org/")
         shell: Rscript {0}
 
       - name: Run tests on Bigquery

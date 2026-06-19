@@ -20,10 +20,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Adam Black \email{ablack3@gmail.com} (\href{https://orcid.org/0000-0001-5576-8701}{ORCID})
+\strong{Maintainer}: Ger Inberg \email{g.inberg@erasmusmc.nl} (\href{https://orcid.org/0000-0001-8993-8748}{ORCID})
 
 Authors:
 \itemize{
+  \item Adam Black \email{ablack3@gmail.com} (\href{https://orcid.org/0000-0001-5576-8701}{ORCID})
   \item Artem Gorbachev \email{artem.gorbachev@odysseusinc.com}
   \item Edward Burn \email{edward.burn@ndorms.ox.ac.uk}
   \item Marti Catala Sabate \email{marti.catalasabate@ndorms.ox.ac.uk}

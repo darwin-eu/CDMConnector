@@ -279,7 +279,7 @@ cdmSubset <- function(cdm, personId) {
   con <- cdmCon(cdm)
 
   prefix <- unique_prefix()
-  DBI::dbWriteTable(con,
+  .dbWriteTableSafe(con,
                     name = .inSchema(writeSchema, glue::glue("temp{prefix}_"), dbms(con)),
                     value = data.frame(person_id = personId),
                     overwrite = TRUE)

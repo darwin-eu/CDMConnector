@@ -38,7 +38,7 @@ jobs:
           print(getwd())
           print(list.files())
           install.packages(c("devtools", "remotes", "omopgenerics", "palmerpenguins"))
-          remotes::install_github("tidyverse/dbplyr")
+          install.packages("dbplyr")
           devtools::install(quick = TRUE, dependencies = FALSE)
 
         shell: Rscript {0}

@@ -81,6 +81,37 @@ test_that("Uppercase tables are stored as lowercase in cdm", {
   expect_true(all(names(cdm) == tolower(names(cdm))))
 })
 
+test_that("cdmFromCon can use a separate vocabulary schema", {
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomiaIsAvailable())
+
+  con <- local_eunomia_con()
+  DBI::dbExecute(con, "CREATE SCHEMA vocabulary")
+
+  vocabulary_tables <- intersect(tblGroup("vocab"), tolower(listTables(con, "main")))
+  for (table in vocabulary_tables) {
+    DBI::dbExecute(
+      con,
+      glue::glue("CREATE TABLE vocabulary.{table} AS SELECT * FROM main.{table}")
+    )
+    DBI::dbExecute(con, glue::glue("DROP TABLE main.{table}"))
+  }
+
+  cdm <- cdmFromCon(
+    con = con,
+    cdmSchema = "main",
+    writeSchema = "main",
+    vocabularySchema = "vocabulary",
+    cdmName = "eunomia"
+  )
+
+  expect_true("person" %in% names(cdm))
+  expect_true("concept" %in% names(cdm))
+  expect_equal(attr(cdm, "cdm_schema"), c(schema = "main"))
+  expect_equal(attr(cdm, "vocabulary_schema"), c(schema = "vocabulary"))
+  expect_s3_class(dplyr::collect(head(cdm$concept)), "data.frame")
+})
+
 # TODO add this test back when we have an example cdm with achilles tables
 # test_that("adding achilles", {
 #   skip_if_not(eunomiaIsAvailable())
@@ -358,5 +389,3 @@ test_that("DatabaseConnector DBI connections work with odbc SQL Server", {
   expect_true(nrow(df) > 0)
   cdmDisconnect(cdm)
 })
-
-

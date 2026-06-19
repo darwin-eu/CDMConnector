@@ -75,27 +75,71 @@ insertTable.db_cdm <- function(cdm,
 
   if (dbms(con) %in% c("bigquery") && nrow(table) == 0) {
     .dbCreateTable(con, fullName, table)
-  } else if (dbms(con) == "spark") {
-    # Spark/Simba ODBC often fails on parameterized INSERT (UNBOUND_SQL_PARAMETER).
-    # Create table then insert using literal VALUES.
-    # Format Date/POSIXt as ISO strings so driver doesn't produce malformed timestamps (e.g. 00-00-00).
-    table_for_insert <- .formatDatesForSparkInsert(table)
-    .dbCreateTable(con, fullName, table)
-    if (nrow(table_for_insert) > 0) {
-      qualifiedName <- .qualifiedNameForSql(con, fullName)
-      cols <- paste(DBI::dbQuoteIdentifier(con, names(table_for_insert)), collapse = ", ")
-      for (i in seq_len(nrow(table_for_insert))) {
-        row <- table_for_insert[i, , drop = FALSE]
-        vals <- vapply(seq_len(ncol(table_for_insert)), function(j) {
-          DBI::dbQuoteLiteral(con, row[[j]][[1]])
-        }, character(1))
-        sql <- paste0("INSERT INTO ", qualifiedName, " (", cols, ") VALUES (", paste(vals, collapse = ", "), ")")
-        DBI::dbExecute(con, sql)
-      }
-    }
   } else {
-    DBI::dbWriteTable(conn = con, name = fullName, value = table, temporary = temporary)
+    .dbWriteTableSafe(con, name = fullName, value = table, temporary = temporary)
   }
+
+  x <- dplyr::tbl(src = con, fullName) |>
+    dplyr::rename_all(tolower) |>
+    omopgenerics::newCdmTable(src = src, name = name) |>
+    dplyr::select(colnames(table))
+  return(x)
+}
+
+#' Fast bulk insert of a local table on Spark / Databricks
+#'
+#' Uploads a local data frame to Spark/Databricks using multi-row
+#' `INSERT INTO ... VALUES (...), (...), ...` statements. This is the same
+#' mechanism [insertTable()] now uses by default on Spark, so you only need
+#' `insertTableSpark()` directly when you want to tune `batchSize`. Multi-row
+#' VALUES inserts are dramatically faster than the `INSERT ... SELECT ...
+#' UNION ALL` approach Spark's planner struggles with (benchmarked ~50x faster
+#' at 1000 rows).
+#'
+#' Only intended for Spark connections. For other dialects use
+#' [insertTable()].
+#'
+#' @param cdm A `cdm_reference` or `db_cdm` source object backed by a
+#'   Spark/Databricks connection. Must have a `writeSchema`.
+#' @param name Name of the destination table (single character).
+#' @param table A local data frame to upload.
+#' @param overwrite If `TRUE` (default), drop the table first if it exists.
+#' @param batchSize Number of rows per `INSERT` statement. Default 5000.
+#'   Larger batches reduce round trips but Spark imposes a query-size
+#'   limit (~16MB) — reduce if you hit "query too large" errors with very
+#'   wide tables.
+#'
+#' @return A `cdm_table` referencing the newly inserted table.
+#' @export
+insertTableSpark <- function(cdm,
+                             name,
+                             table,
+                             overwrite = TRUE,
+                             batchSize = 5000L) {
+  checkmate::assertCharacter(name, len = 1, any.missing = FALSE)
+  checkmate::assertCount(batchSize, positive = TRUE)
+
+  src <- if (inherits(cdm, "cdm_reference")) attr(cdm, "cdm_source") else cdm
+  con <- attr(src, "dbcon")
+  writeSchema <- attr(src, "write_schema")
+  if (is.null(con) || is.null(writeSchema)) {
+    cli::cli_abort("`cdm` must be a db-backed cdm or db_cdm source with a writeSchema.")
+  }
+  if (dbms(con) != "spark") {
+    cli::cli_abort("insertTableSpark() is only supported on Spark connections; use insertTable() instead.")
+  }
+
+  table <- dplyr::as_tibble(table)
+  if (!inherits(table, "data.frame")) {
+    table <- dplyr::collect(table)
+  }
+
+  fullName <- .inSchema(schema = writeSchema, table = name, dbms = dbms(con))
+  if (overwrite && (name %in% listTables(con, writeSchema))) {
+    DBI::dbRemoveTable(con, name = fullName)
+  }
+
+  .dbWriteTableSpark(con, fullName, table, batchSize = batchSize)
 
   x <- dplyr::tbl(src = con, fullName) |>
     dplyr::rename_all(tolower) |>
@@ -479,4 +523,37 @@ summary.db_cdm <- function(object, ...) {
     result$write_prefix <- schema[["prefix"]]
   }
   return(result)
+}
+
+# Fallback bind method for cdm_table objects that have lost their cohort_table
+# class, which can happen on Spark backends. If the inputs have cohort
+# attributes (set, attrition) and the required cohort columns, restore the
+# cohort_table class and delegate to bind.cohort_table.
+#' @method bind cdm_table
+#' @export
+bind.cdm_table <- function(..., name) {
+  cohorts <- list(...)
+  isCohort <- vapply(cohorts, function(x) {
+    all(c("cohort_definition_id", "subject_id",
+          "cohort_start_date", "cohort_end_date") %in% colnames(x)) &&
+      !is.null(attr(x, "cohort_set")) &&
+      !is.null(attr(x, "cohort_attrition"))
+  }, logical(1))
+
+  if (all(isCohort)) {
+    cli::cli_warn(c(
+      "!" = "Input tables have class {.cls cdm_table} but not {.cls cohort_table}.",
+      "i" = "Restoring {.cls cohort_table} class and retrying {.fn bind}."
+    ))
+    cohorts <- lapply(cohorts, function(x) {
+      class(x) <- c("cohort_table", class(x))
+      x
+    })
+    do.call(omopgenerics::bind, c(cohorts, list(name = name)))
+  } else {
+    cli::cli_abort(c(
+      "x" = "{.fn bind} requires {.cls cohort_table} or {.cls summarised_result} objects.",
+      "i" = "Input objects have class: {.cls {class(cohorts[[1]])}}"
+    ))
+  }
 }

@@ -1,3 +1,16 @@
+# CDMConnector 2.6.0
+
+- Add `vocabularySchema` argument to `cdmFromCon` for databases with a dedicated vocabulary schema (#619) @ginberg
+- Fix empty cohort table date columns being inserted as character on Spark (#618)
+- Fix `cdmFromCon` SQL dialect error with `DatabaseConnector` DBI connections (e.g. `LIMIT` on SQL Server) by unwrapping to the underlying connection (#613)
+- Use fast multi-row `VALUES` inserts by default on Spark/Databricks (~50x faster than the previous approach); also exported as `insertTableSpark` (#617)
+- Use `httr2` instead of `httr` (#616)
+
+# CDMConnector 2.5.1
+
+- Remove `generateCohortSet2` and put it in a new experimental package instead
+- Add workaround for `dbWriteTable` on Spark
+
 # CDMConnector 2.5.0
 
 - Add Delphi-100k example dataset

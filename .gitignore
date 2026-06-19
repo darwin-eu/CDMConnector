@@ -41,9 +41,6 @@ vignettes/*.pdf
 inst/doc
 /doc/
 /Meta/
-.vscode/
-.claude/
-coverage_results.rds
 
 # Local work files
 /scratch/
@@ -54,3 +51,8 @@ errorReportSql.txt
 .claude/
 .vscode/
 coverage_results.rds
+coverage.xml
+coverage/
+.positai
+*rsconnect*
+*problems*

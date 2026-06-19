@@ -1,0 +1,208 @@
+---
+title: "How to Test Study Code on Target Databases"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Overview
+
+When developing an OHDSI study package you often want to verify that your
+analysis code runs correctly on the same database platform your collaborators
+use (PostgreSQL, SQL Server, Databricks/Spark, etc.). The workflow below shows
+how to:
+
+1. Create a test CDM locally with `TestGenerator::patientsCDM()`
+2. Trim the vocabulary to the minimum needed with `cdmTrimVocabulary()`
+3. Upload the test CDM to a remote database with `copyCdmTo()`
+4. Run your study on the remote CDM
+5. Clean up the test schema
+
+## 1. Load test data
+
+Use `TestGenerator::patientsCDM()` to build a small CDM backed by DuckDB.
+
+```{r generate}
+# this code requires development version of CDMConnector
+remotes::install_github("darwin-eu-dev/CDMConnector", upgrade = "never")
+
+library(CDMConnector)
+cdm <- TestGenerator::patientsCDM("~/darwin_studies/AML/P4-C1-007/inst/testPatients/aml10")
+
+cdm$person
+```
+
+## 2. Trim the vocabulary
+
+A full OMOP vocabulary has millions of rows. For a small test CDM most of that
+is unnecessary and slows down the upload. `cdmTrimVocabulary()` keeps only the
+concepts that actually appear in the CDM plus their ancestors in
+`concept_ancestor` (needed for concept set resolution). Tables like
+`concept_synonym` and `source_to_concept_map` are emptied entirely.
+
+```{r trim}
+cdm <- cdmTrimVocabulary(cdm)
+```
+
+After trimming you can inspect the size:
+
+```{r check-size}
+cdm$concept |> dplyr::tally()
+cdm$concept_ancestor |> dplyr::tally()
+cdm$concept_relationship |> dplyr::tally()
+```
+
+## 3. Connect to a remote database
+
+Create a DBI connection and choose a dedicated schema (or prefix) for the test
+data. Using a separate schema makes cleanup easy: you can drop the entire
+schema when you are done.
+
+### PostgreSQL
+
+```{r pg-connect}
+con <- DBI::dbConnect(
+  RPostgres::Postgres(),
+  dbname   = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
+  host     = Sys.getenv("CDM5_POSTGRESQL_HOST"),
+  user     = Sys.getenv("CDM5_POSTGRESQL_USER"),
+  password = Sys.getenv("CDM5_POSTGRESQL_PASSWORD")
+)
+
+# Create a dedicated schema for the test CDM
+test_schema <- "test_study_cdm"
+DBI::dbExecute(con, paste("CREATE SCHEMA IF NOT EXISTS", test_schema))
+```
+
+### SQL Server
+
+```{r sqlserver-connect}
+con <- DBI::dbConnect(
+  odbc::odbc(),
+  Driver   = Sys.getenv("SQL_SERVER_DRIVER"),
+  Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
+  Database = Sys.getenv("CDM5_SQL_SERVER_CDM_DATABASE"),
+  UID      = Sys.getenv("CDM5_SQL_SERVER_USER"),
+  PWD      = Sys.getenv("CDM5_SQL_SERVER_PASSWORD"),
+  TrustServerCertificate = "yes",
+  Port     = Sys.getenv("CDM5_SQL_SERVER_PORT")
+)
+
+# Create a dedicated schema for the test CDM
+test_schema <- "test_study_cdm"
+DBI::dbExecute(con, paste("CREATE SCHEMA", test_schema))
+```
+
+### Databricks / Spark
+
+```{r spark-connect}
+con <- DBI::dbConnect(
+  odbc::databricks(),
+  httpPath       = Sys.getenv("DATABRICKS_HTTPPATH"),
+  useNativeQuery = FALSE,
+  bigint         = "numeric"
+)
+
+# On Databricks, schemas live inside a catalog
+test_schema <- c(
+  catalog = Sys.getenv("DATABRICKS_CATALOG", "hive_metastore"),
+  schema  = "test_study_cdm"
+)
+
+DBI::dbExecute(con, paste0(
+  "CREATE SCHEMA IF NOT EXISTS ",
+  paste(test_schema, collapse = ".")
+))
+```
+
+## 4. Upload the test CDM
+
+`copyCdmTo()` collects each table from the local DuckDB CDM and inserts it
+into the remote schema. Because we trimmed the vocabulary the upload is fast.
+
+```{r upload}
+remote_cdm <- copyCdmTo(
+  con       = con,
+  cdm       = cdm,
+  schema    = test_schema,
+  overwrite = TRUE
+)
+```
+
+## 5. Run your study
+
+Now you can run your study code against the remote CDM exactly as a
+collaborator would. Here is a minimal example:
+
+```{r run-study}
+# A simple study function for demonstration purposes
+runStudy <- function(cdm) {
+  message("Starting study execution on: ", omopgenerics::cdmName(cdm))
+  message("Database platform: ", CDMConnector::dbms(cdm))
+
+  # Check the CDM
+  snap <- CDMConnector::snapshot(cdm)
+  message("Persons: ", snap$person_count)
+  message("Vocabulary version: ", snap$vocabulary_version)
+
+  # -------------------------------------------------------
+  # Your real study code goes here, e.g.:
+  #   results <- CohortIncidence::executeStudy(cdm, ...)
+  #   results <- CohortCharacteristics::summarise(cdm, ...)
+  # -------------------------------------------------------
+
+  message("Study execution complete.")
+  return(snap)
+}
+
+results <- runStudy(remote_cdm)
+results
+```
+
+## 6. Clean up
+
+After you have verified that the study runs, drop the test schema to free
+space. **Be careful** -- this permanently deletes all tables in the schema.
+
+### PostgreSQL
+
+```{r cleanup-pg}
+DBI::dbExecute(con, paste("DROP SCHEMA", test_schema, "CASCADE"))
+DBI::dbDisconnect(con)
+```
+
+### SQL Server
+
+```{r cleanup-sqlserver}
+# SQL Server requires dropping all tables before the schema
+tables <- DBI::dbListTables(con)
+for (tbl in tables) {
+  DBI::dbExecute(con, paste0("DROP TABLE IF EXISTS ", test_schema, ".", tbl))
+}
+DBI::dbExecute(con, paste("DROP SCHEMA", test_schema))
+DBI::dbDisconnect(con)
+```
+
+### Databricks / Spark
+
+```{r cleanup-spark}
+DBI::dbExecute(con, paste0(
+  "DROP SCHEMA IF EXISTS ",
+  paste(test_schema, collapse = "."),
+  " CASCADE"
+))
+DBI::dbDisconnect(con)
+```
+
+## Summary
+
+| Step | Function | Purpose |
+|------|----------|---------|
+| Create CDM | `TestGenerator::patientsCDM` | Create test CDM locally |
+| Trim | `cdmTrimVocabulary()` | Remove unused vocabulary rows |
+| Connect | `DBI::dbConnect()` | Open connection to target platform |
+| Upload | `copyCdmTo()` | Copy test CDM to remote schema |
+| Run | `runStudy(cdm)` | Execute study code on remote data |
+| Clean up | `DROP SCHEMA ... CASCADE` | Remove test data from remote database |
