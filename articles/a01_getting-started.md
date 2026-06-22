@@ -66,7 +66,7 @@ exampleDatasets()
 #> [25] "Synthea27NjParquet"                  "delphi-100k"
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
-#> Creating CDM database /tmp/Rtmp2DhJod/GiBleed_5.3.zip
+#> Creating CDM database /tmp/RtmpDklJzh/GiBleed_5.3.zip
 DBI::dbListTables(con)
 #>  [1] "care_site"             "cdm_source"            "concept"              
 #>  [4] "concept_ancestor"      "concept_class"         "concept_relationship" 
@@ -121,7 +121,7 @@ cdm
 #> • other tables: -
 cdm$observation_period
 #> # A query:  ?? x 5
-#> # Database: DuckDB 1.5.2 [unknown@Linux 6.17.0-1018-azure:R 4.6.0//tmp/Rtmp2DhJod/file23c11b0aea5f.duckdb]
+#> # Database: DuckDB 1.5.4 [unknown@Linux 6.17.0-1018-azure:R 4.6.0//tmp/RtmpDklJzh/file2303ce75f17.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -259,18 +259,18 @@ cdm$condition_occurrence %>%
   collect() %>% 
   select("concept_name", "n") 
 #> # A tibble: 113 × 2
-#>    concept_name                                                        n
-#>    <chr>                                                           <dbl>
-#>  1 poliovirus vaccine, inactivated                                  7654
-#>  2 zoster vaccine, live                                             2082
-#>  3 Prednisone 5 MG Oral Tablet                                       152
-#>  4 Penicillin G 375 MG/ML Injectable Solution                       1119
-#>  5 Acetaminophen 325 MG / Oxycodone Hydrochloride 5 MG Oral Tablet   301
-#>  6 pneumococcal polysaccharide vaccine, 23 valent                    708
-#>  7 clopidogrel 75 MG Oral Tablet                                     356
-#>  8 NITROFURANTOIN, MACROCRYSTALS 50 MG Oral Capsule                  118
-#>  9 Chlorpheniramine Maleate 2 MG/ML Oral Solution                     70
-#> 10 Cefaclor 250 MG Oral Capsule                                       82
+#>    concept_name                                                                n
+#>    <chr>                                                                   <dbl>
+#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305
+#>  2 hepatitis B vaccine, adult dosage                                        1826
+#>  3 Penicillin V Potassium 500 MG Oral Tablet                                1060
+#>  4 tetanus and diphtheria toxoids, adsorbed, preservative free, for adult…  7203
+#>  5 Alendronic acid 10 MG Oral Tablet                                         129
+#>  6 {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997
+#>  7 Penicillin V Potassium 250 MG Oral Tablet                                1666
+#>  8 alteplase 100 MG Injection                                                210
+#>  9 Amoxicillin 250 MG Oral Capsule                                           188
+#> 10 Methylphenidate Hydrochloride 20 MG Oral Tablet                            63
 #> # ℹ 103 more rows
 ```
 
@@ -388,7 +388,7 @@ drugs %>% show_query()
 
 drugs
 #> # A query:  ?? x 11
-#> # Database: DuckDB 1.5.2 [unknown@Linux 6.17.0-1018-azure:R 4.6.0//tmp/Rtmp2DhJod/file23c11b0aea5f.duckdb]
+#> # Database: DuckDB 1.5.4 [unknown@Linux 6.17.0-1018-azure:R 4.6.0//tmp/RtmpDklJzh/file2303ce75f17.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
 #>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
@@ -559,16 +559,16 @@ cdmFlatten(cdm_pneumonia,
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1      2333                3013721 1978-05-19 1978-05-19            5001 measu…
-#>  2         2                3011505 2003-08-12 2003-08-12            5001 measu…
-#>  3       986                4024958 1934-06-21 1934-06-21            5001 measu…
-#>  4      5185                3006322 1983-01-22 1983-01-22            5001 measu…
-#>  5         2                4052083 1980-07-27 1980-07-27            5001 measu…
-#>  6      1847                4024958 1926-09-03 1926-09-03            5001 measu…
-#>  7      1954                4024958 1944-09-28 1944-09-28            5001 measu…
-#>  8      5185                4052083 1993-01-01 1993-01-01            5001 measu…
-#>  9      5081                3006322 1974-04-27 1974-04-27            5001 measu…
-#> 10       445                3006322 1929-08-21 1929-08-21            5001 measu…
+#>  1      2821                  28060 1927-03-14 1927-03-23           32020 condi…
+#>  2      2801                4283893 1966-03-25 1966-06-03           32020 condi…
+#>  3      3223                  81151 1981-06-06 1981-06-20           32020 condi…
+#>  4         2                 260139 1955-10-22 1955-10-29           32020 condi…
+#>  5      1923                 378001 1972-10-29 1972-11-28           32020 condi…
+#>  6      4976                4152936 1950-12-05 1950-12-19           32020 condi…
+#>  7       596               40481087 1950-12-10 1950-12-17           32020 condi…
+#>  8       334               40481087 1938-02-25 1938-03-11           32020 condi…
+#>  9      1359                4112343 1941-07-26 1941-08-05           32020 condi…
+#> 10      3179               40481087 1944-12-27 1945-01-17           32020 condi…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```
