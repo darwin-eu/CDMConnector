@@ -48,6 +48,7 @@ example datasets available run
 [`exampleDatasets()`](https://darwin-eu.github.io/CDMConnector/reference/exampleDatasets.md).
 
 ``` r
+
 library(CDMConnector)
 exampleDatasets()
 #>  [1] "GiBleed"                             "synthea-allergies-10k"              
@@ -103,6 +104,7 @@ Every cdm object needs a `cdmName` that is used to identify the CDM in
 output files.
 
 ``` r
+
 cdm <- cdmFromCon(con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "main")
 cdm
 #> 
@@ -119,7 +121,7 @@ cdm
 #> • other tables: -
 cdm$observation_period
 #> # Source:   table<observation_period> [?? x 5]
-#> # Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmprYE29l/file108368bccd5b.duckdb]
+#> # Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmptuRSGj/filec6bc9cda240.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -141,11 +143,12 @@ cdm$observation_period
 Individual CDM table references can be accessed using \`\$\`.
 
 ``` r
+
 cdm$person %>% 
   dplyr::glimpse()
 #> Rows: ??
 #> Columns: 18
-#> Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmprYE29l/file108368bccd5b.duckdb]
+#> Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmptuRSGj/filec6bc9cda240.duckdb]
 #> $ person_id                   <int> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…
 #> $ gender_concept_id           <int> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …
 #> $ year_of_birth               <int> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …
@@ -176,6 +179,7 @@ a gigantic result set! In general it is better to aggregate data in the
 database, if possible, before bringing data into R.
 
 ``` r
+
 library(dplyr)
 #> 
 #> Attaching package: 'dplyr'
@@ -220,6 +224,7 @@ Here is an example query looking at the most common conditions in the
 CDM.
 
 ``` r
+
 cdm$condition_occurrence %>% 
   count(condition_concept_id, sort = T) %>% 
   left_join(cdm$concept, by = c("condition_concept_id" = "concept_id")) %>% 
@@ -245,6 +250,7 @@ Let’s look at the most common drugs used by patients with “Acute viral
 pharyngitis”.
 
 ``` r
+
 cdm$condition_occurrence %>% 
   filter(condition_concept_id == 4112343) %>% 
   distinct(person_id) %>% 
@@ -254,24 +260,25 @@ cdm$condition_occurrence %>%
   collect() %>% 
   select("concept_name", "n") 
 #> # A tibble: 113 × 2
-#>    concept_name                                                      n
-#>    <chr>                                                         <dbl>
-#>  1 hepatitis B vaccine, adult dosage                              1826
-#>  2 Alendronic acid 10 MG Oral Tablet                               129
-#>  3 alteplase 100 MG Injection                                      210
-#>  4 Nitroglycerin 0.4 MG/ACTUAT Mucosal Spray                       207
-#>  5 atorvastatin 80 MG Oral Tablet                                   57
-#>  6 Fentanyl                                                          8
-#>  7 Etonogestrel 68 MG Drug Implant                                   6
-#>  8 Galantamine 4 MG Oral Tablet                                     83
-#>  9 Levonorgestrel 0.00354 MG/HR Drug Implant                        29
-#> 10 {28 (Norethindrone 0.35 MG Oral Tablet) } Pack [Errin 28 Day]     4
+#>    concept_name                                                         n
+#>    <chr>                                                            <dbl>
+#>  1 zoster vaccine, live                                              2082
+#>  2 Prednisone 5 MG Oral Tablet                                        152
+#>  3 Penicillin G 375 MG/ML Injectable Solution                        1119
+#>  4 Acetaminophen 325 MG / Oxycodone Hydrochloride 5 MG Oral Tablet    301
+#>  5 pneumococcal polysaccharide vaccine, 23 valent                     708
+#>  6 NITROFURANTOIN, MACROCRYSTALS 50 MG Oral Capsule                   118
+#>  7 Digoxin 0.125 MG Oral Tablet                                       135
+#>  8 heparin                                                             35
+#>  9 Acetaminophen 750 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet    70
+#> 10 Hydrocortisone 10 MG/ML Topical Cream                              160
 #> # ℹ 103 more rows
 ```
 
 To inspect the generated SQL use `show_query` from dplyr.
 
 ``` r
+
 cdm$condition_occurrence %>% 
   filter(condition_concept_id == 4112343) %>% 
   distinct(person_id) %>% 
@@ -355,6 +362,7 @@ This is a schema in the database where you have write permissions.
 Typically this should be a separate schema from the “cdm_schema”.
 
 ``` r
+
 DBI::dbExecute(con, "create schema scratch;")
 #> [1] 0
 cdm <- cdmFromCon(con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "scratch")
@@ -364,6 +372,7 @@ cdm <- cdmFromCon(con, cdmName = "eunomia", cdmSchema = "main", writeSchema = "s
 ```
 
 ``` r
+
 
 drugs <- cdm$condition_occurrence %>% 
   filter(condition_concept_id == 4112343) %>% 
@@ -380,19 +389,19 @@ drugs %>% show_query()
 
 drugs
 #> # Source:   table<scratch.test> [?? x 11]
-#> # Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmprYE29l/file108368bccd5b.duckdb]
+#> # Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmptuRSGj/filec6bc9cda240.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
-#>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
-#>  2        19133873  1666 Penicillin V … Drug      RxNorm        Clinical Drug   
-#>  3        40236446    63 Methylphenida… Drug      RxNorm        Clinical Drug   
-#>  4        19073188   246 Amoxicillin 5… Drug      RxNorm        Clinical Drug   
-#>  5        40163554   135 Warfarin Sodi… Drug      RxNorm        Clinical Drug   
-#>  6        19016749    16 remifentanil   Drug      RxNorm        Ingredient      
-#>  7        46275444    35 Piperacillin … Drug      RxNorm        Clinical Drug   
-#>  8        19129144    12 {28 (Norethin… Drug      RxNorm        Branded Pack    
-#>  9        19057271     1 Lorazepam 2 M… Drug      RxNorm        Clinical Drug   
-#> 10        19077572    83 Galantamine 4… Drug      RxNorm        Clinical Drug   
+#>  1        40213160  7654 poliovirus va… Drug      CVX           CVX             
+#>  2        19075601   356 clopidogrel 7… Drug      RxNorm        Clinical Drug   
+#>  3        19112599    70 Chlorpheniram… Drug      RxNorm        Clinical Drug   
+#>  4        19074841    57 12 HR Cefaclo… Drug      RxNorm        Quant Clinical …
+#>  5        40174880    31 Levothyroxine… Drug      RxNorm        Clinical Drug   
+#>  6        43012433     5 21 DAY Ethiny… Drug      RxNorm        Quant Branded D…
+#>  7        40223774    23 Donepezil hyd… Drug      RxNorm        Branded Drug Co…
+#>  8        40223768    14 Donepezil hyd… Drug      RxNorm        Clinical Drug   
+#>  9        19133905  1060 Penicillin V … Drug      RxNorm        Clinical Drug   
+#> 10        40213227  7203 tetanus and d… Drug      CVX           CVX             
 #> # ℹ more rows
 #> # ℹ 5 more variables: standard_concept <chr>, concept_code <chr>,
 #> #   valid_start_date <date>, valid_end_date <date>, invalid_reason <chr>
@@ -410,6 +419,7 @@ language](https://tidyselect.r-lib.org/reference/language.html) and
 provides a new selection helper: `tbl_group`.
 
 ``` r
+
 cdm %>% cdmSelect("person", "observation_period") # quoted names
 #> 
 #> ── # OMOP CDM reference (duckdb) of eunomia ────────────────────────────────────
@@ -453,6 +463,7 @@ supports several subsets of the CDM: “all”, “clinical”, “vocab”,
 “derived”, and “default”.
 
 ``` r
+
 # pre-defined groups
 cdm %>% cdmSelect(tblGroup("clinical")) 
 #> 
@@ -478,6 +489,7 @@ cdm %>% cdmSelect(tblGroup("vocab"))
 The default set of CDM tables included in a CDM object is:
 
 ``` r
+
 tblGroup("default")
 #>  [1] "person"               "observation_period"   "visit_occurrence"    
 #>  [4] "condition_occurrence" "drug_exposure"        "procedure_occurrence"
@@ -498,6 +510,7 @@ best then the number of persons in the subset is quite small and the
 database has indexes on the “person_id” columns of each table.
 
 ``` r
+
 personIds <- cdm$condition_occurrence %>% 
   filter(condition_concept_id == 255848) %>% 
   distinct(person_id) %>% 
@@ -525,6 +538,7 @@ use `cdm_sample`.
 
 ``` r
 
+
 cdm_100person <- cdmSample(cdm, n = 100)
 
 tally(cdm_100person$person) %>% pull("n")
@@ -539,22 +553,23 @@ per observation. This transformation should only be done with a small
 number of persons and events.
 
 ``` r
+
 cdmFlatten(cdm_pneumonia,
            domain = c("condition_occurrence", "drug_exposure", "measurement")) %>% 
   collect()
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1      5251                3006322 1947-12-11 1947-12-11            5001 measu…
-#>  2      1954                3051031 1967-11-18 1967-11-18            5001 measu…
-#>  3      3618                4052083 1916-08-20 1916-08-20            5001 measu…
-#>  4      2394                1127433 1914-08-14 1914-08-28        38000177 drug_…
-#>  5       507               19078461 1994-05-11 1994-05-25        38000177 drug_…
-#>  6      2739               40213160 1958-02-26 1958-02-26          581452 drug_…
-#>  7      2801               40481087 1957-07-10 1957-07-31           32020 condi…
-#>  8      1847                 260139 1949-05-10 1949-05-17           32020 condi…
-#>  9      5333                 260139 1955-12-06 1955-12-20           32020 condi…
-#> 10       430                4052083 2006-02-15 2006-02-15            5001 measu…
+#>  1      5081                4112343 1982-04-29 1982-05-10           32020 condi…
+#>  2      1847                 372328 1915-07-06 1915-10-17           32020 condi…
+#>  3      5078                4024958 1962-04-14 1962-04-14            5001 measu…
+#>  4      5081                3006322 1939-11-19 1939-11-19            5001 measu…
+#>  5      2827                  28060 1923-01-21 1923-02-03           32020 condi…
+#>  6      3851                 260139 1969-02-17 1969-03-03           32020 condi…
+#>  7      1516               40165015 1960-08-12 1960-08-12        38000177 drug_…
+#>  8      3614                3000963 2009-06-11 2009-06-11            5001 measu…
+#>  9      2739                4112343 1954-12-09 1954-12-21           32020 condi…
+#> 10         2                3006322 1969-09-18 1969-09-18            5001 measu…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```
@@ -566,6 +581,7 @@ closed any cdm objects created with that connection can no longer be
 used.
 
 ``` r
+
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```
 

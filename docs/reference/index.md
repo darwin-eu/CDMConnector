@@ -23,6 +23,8 @@ objects.
   : Subset a cdm object to a set of persons
 - [`cdmSubsetCohort()`](https://darwin-eu.github.io/CDMConnector/reference/cdmSubsetCohort.md)
   : Subset a cdm to the individuals in one or more cohorts
+- [`cdmTrimVocabulary()`](https://darwin-eu.github.io/CDMConnector/reference/cdmTrimVocabulary.md)
+  : Trim vocabulary tables to the minimum needed for the CDM
 - [`cdmWriteSchema()`](https://darwin-eu.github.io/CDMConnector/reference/cdmWriteSchema.md)
   : Get cdm write schema
 - [`computeDataHashByTable()`](https://darwin-eu.github.io/CDMConnector/reference/computeDataHashByTable.md)
@@ -33,6 +35,8 @@ objects.
   : Create a source for a cdm in a database.
 - [`dropTable(`*`<db_cdm>`*`)`](https://darwin-eu.github.io/CDMConnector/reference/dropTable.db_cdm.md)
   : Drop table from a database backed cdm object
+- [`insertTableSpark()`](https://darwin-eu.github.io/CDMConnector/reference/insertTableSpark.md)
+  : Fast bulk insert of a local table on Spark / Databricks
 - [`snapshot()`](https://darwin-eu.github.io/CDMConnector/reference/snapshot.md)
   : Extract CDM metadata
 - [`tblGroup()`](https://darwin-eu.github.io/CDMConnector/reference/tblGroup.md)

@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -356,7 +356,7 @@ semantics.</p>
 <div class="section level3">
 <h3 id="automated-equivalence-validation">4. Automated Equivalence Validation<a class="anchor" aria-label="anchor" href="#automated-equivalence-validation"></a>
 </h3>
-<p>The package includes <code><a href="https://rdrr.io/pkg/atlasCohortGenerator/man/validate_batch_equivalence.html" class="external-link">validate_batch_equivalence()</a></code> which
+<p>The package includes <code>validate_batch_equivalence()</code> which
 runs both paths on the same CDM and compares results row-by-row:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Run batch path</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>cdm <span class="ot">&lt;-</span> <span class="fu">generateCohortSet2</span>(cdm, cohortSet, <span class="at">name =</span> <span class="st">"batch_test"</span>)</span>
@@ -546,7 +546,7 @@ approach.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">atlasCohortGenerator</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Generate SQL for one cohort</span></span>
-<span><span class="va">sql</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/atlasCohortGenerator/man/atlas_json_to_sql.html" class="external-link">atlas_json_to_sql</a></span><span class="op">(</span></span>
+<span><span class="va">sql</span> <span class="op">&lt;-</span> <span class="fu">atlas_json_to_sql</span><span class="op">(</span></span>
 <span>  json <span class="op">=</span> <span class="st">"path/to/aspirin_users.json"</span>,</span>
 <span>  cohort_id <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  cdm_schema <span class="op">=</span> <span class="st">"cdm"</span>,</span>
@@ -559,7 +559,7 @@ approach.</p>
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Generate optimized batch SQL for multiple cohorts</span></span>
-<span><span class="va">batch_sql</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/atlasCohortGenerator/man/atlas_json_to_sql_batch.html" class="external-link">atlas_json_to_sql_batch</a></span><span class="op">(</span></span>
+<span><span class="va">batch_sql</span> <span class="op">&lt;-</span> <span class="fu">atlas_json_to_sql_batch</span><span class="op">(</span></span>
 <span>  json_inputs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="st">"path/to/aspirin_users.json"</span>,</span>
 <span>    <span class="st">"path/to/metformin_users.json"</span>,</span>
@@ -577,7 +577,7 @@ approach.</p>
 <span>  cohort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aspirin.json"</span>, <span class="st">"metformin.json"</span>, <span class="st">"aspirin_diabetics.json"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">batch_sql</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/atlasCohortGenerator/man/atlas_json_to_sql_batch.html" class="external-link">atlas_json_to_sql_batch</a></span><span class="op">(</span></span>
+<span><span class="va">batch_sql</span> <span class="op">&lt;-</span> <span class="fu">atlas_json_to_sql_batch</span><span class="op">(</span></span>
 <span>  json_inputs <span class="op">=</span> <span class="va">cohort_set</span>,</span>
 <span>  optimize <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -600,7 +600,7 @@ approach.</p>
 </h3>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compare batch vs single-cohort results on your CDM</span></span>
-<span><span class="va">ok</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/atlasCohortGenerator/man/validate_batch_equivalence.html" class="external-link">validate_batch_equivalence</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohort_set</span>, name <span class="op">=</span> <span class="st">"equiv_test"</span><span class="op">)</span></span>
+<span><span class="va">ok</span> <span class="op">&lt;-</span> <span class="fu">validate_batch_equivalence</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohort_set</span>, name <span class="op">=</span> <span class="st">"equiv_test"</span><span class="op">)</span></span>
 <span><span class="co"># Prints per-cohort match status; returns TRUE if all match</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -662,7 +662,7 @@ constraint exists between different cohorts’ Phase 2 blocks.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
+  <p>Developed by Ger Inberg, Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
 </div>
 
 <div class="pkgdown-footer-right">

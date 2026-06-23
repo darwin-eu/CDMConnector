@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,6 +53,7 @@
 <span>  <span class="va">con</span>,</span>
 <span>  <span class="va">cdmSchema</span>,</span>
 <span>  writeSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  vocabularySchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cohortTables <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdmVersion <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cdmName <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -79,6 +80,11 @@ to NULL.</p></dd>
 <dt id="arg-writeschema">writeSchema<a class="anchor" aria-label="anchor" href="#arg-writeschema"></a></dt>
 <dd><p>An optional schema in the CDM database that the user has
 write access to.</p></dd>
+
+
+<dt id="arg-vocabularyschema">vocabularySchema<a class="anchor" aria-label="anchor" href="#arg-vocabularyschema"></a></dt>
+<dd><p>An optional schema where the OMOP vocabulary tables
+are located. If NULL, vocabulary tables are expected to be in <code>cdmSchema</code>.</p></dd>
 
 
 <dt id="arg-cohorttables">cohortTables<a class="anchor" aria-label="anchor" href="#arg-cohorttables"></a></dt>
@@ -180,7 +186,7 @@ dropping all tables that start with the prefix.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
+  <p>Developed by Ger Inberg, Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
 </div>
 
 <div class="pkgdown-footer-right">

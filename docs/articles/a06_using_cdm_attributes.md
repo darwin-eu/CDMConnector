@@ -6,6 +6,7 @@ Let’s again load required packages and connect to our Eunomia dataset in
 duckdb.
 
 ``` r
+
 library(CDMConnector)
 library(omopgenerics)
 library(dplyr)
@@ -36,6 +37,7 @@ results with a particular cdm. We can use `cdmName` (or it’s snake case
 equivalent `cdm_name`) to get the cdm name.
 
 ``` r
+
 cdmName(cdm)
 #> [1] "eunomia"
 ```
@@ -46,6 +48,7 @@ The OMOP CDM has various versions. We also have an attribute giving the
 version of the cdm we have connected to.
 
 ``` r
+
 cdmVersion(cdm)
 #> [1] "5.3"
 ```
@@ -56,8 +59,9 @@ We also have an attribute identifying the database connection underlying
 the cdm reference.
 
 ``` r
+
 cdmCon(cdm)
-#> <duckdb_connection 39010 driver=<duckdb_driver dbdir='/private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpXggvF5/file108a81472c50a.duckdb' read_only=FALSE bigint=numeric>>
+#> <duckdb_connection dd520 driver=<duckdb_driver dbdir='/private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpDA411L/filec7287d78fc3f.duckdb' read_only=FALSE bigint=numeric>>
 ```
 
 This can be useful, for example, if we want to make use of DBI functions
@@ -67,6 +71,7 @@ list the names of remote tables accessible through the connection,
 `dbGetQuery` to returns the result of a query
 
 ``` r
+
 DBI::dbListTables(cdmCon(cdm))
 #>  [1] "care_site"             "cdm_source"            "concept"              
 #>  [4] "concept_ancestor"      "concept_class"         "concept_relationship" 
@@ -133,6 +138,7 @@ have various attributes that can be useful for subsequent analysis.
 Here we create a cohort table with a single cohort.
 
 ``` r
+
 cdm <- generateConceptCohortSet(cdm = cdm, 
                                 conceptSet = list("gi_bleed" = 192671,
                                                   "celecoxib" = 1118084), 
@@ -148,12 +154,14 @@ associated with the cohorts (along with utility functions to make it
 easier to access this attribute).
 
 ``` r
+
 settings(cdm$study_cohorts)
 ```
 
 We have a cohort_count attribute with counts for each of the cohorts.
 
 ``` r
+
 cohortCount(cdm$study_cohorts)
 ```
 
@@ -161,6 +169,7 @@ And we also have an attribute, cohort attrition, with a summary of
 attrition when creating the cohorts.
 
 ``` r
+
 attrition(cdm$study_cohorts)
 ```
 
@@ -170,6 +179,7 @@ Say we create a custom GI bleed cohort with the standard cohort
 structure
 
 ``` r
+
 cdm$gi_bleed <- cdm$condition_occurrence %>% 
   filter(condition_concept_id == 192671) %>% 
   mutate(cohort_definition_id = 1) %>% 
@@ -185,7 +195,7 @@ cdm$gi_bleed %>%
   glimpse()
 #> Rows: ??
 #> Columns: 4
-#> Database: DuckDB 1.4.4 [root@Darwin 25.3.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpXggvF5/file108a81472c50a.duckdb]
+#> Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpDA411L/filec7287d78fc3f.duckdb]
 #> $ cohort_definition_id <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
 #> $ subject_id           <int> 273, 61, 351, 579, 549, 116, 163, 304, 326, 285, …
 #> $ cohort_start_date    <date> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …
@@ -197,6 +207,7 @@ The minimum requirement for this is that we also define the cohort set
 to associate with our set of custom cohorts.
 
 ``` r
+
 GI_bleed_cohort_ref <- tibble(cohort_definition_id = 1, cohort_name = "custom_gi_bleed")
 
 cdm$gi_bleed <- omopgenerics::newCohortTable(
@@ -210,6 +221,7 @@ allow it to be used by analytic packages designed to work with cdm
 cohorts.
 
 ``` r
+
 settings(cdm$gi_bleed)
 #> # A tibble: 1 × 2
 #>   cohort_definition_id cohort_name    

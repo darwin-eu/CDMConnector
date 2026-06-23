@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,6 +42,19 @@
       <small>Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.6.0" id="cdmconnector-260">CDMConnector 2.6.0<a class="anchor" aria-label="anchor" href="#cdmconnector-260"></a></h2><p class="text-muted">CRAN release: 2026-06-16</p>
+<ul><li>Add <code>vocabularySchema</code> argument to <code>cdmFromCon</code> for databases with a dedicated vocabulary schema (<a href="https://github.com/darwin-eu/CDMConnector/issues/619" class="external-link">#619</a>) <a href="https://github.com/ginberg" class="external-link">@ginberg</a></li>
+<li>Fix empty cohort table date columns being inserted as character on Spark (<a href="https://github.com/darwin-eu/CDMConnector/issues/618" class="external-link">#618</a>)</li>
+<li>Fix <code>cdmFromCon</code> SQL dialect error with <code>DatabaseConnector</code> DBI connections (e.g. <code>LIMIT</code> on SQL Server) by unwrapping to the underlying connection (<a href="https://github.com/darwin-eu/CDMConnector/issues/613" class="external-link">#613</a>)</li>
+<li>Use fast multi-row <code>VALUES</code> inserts by default on Spark/Databricks (~50x faster than the previous approach); also exported as <code>insertTableSpark</code> (<a href="https://github.com/darwin-eu/CDMConnector/issues/617" class="external-link">#617</a>)</li>
+<li>Use <code>httr2</code> instead of <code>httr</code> (<a href="https://github.com/darwin-eu/CDMConnector/issues/616" class="external-link">#616</a>)</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="2.5.1" id="cdmconnector-251">CDMConnector 2.5.1<a class="anchor" aria-label="anchor" href="#cdmconnector-251"></a></h2><p class="text-muted">CRAN release: 2026-04-03</p>
+<ul><li>Remove <code>generateCohortSet2</code> and put it in a new experimental package instead</li>
+<li>Add workaround for <code>dbWriteTable</code> on Spark</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.5.0" id="cdmconnector-250">CDMConnector 2.5.0<a class="anchor" aria-label="anchor" href="#cdmconnector-250"></a></h2><p class="text-muted">CRAN release: 2026-03-08</p>
 <ul><li>Add Delphi-100k example dataset</li>
@@ -263,7 +276,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
+  <p>Developed by Ger Inberg, Adam Black, Artem Gorbachev, Edward Burn, Marti Catala Sabate, Ioanna Nika.</p>
 </div>
 
 <div class="pkgdown-footer-right">

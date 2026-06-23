@@ -7,6 +7,7 @@ The following connection examples are provided for reference.
 Connect to Postgres using the RPostgres package.
 
 ``` r
+
 con <- DBI::dbConnect(RPostgres::Postgres(),
                       dbname = Sys.getenv("CDM5_POSTGRESQL_DBNAME"),
                       host = Sys.getenv("CDM5_POSTGRESQL_HOST"),
@@ -23,6 +24,7 @@ DBI::dbDisconnect(con)
 Connect to Postgres using DatabaseConnector (version 7 or later).
 
 ``` r
+
 
 library(DatabaseConnector)
 connectionDetails <- createConnectionDetails(dbms = "postgresql",
@@ -45,6 +47,7 @@ disconnect(con)
 Connect to Redshift using the RPostgres package.
 
 ``` r
+
 con <- DBI::dbConnect(RPostgres::Redshift(),
                       dbname   = Sys.getenv("CDM5_REDSHIFT_DBNAME"),
                       host     = Sys.getenv("CDM5_REDSHIFT_HOST"),
@@ -63,6 +66,7 @@ Connect to Redshift using the DatabaseConnector package (version 7 or
 later).
 
 ``` r
+
 library(DatabaseConnector)  
 
 connectionDetails <- createConnectionDetails(dbms = "redshift",
@@ -87,6 +91,7 @@ Note, you’ll likely need to [download the ODBC Driver for SQL
 Server](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16).
 
 ``` r
+
 con <- DBI::dbConnect(odbc::odbc(),
                       Driver   = "ODBC Driver 18 for SQL Server",
                       Server   = Sys.getenv("CDM5_SQL_SERVER_SERVER"),
@@ -109,6 +114,7 @@ for instructions on how to set up the DSN. If we named it “SQL”, our
 connection is then simplified to.
 
 ``` r
+
 con <- DBI::dbConnect(odbc::odbc(), "SQL")
 cdm <- cdmFromCon(con, 
                     cdmSchema = c("tempdb", "dbo"), 
@@ -120,6 +126,7 @@ Connect to SQL Server using the DatabaseConnector package (version 7 or
 later).
 
 ``` r
+
 library(DatabaseConnector)
 connectionDetails <- createConnectionDetails(
   dbms = "sql server",
@@ -143,6 +150,7 @@ disconnect(con)
 We can use the odbc package to connect to snowflake.
 
 ``` r
+
 con <- DBI::dbConnect(odbc::odbc(),
                           SERVER = Sys.getenv("SNOWFLAKE_SERVER"),
                           UID = Sys.getenv("SNOWFLAKE_USER"),
@@ -171,6 +179,7 @@ Your connection string will look something like
 `jdbc:snowflake://asdf.snowflakecomputing.com?db=DBNAME&warehouse=COMPUTE_WH`
 
 ``` r
+
 library(DatabaseConnector)
 
 connectionDetails <- createConnectionDetails(
@@ -202,6 +211,7 @@ Create or open the .Renviron file by running
 [`usethis::edit_r_environ()`](https://usethis.r-lib.org/reference/edit.html)
 
 ``` r
+
 con <- DBI::dbConnect(
   odbc::databricks(),
   httpPath = Sys.getenv("DATABRICKS_HTTPPATH"),
@@ -222,6 +232,7 @@ example. The connection will look something like
 The password should be your databricks token.
 
 ``` r
+
 library(DatabaseConnector)
 
 connectionDetails <- createConnectionDetails(
@@ -251,6 +262,7 @@ package to connect. The `dbdir` argument should point to the database
 file location.
 
 ``` r
+
 library(CDMConnector)
 con <- DBI::dbConnect(duckdb::duckdb(), 
                       dbdir = eunomiaDir("GiBleed"))
@@ -266,6 +278,7 @@ We can also use DatabaseConnector to connect to duckdb. In the example
 the `server` argument points to the duckdb file location.
 
 ``` r
+
 library(DatabaseConnector)
 connectionDetails <- createConnectionDetails(
   "duckdb", 

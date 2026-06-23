@@ -112,6 +112,7 @@ generate per-cohort SQL. The batch path does not change the SQL logic;
 it only changes how the pieces are assembled:
 
 ``` r
+
 # Single-cohort path:
 result <- build_cohort_query_internal(cohort, opts)
 sql <- result$full_sql
@@ -151,6 +152,7 @@ event per person. The Phase 1 rewrite must preserve this filter. The
 assembler explicitly checks:
 
 ``` r
+
 # In assemble_batch_script():
 if (isTRUE(structured$has_qualified_limit) &&
     !grepl("ordinal\\s*=\\s*1", ins2, perl = TRUE)) {
@@ -164,9 +166,8 @@ cohort is routed through the **full script path** rather than the Phase
 
 ### 4. Automated Equivalence Validation
 
-The package includes
-[`validate_batch_equivalence()`](https://rdrr.io/pkg/atlasCohortGenerator/man/validate_batch_equivalence.html)
-which runs both paths on the same CDM and compares results row-by-row:
+The package includes `validate_batch_equivalence()` which runs both
+paths on the same CDM and compares results row-by-row:
 
 ``` r
 # Run batch path
@@ -290,6 +291,7 @@ and never produces slower results than the one-at-a-time approach.
 ### Single Cohort (No Optimization)
 
 ``` r
+
 library(atlasCohortGenerator)
 
 # Generate SQL for one cohort
@@ -305,6 +307,7 @@ sql <- atlas_json_to_sql(
 ### Batch (Optimized)
 
 ``` r
+
 # Generate optimized batch SQL for multiple cohorts
 batch_sql <- atlas_json_to_sql_batch(
   json_inputs = list(
@@ -333,6 +336,7 @@ batch_sql <- atlas_json_to_sql_batch(
 ### With CDMConnector
 
 ``` r
+
 library(CDMConnector)
 library(atlasCohortGenerator)
 
@@ -346,6 +350,7 @@ cdm <- generateCohortSet2(cdm, cohort_set, name = "my_cohorts")
 ### Validating Equivalence
 
 ``` r
+
 # Compare batch vs single-cohort results on your CDM
 ok <- validate_batch_equivalence(cdm, cohort_set, name = "equiv_test")
 # Prints per-cohort match status; returns TRUE if all match
@@ -354,6 +359,7 @@ ok <- validate_batch_equivalence(cdm, cohort_set, name = "equiv_test")
 ### Debugging
 
 ``` r
+
 # Dump the final batch SQL for inspection
 options(atlasCohortGenerator.debug_sql_file = "batch_debug.sql")
 cdm <- generateCohortSet2(cdm, cohort_set, name = "debug_run")

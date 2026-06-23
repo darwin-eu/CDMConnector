@@ -20,12 +20,14 @@ packages, subset our person table people to only include those people in
 the condition_occurrence table with condition_concept_id “4035415”
 
 ``` r
+
 library(CDMConnector)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 ```
 
 ``` r
+
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = eunomiaDir())
 cdm <- cdm_from_con(con, cdm_name = "eunomia", cdm_schema = "main", write_schema = "main")
 
@@ -49,6 +51,7 @@ cdm$condition_occurrence %>%
 We can save these tables to file
 
 ``` r
+
 dOut <- tempfile()
 dir.create(dOut)
 CDMConnector::stow(cdm, dOut, format = "parquet")
@@ -57,6 +60,7 @@ CDMConnector::stow(cdm, dOut, format = "parquet")
 And now we can create a `cdm_reference` to the files
 
 ``` r
+
 cdm_arrow <- cdm_from_files(dOut, as_data_frame = FALSE, cdm_name = "GiBleed")
 
 cdm_arrow$person %>%
@@ -69,6 +73,7 @@ cdm_arrow$condition_occurrence %>%
 And create an age at diagnosis variable
 
 ``` r
+
 result <- cdm_arrow$person %>%
   left_join(cdm_arrow$condition_occurrence, by = "person_id") %>%
   mutate(age_diag = year(condition_start_date) - year_of_birth) %>%
@@ -78,6 +83,7 @@ result <- cdm_arrow$person %>%
 We can then bring in this result to R and make the histogram
 
 ``` r
+
 str(result)
 
 result %>%
@@ -86,5 +92,6 @@ result %>%
 ```
 
 ``` r
+
 DBI::dbDisconnect(con, shutdown = TRUE)
 ```

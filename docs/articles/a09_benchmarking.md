@@ -63,6 +63,7 @@ For one CDM, use the single-database benchmark and optional equivalence
 check:
 
 ``` r
+
 source("extras/benchmark_cohort_generation.R")
 
 cohort_set <- CDMConnector::readCohortSet("path/to/cohorts")
@@ -81,6 +82,7 @@ identifier in the output CSVs (e.g. `postgres`, `redshift`, `snowflake`,
 `spark`, `sql_server`):
 
 ``` r
+
 source("extras/benchmark_cohort_generation.R")
 source("extras/benchmark_multi_database.R")
 

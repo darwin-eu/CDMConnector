@@ -9,6 +9,7 @@ cdmFromCon(
   con,
   cdmSchema,
   writeSchema = NULL,
+  vocabularySchema = NULL,
   cohortTables = NULL,
   cdmVersion = NULL,
   cdmName = NULL,
@@ -33,6 +34,11 @@ cdmFromCon(
 
   An optional schema in the CDM database that the user has write access
   to.
+
+- vocabularySchema:
+
+  An optional schema where the OMOP vocabulary tables are located. If
+  NULL, vocabulary tables are expected to be in `cdmSchema`.
 
 - cohortTables:
 
