@@ -609,6 +609,8 @@ result <- if (inherits(con, "Microsoft SQL Server")) {
   "redshift"
 } else if (inherits(con, "PqConnection")) {
   "postgresql"
+} else if (inherits(con, "PostgreSQL")) {
+  "postgresql"
 } else if (inherits(con, "BigQueryConnection")) {
   "bigquery"
 } else if (inherits(con, "SQLiteConnection")) {
