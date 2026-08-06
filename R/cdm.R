@@ -632,6 +632,7 @@ result <- if (inherits(con, "Microsoft SQL Server")) {
   supported_con <- c(
     "Microsoft SQL Server",
     "PqConnection",
+    "PostgreSQL",
     "RedshiftConnection",
     "BigQueryConnection",
     "SQLiteConnection",
