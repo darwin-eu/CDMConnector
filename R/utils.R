@@ -349,8 +349,16 @@ mapTypes <- function(conn, type) {
 
   if (type %in% c("integer", "integer64")) {
     return("INT")
-  } else if (type == "character") {
+  } else if (type %in% c("character", "factor", "ordered")) {
     return("STRING")
+  } else if (type == "logical") {
+    return("BOOL")
+  } else if (type %in% c("numeric", "double")) {
+    return("FLOAT64")
+  } else if (type == "Date") {
+    return("DATE")
+  } else if (type %in% c("POSIXct", "POSIXt")) {
+    return("TIMESTAMP")
   }
 
   return(type)
@@ -461,13 +469,19 @@ dcCreateTable <- function(conn, name, fields) {
 # On Spark/Databricks plain dbWriteTable is slow and unreliable, so use the
 # fast multi-row VALUES loader. On all other databases delegate to
 # DBI::dbWriteTable().
-.dbWriteTableSafe <- function(con, name, value, overwrite = FALSE, temporary = FALSE) {
+.dbWriteTableSafe <- function(con,
+                              name,
+                              value,
+                              overwrite = FALSE,
+                              temporary = FALSE,
+                              append = FALSE) {
   if (dbms(con) == "spark") {
     if (overwrite) try(DBI::dbRemoveTable(con, name), silent = TRUE)
     .dbWriteTableSpark(con, name, value)
   } else {
     DBI::dbWriteTable(conn = con, name = name, value = value,
-                      overwrite = overwrite, temporary = temporary)
+                      overwrite = overwrite, temporary = temporary,
+                      append = append)
   }
 }
 
@@ -827,5 +841,3 @@ cdmCommentContents <- function(cdm, personIds = NULL) {
 
   invisible(flat)
 }
-
-

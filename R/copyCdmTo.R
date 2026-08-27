@@ -33,7 +33,6 @@
 copyCdmTo <- function(con, cdm, schema, overwrite = FALSE) {
   checkmate::assertTRUE(DBI::dbIsValid(con))
   checkmate::assertClass(cdm, "cdm_reference")
-  if (dbms(con) == "bigquery") rlang::abort("copy_cdm_to on BigQuery is not yet supported!")
   checkmate::assertCharacter(schema, min.len = 1, max.len = 3, all.missing = F)
   checkmate::assertLogical(overwrite, len = 1)
 

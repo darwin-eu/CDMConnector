@@ -1,0 +1,54 @@
+on:
+  push:
+    branches: [main, master, test, bigquery]
+  pull_request:
+    branches: [main, master]
+
+name: bigquery-test
+
+jobs:
+  Postgres-test:
+    # if: github.repository == 'darwin-eu/CDMConnector'
+    runs-on: ubuntu-latest
+    container:
+      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
+      env:
+        BIGQUERY_PROJECT_ID:       ${{ secrets.BIGQUERY_PROJECT_ID }}
+        BIGQUERY_CDM_SCHEMA:     ${{ secrets.BIGQUERY_CDM_SCHEMA }}
+        BIGQUERY_SCRATCH_SCHEMA: ${{ secrets.BIGQUERY_SCRATCH_SCHEMA }}
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        TESTTHAT_CPUS : 1
+
+    name: Bigquery test
+
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.BIGQUERY_CREDENTIALS }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Install R packages
+        run: |
+          print(getwd())
+          print(list.files())
+          install.packages("devtools", repos = "https://cloud.r-project.org/")
+          install.packages("remotes", repos = "https://cloud.r-project.org/")
+          install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
+          install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
+          install.packages("bigrquery", repos = "https://cloud.r-project.org/")
+          install.packages("dbplyr", repos = "https://cloud.r-project.org/")
+        shell: Rscript {0}
+
+      - name: Run tests on Bigquery
+        env:
+          BIGQUERY_SERVICE_ACCOUNT_JSON_PATH: ${{ steps.auth.outputs.credentials_file_path }}
+        run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "bigquery", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
+
+
