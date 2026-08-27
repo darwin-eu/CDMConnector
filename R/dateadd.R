@@ -244,7 +244,7 @@ asDate <- function(x) {
   } else if (dialect == "duckdb") {
     x <- dbplyr::partial_eval(x_quo, data = .data)
     x <- dbplyr::translate_sql(!!x, con = .data$src$con)
-    x <- glue::glue("(DATE {x})")
+    x <- glue::glue("CAST({x} AS DATE)")
     return(dplyr::sql(x))
   } else {
     return(rlang::expr(as.Date(!!x_quo)))

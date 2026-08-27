@@ -61,7 +61,7 @@ the cdm reference.
 ``` r
 
 cdmCon(cdm)
-#> <duckdb_connection dd520 driver=<duckdb_driver dbdir='/private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpDA411L/filec7287d78fc3f.duckdb' read_only=FALSE bigint=numeric>>
+#> <duckdb_connection 678e0 driver=<duckdb_driver dbdir='/private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/Rtmpcl3aos/file12af36b6b9fe9.duckdb' read_only=FALSE bigint=numeric>>
 ```
 
 This can be useful, for example, if we want to make use of DBI functions
@@ -195,7 +195,7 @@ cdm$gi_bleed %>%
   glimpse()
 #> Rows: ??
 #> Columns: 4
-#> Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpDA411L/filec7287d78fc3f.duckdb]
+#> Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/Rtmpcl3aos/file12af36b6b9fe9.duckdb]
 #> $ cohort_definition_id <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
 #> $ subject_id           <int> 273, 61, 351, 579, 549, 116, 163, 304, 326, 285, …
 #> $ cohort_start_date    <date> 2011-10-10, 2005-09-15, 2018-06-28, 1999-11-06, …
