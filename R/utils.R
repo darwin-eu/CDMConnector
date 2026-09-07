@@ -368,7 +368,11 @@ mapTypes <- function(conn, type) {
 dcCreateTable <- function(conn, name, fields) {
 
   if (tibble::is_tibble(fields)) {
-    fieldsSql <- paste(names(fields),
+    fieldNames <- names(fields)
+    if (dbms(conn) == "bigquery") {
+      fieldNames <- paste0("`", fieldNames, "`")
+    }
+    fieldsSql <- paste(fieldNames,
       sapply(fields, function(x) mapTypes(conn, class(x)[1])),
       collapse = ", "
     )

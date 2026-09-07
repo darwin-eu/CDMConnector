@@ -113,6 +113,54 @@ test_that("mapTypes returns type unchanged for duckdb", {
   expect_equal(CDMConnector:::mapTypes(con, "character"), "character")
 })
 
+test_that("mapTypes maps R date and datetime classes for BigQuery", {
+  mock_con <- structure(list(), class = c("BigQueryConnection", "DBIConnection"))
+
+  expect_equal(CDMConnector:::mapTypes(mock_con, "logical"), "BOOL")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "numeric"), "FLOAT64")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "factor"), "STRING")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "Date"), "DATE")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "POSIXct"), "TIMESTAMP")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "POSIXt"), "TIMESTAMP")
+})
+
+test_that("dcCreateTable quotes BigQuery column names", {
+  mock_con <- structure(list(), class = c("BigQueryConnection", "DBIConnection"))
+  sql <- CDMConnector:::dcCreateTable(
+    mock_con,
+    c("project", "dataset", "cohort_set"),
+    tibble::tibble(limit = integer(), cohort_name = character())
+  )
+
+  expect_match(sql, "`limit` INT")
+  expect_match(sql, "`cohort_name` STRING")
+})
+
+test_that("empty BigQuery date warning suppression is specific", {
+  date_warning <- paste(
+    "2 column in cohort do not match the expected column type:",
+    "* cohort_start_date is character but expected date",
+    "* cohort_end_date is character but expected date",
+    sep = "\n"
+  )
+
+  expect_no_warning(
+    CDMConnector:::.suppressEmptyBigQueryDateTypeWarning(
+      warning(date_warning), tableNames = "cohort"
+    )
+  )
+  expect_warning(
+    CDMConnector:::.suppressEmptyBigQueryDateTypeWarning(
+      warning(date_warning), tableNames = "metadata"
+    ),
+    "expected column type"
+  )
+  expect_warning(
+    CDMConnector:::.suppressEmptyBigQueryDateTypeWarning(warning("another warning")),
+    "another warning"
+  )
+})
+
 # --- unique_prefix ---
 
 test_that("unique_prefix returns a positive number", {

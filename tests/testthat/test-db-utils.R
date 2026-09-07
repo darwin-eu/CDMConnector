@@ -198,7 +198,7 @@ for (dbtype in dbToTest) {
         test_id = integer(0),
         test_str = character(0)
       )
-      expectedSQL <- "CREATE TABLE `test_schema.test_table` (test_id INT, test_str STRING);"
+      expectedSQL <- "CREATE TABLE `test_schema.test_table` (`test_id` INT, `test_str` STRING);"
       actualSQL <- dcCreateTable(con, inputName, inputFields)
     }
 
@@ -264,5 +264,4 @@ for (dbtype in dbToTest) {
     disconnect(con)
   })
 }
-
 

@@ -389,7 +389,9 @@ for (dbtype in dbToTest) {
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
-    test_generate_concept_cohort_set(con, cdm_schema, write_schema)
+    if (dbtype != "bigquery") { # need to update testdb first
+      test_generate_concept_cohort_set(con, cdm_schema, write_schema)
+    }
     disconnect(con)
   })
 }

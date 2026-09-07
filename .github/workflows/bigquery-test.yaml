@@ -1,8 +1,8 @@
 on:
   push:
-    branches: [main, master, test, bigquery]
+    branches: [main, develop, test, bigquery]
   pull_request:
-    branches: [main, master]
+    branches: [main, develop]
 
 name: bigquery-test
 
@@ -13,7 +13,7 @@ jobs:
     container:
       image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
       env:
-        BIGQUERY_PROJECT_ID:       ${{ secrets.BIGQUERY_PROJECT_ID }}
+        BIGQUERY_PROJECT_ID:     ${{ secrets.BIGQUERY_PROJECT_ID }}
         BIGQUERY_CDM_SCHEMA:     ${{ secrets.BIGQUERY_CDM_SCHEMA }}
         BIGQUERY_SCRATCH_SCHEMA: ${{ secrets.BIGQUERY_SCRATCH_SCHEMA }}
         GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}

@@ -217,10 +217,25 @@ cdmFromCon <- function(con,
   }
   tableSchemas <- tableSchemas[tolower(omop_tables)]
 
-  cdmTables <- purrr::map(
-    omop_tables,
-    ~ dplyr::tbl(src = src, schema = tableSchemas[[tolower(.)]], name = .)
-  ) %>%
+  emptyBigQueryTables <- character()
+  cdmTables <- purrr::map(omop_tables, function(table_name) {
+    table_schema <- tableSchemas[[tolower(table_name)]]
+    is_empty_bigquery_table <- dbms(con) == "bigquery" &&
+      nrow(dplyr::collect(utils::head(
+        dplyr::tbl(con, .inSchema(table_schema, table_name, dbms(con))), 1L
+      ))) == 0
+
+    create_table_reference <- function() {
+      dplyr::tbl(src = src, schema = table_schema, name = table_name)
+    }
+
+    if (is_empty_bigquery_table) {
+      emptyBigQueryTables <<- c(emptyBigQueryTables, tolower(table_name))
+      .suppressEmptyBigQueryDateTypeWarning(create_table_reference())
+    } else {
+      create_table_reference()
+    }
+  }) %>%
     rlang::set_names(tolower(omop_tables))
 
   if (is.null(cdmName) && ("cdm_source" %in% names(cdmTables))) {
@@ -267,12 +282,25 @@ cdmFromCon <- function(con,
     }
   }
 
-  cdm <- omopgenerics::newCdmReference(
-    tables = c(cdmTables, achillesTables),
-    cdmName = cdmName,
-    cdmVersion = cdmVersion,
-    .softValidation = .softValidation
-  )
+  create_cdm_reference <- function() {
+    omopgenerics::newCdmReference(
+      tables = c(cdmTables, achillesTables),
+      cdmName = cdmName,
+      cdmVersion = cdmVersion,
+      .softValidation = .softValidation
+    )
+  }
+
+  # newCdmReference() validates its tables again. Apply the same narrowly
+  # scoped workaround there, as bigrquery reports DATE columns from empty
+  # result sets as character(0).
+  cdm <- if (length(emptyBigQueryTables) > 0) {
+    .suppressEmptyBigQueryDateTypeWarning(
+      create_cdm_reference(), tableNames = emptyBigQueryTables
+    )
+  } else {
+    create_cdm_reference()
+  }
 
   # Add genomic tables to cdm after creation (not part of OMOP spec validation)
   for (nm in names(genomicTables)) {

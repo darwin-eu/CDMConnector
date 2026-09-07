@@ -73,11 +73,11 @@ insertTable.db_cdm <- function(cdm,
     table <- table |> dplyr::collect()
   }
 
-  # BigQuery autodetects the schema when dbWriteTable() creates a table. An
-  # all-missing column has no values from which to infer its type, so create
-  # the table explicitly from the R column classes before appending its data.
-  needsExplicitBigQuerySchema <- dbms(con) == "bigquery" &&
-    (nrow(table) == 0 || any(vapply(table, function(x) all(is.na(x)), logical(1))))
+  # BigQuery autodetects the schema when dbWriteTable() creates a table. This
+  # can infer the wrong type for all-missing columns and character values such
+  # as "0" and "1". Always create BigQuery tables from the R column classes,
+  # then append the data to preserve the intended schema.
+  needsExplicitBigQuerySchema <- dbms(con) == "bigquery"
 
   if (needsExplicitBigQuerySchema) {
     .dbCreateTable(con, fullName, table)
