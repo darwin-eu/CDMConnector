@@ -136,31 +136,6 @@ test_that("dcCreateTable quotes BigQuery column names", {
   expect_match(sql, "`cohort_name` STRING")
 })
 
-test_that("empty BigQuery date warning suppression is specific", {
-  date_warning <- paste(
-    "2 column in cohort do not match the expected column type:",
-    "* cohort_start_date is character but expected date",
-    "* cohort_end_date is character but expected date",
-    sep = "\n"
-  )
-
-  expect_no_warning(
-    CDMConnector:::.suppressEmptyBigQueryDateTypeWarning(
-      warning(date_warning), tableNames = "cohort"
-    )
-  )
-  expect_warning(
-    CDMConnector:::.suppressEmptyBigQueryDateTypeWarning(
-      warning(date_warning), tableNames = "metadata"
-    ),
-    "expected column type"
-  )
-  expect_warning(
-    CDMConnector:::.suppressEmptyBigQueryDateTypeWarning(warning("another warning")),
-    "another warning"
-  )
-})
-
 # --- unique_prefix ---
 
 test_that("unique_prefix returns a positive number", {

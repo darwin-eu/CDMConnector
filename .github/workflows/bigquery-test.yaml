@@ -34,6 +34,15 @@ jobs:
           create_credentials_file: true
           export_environment_variables: true
 
+      - name: Install BigQuery Storage API system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            libgrpc++-dev \
+            libprotobuf-dev \
+            protobuf-compiler-grpc \
+            pkg-config
+
       - name: Install R packages
         run: |
           print(getwd())
@@ -43,6 +52,8 @@ jobs:
           install.packages("omopgenerics", repos = "https://cloud.r-project.org/")
           install.packages("palmerpenguins", repos = "https://cloud.r-project.org/")
           install.packages("bigrquery", repos = "https://cloud.r-project.org/")
+          install.packages("bigrquerystorage", repos = "https://cloud.r-project.org/")
+          install.packages("dplyr", repos = "https://cloud.r-project.org/")
           install.packages("dbplyr", repos = "https://cloud.r-project.org/")
         shell: Rscript {0}
 
@@ -50,5 +61,3 @@ jobs:
         env:
           BIGQUERY_SERVICE_ACCOUNT_JSON_PATH: ${{ steps.auth.outputs.credentials_file_path }}
         run: R -e 'install.packages("devtools", repos = "https://cloud.r-project.org/"); devtools::install(); withr::with_envvar(new = c("CI_TEST_DB" = "bigquery", "TEST_USING_DATABASE_CONNECTOR" = "FALSE"), testthat::test_local())'
-
-

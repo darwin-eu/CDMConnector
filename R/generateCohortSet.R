@@ -629,56 +629,16 @@ generateCohortSet <- function(cdm,
     cohort_name = as.character(.data$cohort_name))
 
   cohortCodelistRef <- createAtlasCohortCodelistReference(cdm, cohortSet)
-  new_cohort_table <- function() {
-    omopgenerics::newCohortTable(
-      table = cdm[[name]],
-      cohortSetRef = cohortSetRef,
-      cohortAttritionRef = cohort_attrition_ref,
-      cohortCodelistRef = cohortCodelistRef
-    )
-  }
-
-  # bigrquery returns empty DATE query results as character(0), while retaining
-  # the physical BigQuery type in the bq_type attribute. Avoid the resulting
-  # false-positive omopgenerics warning for an otherwise valid empty cohort.
-  is_empty_bigquery_cohort <- dbms(con) == "bigquery" &&
-    nrow(dplyr::collect(utils::head(cdm[[name]], 1L))) == 0
-
-  cdm[[name]] <- if (is_empty_bigquery_cohort) {
-    .suppressEmptyBigQueryDateTypeWarning(new_cohort_table())
-  } else {
-    new_cohort_table()
-  }
+  cdm[[name]] <- omopgenerics::newCohortTable(
+    table = cdm[[name]],
+    cohortSetRef = cohortSetRef,
+    cohortAttritionRef = cohort_attrition_ref,
+    cohortCodelistRef = cohortCodelistRef
+  )
 
   cli::cli_progress_done()
 
   return(cdm)
-}
-
-.suppressEmptyBigQueryDateTypeWarning <- function(expr, tableNames = NULL) {
-  withCallingHandlers(
-    expr,
-    warning = function(w) {
-      message <- conditionMessage(w)
-      message_lines <- trimws(strsplit(message, "\n", fixed = TRUE)[[1]])
-      mismatch_lines <- message_lines
-      mismatch_lines <- mismatch_lines[startsWith(mismatch_lines, "*")]
-      warning_table <- sub(
-        "^.*column in ([^ ]+) do not match the expected column type:.*$",
-        "\\1", message_lines[[1]]
-      )
-      table_matches <- is.null(tableNames) ||
-        tolower(warning_table) %in% tolower(tableNames)
-      is_date_type_warning <-
-        length(mismatch_lines) > 0 &&
-        table_matches &&
-        grepl("column.*do not match the expected column type", message) &&
-        all(grepl("is character but expected date$", mismatch_lines))
-      if (is_date_type_warning) {
-        invokeRestart("muffleWarning")
-      }
-    }
-  )
 }
 
 # Compute the attrition for a set of cohorts (internal function)
