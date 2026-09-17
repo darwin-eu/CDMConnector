@@ -70,7 +70,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Getting Started</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/main/vignettes/a01_getting-started.Rmd" class="external-link"><code>vignettes/a01_getting-started.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/v2.8.0/vignettes/a01_getting-started.Rmd" class="external-link"><code>vignettes/a01_getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>a01_getting-started.Rmd</code></div>
     </div>
 
@@ -133,16 +133,16 @@ the example datasets available run <code><a href="../reference/exampleDatasets.h
 <span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/Rtmp7P27kQ/duckdb</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/Rtmp00Kwpt/duckdb</span></span>
 <span><span class="co">#&gt; This is removed when the R session ends.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> See ?duckdb_storage for details and alternatives.</span></span>
-<span><span class="co">#&gt; Creating CDM database /tmp/Rtmp7P27kQ/GiBleed_5.3.zip</span></span>
+<span><span class="co">#&gt; Creating CDM database /tmp/Rtmp00Kwpt/GiBleed_5.3.zip</span></span>
 <span><span class="co">#&gt; duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/Rtmp7P27kQ/duckdb</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/Rtmp00Kwpt/duckdb</span></span>
 <span><span class="co">#&gt; This is removed when the R session ends.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
@@ -197,7 +197,7 @@ identify the CDM in output files.</p>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A query:  ?? x 5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp7P27kQ/file1f5e11508eca.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp00Kwpt/file1fcaeca292e.duckdb]</span></span></span>
 <span><span class="co">#&gt;    observation_period_id person_id observation_period_s…¹ observation_period_e…²</span></span>
 <span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31             2007-02-06            </span></span>
@@ -322,16 +322,16 @@ viral pharyngitis”.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 113 × 2</span></span></span>
 <span><span class="co">#&gt;    concept_name                                                                n</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> hepatitis B vaccine, adult dosage                                        <span style="text-decoration: underline;">1</span>826</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Penicillin V Potassium 500 MG Oral Tablet                                <span style="text-decoration: underline;">1</span>060</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> tetanus and diphtheria toxoids, adsorbed, preservative free, for adult…  <span style="text-decoration: underline;">7</span>203</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Alendronic acid 10 MG Oral Tablet                                         129</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Penicillin V Potassium 250 MG Oral Tablet                                <span style="text-decoration: underline;">1</span>666</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> alteplase 100 MG Injection                                                210</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Amoxicillin 250 MG Oral Capsule                                           188</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Methylphenidate Hydrochloride 20 MG Oral Tablet                            63</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> hepatitis A vaccine, adult dosage                                        <span style="text-decoration: underline;">3</span>090</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Acetaminophen 160 MG Oral Tablet                                         <span style="text-decoration: underline;">2</span>060</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Acetaminophen 325 MG Oral Tablet                                         <span style="text-decoration: underline;">9</span>125</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Amoxicillin 250 MG / Clavulanate 125 MG Oral Tablet                      <span style="text-decoration: underline;">3</span>738</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> {7 (Ethinyl Estradiol 0.035 MG / norgestimate 0.18 MG Oral Tablet) / 7…   415</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Diphenhydramine Hydrochloride 25 MG Oral Tablet                           100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Ibuprofen 200 MG Oral Tablet                                             <span style="text-decoration: underline;">1</span>724</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Doxycycline Monohydrate 50 MG Oral Tablet                                 458</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 200 ACTUAT Albuterol 0.09 MG/ACTUAT Metered Dose Inhaler                   96</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Ampicillin 100 MG/ML Injectable Solution                                  470</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 103 more rows</span></span></span></code></pre></div>
 <p>To inspect the generated SQL use <code>show_query</code> from
 dplyr.</p>
@@ -438,7 +438,7 @@ Typically this should be a separate schema from the “cdm_schema”.</p>
 <span></span>
 <span><span class="va">drugs</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A query:  ?? x 11</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp7P27kQ/file1f5e11508eca.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp00Kwpt/file1fcaeca292e.duckdb]</span></span></span>
 <span><span class="co">#&gt;    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id</span></span>
 <span><span class="co">#&gt;              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">162</span>522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
@@ -591,16 +591,16 @@ number of persons and events.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3,892 × 8</span></span></span>
 <span><span class="co">#&gt;    person_id observation_concept_id start_date end_date   type_concept_id domain</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 1979-04-13 1979-04-13            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">2</span>333               40<span style="text-decoration: underline;">766</span>240 1921-07-01 1921-07-01            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">000</span>963 1964-07-21 1964-07-21            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">2</span>333                3<span style="text-decoration: underline;">000</span>963 1978-05-19 1978-05-19            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">2</span>333                3<span style="text-decoration: underline;">028</span>833 1978-05-19 1978-05-19            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>       757                3<span style="text-decoration: underline;">006</span>322 1964-01-04 1964-01-04            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">2</span>333                3<span style="text-decoration: underline;">023</span>103 1978-05-19 1978-05-19            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">1</span>516                4<span style="text-decoration: underline;">024</span>958 1982-06-15 1982-06-15            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">1</span>954                3<span style="text-decoration: underline;">051</span>031 2003-02-07 2003-02-07            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">1</span>954               46<span style="text-decoration: underline;">235</span>214 1967-06-21 1967-06-21            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      <span style="text-decoration: underline;">5</span>251               19<span style="text-decoration: underline;">059</span>056 1928-11-13 1928-12-11        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">2</span>786                1<span style="text-decoration: underline;">127</span>433 2009-07-24 2009-08-23        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">2</span>786               19<span style="text-decoration: underline;">077</span>572 2002-10-12 2002-10-12        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">3</span>109                1<span style="text-decoration: underline;">127</span>433 1968-07-22 1968-08-05        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">3</span>516                1<span style="text-decoration: underline;">127</span>433 1966-03-08 1966-04-05        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      <span style="text-decoration: underline;">3</span>516               40<span style="text-decoration: underline;">229</span>134 2002-05-05 2002-05-19        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      <span style="text-decoration: underline;">4</span>532               19<span style="text-decoration: underline;">059</span>056 1984-03-03 1984-05-02        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      <span style="text-decoration: underline;">3</span>614               40<span style="text-decoration: underline;">213</span>227 1992-07-12 1992-07-12          <span style="text-decoration: underline;">581</span>452 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">1</span>318                1<span style="text-decoration: underline;">127</span>433 2014-06-20 2014-07-04        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      <span style="text-decoration: underline;">1</span>318               19<span style="text-decoration: underline;">133</span>873 1949-10-09 1949-10-16        38<span style="text-decoration: underline;">000</span>177 drug_…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3,882 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: observation_concept_name &lt;chr&gt;, type_concept_name &lt;chr&gt;</span></span></span></code></pre></div>
 <div class="section level3">

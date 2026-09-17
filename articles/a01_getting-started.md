@@ -67,16 +67,16 @@ exampleDatasets()
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
 #> duckdb keeps downloaded extensions and secrets in a temporary directory:
-#> ℹ /tmp/Rtmp7P27kQ/duckdb
+#> ℹ /tmp/Rtmp00Kwpt/duckdb
 #> This is removed when the R session ends.
 #> • Extensions are re-downloaded each session.
 #> • Secrets are lost.
 #> ℹ Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).
 #> ℹ Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).
 #> ℹ See ?duckdb_storage for details and alternatives.
-#> Creating CDM database /tmp/Rtmp7P27kQ/GiBleed_5.3.zip
+#> Creating CDM database /tmp/Rtmp00Kwpt/GiBleed_5.3.zip
 #> duckdb keeps downloaded extensions and secrets in a temporary directory:
-#> ℹ /tmp/Rtmp7P27kQ/duckdb
+#> ℹ /tmp/Rtmp00Kwpt/duckdb
 #> This is removed when the R session ends.
 #> • Extensions are re-downloaded each session.
 #> • Secrets are lost.
@@ -137,7 +137,7 @@ cdm
 #> • other tables: -
 cdm$observation_period
 #> # A query:  ?? x 5
-#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp7P27kQ/file1f5e11508eca.duckdb]
+#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp00Kwpt/file1fcaeca292e.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -277,16 +277,16 @@ cdm$condition_occurrence %>%
 #> # A tibble: 113 × 2
 #>    concept_name                                                                n
 #>    <chr>                                                                   <dbl>
-#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305
-#>  2 hepatitis B vaccine, adult dosage                                        1826
-#>  3 Penicillin V Potassium 500 MG Oral Tablet                                1060
-#>  4 tetanus and diphtheria toxoids, adsorbed, preservative free, for adult…  7203
-#>  5 Alendronic acid 10 MG Oral Tablet                                         129
-#>  6 {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997
-#>  7 Penicillin V Potassium 250 MG Oral Tablet                                1666
-#>  8 alteplase 100 MG Injection                                                210
-#>  9 Amoxicillin 250 MG Oral Capsule                                           188
-#> 10 Methylphenidate Hydrochloride 20 MG Oral Tablet                            63
+#>  1 hepatitis A vaccine, adult dosage                                        3090
+#>  2 Acetaminophen 160 MG Oral Tablet                                         2060
+#>  3 Acetaminophen 325 MG Oral Tablet                                         9125
+#>  4 Amoxicillin 250 MG / Clavulanate 125 MG Oral Tablet                      3738
+#>  5 {7 (Ethinyl Estradiol 0.035 MG / norgestimate 0.18 MG Oral Tablet) / 7…   415
+#>  6 Diphenhydramine Hydrochloride 25 MG Oral Tablet                           100
+#>  7 Ibuprofen 200 MG Oral Tablet                                             1724
+#>  8 Doxycycline Monohydrate 50 MG Oral Tablet                                 458
+#>  9 200 ACTUAT Albuterol 0.09 MG/ACTUAT Metered Dose Inhaler                   96
+#> 10 Ampicillin 100 MG/ML Injectable Solution                                  470
 #> # ℹ 103 more rows
 ```
 
@@ -404,7 +404,7 @@ drugs %>% show_query()
 
 drugs
 #> # A query:  ?? x 11
-#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp7P27kQ/file1f5e11508eca.duckdb]
+#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/Rtmp00Kwpt/file1fcaeca292e.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
 #>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
@@ -575,16 +575,16 @@ cdmFlatten(cdm_pneumonia,
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1      3516                3006322 1979-04-13 1979-04-13            5001 measu…
-#>  2      2333               40766240 1921-07-01 1921-07-01            5001 measu…
-#>  3      3516                3000963 1964-07-21 1964-07-21            5001 measu…
-#>  4      2333                3000963 1978-05-19 1978-05-19            5001 measu…
-#>  5      2333                3028833 1978-05-19 1978-05-19            5001 measu…
-#>  6       757                3006322 1964-01-04 1964-01-04            5001 measu…
-#>  7      2333                3023103 1978-05-19 1978-05-19            5001 measu…
-#>  8      1516                4024958 1982-06-15 1982-06-15            5001 measu…
-#>  9      1954                3051031 2003-02-07 2003-02-07            5001 measu…
-#> 10      1954               46235214 1967-06-21 1967-06-21            5001 measu…
+#>  1      5251               19059056 1928-11-13 1928-12-11        38000177 drug_…
+#>  2      2786                1127433 2009-07-24 2009-08-23        38000177 drug_…
+#>  3      2786               19077572 2002-10-12 2002-10-12        38000177 drug_…
+#>  4      3109                1127433 1968-07-22 1968-08-05        38000177 drug_…
+#>  5      3516                1127433 1966-03-08 1966-04-05        38000177 drug_…
+#>  6      3516               40229134 2002-05-05 2002-05-19        38000177 drug_…
+#>  7      4532               19059056 1984-03-03 1984-05-02        38000177 drug_…
+#>  8      3614               40213227 1992-07-12 1992-07-12          581452 drug_…
+#>  9      1318                1127433 2014-06-20 2014-07-04        38000177 drug_…
+#> 10      1318               19133873 1949-10-09 1949-10-16        38000177 drug_…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```
