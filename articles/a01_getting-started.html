@@ -133,16 +133,16 @@ the example datasets available run <code><a href="../reference/exampleDatasets.h
 <span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">duckdb</span><span class="fu">::</span><span class="fu"><a href="https://r.duckdb.org/reference/duckdb.html" class="external-link">duckdb</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="../reference/eunomiaDir.html">eunomiaDir</a></span><span class="op">(</span><span class="st">"GiBleed"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/RtmpUkn7WV/duckdb</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/RtmpAjMoeO/duckdb</span></span>
 <span><span class="co">#&gt; This is removed when the R session ends.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> See ?duckdb_storage for details and alternatives.</span></span>
-<span><span class="co">#&gt; Creating CDM database /tmp/RtmpUkn7WV/GiBleed_5.3.zip</span></span>
+<span><span class="co">#&gt; Creating CDM database /tmp/RtmpAjMoeO/GiBleed_5.3.zip</span></span>
 <span><span class="co">#&gt; duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/RtmpUkn7WV/duckdb</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> /tmp/RtmpAjMoeO/duckdb</span></span>
 <span><span class="co">#&gt; This is removed when the R session ends.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
@@ -197,7 +197,7 @@ identify the CDM in output files.</p>
 <span><span class="co">#&gt; • <span style="font-weight: bold;">other tables:</span> -</span></span>
 <span><span class="va">cdm</span><span class="op">$</span><span class="va">observation_period</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A query:  ?? x 5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpUkn7WV/file210767549f9e.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpAjMoeO/file202d1196511e.duckdb]</span></span></span>
 <span><span class="co">#&gt;    observation_period_id person_id observation_period_s…¹ observation_period_e…²</span></span>
 <span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>                </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>                     6         6 1963-12-31             2007-02-06            </span></span>
@@ -438,19 +438,19 @@ Typically this should be a separate schema from the “cdm_schema”.</p>
 <span></span>
 <span><span class="va">drugs</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A query:  ?? x 11</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpUkn7WV/file210767549f9e.duckdb]</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpAjMoeO/file202d1196511e.duckdb]</span></span></span>
 <span><span class="co">#&gt;    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id</span></span>
 <span><span class="co">#&gt;              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">213</span>160  <span style="text-decoration: underline;">7</span>654 poliovirus va… Drug      CVX           CVX             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        40<span style="text-decoration: underline;">213</span>260  <span style="text-decoration: underline;">2</span>082 zoster vaccin… Drug      CVX           CVX             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>         1<span style="text-decoration: underline;">551</span>192   152 Prednisone 5 … Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        19<span style="text-decoration: underline;">006</span>318  <span style="text-decoration: underline;">1</span>119 Penicillin G … Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        40<span style="text-decoration: underline;">231</span>925   301 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        40<span style="text-decoration: underline;">213</span>201   708 pneumococcal … Drug      CVX           CVX             </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        19<span style="text-decoration: underline;">075</span>601   356 clopidogrel 7… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>          <span style="text-decoration: underline;">920</span>334   118 NITROFURANTOI… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        19<span style="text-decoration: underline;">112</span>599    70 Chlorpheniram… Drug      RxNorm        Clinical Drug   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        19<span style="text-decoration: underline;">074</span>843    82 Cefaclor 250 … Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>        40<span style="text-decoration: underline;">162</span>522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>        40<span style="text-decoration: underline;">213</span>306  <span style="text-decoration: underline;">1</span>826 hepatitis B v… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>        19<span style="text-decoration: underline;">133</span>905  <span style="text-decoration: underline;">1</span>060 Penicillin V … Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>        40<span style="text-decoration: underline;">213</span>227  <span style="text-decoration: underline;">7</span>203 tetanus and d… Drug      CVX           CVX             </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>        40<span style="text-decoration: underline;">173</span>590   129 Alendronic ac… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>        19<span style="text-decoration: underline;">128</span>065   997 {7 (Inert Ing… Drug      RxNorm        Branded Pack    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>        19<span style="text-decoration: underline;">133</span>873  <span style="text-decoration: underline;">1</span>666 Penicillin V … Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>        40<span style="text-decoration: underline;">220</span>960   210 alteplase 100… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>        19<span style="text-decoration: underline;">073</span>183   188 Amoxicillin 2… Drug      RxNorm        Clinical Drug   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>        40<span style="text-decoration: underline;">236</span>446    63 Methylphenida… Drug      RxNorm        Clinical Drug   </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: standard_concept &lt;chr&gt;, concept_code &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   valid_start_date &lt;date&gt;, valid_end_date &lt;date&gt;, invalid_reason &lt;chr&gt;</span></span></span></code></pre></div>
@@ -591,16 +591,16 @@ number of persons and events.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3,892 × 8</span></span></span>
 <span><span class="co">#&gt;    person_id observation_concept_id start_date end_date   type_concept_id domain</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>       445                4<span style="text-decoration: underline;">052</span>083 1947-09-13 1947-09-13            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 1999-10-20 1999-10-20            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      <span style="text-decoration: underline;">3</span>516                3<span style="text-decoration: underline;">006</span>322 1965-06-25 1965-06-25            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      <span style="text-decoration: underline;">2</span>821                3<span style="text-decoration: underline;">006</span>322 1921-08-28 1921-08-28            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      <span style="text-decoration: underline;">3</span>553                3<span style="text-decoration: underline;">009</span>542 1982-10-26 1982-10-26            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      <span style="text-decoration: underline;">2</span>821               40<span style="text-decoration: underline;">766</span>240 1921-08-30 1921-08-30            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>         2               40<span style="text-decoration: underline;">758</span>406 1935-08-22 1935-08-22            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>         2                3<span style="text-decoration: underline;">006</span>322 1969-09-18 1969-09-18            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      <span style="text-decoration: underline;">1</span>516                4<span style="text-decoration: underline;">024</span>958 1945-12-15 1945-12-15            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>         2               46<span style="text-decoration: underline;">235</span>214 1935-01-24 1935-01-24            <span style="text-decoration: underline;">5</span>001 measu…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>       334                 <span style="text-decoration: underline;">260</span>139 1944-09-16 1944-09-23           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>       334                 <span style="text-decoration: underline;">372</span>328 1939-04-02 1939-05-10           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>       419                4<span style="text-decoration: underline;">278</span>672 1969-07-21 1969-08-20           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>       430                  <span style="text-decoration: underline;">81</span>151 1973-03-11 1973-04-15           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>       596               40<span style="text-decoration: underline;">481</span>087 1950-12-10 1950-12-17           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>       334               40<span style="text-decoration: underline;">481</span>087 1938-02-25 1938-03-11           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>       334                  <span style="text-decoration: underline;">28</span>060 1940-02-13 1940-02-25           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       334                 <span style="text-decoration: underline;">260</span>139 1992-03-25 1992-04-08           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       550                4<span style="text-decoration: underline;">112</span>343 1977-02-20 1977-03-03           <span style="text-decoration: underline;">32</span>020 condi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       507                  <span style="text-decoration: underline;">80</span>180 1977-10-03 <span style="color: #BB0000;">NA</span>                   <span style="text-decoration: underline;">32</span>020 condi…</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3,882 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: observation_concept_name &lt;chr&gt;, type_concept_name &lt;chr&gt;</span></span></span></code></pre></div>
 <div class="section level3">

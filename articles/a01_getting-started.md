@@ -67,16 +67,16 @@ exampleDatasets()
 
 con <- DBI::dbConnect(duckdb::duckdb(), eunomiaDir("GiBleed"))
 #> duckdb keeps downloaded extensions and secrets in a temporary directory:
-#> ℹ /tmp/RtmpUkn7WV/duckdb
+#> ℹ /tmp/RtmpAjMoeO/duckdb
 #> This is removed when the R session ends.
 #> • Extensions are re-downloaded each session.
 #> • Secrets are lost.
 #> ℹ Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).
 #> ℹ Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).
 #> ℹ See ?duckdb_storage for details and alternatives.
-#> Creating CDM database /tmp/RtmpUkn7WV/GiBleed_5.3.zip
+#> Creating CDM database /tmp/RtmpAjMoeO/GiBleed_5.3.zip
 #> duckdb keeps downloaded extensions and secrets in a temporary directory:
-#> ℹ /tmp/RtmpUkn7WV/duckdb
+#> ℹ /tmp/RtmpAjMoeO/duckdb
 #> This is removed when the R session ends.
 #> • Extensions are re-downloaded each session.
 #> • Secrets are lost.
@@ -137,7 +137,7 @@ cdm
 #> • other tables: -
 cdm$observation_period
 #> # A query:  ?? x 5
-#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpUkn7WV/file210767549f9e.duckdb]
+#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpAjMoeO/file202d1196511e.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -404,19 +404,19 @@ drugs %>% show_query()
 
 drugs
 #> # A query:  ?? x 11
-#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpUkn7WV/file210767549f9e.duckdb]
+#> # Database: DuckDB 1.5.5 [unknown@Linux 6.17.0-1022-azure:R 4.6.1//tmp/RtmpAjMoeO/file202d1196511e.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
-#>  1        40213160  7654 poliovirus va… Drug      CVX           CVX             
-#>  2        40213260  2082 zoster vaccin… Drug      CVX           CVX             
-#>  3         1551192   152 Prednisone 5 … Drug      RxNorm        Clinical Drug   
-#>  4        19006318  1119 Penicillin G … Drug      RxNorm        Clinical Drug   
-#>  5        40231925   301 Acetaminophen… Drug      RxNorm        Clinical Drug   
-#>  6        40213201   708 pneumococcal … Drug      CVX           CVX             
-#>  7        19075601   356 clopidogrel 7… Drug      RxNorm        Clinical Drug   
-#>  8          920334   118 NITROFURANTOI… Drug      RxNorm        Clinical Drug   
-#>  9        19112599    70 Chlorpheniram… Drug      RxNorm        Clinical Drug   
-#> 10        19074843    82 Cefaclor 250 … Drug      RxNorm        Clinical Drug   
+#>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
+#>  2        40213306  1826 hepatitis B v… Drug      CVX           CVX             
+#>  3        19133905  1060 Penicillin V … Drug      RxNorm        Clinical Drug   
+#>  4        40213227  7203 tetanus and d… Drug      CVX           CVX             
+#>  5        40173590   129 Alendronic ac… Drug      RxNorm        Clinical Drug   
+#>  6        19128065   997 {7 (Inert Ing… Drug      RxNorm        Branded Pack    
+#>  7        19133873  1666 Penicillin V … Drug      RxNorm        Clinical Drug   
+#>  8        40220960   210 alteplase 100… Drug      RxNorm        Clinical Drug   
+#>  9        19073183   188 Amoxicillin 2… Drug      RxNorm        Clinical Drug   
+#> 10        40236446    63 Methylphenida… Drug      RxNorm        Clinical Drug   
 #> # ℹ more rows
 #> # ℹ 5 more variables: standard_concept <chr>, concept_code <chr>,
 #> #   valid_start_date <date>, valid_end_date <date>, invalid_reason <chr>
@@ -575,16 +575,16 @@ cdmFlatten(cdm_pneumonia,
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1       445                4052083 1947-09-13 1947-09-13            5001 measu…
-#>  2      3516                3006322 1999-10-20 1999-10-20            5001 measu…
-#>  3      3516                3006322 1965-06-25 1965-06-25            5001 measu…
-#>  4      2821                3006322 1921-08-28 1921-08-28            5001 measu…
-#>  5      3553                3009542 1982-10-26 1982-10-26            5001 measu…
-#>  6      2821               40766240 1921-08-30 1921-08-30            5001 measu…
-#>  7         2               40758406 1935-08-22 1935-08-22            5001 measu…
-#>  8         2                3006322 1969-09-18 1969-09-18            5001 measu…
-#>  9      1516                4024958 1945-12-15 1945-12-15            5001 measu…
-#> 10         2               46235214 1935-01-24 1935-01-24            5001 measu…
+#>  1       334                 260139 1944-09-16 1944-09-23           32020 condi…
+#>  2       334                 372328 1939-04-02 1939-05-10           32020 condi…
+#>  3       419                4278672 1969-07-21 1969-08-20           32020 condi…
+#>  4       430                  81151 1973-03-11 1973-04-15           32020 condi…
+#>  5       596               40481087 1950-12-10 1950-12-17           32020 condi…
+#>  6       334               40481087 1938-02-25 1938-03-11           32020 condi…
+#>  7       334                  28060 1940-02-13 1940-02-25           32020 condi…
+#>  8       334                 260139 1992-03-25 1992-04-08           32020 condi…
+#>  9       550                4112343 1977-02-20 1977-03-03           32020 condi…
+#> 10       507                  80180 1977-10-03 NA                   32020 condi…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```
