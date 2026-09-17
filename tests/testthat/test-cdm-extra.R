@@ -88,13 +88,12 @@ test_that("cdmFromCon writePrefix overrides prefix in writeSchema", {
   expect_equal(ws[["prefix"]], "new_")
 })
 
-test_that("cdmFromCon deprecated cdmVersion auto triggers warning", {
+test_that("cdmFromCon works with cdmVersion 5.5", {
   skip_if_not_installed("duckdb")
   con <- local_eunomia_con()
 
-  expect_warning(
-    cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmVersion = "auto"),
-    "deprecated"
+  expect_no_error(
+    cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmVersion = "5.5")
   )
 })
 
@@ -309,16 +308,6 @@ test_that("cdmFromCon with empty writePrefix is treated as NULL", {
   expect_false("prefix" %in% names(ws))
 })
 
-test_that("cdmFromCon with cdmVersion auto gives deprecation warning", {
-  skip_if_not_installed("duckdb")
-  con <- local_eunomia_con()
-
-  expect_warning(
-    cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmVersion = "auto"),
-    "deprecated"
-  )
-})
-
 test_that("cdmFromCon with explicit cdmName", {
   skip_if_not_installed("duckdb")
   con <- local_eunomia_con()
@@ -363,7 +352,7 @@ test_that("version returns cdm version with deprecation warning", {
   lifecycle::expect_deprecated(
     v <- version(cdm)
   )
-  expect_true(v %in% c("5.3", "5.4"))
+  expect_true(v %in% c("5.3", "5.4", "5.5"))
 })
 
 # --- snapshot ---
@@ -453,7 +442,7 @@ test_that("version errors when cdm_version is not 5.3 or 5.4", {
  attr(cdm, "cdm_version") <- "4.0"
 
   lifecycle::expect_deprecated(
-    expect_error(version(cdm), "5.3 or 5.4")
+    expect_error(version(cdm), "5.3, 5.4 or 5.5")
   )
 })
 
@@ -611,16 +600,6 @@ test_that("cdmFromCon accepts empty string writePrefix (treated as NULL)", {
   expect_true(methods::is(cdm, "cdm_reference"))
 })
 
-test_that("cdmFromCon warns on deprecated auto version", {
-  skip_if_not_installed("duckdb")
-  con <- local_eunomia_con()
-
-  expect_warning(
-    cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main", cdmVersion = "auto"),
-    "deprecated"
-  )
-})
-
 test_that("cdmFromCon accepts named writeSchema", {
   skip_if_not_installed("duckdb")
   con <- local_eunomia_con()
@@ -693,7 +672,7 @@ test_that("cdmVersion returns version string", {
 
   cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main")
   v <- omopgenerics::cdmVersion(cdm)
-  expect_true(v %in% c("5.3", "5.4"))
+  expect_true(v %in% c("5.3", "5.4", "5.5"))
 })
 
 # --- insertTable.db_cdm ---

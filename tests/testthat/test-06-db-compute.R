@@ -1,5 +1,5 @@
 
-test_compute_query <- function(con, cdm_schema, write_schema) {
+test_compute_query <- function(con, cdm_schema, write_schema, dbtype) {
   cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = cdm_schema, writeSchema = write_schema)
 
   new_table_name <- uniqueTableName()
@@ -27,44 +27,48 @@ test_compute_query <- function(con, cdm_schema, write_schema) {
   expect_s3_class(dplyr::collect(x), "data.frame")
 
   # test overwrite
-    x <- compute(q,
-                 name = new_table_name,
-                 schema = write_schema,
-                 temporary = TRUE,
-                 overwrite = TRUE)
+  x <- compute(q,
+               name = new_table_name,
+               schema = write_schema,
+               temporary = TRUE,
+               overwrite = TRUE)
 
   expect_s3_class(dplyr::collect(x), "data.frame")
 
   # TODO: test removal of temp tables. Also need to be able to get temp table names.
 
   # permanent table creation from query ----
+  vocabs <- c("ATC", "CPT4")
+  if (dbtype == "bigquery") {
+    vocabs <- c("ATC") # trimmed vocab
+  }
   new_table_name <- uniqueTableName()
   x <- cdm$vocabulary %>%
-    dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+    dplyr::filter(vocabulary_id %in% vocabs) %>%
     compute(name = new_table_name, temporary = FALSE, overwrite = TRUE)
 
-  expect_true(nrow(dplyr::collect(x)) == 2)
+  expect_true(nrow(dplyr::collect(x)) == length(vocabs))
   expect_true(new_table_name %in% listTables(con, write_schema))
 
   expect_error({
     cdm$vocabulary  %>%
-      dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+      dplyr::filter(vocabulary_id %in% vocabs) %>%
       compute(new_table_name, temporary = FALSE, overwrite = FALSE)},
   "already exists")
 
   expect_no_error({
     x <- cdm$vocabulary  %>%
-      dplyr::filter(vocabulary_id %in% c("ATC", "CPT4")) %>%
+      dplyr::filter(vocabulary_id %in% vocabs) %>%
       compute(new_table_name, temporary = FALSE, overwrite = TRUE)
   })
 
-  expect_true(nrow(dplyr::collect(x)) >= 2)
+  expect_true(nrow(dplyr::collect(x)) >= length(vocabs))
 
   x <- cdm$vocabulary %>%
     dplyr::filter(vocabulary_id %in% c("RxNorm")) %>%
     appendPermanent(new_table_name, schema = write_schema)
 
-  expect_true(nrow(dplyr::collect(x)) >= 3)
+  expect_true(nrow(dplyr::collect(x)) >= length(vocabs) + 1)
 
   DBI::dbRemoveTable(con, inSchema(write_schema, new_table_name, dbms(con)))
   expect_false(new_table_name %in% listTables(con, write_schema))
@@ -78,7 +82,7 @@ for (dbtype in dbToTest) {
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
-    test_compute_query(con, cdm_schema = cdm_schema, write_schema = write_schema)
+    test_compute_query(con, cdm_schema = cdm_schema, write_schema = write_schema, dbtype = dbtype)
     disconnect(con)
   })
 }

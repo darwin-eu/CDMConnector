@@ -228,9 +228,6 @@ often the foundation of downstream analyses.
 
 - [`generateCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/generateCohortSet.md)
   : Generate a cohort set on a cdm object
-- [`generateCohortSet2()`](https://darwin-eu.github.io/CDMConnector/reference/generateCohortSet2.md)
-  : Generate a cohort set on a CDM object (optimized, no Java
-  dependency)
 - [`generateConceptCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/generateConceptCohortSet.md)
   : Create a new generated cohort set from a list of concept sets
 - [`readCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.md)
@@ -323,9 +320,5 @@ Open Health Data (COHD) API.
   examples](https://darwin-eu.github.io/CDMConnector/articles/a04_DBI_connection_examples.md):
 - [Using CDM
   attributes](https://darwin-eu.github.io/CDMConnector/articles/a06_using_cdm_attributes.md):
-- [DAG-Based Batch Optimization for Cohort SQL
-  Generation](https://darwin-eu.github.io/CDMConnector/articles/a07_batch-optimization.md):
-- [Incremental DAG Caching for Cohort
-  Generation](https://darwin-eu.github.io/CDMConnector/articles/a08_dag-caching.md):
 - [Multi-Database Benchmarking: Old vs New Cohort
   Generation](https://darwin-eu.github.io/CDMConnector/articles/a09_benchmarking.md):

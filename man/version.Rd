@@ -10,7 +10,7 @@ version(cdm)
 \item{cdm}{A cdm object}
 }
 \value{
-"5.3" or "5.4"
+"5.3", "5.4" or "5.5"
 }
 \description{
 Extract the CDM version attribute from a cdm_reference object

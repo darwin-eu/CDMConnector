@@ -1,6 +1,6 @@
 Package: CDMConnector
 Title: Connect to an OMOP Common Data Model
-Version: 2.7.0
+Version: 2.8.0
 Authors@R: c(
     person("Ger", "Inberg", email = "g.inberg@erasmusmc.nl", role = c("aut", "cre"), 
             comment = c(ORCID = "0000-0001-8993-8748")),
@@ -42,7 +42,7 @@ Imports:
     tidyr,
     jsonlite,
     readr,
-    omopgenerics (>= 1.2.0)
+    omopgenerics (>= 1.4.2)
 Suggests: 
     SqlRender,
     CirceR,

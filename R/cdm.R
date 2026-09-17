@@ -16,8 +16,8 @@
 
 #' Create a CDM reference object from a database connection
 #'
-#' @param con A DBI database connection to a database where an OMOP CDM v5.4 or
-#'   v5.3 instance is located.
+#' @param con A DBI database connection to a database where an OMOP CDM
+#'   instance is located.
 #' @param cdmSchema The schema where the OMOP CDM tables are located. Defaults
 #'   to NULL.
 #' @param writeSchema An optional schema in the CDM database that the user has
@@ -26,9 +26,9 @@
 #'   are located. If NULL, vocabulary tables are expected to be in `cdmSchema`.
 #' @param cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
-#' @param cdmVersion The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
-#' If NULL we will attempt to automatically determine the cdm version using
-#' the cdm_source table and heuristics.
+#' @param cdmVersion The version of the OMOP CDM. Cam be "5.3", "5.4", "5.5" or
+#' NULL (default). If NULL we will attempt to automatically determine the cdm
+#' version using the cdm_source table and heuristics.
 #' @param cdmName The name of the CDM. If NULL (default) the cdm_source_name
 #'.  field in the CDM_SOURCE table will be used.
 #' @param achillesSchema An optional schema in the CDM database
@@ -141,12 +141,7 @@ cdmFromCon <- function(con,
   checkmate::assert_character(vocabularySchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
   checkmate::assert_character(cohortTables, null.ok = TRUE)
   checkmate::assert_character(achillesSchema, min.len = 1, max.len = 3, any.missing = F, null.ok = TRUE)
-  checkmate::assert_choice(cdmVersion, choices = c("5.3", "5.4", "auto"), null.ok = TRUE)
-
-  if (!is.null(cdmVersion) && cdmVersion == "auto") {
-    cli::cli_warn("cdmVersion = 'auto' is deprecated as of version 1.7.0. Please use cdmVersion = NULL instead.")
-    cdmVersion <- NULL
-  }
+  checkmate::assert_choice(cdmVersion, choices = omopgenerics::supportedCdmVersions, null.ok = TRUE)
 
   # allow empty string to indicate no write prefix
   if (identical(writePrefix, "")) {
@@ -217,10 +212,10 @@ cdmFromCon <- function(con,
   }
   tableSchemas <- tableSchemas[tolower(omop_tables)]
 
-  cdmTables <- purrr::map(
-    omop_tables,
-    ~ dplyr::tbl(src = src, schema = tableSchemas[[tolower(.)]], name = .)
-  ) %>%
+  cdmTables <- purrr::map(omop_tables, function(table_name) {
+    table_schema <- tableSchemas[[tolower(table_name)]]
+    dplyr::tbl(src = src, schema = table_schema, name = table_name)
+  }) %>%
     rlang::set_names(tolower(omop_tables))
 
   if (is.null(cdmName) && ("cdm_source" %in% names(cdmTables))) {
@@ -326,12 +321,12 @@ cdmFromCon <- function(con,
     }
 
     if (length(s) == 2) {
-      s2 <- glue::glue_sql("{DBI::dbQuoteIdentifier(con, s[1])}.{DBI::dbQuoteIdentifier(con, s[2])}")
+      s2 <- glue::glue_sql("{DBI::dbQuoteIdentifier(con, s[1])}.{DBI::dbQuoteIdentifier(con, s[2])}", .con = con)
     } else {
       s2 <- DBI::dbQuoteIdentifier(con, s[1])
     }
 
-    DBI::dbExecute(con, glue::glue_sql("USE SCHEMA {s2}"))
+    DBI::dbExecute(con, glue::glue_sql("USE SCHEMA {s2}", .con = con))
   }
 
   # TO BE REMOVED WHEN CIRCER WORKS WITH CDM OBJECT
@@ -446,7 +441,7 @@ tbl.db_cdm <- function(src, schema, name, ...) {
 #'
 #' @param cdm A cdm object
 #'
-#' @return "5.3" or "5.4"
+#' @return "5.3", "5.4" or "5.5"
 #' @export
 #'
 #' @examples
@@ -463,9 +458,9 @@ version <- function(cdm) {
                             with = "cdmVersion()")
   checkmate::assert_class(cdm, "cdm_reference")
   versionNumber <- attr(cdm, "cdm_version")
-  if (!(versionNumber %in% c("5.3", "5.4"))) {
-    rlang::abort("cdm object version attribute is not 5.3 or 5.4.
-                 Contact the maintainer.")
+  if (!(versionNumber %in% omopgenerics::supportedCdmVersions)) {
+    rlang::abort("cdm object version attribute is not 5.3, 5.4 or 5.5.
+                  Contact the maintainer.")
   }
   return(versionNumber)
 }

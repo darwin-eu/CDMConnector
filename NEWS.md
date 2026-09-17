@@ -1,3 +1,13 @@
+# CDMConnector 2.8.0
+
+- Add support for OMOP CDM 5.5
+- Add bigquery github workflow
+
+# CDMConnector 2.7.0
+
+- Add `PostgreSQL` as supported connection class
+- Fix cast issue in `asData` for DuckDB
+
 # CDMConnector 2.6.0
 
 - Add `vocabularySchema` argument to `cdmFromCon` for databases with a dedicated vocabulary schema (#619) @ginberg

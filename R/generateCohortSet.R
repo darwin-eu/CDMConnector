@@ -633,7 +633,8 @@ generateCohortSet <- function(cdm,
     table = cdm[[name]],
     cohortSetRef = cohortSetRef,
     cohortAttritionRef = cohort_attrition_ref,
-    cohortCodelistRef = cohortCodelistRef)
+    cohortCodelistRef = cohortCodelistRef
+  )
 
   cli::cli_progress_done()
 
@@ -970,4 +971,3 @@ caprConceptToDataframe <- function(x) {
     includeMapped = purrr::map_lgl(x@Expression, "includeMapped")
   )
 }
-

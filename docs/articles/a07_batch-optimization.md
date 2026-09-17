@@ -166,8 +166,9 @@ cohort is routed through the **full script path** rather than the Phase
 
 ### 4. Automated Equivalence Validation
 
-The package includes `validate_batch_equivalence()` which runs both
-paths on the same CDM and compares results row-by-row:
+The package includes
+[`validate_batch_equivalence()`](https://rdrr.io/pkg/atlasCohortGenerator/man/validate_batch_equivalence.html)
+which runs both paths on the same CDM and compares results row-by-row:
 
 ``` r
 # Run batch path

@@ -52,9 +52,6 @@ often the foundation of downstream analyses.
 
 - [`generateCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/generateCohortSet.md)
   : Generate a cohort set on a cdm object
-- [`generateCohortSet2()`](https://darwin-eu.github.io/CDMConnector/reference/generateCohortSet2.md)
-  : Generate a cohort set on a CDM object (optimized, no Java
-  dependency)
 - [`generateConceptCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/generateConceptCohortSet.md)
   : Create a new generated cohort set from a list of concept sets
 - [`readCohortSet()`](https://darwin-eu.github.io/CDMConnector/reference/readCohortSet.md)

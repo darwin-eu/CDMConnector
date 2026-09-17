@@ -43,7 +43,37 @@ test_dbi <- function(con, cdm_schema, write_schema) {
     # logical types not supported
     expect_true(all.equal(df[,-1], db[,-1]))
   } else {
-    expect_true(all.equal(df, db))
+  expect_true(all.equal(df, db))
+  }
+
+  if (CDMConnector::dbms(con) == "bigquery") {
+    # BigQuery cannot infer a type from an all-NULL column. insertTable() must
+    # create an explicit schema so that typed missing values retain their type.
+    typed_missing_name <- paste0("dbitypedmissing_", format(as.hexmode(sample.int(.Machine$integer.max, 1)), width = 8))
+    typed_missing <- dplyr::tibble(
+      date_value = as.Date(NA),
+      datetime_value = as.POSIXct(NA),
+      integer_value = as.integer(NA),
+      logical_value = as.logical(NA),
+      numeric_value = as.numeric(NA),
+      character_value = as.character(NA),
+      numeric_text_value = "0"
+    )
+    source <- dbSource(con, writeSchema = write_schema)
+    omopgenerics::insertTable(source, typed_missing_name, typed_missing)
+
+    information_schema <- paste(c(write_schema, "INFORMATION_SCHEMA.COLUMNS"), collapse = ".")
+    column_types <- DBI::dbGetQuery(
+      con,
+      glue::glue("SELECT column_name, data_type FROM `{information_schema}` WHERE table_name = '{typed_missing_name}'")
+    )
+    expect_equal(
+      stats::setNames(column_types$data_type, column_types$column_name),
+      c(date_value = "DATE", datetime_value = "TIMESTAMP", integer_value = "INT64",
+        logical_value = "BOOL", numeric_value = "FLOAT64", character_value = "STRING",
+        numeric_text_value = "STRING")
+    )
+    DBI::dbRemoveTable(con, inSchema(schema = write_schema, table = typed_missing_name, dbms = dbms(con)))
   }
 
   # table names can be uppercase! (e.g. Oracle)
@@ -104,5 +134,3 @@ for (dbtype in dbToTest) {
 # DBI::dbexists table does not seem to work on snowflake with odbc using an Id
 
 # TODO test overwrite in dbWriteTable - seems to be failing for snowflake
-
-

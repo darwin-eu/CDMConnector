@@ -16,7 +16,7 @@ version(cdm)
 
 ## Value
 
-"5.3" or "5.4"
+"5.3", "5.4" or "5.5"
 
 ## Examples
 

@@ -113,6 +113,29 @@ test_that("mapTypes returns type unchanged for duckdb", {
   expect_equal(CDMConnector:::mapTypes(con, "character"), "character")
 })
 
+test_that("mapTypes maps R date and datetime classes for BigQuery", {
+  mock_con <- structure(list(), class = c("BigQueryConnection", "DBIConnection"))
+
+  expect_equal(CDMConnector:::mapTypes(mock_con, "logical"), "BOOL")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "numeric"), "FLOAT64")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "factor"), "STRING")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "Date"), "DATE")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "POSIXct"), "TIMESTAMP")
+  expect_equal(CDMConnector:::mapTypes(mock_con, "POSIXt"), "TIMESTAMP")
+})
+
+test_that("dcCreateTable quotes BigQuery column names", {
+  mock_con <- structure(list(), class = c("BigQueryConnection", "DBIConnection"))
+  sql <- CDMConnector:::dcCreateTable(
+    mock_con,
+    c("project", "dataset", "cohort_set"),
+    tibble::tibble(limit = integer(), cohort_name = character())
+  )
+
+  expect_match(sql, "`limit` INT")
+  expect_match(sql, "`cohort_name` STRING")
+})
+
 # --- unique_prefix ---
 
 test_that("unique_prefix returns a positive number", {
@@ -326,6 +349,17 @@ test_that("execute_ddl creates 5.4 tables", {
   on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
   CDMConnector:::execute_ddl(con, "main", cdm_version = "5.4", tables = c("person", "observation_period"))
+  tables <- DBI::dbListTables(con)
+  expect_true("person" %in% tables)
+  expect_true("observation_period" %in% tables)
+})
+
+test_that("execute_ddl creates 5.5 tables", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  CDMConnector:::execute_ddl(con, "main", cdm_version = "5.5", tables = c("person", "observation_period"))
   tables <- DBI::dbListTables(con)
   expect_true("person" %in% tables)
   expect_true("observation_period" %in% tables)

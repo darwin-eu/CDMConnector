@@ -10,7 +10,7 @@ test_cdmFromCon <- function(con, cdmSchema, writeSchema) {
   cdm <- cdmFromCon(con, cdmSchema = cdmSchema, cdmName = "test", writeSchema = writeSchema)
   expect_s3_class(cdm, "cdm_reference")
   expect_warning(version(cdm))
-  expect_true(cdmVersion(cdm) %in% c("5.3", "5.4"))
+  expect_true(cdmVersion(cdm) %in% c("5.3", "5.4", "5.5"))
 
   cdmSnapshot <- snapshot(cdm)
   # cdmSnapshot <- snapshot(cdm, computeDataHash = (dbms(con) == "duckdb")) # requires DatabaseConnector 7 to be released first

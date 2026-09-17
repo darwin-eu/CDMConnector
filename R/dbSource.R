@@ -73,8 +73,18 @@ insertTable.db_cdm <- function(cdm,
     table <- table |> dplyr::collect()
   }
 
-  if (dbms(con) %in% c("bigquery") && nrow(table) == 0) {
+  # BigQuery autodetects the schema when dbWriteTable() creates a table. This
+  # can infer the wrong type for all-missing columns and character values such
+  # as "0" and "1". Always create BigQuery tables from the R column classes,
+  # then append the data to preserve the intended schema.
+  needsExplicitBigQuerySchema <- dbms(con) == "bigquery"
+
+  if (needsExplicitBigQuerySchema) {
     .dbCreateTable(con, fullName, table)
+    if (nrow(table) > 0) {
+      .dbWriteTableSafe(con, name = fullName, value = table,
+                        temporary = temporary, append = TRUE)
+    }
   } else {
     .dbWriteTableSafe(con, name = fullName, value = table, temporary = temporary)
   }

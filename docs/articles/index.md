@@ -12,9 +12,5 @@
   examples](https://darwin-eu.github.io/CDMConnector/articles/a04_DBI_connection_examples.md):
 - [Using CDM
   attributes](https://darwin-eu.github.io/CDMConnector/articles/a06_using_cdm_attributes.md):
-- [DAG-Based Batch Optimization for Cohort SQL
-  Generation](https://darwin-eu.github.io/CDMConnector/articles/a07_batch-optimization.md):
-- [Incremental DAG Caching for Cohort
-  Generation](https://darwin-eu.github.io/CDMConnector/articles/a08_dag-caching.md):
 - [Multi-Database Benchmarking: Old vs New Cohort
   Generation](https://darwin-eu.github.io/CDMConnector/articles/a09_benchmarking.md):

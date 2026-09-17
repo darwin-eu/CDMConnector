@@ -458,7 +458,7 @@ cdmFlatten <- function(cdm,
   if (includeConceptName) {
     checkmate::assertTRUE("concept" %in% names(cdm))
     out <- queryList %>%
-      purrr::reduce(dplyr::union) %>%
+      purrr::reduce(dplyr::union_all) %>%
       dplyr::left_join(dplyr::transmute(cdm$concept,
                        observation_concept_id = .data$concept_id,
                        observation_concept_name = .data$concept_name),
@@ -471,7 +471,7 @@ cdmFlatten <- function(cdm,
       dplyr::distinct()
 
   } else {
-    out <- purrr::reduce(queryList, dplyr::union) %>%
+    out <- purrr::reduce(queryList, dplyr::union_all) %>%
       dplyr::ungroup() %>%
       dplyr::distinct()
   }
@@ -479,4 +479,3 @@ cdmFlatten <- function(cdm,
   # compute?
   return(out)
 }
-
