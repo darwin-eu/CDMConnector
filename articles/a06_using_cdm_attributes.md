@@ -61,7 +61,7 @@ the cdm reference.
 ``` r
 
 cdmCon(cdm)
-#> <duckdb_connection 05040 driver=<duckdb_driver dbdir='/tmp/Rtmp79oTRc/file215032363a05.duckdb' read_only=FALSE bigint=numeric>>
+#> <duckdb_connection 7f890 driver=<duckdb_driver dbdir='/tmp/Rtmpe4xfPa/file20803a904f1d.duckdb' read_only=FALSE bigint=numeric>>
 ```
 
 This can be useful, for example, if we want to make use of DBI functions

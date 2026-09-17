@@ -2,6 +2,8 @@
 
 ## CDMConnector 2.8.0
 
+CRAN release: 2026-09-17
+
 - Add support for OMOP CDM 5.5
 - Add bigquery github workflow
 
