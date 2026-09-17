@@ -105,7 +105,7 @@ cdm$person %>%
 
 ``` R
 ## # Source:   SQL [?? x 1]
-## # Database: DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpoqKZzI/fileeb501f4fa30.duckdb]
+## # Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpVTDTqt/file4bd652ebffb3.duckdb]
 ##       n
 ##   <dbl>
 ## 1  2694
@@ -122,7 +122,7 @@ cdm$condition_era %>%
 
 ``` R
 ## # Source:     SQL [?? x 2]
-## # Database:   DuckDB 1.4.4 [root@Darwin 25.2.0:R 4.5.1//private/var/folders/2j/8z0yfn1j69q8sxjc7vj9yhz40000gp/T/RtmpoqKZzI/fileeb501f4fa30.duckdb]
+## # Database:   DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpVTDTqt/file4bd652ebffb3.duckdb]
 ## # Ordered by: desc(n)
 ##    top_conditions                               n
 ##    <chr>                                    <dbl>
@@ -154,19 +154,17 @@ If you encounter a clear bug, please file an issue with a minimal
 ``` R
 ## To cite package 'CDMConnector' in publications use:
 ## 
-##   Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I (2026).
-##   _CDMConnector: Connect to an OMOP Common Data Model_. R package
-##   version 2.4.0, commit b56e5ea99a830da0054f2542dd763e45363b9104,
-##   <https://github.com/darwin-eu/CDMConnector>.
+##   Inberg G, Black A, Gorbachev A, Burn E, Catala Sabate M, Nika I
+##   (2026). _CDMConnector: Connect to an OMOP Common Data Model_. R
+##   package version 2.8.0, <https://darwin-eu.github.io/CDMConnector/>.
 ## 
 ## A BibTeX entry for LaTeX users is
 ## 
 ##   @Manual{,
 ##     title = {CDMConnector: Connect to an OMOP Common Data Model},
-##     author = {Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
-##     year = {2026},
-##     note = {R package version 2.4.0, commit b56e5ea99a830da0054f2542dd763e45363b9104},
-##     url = {https://github.com/darwin-eu/CDMConnector},
+##     author = {Ger Inberg and Adam Black and Artem Gorbachev and Edward Burn and Marti {Catala Sabate} and Ioanna Nika},
+##     note = {R package version 2.8.0},
+##     url = {https://darwin-eu.github.io/CDMConnector/},
 ##   }
 ```
 
