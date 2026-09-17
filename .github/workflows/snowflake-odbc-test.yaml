@@ -11,7 +11,7 @@ jobs:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
+      image: executionengine.azurecr.io/darwin-eu-dev/darwin-base:v1.0
       env:
         SNOWFLAKE_CONNECTION_STRING: ${{ secrets.SNOWFLAKE_CONNECTION_STRING }}
         SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}

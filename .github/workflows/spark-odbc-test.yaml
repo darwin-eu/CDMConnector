@@ -10,7 +10,7 @@ jobs:
   Spark-test:
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
+      image: executionengine.azurecr.io/darwin-eu-dev/darwin-base:v1.0
       env:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
