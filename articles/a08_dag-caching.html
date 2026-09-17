@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,7 +70,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Incremental DAG Caching for Cohort Generation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/v2.7.0/vignettes/a08_dag-caching.Rmd" class="external-link"><code>vignettes/a08_dag-caching.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/main/vignettes/a08_dag-caching.Rmd" class="external-link"><code>vignettes/a08_dag-caching.Rmd</code></a></small>
       <div class="d-none name"><code>a08_dag-caching.Rmd</code></div>
     </div>
 
@@ -253,11 +253,11 @@ domain-filtered), but <strong>preserve</strong> cached node tables</li>
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># First run: all nodes computed from scratch</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet2.html">generateCohortSet2</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet</span>, name <span class="op">=</span> <span class="st">"my_cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">generateCohortSet2</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet</span>, name <span class="op">=</span> <span class="st">"my_cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DAG cache: 0 hits, 12 misses (12 nodes to compute)</span></span>
 <span></span>
 <span><span class="co"># Modify one cohort's inclusion rule and re-run:</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet2.html">generateCohortSet2</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v2</span>, name <span class="op">=</span> <span class="st">"my_cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">generateCohortSet2</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v2</span>, name <span class="op">=</span> <span class="st">"my_cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DAG cache: 8 hits, 4 misses (4 nodes to compute)</span></span></code></pre></div>
 <p>On the second run, only the nodes affected by the change are
 recomputed. Shared upstream nodes (concept sets, primary events) that
@@ -508,7 +508,7 @@ disabled at any time by omitting <code>cache = TRUE</code>.</p>
 <span>  cohort_definition_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>,</span>
 <span>  cohort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">json_diabetes</span>, <span class="va">json_hypertension</span>, <span class="va">json_ckd</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet2.html">generateCohortSet2</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v1</span>, <span class="st">"cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">generateCohortSet2</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v1</span>, <span class="st">"cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DAG cache: 0 hits, 18 misses (18 nodes to compute)</span></span>
 <span></span>
 <span><span class="co"># Day 2: Replace the CKD definition, keep diabetes and hypertension</span></span>
@@ -516,7 +516,7 @@ disabled at any time by omitting <code>cache = TRUE</code>.</p>
 <span>  cohort_definition_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>,</span>
 <span>  cohort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">json_diabetes</span>, <span class="va">json_hypertension</span>, <span class="va">json_ckd_v2</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet2.html">generateCohortSet2</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v2</span>, <span class="st">"cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">generateCohortSet2</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v2</span>, <span class="st">"cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DAG cache: 12 hits, 6 misses (6 nodes to compute)</span></span>
 <span><span class="co"># Diabetes and hypertension nodes reused; only CKD nodes recomputed</span></span>
 <span></span>
@@ -525,7 +525,7 @@ disabled at any time by omitting <code>cache = TRUE</code>.</p>
 <span>  cohort_definition_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span>,</span>
 <span>  cohort <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">json_diabetes</span>, <span class="va">json_hypertension</span>, <span class="va">json_ckd_v2</span>, <span class="va">json_stroke</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateCohortSet2.html">generateCohortSet2</a></span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v3</span>, <span class="st">"cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">cdm</span> <span class="op">&lt;-</span> <span class="fu">generateCohortSet2</span><span class="op">(</span><span class="va">cdm</span>, <span class="va">cohortSet_v3</span>, <span class="st">"cohorts"</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DAG cache: 18 hits, 6 misses (6 nodes to compute)</span></span>
 <span><span class="co"># All 3 existing cohorts reused; only stroke computed</span></span>
 <span></span>

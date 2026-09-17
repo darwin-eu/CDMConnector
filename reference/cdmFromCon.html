@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">CDMConnector</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Create a CDM reference object from a database connection</h1>
-      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/v2.7.0/R/cdm.R" class="external-link"><code>R/cdm.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/darwin-eu/CDMConnector/blob/main/R/cdm.R" class="external-link"><code>R/cdm.R</code></a></small>
       <div class="d-none name"><code>cdmFromCon.Rd</code></div>
     </div>
 
@@ -68,8 +68,8 @@
 
 
 <dl><dt id="arg-con">con<a class="anchor" aria-label="anchor" href="#arg-con"></a></dt>
-<dd><p>A DBI database connection to a database where an OMOP CDM v5.4 or
-v5.3 instance is located.</p></dd>
+<dd><p>A DBI database connection to a database where an OMOP CDM
+instance is located.</p></dd>
 
 
 <dt id="arg-cdmschema">cdmSchema<a class="anchor" aria-label="anchor" href="#arg-cdmschema"></a></dt>
@@ -93,9 +93,9 @@ included in the CDM object.</p></dd>
 
 
 <dt id="arg-cdmversion">cdmVersion<a class="anchor" aria-label="anchor" href="#arg-cdmversion"></a></dt>
-<dd><p>The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
-If NULL we will attempt to automatically determine the cdm version using
-the cdm_source table and heuristics.</p></dd>
+<dd><p>The version of the OMOP CDM. Cam be "5.3", "5.4", "5.5" or
+NULL (default). If NULL we will attempt to automatically determine the cdm
+version using the cdm_source table and heuristics.</p></dd>
 
 
 <dt id="arg-cdmname">cdmName<a class="anchor" aria-label="anchor" href="#arg-cdmname"></a></dt>

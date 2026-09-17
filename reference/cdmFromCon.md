@@ -23,8 +23,8 @@ cdmFromCon(
 
 - con:
 
-  A DBI database connection to a database where an OMOP CDM v5.4 or v5.3
-  instance is located.
+  A DBI database connection to a database where an OMOP CDM instance is
+  located.
 
 - cdmSchema:
 
@@ -47,9 +47,9 @@ cdmFromCon(
 
 - cdmVersion:
 
-  The version of the OMOP CDM. Cam be "5.3", "5.4", or NULL (default).
-  If NULL we will attempt to automatically determine the cdm version
-  using the cdm_source table and heuristics.
+  The version of the OMOP CDM. Cam be "5.3", "5.4", "5.5" or NULL
+  (default). If NULL we will attempt to automatically determine the cdm
+  version using the cdm_source table and heuristics.
 
 - cdmName:
 
