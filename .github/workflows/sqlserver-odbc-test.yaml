@@ -54,6 +54,15 @@ jobs:
           df -h / || true
         shell: bash
 
+      - name: Verify installed SQL Server ODBC driver
+        run: |
+          set -eux
+          odbcinst -j
+          odbcinst -q -d
+          test -f /etc/odbcinst.ini && cat /etc/odbcinst.ini
+          find /opt/microsoft -name 'libmsodbcsql-18*.so*' -print
+        shell: bash
+
       - name: Run tests on SQL Server with odbc driver
         run: R -e 'withr::with_envvar(new = c("CI_TEST_DB" = "sqlserver", "TEST_USING_DATABASE_CONNECTOR" = "FALSE", "skip_eunomia_download_test" = "TRUE"), testthat::test_local())'
 
