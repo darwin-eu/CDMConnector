@@ -7,11 +7,11 @@ on:
 name: bigquery-test
 
 jobs:
-  Postgres-test:
+  Bigquery-test:
     # if: github.repository == 'darwin-eu/CDMConnector'
     runs-on: ubuntu-latest
     container:
-      image: executionengine.azurecr.io/darwin-eu-dev/examplestudy-base:latest
+      image: executionengine.azurecr.io/darwin-eu-dev/darwin-base:v1.0
       env:
         BIGQUERY_PROJECT_ID:     ${{ secrets.BIGQUERY_PROJECT_ID }}
         BIGQUERY_CDM_SCHEMA:     ${{ secrets.BIGQUERY_CDM_SCHEMA }}
