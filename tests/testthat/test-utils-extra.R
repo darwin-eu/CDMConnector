@@ -377,12 +377,12 @@ test_that("execute_ddl with prefix", {
 
 # --- .inSchema edge cases ---
 
-test_that(".inSchema with bigquery and 2-part schema returns string", {
+test_that(".inSchema with bigquery and 2-part schema returns Id", {
   result <- CDMConnector:::.inSchema(c("project", "dataset"), "my_table", dbms = "bigquery")
-  expect_type(result, "character")
-  expect_true(grepl("project", result))
-  expect_true(grepl("dataset", result))
-  expect_true(grepl("my_table", result))
+  expect_s4_class(result, "Id")
+  expect_equal(result@name[["catalog"]], "project")
+  expect_equal(result@name[["schema"]], "dataset")
+  expect_equal(result@name[["table"]], "my_table")
 })
 
 test_that(".inSchema with snowflake and 2-part schema returns Id", {
