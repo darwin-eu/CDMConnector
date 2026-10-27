@@ -1,3 +1,7 @@
+# CDMConnector (development version)
+
+- Fix temp table name collisions in `generateConceptCohortSet` when several processes run at the same time, which caused errors such as `must be owner of table tmp..._` and `tuple concurrently updated` on PostgreSQL. The temp table is now also dropped if generation fails part way through.
+
 # CDMConnector 2.8.0
 
 - Add support for OMOP CDM 5.5
