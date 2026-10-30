@@ -3,7 +3,7 @@ name: Documentation
 about: Use to share an improvement for the documention.
 title: ''
 labels: 'Documentation'
-assignees: 'PRijnbeek, ablack3'
+assignees: 'ginberg'
 type: 'Task'
 
 ---

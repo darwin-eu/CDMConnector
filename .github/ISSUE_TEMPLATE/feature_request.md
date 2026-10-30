@@ -3,7 +3,7 @@ name: Feature request
 about: Suggest an idea for this project. This can be a new feature or an improvement.
 title: ''
 labels: ''
-assignees: 'PRijnbeek,ablack3'
+assignees: 'ginberg'
 type: 'Feature'
 
 ---
