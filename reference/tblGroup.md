@@ -7,7 +7,7 @@ table groups.
 ## Usage
 
 ``` r
-tblGroup(group)
+tblGroup(group, cdmVersion = "5.3")
 ```
 
 ## Arguments
@@ -16,6 +16,11 @@ tblGroup(group)
 
   A character vector of CDM table groups: "vocab", "clinical", "all",
   "default", "derived".
+
+- cdmVersion:
+
+  The OMOP CDM version whose table groups should be returned. Defaults
+  to "5.3" for backwards compatibility.
 
 ## Value
 

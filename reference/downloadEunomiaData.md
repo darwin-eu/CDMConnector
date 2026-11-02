@@ -25,8 +25,8 @@ downloadEunomiaData(
 - cdmVersion:
 
   The OMOP CDM version. This version will appear in the suffix of the
-  data file, for example: synpuf_5.3.zip. Must be '5.3' (default) or
-  '5.4'.
+  data file, for example: synpuf_5.3.zip. Must be '5.3' (default) '5.4'
+  or '5.5'
 
 - pathToData:
 
