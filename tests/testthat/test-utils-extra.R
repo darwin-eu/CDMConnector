@@ -152,6 +152,32 @@ test_that("unique_prefix returns different values over time", {
   expect_true(is.numeric(p2))
 })
 
+# --- uniqueTempTableName ---
+
+test_that("uniqueTempTableName returns valid, distinct names", {
+  nms <- replicate(100, CDMConnector:::uniqueTempTableName())
+  expect_true(all(grepl("^tmp_[0-9]+_[0-9]+_[a-z0-9]{6}_$", nms)))
+  expect_true(all(nchar(nms) <= 63)) # postgres identifier limit
+  expect_equal(length(unique(nms)), length(nms))
+})
+
+test_that("uniqueTempTableName differs between calls with the same seed", {
+  # e.g. two jobs started together that both call set.seed(1)
+  set.seed(1)
+  n1 <- CDMConnector:::uniqueTempTableName()
+  set.seed(1)
+  n2 <- CDMConnector:::uniqueTempTableName()
+  expect_false(identical(n1, n2))
+})
+
+test_that("uniqueTempTableName does not change the user's random number stream", {
+  set.seed(1)
+  expected <- stats::runif(1)
+  set.seed(1)
+  CDMConnector:::uniqueTempTableName()
+  expect_equal(stats::runif(1), expected)
+})
+
 # --- .dbCreateTable ---
 
 test_that(".dbCreateTable creates table via DBI", {

@@ -314,6 +314,24 @@ unique_prefix <- function() {
   as.integer((as.numeric(Sys.time())*10) %% 1e6)
 }
 
+# get a table name that is unique across concurrent processes. internal function.
+# The PID separates processes on one host, microsecond time separates containers
+# (which often share PIDs), and the random suffix is a final tie-breaker.
+# The suffix uses a freshly seeded RNG so it ignores any user set.seed() and
+# leaves the user's random number stream untouched.
+uniqueTempTableName <- function() {
+  suffix <- withr::with_preserve_seed({
+    set.seed(NULL)
+    paste(sample(c(letters, 0:9), 6, replace = TRUE), collapse = "")
+  })
+  paste0(
+    "tmp_",
+    Sys.getpid(), "_",
+    sprintf("%.0f", (as.numeric(Sys.time()) * 1e6) %% 1e12), "_",
+    suffix, "_"
+  )
+}
+
 
 # Borrowed from devtools: https://github.com/hadley/devtools/blob/ba7a5a4abd8258c52cb156e7b26bb4bf47a79f0b/R/utils.r#L44
 isInstalled <- function(pkg, version = "0") {

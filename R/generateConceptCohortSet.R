@@ -289,7 +289,7 @@ generateConceptCohortSet <- function(cdm,
   # upload concept data to the database ----
 
 
-  tempName <- paste0("tmp", as.integer(Sys.time()), "_")
+  tempName <- uniqueTempTableName()
 
   if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
     .dbWriteTableSafe(cdmCon(cdm),
@@ -299,6 +299,18 @@ generateConceptCohortSet <- function(cdm,
   } else {
     cdm <- omopgenerics::insertTable(cdm, name = tempName, table = df, overwrite = TRUE)
   }
+
+  # register cleanup straight away so the table is dropped even if a later step fails
+  on.exit({
+    if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
+
+      if (DBI::dbIsValid(cdmCon(cdm))) {
+        DBI::dbRemoveTable(cdmCon(cdm), name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
+      }
+    } else {
+      cdm[[tempName]] <- NULL
+    }
+  }, add = TRUE)
 
 
   if (any(df$include_descendants)) {
@@ -341,17 +353,6 @@ generateConceptCohortSet <- function(cdm,
     ) %>%
     dplyr::distinct() %>%
     dplyr::compute()
-
-  on.exit({
-    if (!methods::is(omopgenerics::cdmSource(cdm), "local_cdm")) {
-
-      if (DBI::dbIsValid(cdmCon(cdm))) {
-        DBI::dbRemoveTable(cdmCon(cdm), name = .inSchema(cdmWriteSchema(cdm), tempName, dbms = dbms(con)))
-      }
-    } else {
-      cdm[[tempName]] <- NULL
-    }
-  }, add = TRUE)
 
   domains <- concepts %>% dplyr::distinct(.data$domain_id) %>% dplyr::pull() %>% tolower()
   domains <- domains[!is.na(domains)] # remove NAs
