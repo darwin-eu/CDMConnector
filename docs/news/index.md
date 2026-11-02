@@ -1,6 +1,15 @@
 # Changelog
 
+## CDMConnector 2.8.1
+
+- Eunomia support for OMOP CDM 5.5
+  ([\#632](https://github.com/darwin-eu/CDMConnector/issues/632))
+- Bigquery use full project.dataset path
+  ([\#634](https://github.com/darwin-eu/CDMConnector/issues/634))
+
 ## CDMConnector 2.8.0
+
+CRAN release: 2026-09-17
 
 - Add support for OMOP CDM 5.5
 - Add bigquery github workflow

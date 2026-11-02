@@ -8,7 +8,7 @@ articles:
   a04_DBI_connection_examples: a04_DBI_connection_examples.html
   a06_using_cdm_attributes: a06_using_cdm_attributes.html
   a09_benchmarking: a09_benchmarking.html
-last_built: 2026-09-17T09:25Z
+last_built: 2026-11-02T13:18Z
 urls:
   reference: https://darwin-eu.github.io/CDMConnector/reference
   article: https://darwin-eu.github.io/CDMConnector/articles

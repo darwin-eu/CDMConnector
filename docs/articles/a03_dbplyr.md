@@ -114,7 +114,7 @@ cdm$person %>%
   show_query()
 #> <SQL>
 #> SELECT
-#>   person.*,
+#>   *,
 #>   CASE
 #> WHEN (gender_concept_id = '8507') THEN 'Male'
 #> WHEN (gender_concept_id = '8532') THEN 'Female'

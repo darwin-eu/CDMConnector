@@ -9,7 +9,7 @@ eunomiaIsAvailable(datasetName = "GiBleed", cdmVersion = "5.3")
 \arguments{
 \item{datasetName}{Name of the Eunomia dataset to check. Defaults to "GiBleed".}
 
-\item{cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3" or "5.4".}
+\item{cdmVersion}{Version of the Eunomia dataset to check. Must be "5.3", "5.4" or "5.5"}
 }
 \value{
 TRUE if the eunomia example dataset is available and FALSE otherwise

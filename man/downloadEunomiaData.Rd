@@ -16,7 +16,7 @@ downloadEunomiaData(
 data set name corresponds to the folder with the data set ZIP files}
 
 \item{cdmVersion}{The OMOP CDM version. This version will appear in the suffix of the data file,
-for example: synpuf_5.3.zip. Must be '5.3' (default) or '5.4'.}
+for example: synpuf_5.3.zip. Must be '5.3' (default) '5.4' or '5.5'}
 
 \item{pathToData}{The path where the Eunomia data is stored on the file system., By default the
 value of the environment variable "EUNOMIA_DATA_FOLDER" is used.}

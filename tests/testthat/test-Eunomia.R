@@ -37,7 +37,6 @@ test_that("downloadEunomiaData", {
 })
 
 test_that("empty cdm works", {
-  # skip("manual test")
   skip_on_cran()
   skip_if_offline()
   skip_if_not_installed("duckdb")
@@ -49,12 +48,29 @@ test_that("empty cdm works", {
     con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir("empty_cdm")))
     cdm <- cdmFromCon(con, "main", "main", cdmName = "empty_cdm")
   })
-
-
   rowcounts <- purrr::map_int(cdmSelect(cdm, -tblGroup("vocab")),
                               ~dplyr::pull(dplyr::count(.), 'n'))
+  expect_true(all(rowcounts == 0))
+  DBI::dbDisconnect(con, shutdown = T)
+})
 
+test_that("empty cdm v5.5 works", {
+  skip_on_cran()
+  skip_if_offline()
+  skip_if_not_installed("duckdb")
+  skip_if_not(eunomiaIsAvailable("empty_cdm"))
 
+  cdmVersion <- "5.5"
+  expect_no_error({
+    con <- DBI::dbConnect(duckdb::duckdb(eunomiaDir(datasetName = "empty_cdm",
+                                                    cdmVersion = cdmVersion)))
+    cdm <- cdmFromCon(con, "main", "main", cdmName = "empty_cdm",
+                      cdmVersion = cdmVersion)
+  })
+
+  rowcounts <- purrr::map_int(cdmSelect(cdm, -tblGroup(group = "vocab",
+                                                       cdmVersion = cdmVersion)),
+                              ~dplyr::pull(dplyr::count(.), 'n'))
   expect_true(all(rowcounts == 0))
   DBI::dbDisconnect(con, shutdown = T)
 })

@@ -33,7 +33,7 @@ are located. If NULL, vocabulary tables are expected to be in \code{cdmSchema}.}
 \item{cohortTables}{A character vector listing the cohort table names to be
 included in the CDM object.}
 
-\item{cdmVersion}{The version of the OMOP CDM. Cam be "5.3", "5.4", "5.5" or
+\item{cdmVersion}{The version of the OMOP CDM. Can be "5.3", "5.4", "5.5" or
 NULL (default). If NULL we will attempt to automatically determine the cdm
 version using the cdm_source table and heuristics.}
 

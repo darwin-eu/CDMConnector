@@ -97,6 +97,21 @@ test_that("cdmFromCon works with cdmVersion 5.5", {
   )
 })
 
+test_that("cdmFromCon includes v5.5 vocabulary extension tables", {
+  skip_if_not_installed("duckdb")
+  con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE), add = TRUE)
+
+  tables <- unique(CDMConnector:::spec_cdm_field[["5.5"]]$cdmTableName)
+  CDMConnector:::execute_ddl(con, "main", cdm_version = "5.5", tables = tables)
+
+  cdm <- cdmFromCon(con, cdmSchema = "main", writeSchema = "main",
+                     cdmVersion = "5.5", cdmName = "test")
+  expect_true(all(c(
+    "pack_content", "concept_metadata", "concept_relationship_metadata"
+  ) %in% names(cdm)))
+})
+
 # --- verify_write_access ---
 
 test_that("verify_write_access succeeds on duckdb", {
@@ -164,10 +179,11 @@ test_that("cdmCon returns connection from cdm", {
 # --- tblGroup ---
 
 test_that("tblGroup returns tables for 'vocab' group", {
-  tables <- tblGroup("vocab")
+  tables <- tblGroup("vocab", cdmVersion = "5.5")
   expect_true(is.character(tables))
   expect_true("concept" %in% tables)
   expect_true("vocabulary" %in% tables)
+  expect_true(all(c("pack_content", "concept_metadata", "concept_relationship_metadata") %in% tables))
 })
 
 test_that("tblGroup returns tables for 'clinical' group", {

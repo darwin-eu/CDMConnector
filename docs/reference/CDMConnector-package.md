@@ -22,6 +22,9 @@ Useful links:
 
 Authors:
 
+- Ger Inberg <g.inberg@erasmusmc.nl>
+  ([ORCID](https://orcid.org/0000-0001-8993-8748))
+
 - Adam Black <ablack3@gmail.com>
   ([ORCID](https://orcid.org/0000-0001-5576-8701))
 

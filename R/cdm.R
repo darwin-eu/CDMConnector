@@ -26,7 +26,7 @@
 #'   are located. If NULL, vocabulary tables are expected to be in `cdmSchema`.
 #' @param cohortTables A character vector listing the cohort table names to be
 #'   included in the CDM object.
-#' @param cdmVersion The version of the OMOP CDM. Cam be "5.3", "5.4", "5.5" or
+#' @param cdmVersion The version of the OMOP CDM. Can be "5.3", "5.4", "5.5" or
 #' NULL (default). If NULL we will attempt to automatically determine the cdm
 #' version using the cdm_source table and heuristics.
 #' @param cdmName The name of the CDM. If NULL (default) the cdm_source_name
@@ -170,10 +170,12 @@ cdmFromCon <- function(con,
   con <- attr(src, "dbcon")
 
   # read omop tables
-  vocabularyTables <- tblGroup("vocab")
-  nonVocabularyTables <- setdiff(omopgenerics::omopTables(), vocabularyTables)
+  tableCdmVersion <- if (is.null(cdmVersion)) "5.3" else cdmVersion
+  vocabularyTables <- tblGroup("vocab", cdmVersion = tableCdmVersion)
+  expectedOmopTables <- omopgenerics::omopTables(tableCdmVersion)
+  nonVocabularyTables <- setdiff(expectedOmopTables, vocabularyTables)
   dbTables <- listTables(con, schema = cdmSchema)
-  cdm_tables <- omopgenerics::omopTables()
+  cdm_tables <- expectedOmopTables
   cdm_tables <- cdm_tables[which(
     cdm_tables %in% tolower(dbTables) &
       cdm_tables %in% nonVocabularyTables
@@ -535,6 +537,8 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #'
 #' @param group A character vector of CDM table groups: "vocab", "clinical",
 #' "all", "default", "derived".
+#' @param cdmVersion The OMOP CDM version whose table groups should be returned.
+#' Defaults to "5.3" for backwards compatibility.
 #'
 #' @return A character vector of CDM tables names in the groups
 #' @export
@@ -550,12 +554,12 @@ verify_write_access <- function(con, write_schema, add = NULL) {
 #' cdm <- cdmFromCon(con, cdmName = "test", cdmSchema = "public") %>%
 #'   cdmSelectTbl(tblGroup("vocab"))
 #' }
-tblGroup <- function(group) {
+tblGroup <- function(group, cdmVersion = "5.3") {
   # groups are defined in the internal package dataframe called spec_cdm_table
   # created by a script in the extras folder
   checkmate::assert_subset(group, c("vocab", "clinical", "all", "default", "derived"))
-  # use v5.3 here. The set of table groups between 5.3 and 5.4 are the same.
-  spec <- spec_cdm_table[["5.3"]]
+  checkmate::assert_choice(cdmVersion, choices = names(spec_cdm_table))
+  spec <- spec_cdm_table[[cdmVersion]]
   purrr::map(group, ~ spec[spec[[paste0("group_", .)]], ]$cdmTableName) %>%
     unlist() %>%
     unique()

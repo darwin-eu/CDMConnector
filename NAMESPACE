@@ -78,53 +78,67 @@ export(version)
 import(DBI)
 import(omopgenerics)
 importFrom(dbplyr,dbplyr_edition)
-importFrom(dplyr,"%>%")
-importFrom(dplyr,all_of)
-importFrom(dplyr,compute)
-importFrom(dplyr,contains)
-importFrom(dplyr,ends_with)
-importFrom(dplyr,matches)
-importFrom(dplyr,starts_with)
-importFrom(dplyr,tbl)
-importFrom(dplyr,tibble)
+importFrom(dplyr,
+  "%>%",
+  all_of,
+  compute,
+  contains,
+  ends_with,
+  matches,
+  starts_with,
+  tbl,
+  tibble
+)
 importFrom(generics,compile)
-importFrom(jsonlite,fromJSON)
-importFrom(jsonlite,read_json)
+importFrom(jsonlite,
+  fromJSON,
+  read_json
+)
 importFrom(methods,is)
-importFrom(omopgenerics,attrition)
-importFrom(omopgenerics,bind)
-importFrom(omopgenerics,cdmDisconnect)
-importFrom(omopgenerics,cdmFromTables)
-importFrom(omopgenerics,cdmName)
-importFrom(omopgenerics,cdmReference)
-importFrom(omopgenerics,cdmSelect)
-importFrom(omopgenerics,cdmTableFromSource)
-importFrom(omopgenerics,cdmVersion)
-importFrom(omopgenerics,cohortCodelist)
-importFrom(omopgenerics,cohortCount)
-importFrom(omopgenerics,dropSourceTable)
-importFrom(omopgenerics,dropTable)
-importFrom(omopgenerics,insertCdmTo)
-importFrom(omopgenerics,insertFromSource)
-importFrom(omopgenerics,insertTable)
-importFrom(omopgenerics,listSourceTables)
-importFrom(omopgenerics,newCohortTable)
-importFrom(omopgenerics,readSourceTable)
-importFrom(omopgenerics,recordCohortAttrition)
-importFrom(omopgenerics,settings)
-importFrom(omopgenerics,sourceType)
-importFrom(omopgenerics,uniqueTableName)
+importFrom(omopgenerics,
+  attrition,
+  bind,
+  cdmDisconnect,
+  cdmFromTables,
+  cdmName,
+  cdmReference,
+  cdmSelect,
+  cdmTableFromSource,
+  cdmVersion,
+  cohortCodelist,
+  cohortCount,
+  dropSourceTable,
+  dropTable,
+  insertCdmTo,
+  insertFromSource,
+  insertTable,
+  listSourceTables,
+  newCohortTable,
+  readSourceTable,
+  recordCohortAttrition,
+  settings,
+  sourceType,
+  uniqueTableName
+)
 importFrom(purrr,"%||%")
-importFrom(rlang,"!!")
-importFrom(rlang,"%||%")
-importFrom(rlang,":=")
-importFrom(rlang,.data)
-importFrom(rlang,.env)
-importFrom(stats,aggregate)
-importFrom(stats,rpois)
-importFrom(tidyselect,ends_with)
-importFrom(tidyselect,matches)
-importFrom(tidyselect,starts_with)
-importFrom(utils,download.file)
-importFrom(utils,head)
+importFrom(rlang,
+  "!!",
+  "%||%",
+  ":=",
+  .data,
+  .env
+)
+importFrom(stats,
+  aggregate,
+  rpois
+)
+importFrom(tidyselect,
+  ends_with,
+  matches,
+  starts_with
+)
+importFrom(utils,
+  download.file,
+  head
+)
 importMethodsFrom(DBI,dbConnect)

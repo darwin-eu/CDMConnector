@@ -36,7 +36,7 @@ eunomiaDir(
 "synpuf-1k",
 "delphi-100k}
 
-\item{cdmVersion}{The OMOP CDM version. Must be "5.3" or "5.4".}
+\item{cdmVersion}{The OMOP CDM version. Must be "5.3", "5.4" or "5.5"}
 
 \item{databaseFile}{The full path to the new copy of the example CDM dataset.}
 }
@@ -58,7 +58,7 @@ are only available in the OMOP CDM v5.3 format. See \url{https://synthetichealth
 for details on the Synthea project.
 
 In addition to Synthea, the Eunomia project provides the CMS Synthetic Public Use Files (SynPUFs) in both
-5.3 and 5.4 OMOP CDM formats. This data is synthetic US Medicare claims data mapped to OMOP CDM format.
+5.3, 5.4 and 5.5 OMOP CDM formats. This data is synthetic US Medicare claims data mapped to OMOP CDM format.
 The OMOP CDM has a set of optional metadata tables, called Achilles tables, that
 include pre-computed analytics about the entire dataset such as record and person counts.
 The Eunomia Synpuf datasets include the Achilles tables.

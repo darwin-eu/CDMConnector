@@ -120,8 +120,8 @@ cdm
 #> • achilles tables: -
 #> • other tables: -
 cdm$observation_period
-#> # Source:   table<observation_period> [?? x 5]
-#> # Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/Rtmp641to0/file185dd3e62e807.duckdb]
+#> # A query:  ?? x 5
+#> # Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpPs0LBH/file4e060cc5c06.duckdb]
 #>    observation_period_id person_id observation_period_s…¹ observation_period_e…²
 #>                    <int>     <int> <date>                 <date>                
 #>  1                     6         6 1963-12-31             2007-02-06            
@@ -148,7 +148,6 @@ cdm$person %>%
   dplyr::glimpse()
 #> Rows: ??
 #> Columns: 18
-#> Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/Rtmp641to0/file185dd3e62e807.duckdb]
 #> $ person_id                   <int> 6, 123, 129, 16, 65, 74, 42, 187, 18, 111,…
 #> $ gender_concept_id           <int> 8532, 8507, 8507, 8532, 8532, 8532, 8532, …
 #> $ year_of_birth               <int> 1963, 1950, 1974, 1971, 1967, 1972, 1909, …
@@ -260,18 +259,18 @@ cdm$condition_occurrence %>%
   collect() %>% 
   select("concept_name", "n") 
 #> # A tibble: 113 × 2
-#>    concept_name                                                          n
-#>    <chr>                                                             <dbl>
-#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet    305
-#>  2 Penicillin V Potassium 250 MG Oral Tablet                          1666
-#>  3 Methylphenidate Hydrochloride 20 MG Oral Tablet                      63
-#>  4 Amoxicillin 500 MG Oral Tablet                                      246
-#>  5 Warfarin Sodium 5 MG Oral Tablet                                    135
-#>  6 remifentanil                                                         16
-#>  7 Piperacillin 4000 MG / tazobactam 500 MG Injection                   35
-#>  8 {28 (Norethindrone 0.35 MG Oral Tablet) } Pack [Jolivette 28 Day]    12
-#>  9 Lorazepam 2 MG/ML Injectable Solution                                 1
-#> 10 hepatitis B vaccine, adult dosage                                  1826
+#>    concept_name                                                                n
+#>    <chr>                                                                   <dbl>
+#>  1 Acetaminophen 325 MG / Hydrocodone Bitartrate 7.5 MG Oral Tablet          305
+#>  2 Penicillin V Potassium 250 MG Oral Tablet                                1666
+#>  3 Methylphenidate Hydrochloride 20 MG Oral Tablet                            63
+#>  4 Amoxicillin 500 MG Oral Tablet                                            246
+#>  5 Warfarin Sodium 5 MG Oral Tablet                                          135
+#>  6 remifentanil                                                               16
+#>  7 Piperacillin 4000 MG / tazobactam 500 MG Injection                         35
+#>  8 {28 (Norethindrone 0.35 MG Oral Tablet) } Pack [Jolivette 28 Day]          12
+#>  9 Lorazepam 2 MG/ML Injectable Solution                                       1
+#> 10 {7 (Inert Ingredients 1 MG Oral Tablet) / 21 (Mestranol 0.05 MG / Nore…   997
 #> # ℹ 103 more rows
 ```
 
@@ -329,12 +328,12 @@ cdm$condition_occurrence %>%
 #>       SELECT DISTINCT person_id
 #>       FROM condition_occurrence
 #>       WHERE (condition_concept_id = 4112343.0)
-#>     ) LHS
+#>     ) AS LHS
 #>     INNER JOIN drug_exposure
 #>       ON (LHS.person_id = drug_exposure.person_id)
-#>   ) q01
+#>   ) AS q01
 #>   GROUP BY drug_concept_id
-#> ) LHS
+#> ) AS LHS
 #> LEFT JOIN concept
 #>   ON (LHS.drug_concept_id = concept.concept_id)
 ```
@@ -388,8 +387,8 @@ drugs %>% show_query()
 #> FROM scratch.test
 
 drugs
-#> # Source:   table<scratch.test> [?? x 11]
-#> # Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/Rtmp641to0/file185dd3e62e807.duckdb]
+#> # A query:  ?? x 11
+#> # Database: DuckDB 1.5.2 [root@Darwin 24.6.0:R 4.6.0//private/var/folders/wm/s6fjrtt53ld72z03p47nkdvr0000gn/T/RtmpPs0LBH/file4e060cc5c06.duckdb]
 #>    drug_concept_id     n concept_name   domain_id vocabulary_id concept_class_id
 #>              <int> <dbl> <chr>          <chr>     <chr>         <chr>           
 #>  1        40162522   305 Acetaminophen… Drug      RxNorm        Clinical Drug   
@@ -560,16 +559,16 @@ cdmFlatten(cdm_pneumonia,
 #> # A tibble: 3,892 × 8
 #>    person_id observation_concept_id start_date end_date   type_concept_id domain
 #>        <int>                  <int> <date>     <date>               <int> <chr> 
-#>  1       864                4278672 2001-07-11 2001-09-09           32020 condi…
-#>  2      3438                4112343 1916-08-10 1916-08-23           32020 condi…
-#>  3       864                4155034 1939-10-06 1939-10-27           32020 condi…
-#>  4      5073               40481087 1951-06-12 1951-07-03           32020 condi…
-#>  5      4532               40481087 1983-06-30 1983-07-07           32020 condi…
-#>  6      3179               40481087 1972-07-15 1972-08-05           32020 condi…
-#>  7      3223                4296204 1938-04-25 1938-05-23           32020 condi…
-#>  8       419               40481087 1945-11-09 1945-11-30           32020 condi…
-#>  9       757                 192671 1950-01-22 NA                   32020 condi…
-#> 10       864                4112343 1973-01-01 1973-01-13           32020 condi…
+#>  1      2739                3006322 1995-04-05 1995-04-05            5001 measu…
+#>  2       419                3051031 1913-09-22 1913-09-22            5001 measu…
+#>  3         2                3006322 1985-07-26 1985-07-26            5001 measu…
+#>  4         2                3049273 1993-03-29 1993-03-29            5001 measu…
+#>  5      1954               40758406 2003-03-09 2003-03-09            5001 measu…
+#>  6      1954                3051031 2003-02-07 2003-02-07            5001 measu…
+#>  7      5081                3006322 1954-03-09 1954-03-09            5001 measu…
+#>  8      2801                3006322 1926-04-30 1926-04-30            5001 measu…
+#>  9      4532                4024958 1911-04-27 1911-04-27            5001 measu…
+#> 10      3504                3006322 1931-04-04 1931-04-04            5001 measu…
 #> # ℹ 3,882 more rows
 #> # ℹ 2 more variables: observation_concept_name <chr>, type_concept_name <chr>
 ```

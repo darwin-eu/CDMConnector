@@ -658,8 +658,9 @@ test_that(".inSchema handles prefix with uppercase table", {
 
 test_that(".inSchema handles bigquery with 2-element schema", {
   result <- CDMConnector:::.inSchema(c("project", "dataset"), "person", dbms = "bigquery")
-  expect_true(grepl("project", result))
-  expect_true(grepl("dataset", result))
+  expect_s4_class(result, "Id")
+  expect_equal(result@name[["catalog"]], "project")
+  expect_equal(result@name[["schema"]], "dataset")
 })
 
 # --- .dbIsValid ---

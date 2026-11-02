@@ -1,3 +1,8 @@
+# CDMConnector 2.8.1
+
+- Eunomia support for OMOP CDM 5.5 (#632)
+- Bigquery use full project.dataset path (#634)
+
 # CDMConnector 2.8.0
 
 - Add support for OMOP CDM 5.5

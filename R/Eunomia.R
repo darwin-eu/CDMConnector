@@ -21,7 +21,7 @@
 #' @param datasetName The data set name as found on https://github.com/darwin-eu/EunomiaDatasets. The
 #'  data set name corresponds to the folder with the data set ZIP files
 #' @param cdmVersion The OMOP CDM version. This version will appear in the suffix of the data file,
-#'  for example: synpuf_5.3.zip. Must be '5.3' (default) or '5.4'.
+#'  for example: synpuf_5.3.zip. Must be '5.3' (default) '5.4' or '5.5'
 #' @param pathToData    The path where the Eunomia data is stored on the file system., By default the
 #'  value of the environment variable "EUNOMIA_DATA_FOLDER" is used.
 #' @param overwrite Control whether the existing archive file will be overwritten should it already exist.
@@ -41,7 +41,7 @@ downloadEunomiaData <- function(datasetName = "GiBleed",
                                 overwrite = FALSE) {
 
   checkmate::assertChoice(datasetName, choices = exampleDatasets())
-  checkmate::assertChoice(cdmVersion, c("5.3", "5.4"))
+  checkmate::assertChoice(cdmVersion, omopgenerics::supportedCdmVersions)
 
   if (is.null(pathToData) || is.na(pathToData) || pathToData == "") {
     stop("The pathToData argument must be specified. Consider setting the EUNOMIA_DATA_FOLDER environment variable, for example in the .Renviron file.")
@@ -155,7 +155,7 @@ exampleDatasets <- function() {
 #' for details on the Synthea project.
 #'
 #' In addition to Synthea, the Eunomia project provides the CMS Synthetic Public Use Files (SynPUFs) in both
-#' 5.3 and 5.4 OMOP CDM formats. This data is synthetic US Medicare claims data mapped to OMOP CDM format.
+#' 5.3, 5.4 and 5.5 OMOP CDM formats. This data is synthetic US Medicare claims data mapped to OMOP CDM format.
 #' The OMOP CDM has a set of optional metadata tables, called Achilles tables, that
 #' include pre-computed analytics about the entire dataset such as record and person counts.
 #' The Eunomia Synpuf datasets include the Achilles tables.
@@ -199,7 +199,7 @@ exampleDatasets <- function() {
 #' "synpuf-1k",
 #' "delphi-100k
 #'
-#' @param cdmVersion The OMOP CDM version. Must be "5.3" or "5.4".
+#' @param cdmVersion The OMOP CDM version. Must be "5.3", "5.4" or "5.5"
 #' @param databaseFile The full path to the new copy of the example CDM dataset.
 #'
 #' @return The file path to the new Eunomia dataset copy
@@ -231,7 +231,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
   if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {
     rlang::abort("Set the `EUNOMIA_DATA_FOLDER` environment variable in your .Renviron file.")
   }
-  checkmate::assertChoice(cdmVersion, c("5.3", "5.4"))
+  checkmate::assertChoice(cdmVersion, omopgenerics::supportedCdmVersions)
   rlang::check_installed("duckdb")
 
   checkmate::assertChoice(datasetName, choices = exampleDatasets())
@@ -328,7 +328,7 @@ eunomiaDir <- function(datasetName = "GiBleed",
 #' Has the Eunomia dataset been cached?
 #'
 #' @param datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
-#' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
+#' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3", "5.4" or "5.5"
 #'
 #' @return TRUE if the eunomia example dataset is available and FALSE otherwise
 #' @export
@@ -338,7 +338,7 @@ eunomiaIsAvailable <- function(datasetName = "GiBleed",
     rlang::abort("Set the environment variable EUNOMIA_DATA_FOLDER to the eunomia cache location")
   }
 
-  stopifnot(is.character(cdmVersion), length(cdmVersion) == 1, cdmVersion %in% c("5.3", "5.4"))
+  stopifnot(is.character(cdmVersion), length(cdmVersion) == 1, cdmVersion %in% omopgenerics::supportedCdmVersions)
 
   # check for zip archive of csv source files
   archiveName <- paste0(datasetName, "_", cdmVersion, ".zip")
@@ -351,7 +351,7 @@ eunomiaIsAvailable <- function(datasetName = "GiBleed",
 #' create a eunomia database with `eunomiaDir()`.
 #'
 #' @param datasetName Name of the Eunomia dataset to check. Defaults to "GiBleed".
-#' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3" or "5.4".
+#' @param cdmVersion Version of the Eunomia dataset to check. Must be "5.3", "5.4" or "5.5".
 #'
 #' @return Path to eunomia database.
 #' @export
@@ -360,7 +360,7 @@ requireEunomia <- function(datasetName = "GiBleed",
                            cdmVersion = "5.3") {
   # input check
   omopgenerics::assertChoice(datasetName, exampleDatasets(), length = 1)
-  omopgenerics::assertChoice(cdmVersion, c("5.3", "5.4"), length = 1)
+  omopgenerics::assertChoice(cdmVersion, omopgenerics::supportedCdmVersions, length = 1)
 
   # set EUNOMIA_DATA_FOLDER if not defined before
   if (Sys.getenv("EUNOMIA_DATA_FOLDER") == "") {

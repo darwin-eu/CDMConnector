@@ -47,7 +47,7 @@ cdmFromCon(
 
 - cdmVersion:
 
-  The version of the OMOP CDM. Cam be "5.3", "5.4", "5.5" or NULL
+  The version of the OMOP CDM. Can be "5.3", "5.4", "5.5" or NULL
   (default). If NULL we will attempt to automatically determine the cdm
   version using the cdm_source table and heuristics.
 
