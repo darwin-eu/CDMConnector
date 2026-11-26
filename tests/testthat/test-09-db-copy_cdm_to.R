@@ -15,11 +15,6 @@ test_copy_cdm_to <- function(con, write_schema) {
   expect_setequal(names(cdm), names(cdm2))
   expect_s3_class(cdm2, "cdm_reference")
   expect_error(copyCdmTo(con, cdm = cdm, schema = write_schema)) # cdm already exists
-
-  # drop test tables
-  listTables(con, write_schema) %>%
-    stringr::str_subset(paste0("^", write_schema["prefix"])) %>%
-    purrr::walk(~DBI::dbRemoveTable(con, inSchema(write_schema, ., dbms(con))))
 }
 
 # dbtype = "postgres" # bigquery is failing
@@ -28,11 +23,10 @@ for (dbtype in dbToTest) {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
-    prefix <- paste0("tbl", as.integer(Sys.time()), "_")
-    write_schema <- get_write_schema(dbtype, prefix = prefix)
+    write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || is.null(con))
     test_copy_cdm_to(con, write_schema)
-    disconnect(con)
   })
 }
 

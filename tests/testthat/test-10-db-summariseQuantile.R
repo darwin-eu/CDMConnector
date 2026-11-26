@@ -101,11 +101,10 @@ for (dbtype in dbToTest) {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
-    prefix <- paste0("test", as.integer(Sys.time()), "_")
-    write_schema <- get_write_schema(dbtype, prefix = prefix)
+    write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || is.null(con))
     test_summarise_quantile(con, write_schema)
-    disconnect(con)
   })
 }
 

@@ -35,9 +35,9 @@ for (dbtype in dbToTest) {
     cdm_schema <- get_cdm_schema(dbtype)
     skip_if(any(cdm_schema == ""))
     con <- get_connection(dbtype)
+    local_db_cleanup(con)
     skip_if(is.null(con))
     test_in_schema(con, cdm_schema)
-    disconnect(con)
   })
 }
 

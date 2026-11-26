@@ -3,6 +3,7 @@ test_temp_tables <- function(dbtype) {
   # create a temp table with dbWriteTable
 
   con <- get_connection(dbtype)
+  local_db_cleanup(con)
 
   if (dbtype == "snowflake") {
     # temp tables don't seem to work on snowflake with dbWriteTable
@@ -13,6 +14,7 @@ test_temp_tables <- function(dbtype) {
     disconnect(con)
 
     con <- get_connection(dbtype)
+    local_db_cleanup(con)
     expect_true("mytemptable" %in% listTables(con, get_write_schema(dbtype)))
     return(NULL)
   }
@@ -37,8 +39,8 @@ test_temp_tables <- function(dbtype) {
 
   # disconnecting removes temp tables
   con <- get_connection(dbtype)
+  local_db_cleanup(con)
   expect_false("temp_cars" %in% listTables(con))
-  disconnect(con)
 }
 
 for (dbtype in dbToTest) {
@@ -46,9 +48,7 @@ for (dbtype in dbToTest) {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     if (dbtype %in% c("spark", "sqlserver", "snowflake", "bigquery")) skip("failing test")
-    skip_if(get_write_schema(dbtype) == "")
-    con <- get_connection(dbtype)
+    skip_if(any(get_write_schema(dbtype) == ""))
     test_temp_tables(dbtype)
-    disconnect(con)
   })
 }

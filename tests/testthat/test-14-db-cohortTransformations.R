@@ -375,9 +375,9 @@ for (dbtype in dbToTest) {
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
     con <- get_connection(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || is.null(con))
     test_cohortCollapse(con, cdm_schema, write_schema)
-    disconnect(con)
   })
 }
 

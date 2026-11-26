@@ -2,10 +2,10 @@
 # DBI::dbRemoveTable
 # DBI::dbWriteTable (using temporary and overwrite arguments)
 
-test_dbi <- function(con, cdm_schema, write_schema) {
+test_dbi <- function(con, cdm_schema, write_schema, prefix = make_test_prefix()) {
 
   # Use a unique table name to avoid collisions between concurrent CI runs
-  tbl_name <- paste0("dbitest_", format(as.hexmode(sample.int(.Machine$integer.max, 1)), width = 8))
+  tbl_name <- paste0(prefix, "dbitest")
 
   df <- dplyr::tibble(
     alogical = TRUE,
@@ -49,7 +49,7 @@ test_dbi <- function(con, cdm_schema, write_schema) {
   if (CDMConnector::dbms(con) == "bigquery") {
     # BigQuery cannot infer a type from an all-NULL column. insertTable() must
     # create an explicit schema so that typed missing values retain their type.
-    typed_missing_name <- paste0("dbitypedmissing_", format(as.hexmode(sample.int(.Machine$integer.max, 1)), width = 8))
+    typed_missing_name <- paste0(prefix, "dbitypedmissing")
     typed_missing <- dplyr::tibble(
       date_value = as.Date(NA),
       datetime_value = as.POSIXct(NA),
@@ -118,15 +118,14 @@ for (dbtype in dbToTest) {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     write_schema <- get_write_schema(dbtype)
-    # Note: DBI does not need to support the write prefix
-    if ("prefix" %in% names(write_schema)) {
-      write_schema <- write_schema[names(write_schema) != "prefix"]
-    }
     cdm_schema <- get_cdm_schema(dbtype)
     con <- get_connection(dbtype, DatabaseConnector = testUsingDatabaseConnector)
+    local_db_cleanup(con, write_schema)
+    # Note: DBI does not need to support the write prefix
+    test_prefix <- unname(write_schema[["prefix"]])
+    write_schema <- write_schema[names(write_schema) != "prefix"]
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
-    test_dbi(con, cdm_schema, write_schema)
-    disconnect(con)
+    test_dbi(con, cdm_schema, write_schema, prefix = test_prefix)
   })
 }
 
