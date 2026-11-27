@@ -76,7 +76,7 @@ test_new_generated_cohort_set <- function(con, cdm_schema, write_schema) {
 
   # remove the cohort tables.
   if ("prefix" %in% names(write_schema)) {
-    dropSourceTable(cdm, dplyr::starts_with(write_schema["prefix"]))
+    dropSourceTable(cdm, dplyr::everything())
   } else {
     dropSourceTable(cdm, dplyr::starts_with("new_cohort"))
   }
@@ -91,10 +91,10 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_new_generated_cohort_set(con, cdm_schema, write_schema)
     # test_new_generated_cohort_set(con, cdm_schema, get_write_schema(dbtype, prefix = "cdmc_"))
-    disconnect(con)
   })
 }
 

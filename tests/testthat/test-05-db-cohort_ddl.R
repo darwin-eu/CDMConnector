@@ -53,8 +53,8 @@ for (dbtype in dbToTest) {
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
     write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || is.null(con))
     test_cohort_ddl(con, write_schema = write_schema)
-    disconnect(con)
   })
 }

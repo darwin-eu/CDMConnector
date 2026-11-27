@@ -65,10 +65,10 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
 
-    write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
+    write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_in_schema(con, cdm_schema = cdm_schema, write_schema = write_schema)
-    disconnect(con)
   })
 }
 
@@ -137,10 +137,10 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
 
-    write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
+    write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_in_schema(con, cdm_schema = cdm_schema, write_schema = write_schema)
-    disconnect(con)
   })
 }
 
@@ -151,6 +151,7 @@ for (dbtype in dbToTest) {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
+    local_db_cleanup(con)
 
     # for all databases except bigquery return the type passed initially,
     # for bigquery types are adjusted if necessary
@@ -166,8 +167,6 @@ for (dbtype in dbToTest) {
     }
 
     expect_equal(result, expectedTypes)
-
-    disconnect(con)
   })
 }
 
@@ -177,6 +176,7 @@ for (dbtype in dbToTest) {
     if (!(dbtype %in% ciTestDbs)) skip_on_ci()
     if (dbtype != "duckdb") skip_on_cran() else skip_if_not_installed("duckdb")
     con <- get_connection(dbtype)
+    local_db_cleanup(con)
 
     inputName <- DBI::Id("test_schema", "test_table")
     inputFields <- c(
@@ -203,7 +203,6 @@ for (dbtype in dbToTest) {
     }
 
     expect_equal(actualSQL, expectedSQL)
-    disconnect(con)
   })
 }
 
@@ -214,7 +213,9 @@ for (dbtype in dbToTest) {
 
     con <- get_connection(dbtype)
 
-    write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
+    write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
+    skip_if(any(write_schema == "") || is.null(con))
     tableName <- "temp_test_dot_db_create_table"
 
     if (tableName %in% listTables(con, schema = write_schema)) {
@@ -241,8 +242,6 @@ for (dbtype in dbToTest) {
     }
 
     expect_false(tableName %in% listTables(con, write_schema))
-
-    disconnect(con)
   })
 }
 
@@ -253,7 +252,8 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
 
-    write_schema <- get_write_schema(dbtype, prefix = paste0("tmp", as.integer(Sys.time()), "_"))
+    write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     cdm <- cdmFromCon(con, cdm_schema, write_schema)
     suppressMessages({
@@ -261,7 +261,6 @@ for (dbtype in dbToTest) {
     })
     expect_s3_class(cdmTableHashes, "data.frame")
     expect_true(nrow(cdmTableHashes) > 1)
-    disconnect(con)
   })
 }
 

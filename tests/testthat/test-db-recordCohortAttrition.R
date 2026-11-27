@@ -124,9 +124,9 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_record_cohort_attrition(con, cdm_schema, write_schema)
-    disconnect(con)
   })
 }
 

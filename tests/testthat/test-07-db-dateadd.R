@@ -108,9 +108,9 @@ for (dbtype in dbToTest) {
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == ""))
     con <- get_connection(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(is.null(con))
     test_date_functions(con, write_schema)
-    disconnect(con)
   })
 }
 
@@ -264,9 +264,9 @@ for (dbtype in dbToTest) {
     write_schema <- get_write_schema(dbtype)
     skip_if(any(write_schema == ""))
     con <- get_connection(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(is.null(con))
     if (dbtype != "bigquery") test_clock_functions(con, write_schema)
-    disconnect(con)
   })
 }
 
@@ -316,9 +316,9 @@ for (dbtype in dbToTest) {
     write_schema <- get_write_schema(dbtype)
     skip_if(any(cdm_schema == "", write_schema == ""))
     con <- get_connection(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(is.null(con))
     test_as.Date(con, cdm_schema, write_schema)
-    disconnect(con)
   })
 }
 

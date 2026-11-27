@@ -54,9 +54,9 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype, DatabaseConnector = testUsingDatabaseConnector)
     cdmSchema <- get_cdm_schema(dbtype)
     writeSchema <- get_write_schema(dbtype)
+    local_db_cleanup(con, writeSchema)
     skip_if(any(writeSchema == "") || any(cdmSchema == "") || is.null(con))
     test_cdmFromCon(con, cdmSchema = cdmSchema, writeSchema = writeSchema)
-    disconnect(con)
   })
 }
 
@@ -306,6 +306,7 @@ test_that("DatabaseConnector DBI connections work with duckdb", {
   )
 
   con <- DatabaseConnector::connect(connectionDetails)
+  local_db_cleanup(con)
 
   suppressMessages({
     cdm <- CDMConnector::cdmFromCon(
@@ -341,6 +342,7 @@ test_that("DatabaseConnector DBI connections work with RPostgres", {
   cdmSchema <- Sys.getenv("CDM5_POSTGRESQL_CDM_SCHEMA")
 
   con <- DatabaseConnector::connect(connectionDetails)
+  local_db_cleanup(con)
 
   cdm <- CDMConnector::cdmFromCon(
     con = con,
@@ -377,6 +379,7 @@ test_that("DatabaseConnector DBI connections work with odbc SQL Server", {
   cdmSchema   <- strsplit(Sys.getenv("CDM5_SQL_SERVER_CDM_SCHEMA"), "\\.")[[1]]
 
   con <- DatabaseConnector::connect(connectionDetails)
+  local_db_cleanup(con)
 
   cdm <- CDMConnector::cdmFromCon(
     con = con,

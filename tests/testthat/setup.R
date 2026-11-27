@@ -217,7 +217,13 @@ get_cdm_schema <- function(dbms) {
   return(s)
 }
 
-get_write_schema <- function(dbms, prefix = paste0("temp", (floor(as.numeric(Sys.time())*100) %% 100000L + Sys.getpid()) %% 100000L, "_")) {
+# Avoid R's RNG (cdmSample() calls set.seed() globally) so concurrent CI runs don't collide.
+make_test_prefix <- function() {
+  id <- tolower(basename(tempfile(pattern = "")))
+  paste0("cdmc_", substr(id, max(1L, nchar(id) - 7L), nchar(id)), "_")
+}
+
+get_write_schema <- function(dbms, prefix = make_test_prefix()) {
   s <- switch (dbms,
           "postgres" = Sys.getenv("CDM5_POSTGRESQL_SCRATCH_SCHEMA"),
           "local" = Sys.getenv("LOCAL_POSTGRESQL_SCRATCH_SCHEMA"),
@@ -252,6 +258,81 @@ if (Sys.getenv('TEST_USING_DATABASE_CONNECTOR') %in% c("TRUE", "FALSE")) {
 disconnect <- function(con) {
   if (is.null(con)) return(invisible(NULL))
   DBI::dbDisconnect(con)
+}
+
+# Defer dropping prefixed test tables and closing con on scope exit (pass, fail, or skip).
+local_db_cleanup <- function(con, write_schema = NULL, env = parent.frame()) {
+  force(con)
+  force(write_schema)
+  cleanup <- function() {
+    if (is.null(con)) return(invisible(NULL))
+    is_open <- tryCatch(isTRUE(DBI::dbIsValid(con)), error = function(e) FALSE)
+
+    if (inherits(con, "duckdb_connection")) {
+      dbdir <- tryCatch(DBI::dbGetInfo(con)$dbname, error = function(e) "")
+      norm <- function(p) sub("^/private", "", normalizePath(p, "/", mustWork = FALSE))
+      if (is.character(dbdir) && length(dbdir) == 1L && !is.na(dbdir) &&
+          nzchar(dbdir) && dbdir != ":memory:" &&
+          startsWith(norm(dbdir), paste0(sub("/+$", "", norm(tempdir())), "/"))) {
+        if (is_open) try(DBI::dbDisconnect(con, shutdown = TRUE), silent = TRUE)
+        try(unlink(c(dbdir, paste0(dbdir, ".wal"))), silent = TRUE)
+        return(invisible(NULL))
+      }
+    }
+
+    if (!is_open) return(invisible(NULL))
+
+    if (is.character(write_schema) &&
+        "prefix" %in% names(write_schema) &&
+        !any(is.na(write_schema) | !nzchar(write_schema))) {
+      prefix <- unname(write_schema[["prefix"]])
+      schema <- write_schema[names(write_schema) != "prefix"]
+      if (length(schema) > 0L) {
+        con_dbms <- tryCatch(dbms(con), error = function(e) NULL)
+        if (isTRUE(con_dbms %in% c("postgresql", "redshift"))) {
+          # Clear any aborted transaction block so cleanup queries can run
+          suppressWarnings(suppressMessages(
+            tryCatch(
+              DBI::dbRollback(con),
+              error = function(e) try(DBI::dbExecute(con, "ROLLBACK"), silent = TRUE)
+            )
+          ))
+        }
+        tbls <- tryCatch(
+          listTables(con, schema),
+          error = function(e) {
+            cli::cli_warn(
+              "local_db_cleanup: failed to list tables for prefix {.val {prefix}}: {conditionMessage(e)}"
+            )
+            character()
+          }
+        )
+        to_drop <- tbls[
+          !is.na(tbls) &
+            startsWith(tolower(tbls), tolower(prefix)) &
+            nchar(tbls) > nchar(prefix)
+        ]
+        for (tb in to_drop) {
+          tryCatch(
+            DBI::dbRemoveTable(con, inSchema(schema, tb, dbms = con_dbms)),
+            error = function(e) {
+              cli::cli_warn(
+                "local_db_cleanup: failed to drop table {.val {tb}}: {conditionMessage(e)}"
+              )
+            }
+          )
+        }
+      }
+    }
+
+    tryCatch(
+      disconnect(con),
+      error = function(e) {
+        cli::cli_warn("local_db_cleanup: failed to disconnect: {conditionMessage(e)}")
+      }
+    )
+  }
+  withr::defer(cleanup(), envir = env)
 }
 
 # Helper: create a duckdb connection to an eunomia copy and auto-cleanup the

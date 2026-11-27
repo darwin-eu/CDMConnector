@@ -108,9 +108,9 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype)
     cdmSchema <- get_cdm_schema(dbtype)
     writeSchema <- get_write_schema(dbtype)
+    local_db_cleanup(con, writeSchema)
     skip_if(any(writeSchema == "") || any(cdmSchema == "") || is.null(con))
     test_cdmSubset(con, cdmSchema, writeSchema)
-    disconnect(con)
   })
 }
 

@@ -16,7 +16,13 @@ test_that("prefixed tables are dropped", {
   (write_schema <- strsplit(Sys.getenv("SNOWFLAKE_SCRATCH_SCHEMA"), "\\.")[[1]])
 
   # Be sure to set a writePrefix when creating your cdm
-  writePrefix <- "p3_c1_001_"
+  writePrefix <- make_test_prefix()
+  prefixed_write_schema <- get_write_schema("snowflake", prefix = writePrefix)
+  local_db_cleanup(con, prefixed_write_schema)
+  skip_if(
+    length(cdm_schema) == 0L || any(cdm_schema == "") || any(prefixed_write_schema == "")
+  )
+
   cdm <- cdmFromCon(con,
                     cdm_schema,
                     write_schema,
@@ -43,14 +49,13 @@ test_that("prefixed tables are dropped", {
                         DATABASE = Sys.getenv("SNOWFLAKE_DATABASE"),
                         WAREHOUSE = Sys.getenv("SNOWFLAKE_WAREHOUSE"),
                         DRIVER = Sys.getenv("SNOWFLAKE_DRIVER"))
+  local_db_cleanup(con, prefixed_write_schema)
 
   # the intermediate prefixed tables are gone
   tempTables <- listTables(con, schema = write_schema) |>
     stringr::str_subset(writePrefix)
 
   expect_true(length(tempTables) == 0)
-
-  DBI::dbDisconnect(con)
 })
 
 

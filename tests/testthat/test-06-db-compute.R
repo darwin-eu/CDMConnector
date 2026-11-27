@@ -81,9 +81,9 @@ for (dbtype in dbToTest) {
     con <- get_connection(dbtype)
     cdm_schema <- get_cdm_schema(dbtype)
     write_schema <- get_write_schema(dbtype)
+    local_db_cleanup(con, write_schema)
     skip_if(any(write_schema == "") || any(cdm_schema == "") || is.null(con))
     test_compute_query(con, cdm_schema = cdm_schema, write_schema = write_schema, dbtype = dbtype)
-    disconnect(con)
   })
 }
 
